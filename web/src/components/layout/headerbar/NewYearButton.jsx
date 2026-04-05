@@ -21,6 +21,14 @@ import React from 'react';
 import { Button, Dropdown } from '@douyinfe/semi-ui';
 import fireworks from 'react-fireworks';
 
+const headerIconBtnClass = '!w-8 !h-8 !p-0 flex items-center justify-center';
+const headerIconBtnStyle = {
+  borderRadius: 'var(--radius-sm)',
+  color: 'var(--text-secondary)',
+  background: 'transparent',
+  transition: 'background-color 150ms ease-out, color 150ms ease-out',
+};
+
 const NewYearButton = ({ isNewYear }) => {
   if (!isNewYear) {
     return null;
@@ -38,12 +46,16 @@ const NewYearButton = ({ isNewYear }) => {
     <Dropdown
       position='bottomRight'
       render={
-        <Dropdown.Menu className='!bg-semi-color-bg-overlay !border-semi-color-border !shadow-lg !rounded-lg dark:!bg-gray-700 dark:!border-gray-600'>
+        <Dropdown.Menu>
           <Dropdown.Item
             onClick={handleNewYearClick}
-            className='!text-semi-color-text-0 hover:!bg-semi-color-fill-1 dark:!text-gray-200 dark:hover:!bg-gray-600'
+            style={{
+              color: 'var(--text-primary)',
+              fontSize: '13px',
+              borderRadius: 'var(--radius-sm)',
+            }}
           >
-            Happy New Year!!! 🎉
+            Happy New Year!!!
           </Dropdown.Item>
         </Dropdown.Menu>
       }
@@ -51,9 +63,10 @@ const NewYearButton = ({ isNewYear }) => {
       <Button
         theme='borderless'
         type='tertiary'
-        icon={<span className='text-xl'>🎉</span>}
+        icon={<span style={{ fontSize: '16px' }}>🎉</span>}
         aria-label='New Year'
-        className='!p-1.5 !text-current focus:!bg-semi-color-fill-1 dark:focus:!bg-gray-700 rounded-full'
+        className={headerIconBtnClass}
+        style={headerIconBtnStyle}
       />
     </Dropdown>
   );

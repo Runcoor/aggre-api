@@ -22,6 +22,14 @@ import { Button, Dropdown } from '@douyinfe/semi-ui';
 import { Sun, Moon, Monitor } from 'lucide-react';
 import { useActualTheme } from '../../../context/Theme';
 
+const headerIconBtnClass = '!w-8 !h-8 !p-0 flex items-center justify-center';
+const headerIconBtnStyle = {
+  borderRadius: 'var(--radius-sm)',
+  color: 'var(--text-secondary)',
+  background: 'transparent',
+  transition: 'background-color 150ms ease-out, color 150ms ease-out',
+};
+
 const ThemeToggle = ({ theme, onThemeToggle, t }) => {
   const actualTheme = useActualTheme();
 
@@ -29,22 +37,22 @@ const ThemeToggle = ({ theme, onThemeToggle, t }) => {
     () => [
       {
         key: 'light',
-        icon: <Sun size={18} />,
-        buttonIcon: <Sun size={18} />,
+        icon: <Sun size={16} />,
+        buttonIcon: <Sun size={16} />,
         label: t('浅色模式'),
         description: t('始终使用浅色主题'),
       },
       {
         key: 'dark',
-        icon: <Moon size={18} />,
-        buttonIcon: <Moon size={18} />,
+        icon: <Moon size={16} />,
+        buttonIcon: <Moon size={16} />,
         label: t('深色模式'),
         description: t('始终使用深色主题'),
       },
       {
         key: 'auto',
-        icon: <Monitor size={18} />,
-        buttonIcon: <Monitor size={18} />,
+        icon: <Monitor size={16} />,
+        buttonIcon: <Monitor size={16} />,
         label: t('自动模式'),
         description: t('跟随系统主题设置'),
       },
@@ -52,10 +60,11 @@ const ThemeToggle = ({ theme, onThemeToggle, t }) => {
     [t],
   );
 
-  const getItemClassName = (isSelected) =>
-    isSelected
-      ? '!bg-semi-color-primary-light-default !font-semibold'
-      : 'hover:!bg-semi-color-fill-1';
+  const getItemStyle = (isSelected) => ({
+    backgroundColor: isSelected ? 'var(--accent-light)' : 'transparent',
+    fontWeight: isSelected ? 600 : 400,
+    borderRadius: 'var(--radius-sm)',
+  });
 
   const currentButtonIcon = useMemo(() => {
     const currentOption = themeOptions.find((option) => option.key === theme);
@@ -72,11 +81,13 @@ const ThemeToggle = ({ theme, onThemeToggle, t }) => {
               key={option.key}
               icon={option.icon}
               onClick={() => onThemeToggle(option.key)}
-              className={getItemClassName(theme === option.key)}
+              style={getItemStyle(theme === option.key)}
             >
               <div className='flex flex-col'>
-                <span>{option.label}</span>
-                <span className='text-xs text-semi-color-text-2'>
+                <span className='text-sm' style={{ color: 'var(--text-primary)' }}>
+                  {option.label}
+                </span>
+                <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
                   {option.description}
                 </span>
               </div>
@@ -86,7 +97,10 @@ const ThemeToggle = ({ theme, onThemeToggle, t }) => {
           {theme === 'auto' && (
             <>
               <Dropdown.Divider />
-              <div className='px-3 py-2 text-xs text-semi-color-text-2'>
+              <div
+                className='px-3 py-2 text-xs'
+                style={{ color: 'var(--text-muted)' }}
+              >
                 {t('当前跟随系统')}：
                 {actualTheme === 'dark' ? t('深色') : t('浅色')}
               </div>
@@ -100,7 +114,8 @@ const ThemeToggle = ({ theme, onThemeToggle, t }) => {
         aria-label={t('切换主题')}
         theme='borderless'
         type='tertiary'
-        className='!p-1.5 !text-current focus:!bg-semi-color-fill-1 !rounded-full !bg-semi-color-fill-0 hover:!bg-semi-color-fill-1'
+        className={headerIconBtnClass}
+        style={headerIconBtnStyle}
       />
     </Dropdown>
   );

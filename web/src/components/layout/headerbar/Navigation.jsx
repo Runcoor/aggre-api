@@ -21,6 +21,29 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import SkeletonWrapper from '../components/SkeletonWrapper';
 
+const navLinkStyle = {
+  fontSize: '13px',
+  fontWeight: 500,
+  color: 'var(--text-secondary)',
+  textDecoration: 'none',
+  borderRadius: 'var(--radius-sm)',
+  transition: 'color 150ms ease-out, background-color 150ms ease-out',
+  whiteSpace: 'nowrap',
+  flexShrink: 0,
+  display: 'flex',
+  alignItems: 'center',
+};
+
+const handleMouseEnter = (e) => {
+  e.currentTarget.style.color = 'var(--text-primary)';
+  e.currentTarget.style.backgroundColor = 'var(--surface-hover)';
+};
+
+const handleMouseLeave = (e) => {
+  e.currentTarget.style.color = 'var(--text-secondary)';
+  e.currentTarget.style.backgroundColor = 'transparent';
+};
+
 const Navigation = ({
   mainNavLinks,
   isMobile,
@@ -29,12 +52,7 @@ const Navigation = ({
   pricingRequireAuth,
 }) => {
   const renderNavLinks = () => {
-    const baseClasses =
-      'flex-shrink-0 flex items-center gap-1 font-semibold rounded-md transition-all duration-200 ease-in-out';
-    const hoverClasses = 'hover:text-semi-color-primary';
-    const spacingClasses = isMobile ? 'p-1' : 'p-2';
-
-    const commonLinkClasses = `${baseClasses} ${spacingClasses} ${hoverClasses}`;
+    const padding = isMobile ? '4px 8px' : '6px 12px';
 
     return mainNavLinks.map((link) => {
       const linkContent = <span>{link.text}</span>;
@@ -46,7 +64,9 @@ const Navigation = ({
             href={link.externalLink}
             target='_blank'
             rel='noopener noreferrer'
-            className={commonLinkClasses}
+            style={{ ...navLinkStyle, padding }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
           >
             {linkContent}
           </a>
@@ -62,7 +82,13 @@ const Navigation = ({
       }
 
       return (
-        <Link key={link.itemKey} to={targetPath} className={commonLinkClasses}>
+        <Link
+          key={link.itemKey}
+          to={targetPath}
+          style={{ ...navLinkStyle, padding }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
           {linkContent}
         </Link>
       );
@@ -70,7 +96,7 @@ const Navigation = ({
   };
 
   return (
-    <nav className='flex flex-1 items-center gap-1 lg:gap-2 mx-2 md:mx-4 overflow-x-auto whitespace-nowrap scrollbar-hide'>
+    <nav className='flex flex-1 items-center gap-0.5 mx-3 md:mx-6 overflow-x-auto whitespace-nowrap scrollbar-hide'>
       <SkeletonWrapper
         loading={isLoading}
         type='navigation'

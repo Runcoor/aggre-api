@@ -38,41 +38,56 @@ const HeaderLogo = ({
   }
 
   return (
-    <Link to='/' className='group flex items-center gap-2'>
-      <div className='relative w-8 h-8 md:w-8 md:h-8'>
+    <Link
+      to='/'
+      className='flex items-center gap-2.5'
+      style={{ textDecoration: 'none' }}
+    >
+      <div
+        className='relative flex-shrink-0'
+        style={{ width: '28px', height: '28px' }}
+      >
         <SkeletonWrapper loading={isLoading || !logoLoaded} type='image' />
         <img
           src={logo}
           alt='logo'
-          className={`absolute inset-0 w-full h-full transition-all duration-200 group-hover:scale-110 rounded-full ${!isLoading && logoLoaded ? 'opacity-100' : 'opacity-0'}`}
+          className={`absolute inset-0 w-full h-full transition-opacity duration-150 ${!isLoading && logoLoaded ? 'opacity-100' : 'opacity-0'}`}
+          style={{ borderRadius: 'var(--radius-sm)', objectFit: 'contain' }}
         />
       </div>
       <div className='hidden md:flex items-center gap-2'>
-        <div className='flex items-center gap-2'>
-          <SkeletonWrapper
-            loading={isLoading}
-            type='title'
-            width={120}
-            height={24}
+        <SkeletonWrapper
+          loading={isLoading}
+          type='title'
+          width={120}
+          height={24}
+        >
+          <span
+            className='text-base font-semibold'
+            style={{
+              color: 'var(--text-primary)',
+              fontFamily: 'var(--font-serif)',
+              letterSpacing: '-0.01em',
+            }}
           >
-            <Typography.Title
-              heading={4}
-              className='!text-lg !font-semibold !mb-0'
-            >
-              {systemName}
-            </Typography.Title>
-          </SkeletonWrapper>
-          {(isSelfUseMode || isDemoSiteMode) && !isLoading && (
-            <Tag
-              color={isSelfUseMode ? 'purple' : 'blue'}
-              className='text-xs px-1.5 py-0.5 rounded whitespace-nowrap shadow-sm'
-              size='small'
-              shape='circle'
-            >
-              {isSelfUseMode ? t('自用模式') : t('演示站点')}
-            </Tag>
-          )}
-        </div>
+            {systemName}
+          </span>
+        </SkeletonWrapper>
+        {(isSelfUseMode || isDemoSiteMode) && !isLoading && (
+          <Tag
+            color={isSelfUseMode ? 'purple' : 'blue'}
+            size='small'
+            className='whitespace-nowrap'
+            style={{
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '11px',
+              padding: '0 6px',
+              lineHeight: '20px',
+            }}
+          >
+            {isSelfUseMode ? t('自用模式') : t('演示站点')}
+          </Tag>
+        )}
       </div>
     </Link>
   );

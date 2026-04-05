@@ -1,4 +1,4 @@
-/* ==================== Tailwind CSS 配置 ==================== */
+/* ==================== CSS Layer Order ==================== */
 @layer tailwind-base, semi, tailwind-components, tailwind-utils;
 
 @layer tailwind-base {
@@ -13,25 +13,151 @@
   @tailwind utilities;
 }
 
-/* ==================== 全局基础样式 ==================== */
+/* ==================== macOS Vibrancy Design Tokens ==================== */
 :root {
-  --sidebar-width: 180px;
+  /* -- Layout -- */
+  --sidebar-width: 200px;
   --sidebar-width-collapsed: 60px;
   --sidebar-current-width: var(--sidebar-width);
+  --header-height: 52px;
+
+  /* -- Color: Backgrounds (Light) -- */
+  --bg-base: #F5F5F7;
+  --bg-subtle: #EDEDF0;
+  --bg-muted: #E5E5EA;
+  --surface: #FFFFFF;
+  --surface-hover: rgba(0,0,0,0.03);
+  --surface-active: rgba(0,0,0,0.05);
+
+  /* -- Color: Text (Light) -- */
+  --text-primary: rgba(0,0,0,0.85);
+  --text-secondary: rgba(0,0,0,0.55);
+  --text-muted: rgba(0,0,0,0.3);
+
+  /* -- Color: Accent (iOS Light) -- */
+  --accent: #007AFF;
+  --accent-hover: #0066D6;
+  --accent-active: #004EA8;
+  --accent-light: rgba(0,122,255,0.08);
+
+  /* -- Color: Semantic (iOS Light) -- */
+  --success: #34C759;
+  --success-light: rgba(52,199,89,0.10);
+  --warning: #FF9500;
+  --warning-light: rgba(255,149,0,0.10);
+  --error: #FF3B30;
+  --error-light: rgba(255,59,48,0.10);
+  --info: #5AC8FA;
+  --info-light: rgba(90,200,250,0.10);
+
+  /* -- Color: Borders (Light) -- */
+  --border-subtle: rgba(0,0,0,0.06);
+  --border-default: rgba(0,0,0,0.10);
+
+  /* -- Glass (Light) -- */
+  --glass-bg: rgba(255,255,255,0.72);
+  --glass-border: rgba(0,0,0,0.06);
+  --glass-blur: 20px;
+
+  /* -- Radius -- */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* -- Shadow -- */
+  --shadow-sm: none;
+  --shadow-md: 0 1px 0 rgba(0,0,0,0.05);
+  --shadow-float: 0 2px 8px rgba(0,0,0,0.12);
+  --shadow-ring: 0 0 0 0.5px rgba(0,0,0,0.06);
+
+  /* -- Typography -- */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'Georgia', 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, 'Cascadia Code', 'Menlo', monospace;
+
+  /* -- Motion -- */
+  --ease-micro: 150ms ease-out;
+  --ease-normal: 280ms ease-out;
+  --ease-slow: 500ms ease-out;
+  --mv-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* -- Semi Design Bridge (Light) -- */
+  --semi-color-primary: #007AFF;
+  --semi-color-primary-hover: #0066D6;
+  --semi-color-primary-active: #004EA8;
+  --semi-color-primary-light-default: rgba(0,122,255,0.08);
+  --semi-color-primary-light-hover: rgba(0,122,255,0.12);
+  --semi-color-primary-light-active: rgba(0,122,255,0.18);
+}
+
+html.dark {
+  /* -- Color: Backgrounds (Dark — Three-depth gray) -- */
+  --bg-base: #1c1c1e;
+  --bg-subtle: #252527;
+  --bg-muted: #2c2c2e;
+  --surface: #2c2c2e;
+  --surface-hover: rgba(255,255,255,0.05);
+  --surface-active: #3a3a3c;
+
+  /* -- Color: Text (Dark) -- */
+  --text-primary: rgba(255,255,255,0.95);
+  --text-secondary: rgba(255,255,255,0.70);
+  --text-muted: rgba(255,255,255,0.35);
+
+  /* -- Color: Accent (iOS Dark) -- */
+  --accent: #0a84ff;
+  --accent-hover: #409CFF;
+  --accent-active: #007AFF;
+  --accent-light: rgba(10,132,255,0.14);
+
+  /* -- Color: Semantic (iOS Dark) -- */
+  --success: #30D158;
+  --success-light: rgba(48,209,88,0.14);
+  --warning: #FF9F0A;
+  --warning-light: rgba(255,159,10,0.14);
+  --error: #FF453A;
+  --error-light: rgba(255,69,58,0.14);
+  --info: #64D2FF;
+  --info-light: rgba(100,210,255,0.14);
+
+  /* -- Color: Borders (Dark) -- */
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-default: rgba(255,255,255,0.10);
+
+  /* -- Glass (Dark) -- */
+  --glass-bg: rgba(28,28,30,0.80);
+  --glass-border: rgba(255,255,255,0.08);
+
+  /* -- Shadow (Dark) -- */
+  --shadow-md: 0 1px 0 rgba(255,255,255,0.05);
+  --shadow-float: 0 2px 8px rgba(0,0,0,0.30);
+  --shadow-ring: 0 0 0 0.5px rgba(255,255,255,0.06);
+
+  /* -- Semi Design Bridge (Dark) -- */
+  --semi-color-primary: #0a84ff;
+  --semi-color-primary-hover: #409CFF;
+  --semi-color-primary-active: #007AFF;
+  --semi-color-primary-light-default: rgba(10,132,255,0.14);
+  --semi-color-primary-light-hover: rgba(10,132,255,0.20);
+  --semi-color-primary-light-active: rgba(10,132,255,0.28);
+}
+
+/* ==================== Global Base Styles ==================== */
+body {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background-color: var(--bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 body.sidebar-collapsed {
   --sidebar-current-width: var(--sidebar-width-collapsed);
 }
 
-body {
-  font-family: Lato, 'Helvetica Neue', Arial, Helvetica, 'Microsoft YaHei',
-    sans-serif;
-  color: var(--semi-color-text-0);
-  background-color: var(--semi-color-bg-0);
-}
-
-/* 桌面端禁止 body 纵向滚动 - 防止 VChart tooltip 触发页面滚动条 */
+/* Desktop: prevent body scroll from chart tooltips */
 @media (min-width: 768px) {
   body {
     overflow-y: hidden;
@@ -44,16 +170,128 @@ body {
 }
 
 .app-sider {
-  height: calc(100vh - 64px);
-  height: calc(100dvh - 64px);
+  height: calc(100vh - var(--header-height));
+  height: calc(100dvh - var(--header-height));
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: var(--font-mono);
 }
 
-/* ==================== 布局相关样式 ==================== */
+/* Serif headings */
+h1, h2, h3, .mv-heading {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
+}
+
+/* ==================== Glass Morphism Utilities ==================== */
+.glass-header {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.glass-sidebar {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-right: 1px solid var(--glass-border);
+}
+
+.glass-float {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+}
+
+/* ==================== macOS Card Utility ==================== */
+.mv-card {
+  background: var(--surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-ring);
+}
+
+/* ==================== Animation System ==================== */
+@keyframes mv-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mv-fade-in {
+  animation: mv-fade-in 280ms var(--mv-ease) both;
+}
+
+/* Stagger support: add mv-stagger-N for children */
+.mv-stagger-1 { animation-delay: 50ms; }
+.mv-stagger-2 { animation-delay: 100ms; }
+.mv-stagger-3 { animation-delay: 150ms; }
+.mv-stagger-4 { animation-delay: 200ms; }
+.mv-stagger-5 { animation-delay: 250ms; }
+
+/* ==================== macOS Activity Indicator (12-bar) ==================== */
+@keyframes mv-loader-spin {
+  0% { opacity: 1; }
+  100% { opacity: 0.15; }
+}
+
+.mv-loader {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mv-loader-small {
+  width: 20px;
+  height: 20px;
+}
+
+.mv-loader-medium {
+  width: 32px;
+  height: 32px;
+}
+
+.mv-loader-large {
+  width: 48px;
+  height: 48px;
+}
+
+.mv-loader-bar {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 28%;
+  border-radius: 1px;
+  background: var(--text-secondary);
+  transform-origin: center bottom;
+  animation: mv-loader-spin 1s linear infinite;
+}
+
+.mv-loader-bar:nth-child(1)  { transform: rotate(0deg) translateY(-80%);   animation-delay: -1s; }
+.mv-loader-bar:nth-child(2)  { transform: rotate(30deg) translateY(-80%);  animation-delay: -0.9167s; }
+.mv-loader-bar:nth-child(3)  { transform: rotate(60deg) translateY(-80%);  animation-delay: -0.8333s; }
+.mv-loader-bar:nth-child(4)  { transform: rotate(90deg) translateY(-80%);  animation-delay: -0.75s; }
+.mv-loader-bar:nth-child(5)  { transform: rotate(120deg) translateY(-80%); animation-delay: -0.6667s; }
+.mv-loader-bar:nth-child(6)  { transform: rotate(150deg) translateY(-80%); animation-delay: -0.5833s; }
+.mv-loader-bar:nth-child(7)  { transform: rotate(180deg) translateY(-80%); animation-delay: -0.5s; }
+.mv-loader-bar:nth-child(8)  { transform: rotate(210deg) translateY(-80%); animation-delay: -0.4167s; }
+.mv-loader-bar:nth-child(9)  { transform: rotate(240deg) translateY(-80%); animation-delay: -0.3333s; }
+.mv-loader-bar:nth-child(10) { transform: rotate(270deg) translateY(-80%); animation-delay: -0.25s; }
+.mv-loader-bar:nth-child(11) { transform: rotate(300deg) translateY(-80%); animation-delay: -0.1667s; }
+.mv-loader-bar:nth-child(12) { transform: rotate(330deg) translateY(-80%); animation-delay: -0.0833s; }
+
+/* ==================== Layout Scrollbar Hiding ==================== */
 .semi-layout::-webkit-scrollbar,
 .semi-layout-content::-webkit-scrollbar,
 .semi-sider::-webkit-scrollbar {
@@ -69,7 +307,228 @@ code {
   scrollbar-width: none;
 }
 
-/* ==================== 导航和侧边栏样式 ==================== */
+/* ==================== Semi Design — Global Vibrancy Overrides ==================== */
+
+/* --- Border Radius System --- */
+.semi-button,
+.semi-input-wrapper,
+.semi-select,
+.semi-datepicker-range-input,
+.semi-tabs-tab-button,
+.semi-page-item,
+.semi-chat-inputBox-sendButton {
+  border-radius: var(--radius-md) !important;
+}
+
+.semi-tag,
+.semi-tag-closable,
+.semi-badge-count {
+  border-radius: var(--radius-sm) !important;
+}
+
+.semi-card,
+.semi-modal-content,
+.semi-sidesheet-inner,
+.semi-popover-wrapper-content,
+.semi-tooltip-wrapper-content {
+  border-radius: var(--radius-lg) !important;
+}
+
+.semi-radio,
+.semi-tagInput,
+.semi-input-textarea-wrapper,
+.semi-navigation-item,
+.semi-navigation-sub-title {
+  border-radius: var(--radius-md) !important;
+}
+
+/* --- Card Overrides --- */
+.semi-card {
+  background: var(--surface);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-ring);
+  transition: background-color var(--ease-micro), border-color var(--ease-micro);
+}
+
+.semi-card-header,
+.semi-card-body {
+  padding: 10px !important;
+}
+
+/* --- Button Overrides --- */
+.semi-button {
+  transition: background-color var(--ease-micro), color var(--ease-micro), border-color var(--ease-micro);
+}
+
+/* Header icon buttons: uniform 32x32, subtle hover */
+.semi-button.semi-button-borderless.semi-button-tertiary:hover {
+  background-color: var(--surface-hover) !important;
+}
+
+/* --- Input/Select Overrides (Dark Mode) --- */
+html.dark .semi-input-wrapper,
+html.dark .semi-select,
+html.dark .semi-datepicker-range-input,
+html.dark .semi-input-textarea-wrapper,
+html.dark .semi-tagInput {
+  background-color: var(--bg-base);
+  border-color: var(--border-default);
+}
+
+html.dark .semi-input-wrapper:hover,
+html.dark .semi-select:hover,
+html.dark .semi-input-textarea-wrapper:hover,
+html.dark .semi-tagInput:hover {
+  border-color: rgba(255,255,255,0.16);
+}
+
+html.dark .semi-input-wrapper-focus,
+html.dark .semi-select-focus,
+html.dark .semi-input-textarea-wrapper-focus,
+html.dark .semi-tagInput-focus {
+  border-color: var(--accent);
+}
+
+/* --- Table Overrides --- */
+.semi-table {
+  background: transparent;
+}
+
+.semi-table-thead > .semi-table-row > .semi-table-row-head {
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+html.dark .semi-table-thead > .semi-table-row > .semi-table-row-head {
+  background: var(--bg-subtle);
+}
+
+.semi-table-tbody > .semi-table-row > .semi-table-row-cell {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.semi-table-tbody > .semi-table-row:hover > .semi-table-row-cell {
+  background: var(--surface-hover);
+}
+
+/* No alternating row colors */
+.semi-table-row-striped > .semi-table-row-cell {
+  background: transparent !important;
+}
+
+/* --- Modal Overrides --- */
+.semi-modal-content {
+  background: var(--surface);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-float);
+}
+
+.semi-modal-mask {
+  background-color: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* --- SideSheet Overrides --- */
+.semi-sidesheet-inner {
+  background: var(--surface);
+  border-left: 1px solid var(--border-default);
+}
+
+/* --- Popover/Tooltip/Dropdown Overrides --- */
+.semi-popover-wrapper-content,
+.semi-tooltip-wrapper-content {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-float);
+}
+
+html.dark .semi-popover-wrapper-content,
+html.dark .semi-tooltip-wrapper-content {
+  background: rgba(44,44,46,0.92);
+}
+
+/* --- Dropdown Menu Overrides --- */
+.semi-dropdown-menu {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-float);
+  padding: 4px !important;
+}
+
+html.dark .semi-dropdown-menu {
+  background: rgba(44,44,46,0.92);
+}
+
+.semi-dropdown-item {
+  border-radius: var(--radius-sm) !important;
+  transition: background-color var(--ease-micro) !important;
+  font-size: 13px !important;
+}
+
+.semi-dropdown-item:hover {
+  background-color: var(--surface-hover) !important;
+}
+
+.semi-dropdown-divider {
+  background-color: var(--border-subtle) !important;
+  margin: 4px 0 !important;
+}
+
+/* --- Tag Overrides --- */
+.semi-tag {
+  transition: background-color var(--ease-micro), color var(--ease-micro);
+}
+
+/* --- Tabs Overrides --- */
+.semi-tabs-content {
+  padding: 0 !important;
+  height: calc(100% - 40px) !important;
+  flex: 1 !important;
+}
+
+.semi-tabs-content .semi-tabs-pane {
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.semi-tabs-content .semi-tabs-pane > div {
+  height: 100% !important;
+}
+
+/* --- Toast/Notification Overrides --- */
+.semi-toast-wrapper,
+.semi-notification-notice {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-float);
+}
+
+html.dark .semi-toast-wrapper,
+html.dark .semi-notification-notice {
+  background: rgba(44,44,46,0.92);
+}
+
+/* --- Banner Overrides --- */
+.semi-banner {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+}
+
+/* ==================== Navigation & Sidebar ==================== */
 .semi-navigation-item {
   margin-bottom: 4px !important;
   padding: 4px 12px !important;
@@ -102,37 +561,25 @@ code {
   height: 44px !important;
 }
 
-#root
-  > section
-  > header
-  > section
-  > div
-  > div
-  > div
-  > div.semi-navigation-header-list-outer
-  > div.semi-navigation-list-wrapper
-  > ul
-  > div
-  > a
-  > li
-  > span {
+/* Header nav font weight */
+#root > section > header > section > div > div > div > div.semi-navigation-header-list-outer > div.semi-navigation-list-wrapper > ul > div > a > li > span {
   font-weight: 600 !important;
 }
 
-/* 自定义侧边栏样式 */
+/* Custom sidebar container — uses glass-sidebar for frosted effect */
 .sidebar-container {
   height: 100%;
   display: flex;
   flex-direction: column;
   min-height: 0;
   transition: width 0.3s ease;
-  background: var(--semi-color-bg-0);
+  /* background provided by .glass-sidebar class */
 }
 
 .sidebar-nav {
   flex: 1;
   width: 100%;
-  background: var(--semi-color-bg-0);
+  background: transparent;
   height: 100%;
   overflow-x: hidden;
   border-right: none;
@@ -147,26 +594,40 @@ code {
   display: none;
 }
 
-/* 侧边栏导航项样式 */
+/* Sidebar nav items */
 .sidebar-nav-item {
-  border-radius: 6px;
-  margin: 3px 8px;
-  transition: all 0.15s ease;
-  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  margin: 1px 8px;
+  transition: background-color var(--ease-micro), color var(--ease-micro);
+  padding: 6px 12px;
+  position: relative;
 }
 
 .sidebar-nav-item:hover {
-  background-color: rgba(var(--semi-blue-0), 0.08);
-  color: var(--semi-color-primary);
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .sidebar-nav-item-selected {
-  background-color: rgba(var(--semi-blue-0), 0.12);
-  color: var(--semi-color-primary);
+  background-color: var(--accent-light);
+  color: var(--accent);
   font-weight: 500;
 }
 
-/* 图标容器样式 */
+/* macOS-style active indicator bar */
+.sidebar-nav-item-selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+
+/* Icon containers */
 .sidebar-icon-container {
   width: 22px;
   height: 22px;
@@ -174,7 +635,7 @@ code {
   align-items: center;
   justify-content: center;
   margin-right: 10px;
-  transition: all 0.2s ease;
+  transition: color var(--ease-micro);
 }
 
 .sidebar-sub-icon-container {
@@ -185,80 +646,83 @@ code {
   justify-content: center;
   margin-right: 10px;
   margin-left: 1px;
-  transition: all 0.2s ease;
+  transition: color var(--ease-micro);
 }
 
-/* 分割线样式 */
+/* Sidebar divider */
 .sidebar-divider {
   margin: 4px 8px;
   opacity: 0.15;
 }
 
-/* 分组标签样式 */
+/* Group label */
 .sidebar-group-label {
   padding: 4px 15px 8px;
-  color: var(--semi-color-text-2);
-  font-size: 12px;
+  color: var(--text-muted);
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  opacity: 0.8;
+  font-weight: 500;
 }
 
-/* 底部折叠按钮 */
+/* Collapse button */
 .sidebar-collapse-button {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 12px;
+  padding: 8px 12px;
   margin-top: auto;
   cursor: pointer;
-  background-color: var(--semi-color-bg-0);
+  background-color: transparent;
   position: sticky;
   bottom: 0;
   z-index: 10;
-  box-shadow: 0 -10px 10px -5px var(--semi-color-bg-0);
-  backdrop-filter: blur(4px);
-  border-top: 1px solid rgba(var(--semi-grey-0), 0.08);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .sidebar-collapse-button-inner {
   width: 28px;
   height: 28px;
-  border-radius: 9999px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--semi-color-fill-0);
-  transition: all 0.2s ease;
+  background-color: var(--surface-hover);
+  transition: background-color var(--ease-micro);
+}
+
+.sidebar-collapse-button-inner:hover {
+  background-color: var(--surface-active);
 }
 
 .sidebar-collapse-icon-container {
   display: inline-block;
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
-/* 侧边栏区域容器 */
+/* Sidebar section */
 .sidebar-section {
   padding-top: 12px;
 }
 
 @media (max-width: 767px) {
   .sidebar-container {
-    background: var(--semi-color-bg-1);
-    border-right: 1px solid var(--semi-color-border);
+    background: var(--surface) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-right: 1px solid var(--border-default) !important;
   }
 
   .sidebar-nav {
-    background: var(--semi-color-bg-1);
+    background: transparent;
   }
 
   .sidebar-collapse-button {
-    background-color: var(--semi-color-bg-1);
-    box-shadow: 0 -10px 10px -5px var(--semi-color-bg-1);
+    background-color: transparent;
   }
 }
 
-/* ==================== 聊天界面样式 ==================== */
+/* ==================== Chat Styles ==================== */
 .semi-chat {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
@@ -307,7 +771,7 @@ code {
   font-size: 20px !important;
 }
 
-/* 隐藏所有聊天相关区域的滚动条 */
+/* Hide chat scrollbars */
 .semi-chat::-webkit-scrollbar,
 .semi-chat-chatBox::-webkit-scrollbar,
 .semi-chat-chatBox-wrap::-webkit-scrollbar,
@@ -329,8 +793,7 @@ code {
   scrollbar-width: none;
 }
 
-/* ==================== 组件特定样式 ==================== */
-/* SelectableButtonGroup */
+/* ==================== SelectableButtonGroup ==================== */
 .sbg-button .semi-button-content {
   min-width: 0 !important;
 }
@@ -351,7 +814,7 @@ code {
   text-overflow: ellipsis;
 }
 
-/* Badge for count/multiplier in filter buttons */
+/* Badge */
 .sbg-badge {
   display: inline-flex;
   align-items: center;
@@ -365,17 +828,17 @@ code {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1;
-  background-color: var(--semi-color-fill-0);
-  color: var(--semi-color-text-2);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  background-color: var(--surface-active);
+  color: var(--text-secondary);
+  transition: background-color var(--ease-micro), color var(--ease-micro);
 }
 
 .sbg-badge-active {
-  background-color: var(--semi-color-primary-light-active);
-  color: var(--semi-color-primary);
+  background-color: var(--accent-light);
+  color: var(--accent);
 }
 
-/* ---- SelectableButtonGroup color variants ---- */
+/* SBG Color Variants */
 .sbg-variant-violet {
   --semi-color-primary: #6d28d9;
   --semi-color-primary-light-default: rgba(124, 58, 237, 0.08);
@@ -411,7 +874,7 @@ code {
   --semi-color-primary-light-active: rgba(16, 185, 129, 0.22);
 }
 
-/* Dark mode: lighter text, slightly stronger backgrounds */
+/* Dark mode SBG variants */
 html.dark .sbg-variant-violet {
   --semi-color-primary: #a78bfa;
   --semi-color-primary-light-default: rgba(139, 92, 246, 0.14);
@@ -447,23 +910,7 @@ html.dark .sbg-variant-green {
   --semi-color-primary-light-active: rgba(52, 211, 153, 0.3);
 }
 
-/* Tabs组件样式 */
-.semi-tabs-content {
-  padding: 0 !important;
-  height: calc(100% - 40px) !important;
-  flex: 1 !important;
-}
-
-.semi-tabs-content .semi-tabs-pane {
-  height: 100% !important;
-  overflow: hidden !important;
-}
-
-.semi-tabs-content .semi-tabs-pane > div {
-  height: 100% !important;
-}
-
-/* 表格样式 */
+/* ==================== Table Visibility ==================== */
 .tableShow {
   display: revert;
 }
@@ -472,7 +919,7 @@ html.dark .sbg-variant-green {
   display: none !important;
 }
 
-/* 页脚样式 */
+/* ==================== Footer ==================== */
 .custom-footer {
   font-size: 1.1em;
 }
@@ -480,7 +927,7 @@ html.dark .sbg-variant-green {
   position: relative;
 }
 
-/* 卡片内容容器通用样式 */
+/* ==================== Card Content Container ==================== */
 .card-content-container {
   position: relative;
 }
@@ -491,14 +938,15 @@ html.dark .sbg-variant-green {
   left: 0;
   right: 0;
   height: 30px;
-  background: linear-gradient(transparent, var(--semi-color-bg-1));
   pointer-events: none;
   z-index: 1;
   opacity: 0;
   transition: opacity 0.3s ease;
+  /* Fade from transparent to surface color */
+  background: linear-gradient(transparent, var(--surface));
 }
 
-/* ==================== 调试面板特定样式 ==================== */
+/* ==================== Debug Panel ==================== */
 .debug-panel .semi-tabs {
   height: 100% !important;
   display: flex !important;
@@ -514,61 +962,58 @@ html.dark .sbg-variant-green {
   overflow: hidden !important;
 }
 
-/* ==================== 滚动条样式统一管理 ==================== */
-/* 通用隐藏滚动条工具类 */
+/* ==================== Scrollbar Styles ==================== */
+/* Generic hide-scrollbar utility */
 .scrollbar-hide {
   -ms-overflow-style: none;
-  /* IE and Edge */
   scrollbar-width: none;
-  /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
   width: 0 !important;
   height: 0 !important;
   display: none !important;
-  /* Chrome, Safari, Opera */
 }
 
-/* 表格滚动条样式 */
+/* Table scrollbar - thin, subtle */
 .semi-table-body::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 .semi-table-body::-webkit-scrollbar-thumb {
-  background: rgba(var(--semi-grey-2), 0.3);
-  border-radius: 2px;
+  background: var(--border-default);
+  border-radius: 3px;
 }
 
 .semi-table-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--semi-grey-2), 0.5);
+  background: var(--text-muted);
 }
 
 .semi-table-body::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* 侧边抽屉滚动条样式 */
+/* SideSheet scrollbar */
 .semi-sidesheet-body::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 .semi-sidesheet-body::-webkit-scrollbar-thumb {
-  background: rgba(var(--semi-grey-2), 0.3);
-  border-radius: 2px;
+  background: var(--border-default);
+  border-radius: 3px;
 }
 
 .semi-sidesheet-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--semi-grey-2), 0.5);
+  background: var(--text-muted);
 }
 
 .semi-sidesheet-body::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* 隐藏内容区域滚动条 */
+/* Content area scrollbar hiding */
 .pricing-scroll-hide,
 .model-test-scroll,
 .card-content-scroll,
@@ -592,27 +1037,26 @@ html.dark .sbg-variant-green {
   display: none;
 }
 
-/* 图片列表滚动条样式 */
+/* Image list scrollbar */
 .image-list-scroll::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 .image-list-scroll::-webkit-scrollbar-thumb {
-  background: var(--semi-color-tertiary-light-default);
+  background: var(--border-default);
   border-radius: 3px;
 }
 
 .image-list-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--semi-color-tertiary);
+  background: var(--text-muted);
 }
 
 .image-list-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* ==================== 同步倍率 - 渠道选择器 ==================== */
-
+/* ==================== Transfer Component ==================== */
 .components-transfer-source-item,
 .components-transfer-selected-item {
   display: flex;
@@ -664,7 +1108,7 @@ html.dark .sbg-variant-green {
 .components-transfer-source-item .email,
 .components-transfer-selected-item .email {
   font-size: 12px;
-  color: var(--semi-color-text-2);
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
 }
@@ -672,19 +1116,18 @@ html.dark .sbg-variant-green {
 .components-transfer-selected-item .semi-icon-close {
   margin-left: 8px;
   cursor: pointer;
-  color: var(--semi-color-text-2);
+  color: var(--text-secondary);
 }
 
 .components-transfer-selected-item .semi-icon-close:hover {
-  color: var(--semi-color-text-0);
+  color: var(--text-primary);
 }
 
-/* ==================== 未读通知闪光效果 ==================== */
+/* ==================== Notification Shine Effect ==================== */
 @keyframes sweep-shine {
   0% {
     background-position: 200% 0;
   }
-
   100% {
     background-position: -200% 0;
   }
@@ -721,13 +1164,11 @@ html.dark .sbg-variant-green {
   -webkit-text-fill-color: transparent;
 }
 
-/* ==================== ScrollList 定制样式 ==================== */
+/* ==================== ScrollList ==================== */
 .semi-scrolllist,
 .semi-scrolllist * {
   -ms-overflow-style: none;
-  /* IE, Edge */
   scrollbar-width: none;
-  /* Firefox */
   background: transparent !important;
 }
 
@@ -746,101 +1187,7 @@ html.dark .sbg-variant-green {
   padding-right: 0 !important;
 }
 
-/* ==================== Banner 背景模糊球 ==================== */
-.blur-ball {
-  position: absolute;
-  width: 360px;
-  height: 360px;
-  border-radius: 50%;
-  filter: blur(120px);
-  pointer-events: none;
-  z-index: -1;
-}
-
-.blur-ball-indigo {
-  background: #6366f1;
-  /* indigo-500 */
-  top: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0.5;
-}
-
-.blur-ball-teal {
-  background: #14b8a6;
-  /* teal-400 */
-  top: 200px;
-  left: 30%;
-  opacity: 0.4;
-}
-
-/* 浅色主题下让模糊球更柔和 */
-html:not(.dark) .blur-ball-indigo {
-  opacity: 0.25;
-}
-
-html:not(.dark) .blur-ball-teal {
-  opacity: 0.2;
-}
-
-/* ==================== 卡片马卡龙模糊球（类封装） ==================== */
-/* 使用方式：给容器加上 with-pastel-balls 类即可，无需在 JSX 中插入额外节点 */
-.with-pastel-balls {
-  position: relative;
-  overflow: hidden;
-  /* 默认变量（明亮模式） */
-  --pb1: #ffd1dc;
-  /* 粉 */
-  --pb2: #e5d4ff;
-  /* 薰衣草 */
-  --pb3: #d1fff6;
-  /* 薄荷 */
-  --pb4: #ffe5d9;
-  /* 桃 */
-  --pb-opacity: 0.55;
-  --pb-blur: 60px;
-}
-
-.with-pastel-balls::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(
-      circle at -5% -10%,
-      var(--pb1) 0%,
-      transparent 60%
-    ),
-    radial-gradient(circle at 105% -10%, var(--pb2) 0%, transparent 55%),
-    radial-gradient(circle at 5% 110%, var(--pb3) 0%, transparent 55%),
-    radial-gradient(circle at 105% 110%, var(--pb4) 0%, transparent 50%);
-  filter: blur(var(--pb-blur));
-  opacity: var(--pb-opacity);
-  transform: translateZ(0);
-}
-
-/* 暗黑模式下更柔和的色彩和透明度 */
-html.dark .with-pastel-balls {
-  /* 使用与明亮模式一致的“刚才那组”马卡龙色，但整体更柔和 */
-  --pb1: #ffd1dc;
-  /* 粉 */
-  --pb2: #e5d4ff;
-  /* 薰衣草 */
-  --pb3: #d1fff6;
-  /* 薄荷 */
-  --pb4: #ffe5d9;
-  /* 桃 */
-  --pb-opacity: 0.36;
-  --pb-blur: 65px;
-}
-
-/* 暗黑模式下用更柔和的混合模式避免突兀的高亮 */
-html.dark .with-pastel-balls::before {
-  mix-blend-mode: screen;
-}
-
-/* ==================== 表格卡片滚动设置 ==================== */
+/* ==================== Table Card Scroll ==================== */
 .table-scroll-card {
   display: flex;
   flex-direction: column;
@@ -858,12 +1205,12 @@ html.dark .with-pastel-balls::before {
 }
 
 .table-scroll-card .semi-card-body::-webkit-scrollbar-thumb {
-  background: rgba(var(--semi-grey-2), 0.3);
-  border-radius: 2px;
+  background: var(--border-default);
+  border-radius: 3px;
 }
 
 .table-scroll-card .semi-card-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--semi-grey-2), 0.5);
+  background: var(--text-muted);
 }
 
 .table-scroll-card .semi-card-body::-webkit-scrollbar-track {
@@ -877,7 +1224,7 @@ html.dark .with-pastel-balls::before {
   }
 }
 
-/* ==================== 模型定价页面布局 ==================== */
+/* ==================== Pricing Layout ==================== */
 .pricing-layout {
   height: calc(100vh - 60px);
   overflow: hidden;
@@ -889,19 +1236,19 @@ html.dark .with-pastel-balls::before {
   min-width: clamp(280px, 24vw, 520px) !important;
   max-width: clamp(280px, 24vw, 520px) !important;
   height: calc(100vh - 60px);
-  background-color: var(--semi-color-bg-0);
+  background-color: var(--bg-subtle);
   overflow: auto;
 }
 
 .pricing-content {
   height: calc(100vh - 60px);
-  background-color: var(--semi-color-bg-0);
+  background-color: var(--bg-base);
   display: flex;
   flex-direction: column;
 }
 
 .pricing-pagination-divider {
-  border-color: var(--semi-color-border);
+  border-color: var(--border-subtle);
 }
 
 .pricing-content-mobile {
@@ -913,7 +1260,7 @@ html.dark .with-pastel-balls::before {
 
 .pricing-search-header {
   padding: 0.5rem;
-  background-color: var(--semi-color-bg-0);
+  background-color: var(--bg-base);
   flex-shrink: 0;
   position: sticky;
   top: 0;
@@ -931,28 +1278,18 @@ html.dark .with-pastel-balls::before {
   min-height: 0;
 }
 
-/* ==================== semi-ui 组件自定义样式 ==================== */
-.semi-card-header,
-.semi-card-body {
-  padding: 10px !important;
-}
-
-/* ==================== 使用日志: channel affinity tag ==================== */
+/* ==================== Channel Affinity Tag ==================== */
 .semi-tag.channel-affinity-tag {
   border: 1px solid rgba(var(--semi-cyan-5), 0.35);
   background-color: rgba(var(--semi-cyan-5), 0.15);
   color: rgba(var(--semi-cyan-9), 1);
   cursor: help;
-  transition:
-    background-color 120ms ease,
-    border-color 120ms ease,
-    box-shadow 120ms ease;
+  transition: background-color 120ms ease, border-color 120ms ease;
 }
 
 .semi-tag.channel-affinity-tag:hover {
   background-color: rgba(var(--semi-cyan-5), 0.22);
   border-color: rgba(var(--semi-cyan-5), 0.6);
-  box-shadow: 0 0 0 2px rgba(var(--semi-cyan-5), 0.18);
 }
 
 .semi-tag.channel-affinity-tag:active {
@@ -965,23 +1302,7 @@ html.dark .with-pastel-balls::before {
   gap: 0.25rem;
 }
 
-/* ==================== 自定义圆角样式 ==================== */
-.semi-radio,
-.semi-tagInput,
-.semi-input-textarea-wrapper,
-.semi-navigation-sub-title,
-.semi-chat-inputBox-sendButton,
-.semi-page-item,
-.semi-navigation-item,
-.semi-tag-closable,
-.semi-input-wrapper,
-.semi-tabs-tab-button,
-.semi-select,
-.semi-button,
-.semi-datepicker-range-input {
-  border-radius: 10px !important;
-}
-
+/* ==================== Slide Animations ==================== */
 @keyframes slideInLeft {
   from {
     transform: translateX(-100%);
@@ -993,7 +1314,6 @@ html.dark .with-pastel-balls::before {
   }
 }
 
-/* Channel advanced settings side panel animations */
 @keyframes slideInRight {
   from {
     transform: translateX(100%);
@@ -1005,4 +1325,80 @@ html.dark .with-pastel-balls::before {
   }
 }
 
+/* ==================== Pastel Balls (Banner Decoration) ==================== */
+.with-pastel-balls {
+  position: relative;
+  overflow: hidden;
+  --pb1: #ffd1dc;
+  --pb2: #e5d4ff;
+  --pb3: #d1fff6;
+  --pb4: #ffe5d9;
+  --pb-opacity: 0.55;
+  --pb-blur: 60px;
+}
+
+.with-pastel-balls::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at -5% -10%, var(--pb1) 0%, transparent 60%),
+    radial-gradient(circle at 105% -10%, var(--pb2) 0%, transparent 55%),
+    radial-gradient(circle at 5% 110%, var(--pb3) 0%, transparent 55%),
+    radial-gradient(circle at 105% 110%, var(--pb4) 0%, transparent 50%);
+  filter: blur(var(--pb-blur));
+  opacity: var(--pb-opacity);
+  transform: translateZ(0);
+}
+
+html.dark .with-pastel-balls {
+  --pb1: #ffd1dc;
+  --pb2: #e5d4ff;
+  --pb3: #d1fff6;
+  --pb4: #ffe5d9;
+  --pb-opacity: 0.36;
+  --pb-blur: 65px;
+}
+
+html.dark .with-pastel-balls::before {
+  mix-blend-mode: screen;
+}
+
+/* Blur balls for banners */
+.blur-ball {
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.blur-ball-indigo {
+  background: #6366f1;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0.5;
+}
+
+.blur-ball-teal {
+  background: #14b8a6;
+  top: 200px;
+  left: 30%;
+  opacity: 0.4;
+}
+
+html:not(.dark) .blur-ball-indigo {
+  opacity: 0.25;
+}
+
+html:not(.dark) .blur-ball-teal {
+  opacity: 0.2;
+}
+
+/* ==================== Misc ==================== */
 .ec-dbcd0a3c01b55203 { forced-color-adjust: auto; }

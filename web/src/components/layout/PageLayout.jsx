@@ -150,17 +150,19 @@ const PageLayout = () => {
         display: 'flex',
         flexDirection: 'column',
         overflow: isMobile ? 'visible' : 'hidden',
+        background: 'var(--bg-base)',
       }}
     >
       <Header
         style={{
           padding: 0,
-          height: 'auto',
+          height: 'var(--header-height)',
           lineHeight: 'normal',
           position: 'fixed',
           width: '100%',
           top: 0,
           zIndex: 100,
+          background: 'transparent',
         }}
       >
         <HeaderBar
@@ -173,6 +175,8 @@ const PageLayout = () => {
           overflow: isMobile ? 'visible' : 'auto',
           display: 'flex',
           flexDirection: 'column',
+          marginTop: 'var(--header-height)',
+          background: 'var(--bg-base)',
         }}
       >
         {showSider && (
@@ -181,11 +185,12 @@ const PageLayout = () => {
             style={{
               position: 'fixed',
               left: 0,
-              top: '64px',
+              top: 'var(--header-height)',
               zIndex: 99,
               border: 'none',
               paddingRight: '0',
               width: 'var(--sidebar-current-width)',
+              background: 'transparent',
             }}
           >
             <SiderBar
@@ -205,15 +210,19 @@ const PageLayout = () => {
             flex: '1 1 auto',
             display: 'flex',
             flexDirection: 'column',
+            background: 'var(--bg-base)',
+            transition: 'margin-left 0.3s ease',
           }}
         >
           <Content
+            className='app-content'
             style={{
               flex: '1 0 auto',
-              overflowY: isMobile ? 'visible' : 'hidden',
+              overflowY: isMobile ? 'visible' : 'auto',
               WebkitOverflowScrolling: 'touch',
-              padding: shouldInnerPadding ? (isMobile ? '5px' : '24px') : '0',
+              padding: shouldInnerPadding ? (isMobile ? '8px' : '24px') : '0',
               position: 'relative',
+              background: 'var(--bg-base)',
             }}
           >
             <App />
@@ -223,6 +232,7 @@ const PageLayout = () => {
               style={{
                 flex: '0 0 auto',
                 width: '100%',
+                background: 'transparent',
               }}
             >
               <FooterBar />

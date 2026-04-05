@@ -303,16 +303,12 @@ const SiderBar = ({ onNavigate = () => {} }) => {
     }
   }, [collapsed]);
 
-  // 选中高亮颜色（统一）
-  const SELECTED_COLOR = 'var(--semi-color-primary)';
-
   // 渲染自定义菜单项
   const renderNavItem = (item) => {
     // 跳过隐藏的项目
     if (item.className === 'tableHiddle') return null;
 
     const isSelected = selectedKeys.includes(item.itemKey);
-    const textColor = isSelected ? SELECTED_COLOR : 'inherit';
 
     return (
       <Nav.Item
@@ -320,8 +316,11 @@ const SiderBar = ({ onNavigate = () => {} }) => {
         itemKey={item.itemKey}
         text={
           <span
-            className='truncate font-medium text-sm'
-            style={{ color: textColor }}
+            className='truncate text-sm'
+            style={{
+              color: isSelected ? 'var(--accent)' : 'var(--text-secondary)',
+              fontWeight: isSelected ? 600 : 500,
+            }}
           >
             {item.text}
           </span>
@@ -340,7 +339,6 @@ const SiderBar = ({ onNavigate = () => {} }) => {
   const renderSubItem = (item) => {
     if (item.items && item.items.length > 0) {
       const isSelected = selectedKeys.includes(item.itemKey);
-      const textColor = isSelected ? SELECTED_COLOR : 'inherit';
 
       return (
         <Nav.Sub
@@ -348,8 +346,11 @@ const SiderBar = ({ onNavigate = () => {} }) => {
           itemKey={item.itemKey}
           text={
             <span
-              className='truncate font-medium text-sm'
-              style={{ color: textColor }}
+              className='truncate text-sm'
+              style={{
+                color: isSelected ? 'var(--accent)' : 'var(--text-secondary)',
+                fontWeight: isSelected ? 600 : 500,
+              }}
             >
               {item.text}
             </span>
@@ -362,7 +363,6 @@ const SiderBar = ({ onNavigate = () => {} }) => {
         >
           {item.items.map((subItem) => {
             const isSubSelected = selectedKeys.includes(subItem.itemKey);
-            const subTextColor = isSubSelected ? SELECTED_COLOR : 'inherit';
 
             return (
               <Nav.Item
@@ -370,8 +370,11 @@ const SiderBar = ({ onNavigate = () => {} }) => {
                 itemKey={subItem.itemKey}
                 text={
                   <span
-                    className='truncate font-medium text-sm'
-                    style={{ color: subTextColor }}
+                    className='truncate text-sm'
+                    style={{
+                      color: isSubSelected ? 'var(--accent)' : 'var(--text-secondary)',
+                      fontWeight: isSubSelected ? 600 : 500,
+                    }}
                   >
                     {subItem.text}
                   </span>
@@ -388,7 +391,7 @@ const SiderBar = ({ onNavigate = () => {} }) => {
 
   return (
     <div
-      className='sidebar-container'
+      className='sidebar-container glass-sidebar'
       style={{
         width: 'var(--sidebar-current-width)',
       }}
@@ -500,26 +503,31 @@ const SiderBar = ({ onNavigate = () => {} }) => {
           className='w-full'
         >
           <Button
-            theme='outline'
+            theme='borderless'
             type='tertiary'
             size='small'
             icon={
               <ChevronLeft
-                size={16}
-                strokeWidth={2.5}
-                color='var(--semi-color-text-2)'
+                size={14}
+                strokeWidth={2}
                 style={{
+                  color: 'var(--text-muted)',
                   transform: collapsed ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 200ms ease-out',
                 }}
               />
             }
             onClick={toggleCollapsed}
             icononly={collapsed}
-            style={
-              collapsed
-                ? { width: 36, height: 24, padding: 0 }
-                : { padding: '4px 12px', width: '100%' }
-            }
+            style={{
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-muted)',
+              fontSize: '12px',
+              transition: 'background-color 150ms ease-out',
+              ...(collapsed
+                ? { width: 32, height: 28, padding: 0 }
+                : { padding: '4px 12px', width: '100%' }),
+            }}
           >
             {!collapsed ? t('收起侧边栏') : null}
           </Button>

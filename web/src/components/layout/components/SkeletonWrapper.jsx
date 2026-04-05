@@ -64,7 +64,11 @@ const SkeletonWrapper = ({
   const renderUserAreaSkeleton = () => {
     return (
       <div
-        className={`flex items-center p-1 rounded-full bg-semi-color-fill-0 dark:bg-semi-color-fill-1 ${className}`}
+        className={`flex items-center p-1 ${className}`}
+        style={{
+          borderRadius: 'var(--radius-md)',
+          background: 'var(--surface-hover)',
+        }}
       >
         <Skeleton
           loading={true}
@@ -96,7 +100,8 @@ const SkeletonWrapper = ({
         active
         placeholder={
           <Skeleton.Image
-            className={`absolute inset-0 !rounded-full ${className}`}
+            className={`absolute inset-0 ${className}`}
+            style={{ borderRadius: 'var(--radius-sm)' }}
             style={{ width: '100%', height: '100%' }}
           />
         }
@@ -136,7 +141,7 @@ const SkeletonWrapper = ({
           loading={true}
           active
           placeholder={
-            <Skeleton.Title style={{ width, height, borderRadius: 9999 }} />
+            <Skeleton.Title style={{ width, height, borderRadius: 'var(--radius-sm)' }} />
           }
         />
       </div>

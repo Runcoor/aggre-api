@@ -180,7 +180,8 @@ const NoticeModal = ({
                 extra={
                   item.extra ? (
                     <div
-                      className='text-xs text-gray-500'
+                      className='text-xs'
+                      style={{ color: 'var(--text-muted)' }}
                       dangerouslySetInnerHTML={{ __html: htmlExtra }}
                     />
                   ) : null
@@ -212,7 +213,9 @@ const NoticeModal = ({
     <Modal
       title={
         <div className='flex items-center justify-between w-full'>
-          <span>{t('系统公告')}</span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {t('系统公告')}
+          </span>
           <Tabs activeKey={activeTab} onChange={setActiveTab} type='button'>
             <TabPane
               tab={
@@ -236,11 +239,26 @@ const NoticeModal = ({
       visible={visible}
       onCancel={onClose}
       footer={
-        <div className='flex justify-end'>
-          <Button type='secondary' onClick={handleCloseTodayNotice}>
+        <div className='flex justify-end gap-2'>
+          <Button
+            type='tertiary'
+            onClick={handleCloseTodayNotice}
+            style={{
+              borderRadius: 'var(--radius-md)',
+              color: 'var(--text-secondary)',
+            }}
+          >
             {t('今日关闭')}
           </Button>
-          <Button type='primary' onClick={onClose}>
+          <Button
+            type='primary'
+            onClick={onClose}
+            style={{
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--accent)',
+              border: 'none',
+            }}
+          >
             {t('关闭公告')}
           </Button>
         </div>

@@ -18,12 +18,27 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Spin } from '@douyinfe/semi-ui';
 
-const Loading = ({ size = 'small' }) => {
+const bars = Array.from({ length: 12 });
+
+const sizeMap = {
+  small: 'mv-loader-small',
+  medium: 'mv-loader-medium',
+  large: 'mv-loader-large',
+};
+
+/**
+ * macOS-style 12-bar radiating activity indicator.
+ * Replaces the default Semi Design Spin component.
+ */
+const Loading = ({ size = 'medium' }) => {
   return (
-    <div className='fixed inset-0 w-screen h-screen flex items-center justify-center'>
-      <Spin size={size} spinning={true} />
+    <div className='fixed inset-0 w-screen h-screen flex items-center justify-center' style={{ background: 'var(--bg-base)' }}>
+      <div className={`mv-loader ${sizeMap[size] || sizeMap.medium}`}>
+        {bars.map((_, i) => (
+          <span key={i} className='mv-loader-bar' />
+        ))}
+      </div>
     </div>
   );
 };

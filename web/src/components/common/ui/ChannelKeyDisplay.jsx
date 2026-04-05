@@ -76,12 +76,6 @@ const parseChannelKeys = (keyData, t) => {
 
 /**
  * 可复用的密钥显示组件
- * @param {Object} props
- * @param {string} props.keyData - 密钥数据
- * @param {boolean} props.showSuccessIcon - 是否显示成功图标
- * @param {string} props.successText - 成功文本
- * @param {boolean} props.showWarning - 是否显示安全警告
- * @param {string} props.warningText - 警告文本
  */
 const ChannelKeyDisplay = ({
   keyData,
@@ -111,7 +105,7 @@ const ChannelKeyDisplay = ({
       {showSuccessIcon && (
         <div className='flex items-center gap-2'>
           <svg
-            className='w-5 h-5 text-green-600'
+            style={{ width: 20, height: 20, color: 'var(--success)' }}
             fill='currentColor'
             viewBox='0 0 20 20'
           >
@@ -121,7 +115,7 @@ const ChannelKeyDisplay = ({
               clipRule='evenodd'
             />
           </svg>
-          <Typography.Text strong className='text-green-700'>
+          <Typography.Text strong style={{ color: 'var(--success)' }}>
             {successText || t('验证成功')}
           </Typography.Text>
         </div>
@@ -130,12 +124,16 @@ const ChannelKeyDisplay = ({
       {/* 密钥内容 */}
       <div className='space-y-3'>
         <div className='flex items-center justify-between'>
-          <Typography.Text strong>
+          <Typography.Text strong style={{ color: 'var(--text-primary)' }}>
             {isMultipleKeys ? t('渠道密钥列表') : t('渠道密钥')}
           </Typography.Text>
           {isMultipleKeys && (
             <div className='flex items-center gap-2'>
-              <Typography.Text type='tertiary' size='small'>
+              <Typography.Text
+                type='tertiary'
+                size='small'
+                style={{ color: 'var(--text-muted)' }}
+              >
                 {t('共 {{count}} 个密钥', { count: parsedKeys.length })}
               </Typography.Text>
               <Button
@@ -143,6 +141,10 @@ const ChannelKeyDisplay = ({
                 type='primary'
                 theme='outline'
                 onClick={handleCopyAll}
+                style={{
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '12px',
+                }}
               >
                 {t('复制全部')}
               </Button>
@@ -154,20 +156,31 @@ const ChannelKeyDisplay = ({
           {parsedKeys.map((keyItem) => (
             <Card
               key={keyItem.id}
-              className='!rounded-lg !border !border-gray-200 dark:!border-gray-700'
+              style={{
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border-default)',
+                background: 'var(--surface)',
+              }}
             >
               <div className='space-y-2'>
                 <div className='flex items-center justify-between'>
                   <Typography.Text
                     strong
                     size='small'
-                    className='text-gray-700 dark:text-gray-300'
+                    style={{ color: 'var(--text-secondary)' }}
                   >
                     {keyItem.label}
                   </Typography.Text>
                   <div className='flex items-center gap-2'>
                     {keyItem.type === 'json' && (
-                      <Tag size='small' color='blue'>
+                      <Tag
+                        size='small'
+                        style={{
+                          background: 'var(--accent-light)',
+                          color: 'var(--accent)',
+                          borderRadius: 'var(--radius-sm)',
+                        }}
+                      >
                         {t('JSON')}
                       </Tag>
                     )}
@@ -177,7 +190,7 @@ const ChannelKeyDisplay = ({
                       theme='outline'
                       icon={
                         <svg
-                          className='w-3 h-3'
+                          style={{ width: 12, height: 12 }}
                           fill='currentColor'
                           viewBox='0 0 20 20'
                         >
@@ -186,16 +199,34 @@ const ChannelKeyDisplay = ({
                         </svg>
                       }
                       onClick={() => handleCopyKey(keyItem.content)}
+                      style={{
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '12px',
+                      }}
                     >
                       {t('复制')}
                     </Button>
                   </div>
                 </div>
 
-                <div className='bg-gray-50 dark:bg-gray-800 rounded-lg p-3 max-h-40 overflow-auto'>
+                <div
+                  className='max-h-40 overflow-auto'
+                  style={{
+                    background: 'var(--surface-hover)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '12px',
+                    border: '1px solid var(--border-subtle)',
+                  }}
+                >
                   <Typography.Text
                     code
-                    className='text-xs font-mono break-all whitespace-pre-wrap text-gray-800 dark:text-gray-200'
+                    style={{
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-mono)',
+                      wordBreak: 'break-all',
+                      whiteSpace: 'pre-wrap',
+                      color: 'var(--text-primary)',
+                    }}
                   >
                     {keyItem.content}
                   </Typography.Text>
@@ -203,9 +234,11 @@ const ChannelKeyDisplay = ({
 
                 {keyItem.type === 'json' && (
                   <Typography.Text
-                    type='tertiary'
                     size='small'
-                    className='block'
+                    style={{
+                      display: 'block',
+                      color: 'var(--text-muted)',
+                    }}
                   >
                     {t('JSON格式密钥，请确保格式正确')}
                   </Typography.Text>
@@ -216,14 +249,26 @@ const ChannelKeyDisplay = ({
         </div>
 
         {isMultipleKeys && (
-          <div className='bg-blue-50 dark:bg-blue-900 rounded-lg p-3'>
+          <div
+            style={{
+              background: 'var(--accent-light)',
+              borderRadius: 'var(--radius-md)',
+              padding: '12px',
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
             <Typography.Text
-              type='tertiary'
               size='small'
-              className='text-blue-700 dark:text-blue-300'
+              style={{ color: 'var(--accent)' }}
             >
               <svg
-                className='w-4 h-4 inline mr-1'
+                style={{
+                  width: 16,
+                  height: 16,
+                  display: 'inline',
+                  marginRight: 4,
+                  verticalAlign: 'text-bottom',
+                }}
                 fill='currentColor'
                 viewBox='0 0 20 20'
               >
@@ -243,10 +288,24 @@ const ChannelKeyDisplay = ({
 
       {/* 安全警告 */}
       {showWarning && (
-        <div className='bg-yellow-50 dark:bg-yellow-900 rounded-lg p-4'>
+        <div
+          style={{
+            background: 'var(--warning-light, rgba(255,149,0,0.1))',
+            borderRadius: 'var(--radius-md)',
+            padding: '14px',
+            border: '1px solid var(--border-subtle)',
+          }}
+        >
           <div className='flex items-start'>
             <svg
-              className='w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3 flex-shrink-0'
+              style={{
+                width: 20,
+                height: 20,
+                color: 'var(--warning)',
+                marginTop: 2,
+                marginRight: 12,
+                flexShrink: 0,
+              }}
               fill='currentColor'
               viewBox='0 0 20 20'
             >
@@ -259,11 +318,18 @@ const ChannelKeyDisplay = ({
             <div>
               <Typography.Text
                 strong
-                className='text-yellow-800 dark:text-yellow-200'
+                style={{ color: 'var(--text-primary)' }}
               >
                 {t('安全提醒')}
               </Typography.Text>
-              <Typography.Text className='block text-yellow-700 dark:text-yellow-300 text-sm mt-1'>
+              <Typography.Text
+                style={{
+                  display: 'block',
+                  color: 'var(--text-secondary)',
+                  fontSize: '13px',
+                  marginTop: 4,
+                }}
+              >
                 {warningText ||
                   t(
                     '请妥善保管密钥信息，不要泄露给他人。如有安全疑虑，请及时更换密钥。',

@@ -43,7 +43,7 @@ const RiskMarkdownBlock = React.memo(function RiskMarkdownBlock({
     <div
       className='rounded-lg'
       style={{
-        border: '1px solid var(--semi-color-warning-light-hover)',
+        border: '1px solid var(--border-default)',
         padding: '12px',
         contentVisibility: 'auto',
       }}
@@ -105,7 +105,7 @@ const RiskAcknowledgementModal = React.memo(function RiskAcknowledgementModal({
       visible={visible}
       title={
         <Space align='center'>
-          <IconAlertTriangle style={{ color: 'var(--semi-color-warning)' }} />
+          <IconAlertTriangle style={{ color: 'var(--warning)' }} />
           <span>{title}</span>
         </Space>
       }
@@ -141,13 +141,13 @@ const RiskAcknowledgementModal = React.memo(function RiskAcknowledgementModal({
           <div
             className='flex flex-col gap-2 rounded-lg'
             style={{
-              border: '1px solid var(--semi-color-warning-light-hover)',
-              background: 'var(--semi-color-fill-0)',
+              border: '1px solid var(--border-default)',
+              background: 'var(--surface-hover)',
               padding: isMobile ? '10px 12px' : '12px 14px',
             }}
           >
             {detailTitle ? <Text strong>{detailTitle}</Text> : null}
-            <div className='font-mono text-xs break-all bg-orange-50 border border-orange-200 rounded-md p-2'>
+            <div className='font-mono text-xs break-all rounded-md p-2' style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
               {detailText}
             </div>
           </div>
@@ -157,8 +157,8 @@ const RiskAcknowledgementModal = React.memo(function RiskAcknowledgementModal({
           <div
             className='flex flex-col gap-2 rounded-lg'
             style={{
-              border: '1px solid var(--semi-color-border)',
-              background: 'var(--semi-color-fill-0)',
+              border: '1px solid var(--border-default)',
+              background: 'var(--surface-hover)',
               padding: isMobile ? '10px 12px' : '12px 14px',
             }}
           >
@@ -180,13 +180,13 @@ const RiskAcknowledgementModal = React.memo(function RiskAcknowledgementModal({
           <div
             className='flex flex-col gap-2 rounded-lg'
             style={{
-              border: '1px solid var(--semi-color-danger-light-hover)',
-              background: 'var(--semi-color-danger-light-default)',
+              border: '1px solid var(--error)',
+              background: 'var(--surface-hover)',
               padding: isMobile ? '10px 12px' : '12px 14px',
             }}
           >
             {inputPrompt ? <Text strong>{inputPrompt}</Text> : null}
-            <div className='font-mono text-xs break-all rounded-md p-2 bg-gray-50 border border-gray-200'>
+            <div className='font-mono text-xs break-all rounded-md p-2' style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
               {requiredText}
             </div>
             <Input

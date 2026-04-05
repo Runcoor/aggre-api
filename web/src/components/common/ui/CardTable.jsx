@@ -97,7 +97,7 @@ const CardTable = ({
               <div
                 key={idx}
                 className='flex justify-between items-center py-1 border-b last:border-b-0 border-dashed'
-                style={{ borderColor: 'var(--semi-color-border)' }}
+                style={{ borderColor: 'var(--border-subtle)' }}
               >
                 <Skeleton.Title active style={{ width: 80, height: 14 }} />
                 <Skeleton.Title
@@ -115,7 +115,7 @@ const CardTable = ({
       );
 
       return (
-        <Card key={key} className='!rounded-2xl shadow-sm'>
+        <Card key={key} style={{ borderRadius: 'var(--radius-lg)', background: 'var(--surface)', border: '1px solid var(--border-default)' }}>
           <Skeleton loading={true} active placeholder={placeholder}></Skeleton>
         </Card>
       );
@@ -139,7 +139,7 @@ const CardTable = ({
       (!tableProps.rowExpandable || tableProps.rowExpandable(record));
 
     return (
-      <Card key={rowKeyVal} className='!rounded-2xl shadow-sm'>
+      <Card key={rowKeyVal} style={{ borderRadius: 'var(--radius-lg)', background: 'var(--surface)', border: '1px solid var(--border-default)' }}>
         {columns.map((col, colIdx) => {
           if (
             tableProps?.visibleColumns &&
@@ -165,9 +165,9 @@ const CardTable = ({
             <div
               key={col.key || colIdx}
               className='flex justify-between items-start py-1 border-b last:border-b-0 border-dashed'
-              style={{ borderColor: 'var(--semi-color-border)' }}
+              style={{ borderColor: 'var(--border-subtle)' }}
             >
-              <span className='font-medium text-gray-600 mr-2 whitespace-nowrap select-none'>
+              <span className='font-medium mr-2 whitespace-nowrap select-none' style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
                 {title}
               </span>
               <div className='flex-1 break-all flex justify-end items-center gap-1'>

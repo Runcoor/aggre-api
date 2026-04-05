@@ -162,7 +162,7 @@ const DocumentRenderer = ({ apiEndpoint, title, cacheKey, emptyMessage }) => {
   // 如果没有内容，显示空状态
   if (!content || content.trim() === '') {
     return (
-      <div className='flex justify-center items-center min-h-screen bg-gray-50'>
+      <div className='flex justify-center items-center min-h-screen' style={{ background: 'var(--bg-base)' }}>
         <Empty
           title={t('管理员未设置' + title + '内容')}
           image={
@@ -180,13 +180,13 @@ const DocumentRenderer = ({ apiEndpoint, title, cacheKey, emptyMessage }) => {
   // 如果是 URL，显示链接卡片
   if (isUrl(content)) {
     return (
-      <div className='flex justify-center items-center min-h-screen bg-gray-50 p-4'>
-        <Card className='max-w-md w-full'>
+      <div className='flex justify-center items-center min-h-screen p-4' style={{ background: 'var(--bg-base)' }}>
+        <Card className='max-w-md w-full' style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-default)' }}>
           <div className='text-center'>
             <Title heading={4} className='mb-4'>
               {title}
             </Title>
-            <p className='text-gray-600 mb-4'>
+            <p className='mb-4' style={{ color: 'var(--text-secondary)' }}>
               {t('管理员设置了外部链接，点击下方按钮访问')}
             </p>
             <a
@@ -195,7 +195,10 @@ const DocumentRenderer = ({ apiEndpoint, title, cacheKey, emptyMessage }) => {
               rel='noopener noreferrer'
               title={content.trim()}
               aria-label={`${t('访问' + title)}: ${content.trim()}`}
-              className='inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
+              className='inline-block px-6 py-3 rounded-lg'
+              style={{ background: 'var(--accent)', color: '#fff', transition: 'opacity 150ms ease-out' }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.85'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
             >
               {t('访问' + title)}
             </a>
@@ -217,9 +220,9 @@ const DocumentRenderer = ({ apiEndpoint, title, cacheKey, emptyMessage }) => {
     }, [content, styles, htmlStyles]);
 
     return (
-      <div className='min-h-screen bg-gray-50'>
+      <div className='min-h-screen' style={{ background: 'var(--bg-base)' }}>
         <div className='max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8'>
-          <div className='bg-white rounded-lg shadow-sm p-8'>
+          <div className='rounded-lg p-8' style={{ background: 'var(--surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)' }}>
             <Title heading={2} className='text-center mb-8'>
               {title}
             </Title>
@@ -235,9 +238,9 @@ const DocumentRenderer = ({ apiEndpoint, title, cacheKey, emptyMessage }) => {
 
   // 其他内容统一使用 Markdown 渲染器
   return (
-    <div className='min-h-screen bg-gray-50'>
+    <div className='min-h-screen' style={{ background: 'var(--bg-base)' }}>
       <div className='max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8'>
-        <div className='bg-white rounded-lg shadow-sm p-8'>
+        <div className='rounded-lg p-8' style={{ background: 'var(--surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)' }}>
           <Title heading={2} className='text-center mb-8'>
             {title}
           </Title>

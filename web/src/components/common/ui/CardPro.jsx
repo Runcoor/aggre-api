@@ -149,7 +149,7 @@ const CardPro = ({
     return (
       <div
         className={`flex w-full pt-4 border-t ${isMobile ? 'justify-center' : 'justify-between items-center'}`}
-        style={{ borderColor: 'var(--semi-color-border)' }}
+        style={{ borderColor: 'var(--border-subtle)' }}
       >
         {paginationArea}
       </div>
@@ -160,12 +160,17 @@ const CardPro = ({
 
   return (
     <Card
-      className={`table-scroll-card !rounded-2xl ${className}`}
+      className={`table-scroll-card ${className}`}
       title={headerContent}
       footer={footerContent}
       shadows={shadows}
       bordered={bordered}
-      style={style}
+      style={{
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--surface)',
+        border: '1px solid var(--border-default)',
+        ...style,
+      }}
       {...props}
     >
       {children}

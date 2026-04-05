@@ -94,7 +94,8 @@ const SecureVerificationModal = ({
         <div className='text-center py-6'>
           <div className='mb-4'>
             <svg
-              className='w-16 h-16 text-yellow-500 mx-auto mb-4'
+              className='w-16 h-16 mx-auto mb-4'
+              style={{ color: 'var(--warning)' }}
               fill='currentColor'
               viewBox='0 0 20 20'
             >
@@ -251,14 +252,14 @@ const SecureVerificationModal = ({
                       alignItems: 'center',
                       justifyContent: 'center',
                       borderRadius: '50%',
-                      background: 'var(--semi-color-primary-light-default)',
+                      background: 'var(--accent-light)',
                     }}
                   >
                     <svg
                       style={{
                         width: 28,
                         height: 28,
-                        color: 'var(--semi-color-primary)',
+                        color: 'var(--accent)',
                       }}
                       fill='currentColor'
                       viewBox='0 0 20 20'

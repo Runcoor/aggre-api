@@ -234,7 +234,7 @@ const ChannelUpstreamUpdateModal = ({
           activeKey={activeTab}
           onChange={(key) => setActiveTab(key)}
         />
-        <div className='flex items-center gap-3 text-xs text-gray-500'>
+        <div className='flex items-center gap-3 text-xs text-mv-text-muted'>
           <span>
             {t('新增已选 {{selected}} / {{total}}', {
               selected: selectedAddCount,

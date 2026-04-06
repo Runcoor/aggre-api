@@ -330,7 +330,7 @@ export const getDeploymentsColumns = ({
           <Typography.Text
             type='tertiary'
             size='small'
-            className='text-xs text-gray-500'
+            className='text-xs text-mv-text-muted'
           >
             {t('暂无')}
           </Typography.Text>

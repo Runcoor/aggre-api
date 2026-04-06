@@ -271,10 +271,16 @@ const SetupWizard = () => {
   return (
     <div className='min-h-screen flex items-center justify-center px-4'>
       <div className='w-full max-w-4xl'>
-        <Card className='!rounded-2xl shadow-sm border-0'>
+        <Card
+          style={{
+            borderRadius: 'var(--radius-lg)',
+            background: 'var(--surface)',
+            border: '1px solid var(--border-default)',
+          }}
+        >
           <div className='mb-4'>
-            <div className='text-xl font-semibold'>{t('系统初始化')}</div>
-            <div className='text-xs text-gray-600'>
+            <div className='text-xl font-semibold' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>{t('系统初始化')}</div>
+            <div className='text-xs' style={{ color: 'var(--text-secondary)' }}>
               {t('欢迎使用，请完成以下设置以开始使用系统')}
             </div>
           </div>
@@ -285,7 +291,7 @@ const SetupWizard = () => {
                 <Steps.Step
                   key={item.title}
                   title={
-                    <span className={currentStep === index ? 'shine-text' : ''}>
+                    <span style={currentStep === index ? { color: 'var(--accent)', fontWeight: 600 } : {}}>
                       {item.title}
                     </span>
                   }

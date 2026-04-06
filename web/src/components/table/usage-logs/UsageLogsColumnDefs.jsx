@@ -766,7 +766,7 @@ export const getLogsColumns = ({
               '根据 Anthropic 协定，/v1/messages 的输入 tokens 仅统计非缓存输入，不包含缓存读取与缓存写入 tokens。',
             )}
           >
-            <IconHelpCircle className='text-gray-400 cursor-help' />
+            <IconHelpCircle className='mv-text-muted cursor-help' />
           </Tooltip>
         </div>
       ),
@@ -870,7 +870,7 @@ export const getLogsColumns = ({
               '只有当用户设置开启IP记录时，才会进行请求和错误类型日志的IP记录',
             )}
           >
-            <IconHelpCircle className='text-gray-400 cursor-help' />
+            <IconHelpCircle className='mv-text-muted cursor-help' />
           </Tooltip>
         </div>
       ),

@@ -280,9 +280,9 @@ const RechargeCard = ({
                             />
                           }
                         >
-                          <Text type='secondary' className='text-red-600'>
+                          <Text type='secondary' style={{ color: 'var(--error)' }}>
                             {t('实付金额：')}
-                            <span style={{ color: 'red' }}>
+                            <span style={{ color: 'var(--error)' }}>
                               {renderAmount()}
                             </span>
                           </Text>
@@ -530,16 +530,21 @@ const RechargeCard = ({
                       <Card
                         key={index}
                         onClick={() => creemPreTopUp(product)}
-                        className='cursor-pointer !rounded-2xl transition-all hover:shadow-md border-gray-200 hover:border-gray-300'
+                        className='cursor-pointer transition-colors duration-150'
+                        style={{
+                          borderRadius: 'var(--radius-lg)',
+                          border: '1px solid var(--border-default)',
+                          background: 'var(--surface)',
+                        }}
                         bodyStyle={{ textAlign: 'center', padding: '16px' }}
                       >
-                        <div className='font-medium text-lg mb-2'>
+                        <div className='font-medium text-lg mb-2' style={{ color: 'var(--text-primary)' }}>
                           {product.name}
                         </div>
-                        <div className='text-sm text-gray-600 mb-2'>
+                        <div className='text-sm mb-2' style={{ color: 'var(--text-secondary)' }}>
                           {t('充值额度')}: {product.quota}
                         </div>
-                        <div className='text-lg font-semibold text-blue-600'>
+                        <div className='text-lg font-semibold' style={{ color: 'var(--accent)' }}>
                           {product.currency === 'EUR' ? '€' : '$'}
                           {product.price}
                         </div>
@@ -618,11 +623,17 @@ const RechargeCard = ({
   );
 
   return (
-    <Card className='!rounded-2xl shadow-sm border-0'>
+    <Card
+      style={{
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--surface)',
+        border: '1px solid var(--border-default)',
+      }}
+    >
       {/* 卡片头部 */}
       <div className='flex items-center justify-between mb-4'>
         <div className='flex items-center'>
-          <Avatar size='small' color='blue' className='mr-3 shadow-md'>
+          <Avatar size='small' color='blue' className='mr-3'>
             <CreditCard size={16} />
           </Avatar>
           <div>

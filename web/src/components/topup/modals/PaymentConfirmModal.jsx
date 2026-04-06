@@ -61,29 +61,35 @@ const PaymentConfirmModal = ({
       confirmLoading={confirmLoading}
     >
       <div className='space-y-4'>
-        <Card className='!rounded-xl !border-0 bg-slate-50 dark:bg-slate-800'>
+        <Card
+          style={{
+            borderRadius: 'var(--radius-lg)',
+            background: 'var(--bg-subtle)',
+            border: '1px solid var(--border-subtle)',
+          }}
+        >
           <div className='space-y-3'>
             <div className='flex justify-between items-center'>
-              <Text strong className='text-slate-700 dark:text-slate-200'>
+              <Text strong style={{ color: 'var(--text-secondary)' }}>
                 {t('充值数量')}：
               </Text>
-              <Text className='text-slate-900 dark:text-slate-100'>
+              <Text style={{ color: 'var(--text-primary)' }}>
                 {renderQuotaWithAmount(topUpCount)}
               </Text>
             </div>
             <div className='flex justify-between items-center'>
-              <Text strong className='text-slate-700 dark:text-slate-200'>
+              <Text strong style={{ color: 'var(--text-secondary)' }}>
                 {t('实付金额')}：
               </Text>
               {amountLoading ? (
                 <Skeleton.Title style={{ width: '60px', height: '16px' }} />
               ) : (
                 <div className='flex items-baseline space-x-2'>
-                  <Text strong className='font-bold' style={{ color: 'red' }}>
+                  <Text strong className='font-bold' style={{ color: 'var(--error)' }}>
                     {renderAmount()}
                   </Text>
                   {hasDiscount && (
-                    <Text size='small' className='text-rose-500'>
+                    <Text size='small' style={{ color: 'var(--error)' }}>
                       {Math.round(discountRate * 100)}%
                     </Text>
                   )}
@@ -93,25 +99,25 @@ const PaymentConfirmModal = ({
             {hasDiscount && !amountLoading && (
               <>
                 <div className='flex justify-between items-center'>
-                  <Text className='text-slate-500 dark:text-slate-400'>
+                  <Text style={{ color: 'var(--text-muted)' }}>
                     {t('原价')}：
                   </Text>
-                  <Text delete className='text-slate-500 dark:text-slate-400'>
+                  <Text delete style={{ color: 'var(--text-muted)' }}>
                     {`${originalAmount.toFixed(2)} ${t('元')}`}
                   </Text>
                 </div>
                 <div className='flex justify-between items-center'>
-                  <Text className='text-slate-500 dark:text-slate-400'>
+                  <Text style={{ color: 'var(--text-muted)' }}>
                     {t('优惠')}：
                   </Text>
-                  <Text className='text-emerald-600 dark:text-emerald-400'>
+                  <Text style={{ color: 'var(--success)' }}>
                     {`- ${discountAmount.toFixed(2)} ${t('元')}`}
                   </Text>
                 </div>
               </>
             )}
             <div className='flex justify-between items-center'>
-              <Text strong className='text-slate-700 dark:text-slate-200'>
+              <Text strong style={{ color: 'var(--text-secondary)' }}>
                 {t('支付方式')}：
               </Text>
               <div className='flex items-center'>
@@ -149,7 +155,7 @@ const PaymentConfirmModal = ({
                             }
                           />
                         )}
-                        <Text className='text-slate-900 dark:text-slate-100'>
+                        <Text style={{ color: 'var(--text-primary)' }}>
                           {payMethod.name}
                         </Text>
                       </>
@@ -164,7 +170,7 @@ const PaymentConfirmModal = ({
                             size={16}
                             color='#1677FF'
                           />
-                          <Text className='text-slate-900 dark:text-slate-100'>
+                          <Text style={{ color: 'var(--text-primary)' }}>
                             {t('支付宝')}
                           </Text>
                         </>
@@ -177,7 +183,7 @@ const PaymentConfirmModal = ({
                             size={16}
                             color='#635BFF'
                           />
-                          <Text className='text-slate-900 dark:text-slate-100'>
+                          <Text style={{ color: 'var(--text-primary)' }}>
                             Stripe
                           </Text>
                         </>
@@ -190,7 +196,7 @@ const PaymentConfirmModal = ({
                             size={16}
                             color='#07C160'
                           />
-                          <Text className='text-slate-900 dark:text-slate-100'>
+                          <Text style={{ color: 'var(--text-primary)' }}>
                             {t('微信')}
                           </Text>
                         </>

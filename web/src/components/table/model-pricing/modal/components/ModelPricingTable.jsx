@@ -133,7 +133,7 @@ const ModelPricingTable = ({
               <div className='font-semibold text-orange-600'>
                 {item.label} {item.value}
               </div>
-              <div className='text-xs text-gray-500'>{item.suffix}</div>
+              <div className='text-xs text-mv-text-muted'>{item.suffix}</div>
             </div>
           ))}
         </div>
@@ -160,14 +160,14 @@ const ModelPricingTable = ({
         </Avatar>
         <div>
           <Text className='text-lg font-medium'>{t('分组价格')}</Text>
-          <div className='text-xs text-gray-600'>
+          <div className='text-xs text-mv-text-secondary'>
             {t('不同用户分组的价格信息')}
           </div>
         </div>
       </div>
       {autoChain.length > 0 && (
         <div className='flex flex-wrap items-center gap-1 mb-4'>
-          <span className='text-sm text-gray-600'>{t('auto分组调用链路')}</span>
+          <span className='text-sm text-mv-text-secondary'>{t('auto分组调用链路')}</span>
           <span className='text-sm'>→</span>
           {autoChain.map((g, idx) => (
             <React.Fragment key={g}>

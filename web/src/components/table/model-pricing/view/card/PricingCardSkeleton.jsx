@@ -31,14 +31,14 @@ const PricingCardSkeleton = ({
         {Array.from({ length: skeletonCount }).map((_, index) => (
           <Card
             key={index}
-            className='!rounded-2xl border border-gray-200'
+            style={{ borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-default)', background: 'var(--surface)' }}
             bodyStyle={{ padding: '24px' }}
           >
             {/* 头部：图标 + 模型名称 + 操作按钮 */}
             <div className='flex items-start justify-between mb-3'>
               <div className='flex items-start space-x-3 flex-1 min-w-0'>
                 {/* 模型图标骨架 */}
-                <div className='w-12 h-12 rounded-2xl flex items-center justify-center relative shadow-sm'>
+                <div className='w-12 h-12 flex items-center justify-center relative' style={{ borderRadius: 'var(--radius-lg)' }}>
                   <Skeleton.Avatar
                     size='large'
                     style={{ width: 48, height: 48, borderRadius: 16 }}
@@ -107,7 +107,7 @@ const PricingCardSkeleton = ({
 
             {/* 倍率信息骨架（可选） */}
             {showRatio && (
-              <div className='mt-4 pt-3 border-t border-gray-100'>
+              <div className='mt-4 pt-3 border-t' style={{ borderColor: 'var(--border-subtle)' }}>
                 <div className='flex items-center space-x-1 mb-2'>
                   <Skeleton.Title
                     style={{ width: 60, height: 12, marginBottom: 0 }}

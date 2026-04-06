@@ -211,7 +211,7 @@ const UpdateConfigModal = ({ visible, onCancel, deployment, onSuccess, t }) => {
     >
       <div className='space-y-4 max-h-[600px] overflow-y-auto'>
         {/* Container Info */}
-        <Card className='border-0 bg-gray-50'>
+        <Card style={{ border: '1px solid var(--border-subtle)', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-lg)' }}>
           <div className='flex items-center justify-between'>
             <div>
               <Text strong className='text-base'>

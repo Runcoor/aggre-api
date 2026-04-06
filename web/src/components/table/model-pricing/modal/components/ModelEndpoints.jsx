@@ -50,11 +50,11 @@ const ModelEndpoints = ({ modelData, endpointMap = {}, t }) => {
             {type}
             {path && '：'}
             {path && (
-              <span className='text-gray-500 md:ml-1 break-all'>{path}</span>
+              <span className='mv-text-muted md:ml-1 break-all'>{path}</span>
             )}
           </span>
           {path && (
-            <span className='text-gray-500 text-xs md:ml-1'>{method}</span>
+            <span className='mv-text-muted text-xs md:ml-1'>{method}</span>
           )}
         </div>
       );
@@ -69,7 +69,7 @@ const ModelEndpoints = ({ modelData, endpointMap = {}, t }) => {
         </Avatar>
         <div>
           <Text className='text-lg font-medium'>{t('API端点')}</Text>
-          <div className='text-xs text-gray-600'>
+          <div className='text-xs text-mv-text-secondary'>
             {t('模型支持的接口端点信息')}
           </div>
         </div>

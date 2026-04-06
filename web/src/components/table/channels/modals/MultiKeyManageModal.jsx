@@ -495,7 +495,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
                 style={{
                   background: 'var(--surface)',
                   border: '1px solid var(--border-default)',
-                  borderRadius: 12,
+                  borderRadius: 'var(--radius-lg)',
                   padding: 12,
                 }}
               >
@@ -505,7 +505,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
                 </div>
                 <div className='flex items-end gap-2 mb-2'>
                   <Text
-                    style={{ fontSize: 18, fontWeight: 700, color: '#22c55e' }}
+                    style={{ fontSize: 18, fontWeight: 700, color: 'var(--success)' }}
                   >
                     {enabledCount}
                   </Text>
@@ -519,7 +519,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
                   percent={enabledPercent}
                   showInfo={false}
                   size='small'
-                  stroke='#22c55e'
+                  stroke='var(--success)'
                   style={{ height: 6, borderRadius: 999 }}
                 />
               </div>
@@ -529,7 +529,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
                 style={{
                   background: 'var(--surface)',
                   border: '1px solid var(--border-default)',
-                  borderRadius: 12,
+                  borderRadius: 'var(--radius-lg)',
                   padding: 12,
                 }}
               >
@@ -539,7 +539,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
                 </div>
                 <div className='flex items-end gap-2 mb-2'>
                   <Text
-                    style={{ fontSize: 18, fontWeight: 700, color: '#ef4444' }}
+                    style={{ fontSize: 18, fontWeight: 700, color: 'var(--error)' }}
                   >
                     {manualDisabledCount}
                   </Text>
@@ -553,7 +553,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
                   percent={manualDisabledPercent}
                   showInfo={false}
                   size='small'
-                  stroke='#ef4444'
+                  stroke='var(--error)'
                   style={{ height: 6, borderRadius: 999 }}
                 />
               </div>
@@ -563,7 +563,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
                 style={{
                   background: 'var(--surface)',
                   border: '1px solid var(--border-default)',
-                  borderRadius: 12,
+                  borderRadius: 'var(--radius-lg)',
                   padding: 12,
                 }}
               >
@@ -573,7 +573,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
                 </div>
                 <div className='flex items-end gap-2 mb-2'>
                   <Text
-                    style={{ fontSize: 18, fontWeight: 700, color: '#f59e0b' }}
+                    style={{ fontSize: 18, fontWeight: 700, color: 'var(--warning)' }}
                   >
                     {autoDisabledCount}
                   </Text>
@@ -587,7 +587,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
                   percent={autoDisabledPercent}
                   showInfo={false}
                   size='small'
-                  stroke='#f59e0b'
+                  stroke='var(--warning)'
                   style={{ height: 6, borderRadius: 999 }}
                 />
               </div>

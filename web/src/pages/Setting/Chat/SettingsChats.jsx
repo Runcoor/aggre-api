@@ -317,13 +317,13 @@ export default function SettingsChats(props) {
     return parts.map((part, index) => {
       if (part === '{address}') {
         return (
-          <span key={index} style={{ color: '#0077cc', fontWeight: 600 }}>
+          <span key={index} style={{ color: 'var(--accent)', fontWeight: 600 }}>
             {part}
           </span>
         );
       } else if (part === '{key}') {
         return (
-          <span key={index} style={{ color: '#ff6b35', fontWeight: 600 }}>
+          <span key={index} style={{ color: 'var(--warning)', fontWeight: 600 }}>
             {part}
           </span>
         );

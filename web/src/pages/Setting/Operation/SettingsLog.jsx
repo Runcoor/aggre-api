@@ -106,7 +106,7 @@ export default function SettingsLog(props) {
         <div style={{ lineHeight: '1.8' }}>
           <p>
             <Text>{t('当前时间')}：</Text>
-            <Text strong style={{ color: '#52c41a' }}>
+            <Text strong style={{ color: 'var(--success)' }}>
               {currentTime}
             </Text>
           </p>
@@ -132,20 +132,20 @@ export default function SettingsLog(props) {
               color: 'var(--text-primary)',
             }}
           >
-            <Text strong style={{ color: '#d46b08' }}>
-              ⚠️ {t('注意')}：
+            <Text strong style={{ color: 'var(--warning)' }}>
+              {t('注意')}：
             </Text>
-            <Text style={{ color: '#333' }}>{t('将删除')} </Text>
-            <Text strong style={{ color: '#cf1322' }}>
+            <Text style={{ color: 'var(--text-primary)' }}>{t('将删除')} </Text>
+            <Text strong style={{ color: 'var(--error)' }}>
               {targetTime}
             </Text>
             {daysDiff > 0 && (
-              <Text style={{ color: '#8c8c8c' }}>
+              <Text style={{ color: 'var(--text-muted)' }}>
                 {' '}
                 ({t('约')} {daysDiff} {t('天前')})
               </Text>
             )}
-            <Text style={{ color: '#333' }}> {t('之前的所有日志')}</Text>
+            <Text style={{ color: 'var(--text-primary)' }}> {t('之前的所有日志')}</Text>
           </div>
           <p style={{ marginTop: '12px' }}>
             <Text type='danger'>

@@ -570,7 +570,7 @@ const JSONEditor = ({
                         <Tooltip content={t('重复的键名')}>
                           <IconAlertTriangle
                             className='absolute right-2 top-1/2 transform -translate-y-1/2'
-                            style={{ color: '#faad14', fontSize: '14px' }}
+                            style={{ color: 'var(--warning)', fontSize: '14px' }}
                           />
                         </Tooltip>
                       )}

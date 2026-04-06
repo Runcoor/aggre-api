@@ -31,6 +31,13 @@ const DatabaseStep = ({ setupStatus, renderNavigationButtons, t }) => {
 
   return (
     <>
+      <p
+        className='text-sm mb-3'
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        {t('验证数据库连接状态')}
+      </p>
+
       {/* 数据库警告 */}
       {setupStatus.database_type === 'sqlite' && (
         <Banner

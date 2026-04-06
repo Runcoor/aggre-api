@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Card, Divider, Steps, Form } from '@douyinfe/semi-ui';
+import { Form } from '@douyinfe/semi-ui';
 import { API, showError, showNotice } from '../../helpers';
 import { useTranslation } from 'react-i18next';
 
@@ -269,53 +269,118 @@ const SetupWizard = () => {
   };
 
   return (
-    <div className='min-h-screen flex items-center justify-center px-4'>
-      <div className='w-full max-w-4xl'>
-        <Card
+    <div
+      className='min-h-screen flex items-center justify-center px-4 py-8'
+      style={{ background: 'var(--bg-base)' }}
+    >
+      <div className='w-full max-w-xl'>
+        {/* macOS Setup Assistant Card */}
+        <div
+          className='rounded-[var(--radius-lg)]'
           style={{
-            borderRadius: 'var(--radius-lg)',
             background: 'var(--surface)',
             border: '1px solid var(--border-default)',
+            boxShadow: 'var(--shadow-float)',
+            overflow: 'hidden',
           }}
         >
-          <div className='mb-4'>
-            <div className='text-xl font-semibold' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>{t('系统初始化')}</div>
-            <div className='text-xs' style={{ color: 'var(--text-secondary)' }}>
+          {/* Header with title */}
+          <div
+            className='px-6 pt-6 pb-4 text-center'
+            style={{ borderBottom: '1px solid var(--border-subtle)' }}
+          >
+            <h1
+              className='text-xl font-semibold'
+              style={{
+                fontFamily: 'var(--font-serif)',
+                color: 'var(--text-primary)',
+                margin: 0,
+              }}
+            >
+              {t('系统初始化')}
+            </h1>
+            <p
+              className='text-xs mt-1'
+              style={{ color: 'var(--text-muted)', margin: 0 }}
+            >
               {t('欢迎使用，请完成以下设置以开始使用系统')}
-            </div>
+            </p>
           </div>
 
-          <div className='px-2 py-2'>
-            <Steps type='basic' current={currentStep}>
-              {steps.map((item, index) => (
-                <Steps.Step
-                  key={item.title}
-                  title={
-                    <span style={currentStep === index ? { color: 'var(--accent)', fontWeight: 600 } : {}}>
+          {/* macOS-style step dots */}
+          <div
+            className='flex items-center justify-center gap-2 py-4 px-6'
+            style={{ background: 'var(--bg-subtle)' }}
+          >
+            {steps.map((item, index) => {
+              const isActive = index === currentStep;
+              const isCompleted = index < currentStep;
+              return (
+                <div key={item.title} className='flex items-center gap-2'>
+                  {index > 0 && (
+                    <div
+                      style={{
+                        width: '24px',
+                        height: '1px',
+                        background: isCompleted
+                          ? 'var(--accent)'
+                          : 'var(--border-default)',
+                        transition: 'background-color 150ms ease-out',
+                      }}
+                    />
+                  )}
+                  <div className='flex flex-col items-center gap-1'>
+                    <div
+                      style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: isActive
+                          ? 'var(--accent)'
+                          : isCompleted
+                            ? 'var(--accent)'
+                            : 'var(--border-default)',
+                        transition: 'background-color 150ms ease-out',
+                        boxShadow: isActive
+                          ? '0 0 0 3px rgba(0,122,255,0.2)'
+                          : 'none',
+                      }}
+                    />
+                    <span
+                      className='text-xs hidden sm:block'
+                      style={{
+                        color: isActive
+                          ? 'var(--accent)'
+                          : isCompleted
+                            ? 'var(--text-primary)'
+                            : 'var(--text-muted)',
+                        fontWeight: isActive ? 600 : 400,
+                        whiteSpace: 'nowrap',
+                        transition: 'color 150ms ease-out',
+                      }}
+                    >
                       {item.title}
                     </span>
-                  }
-                  description={item.description}
-                />
-              ))}
-            </Steps>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
-          <Divider margin='12px' />
-
-          {/* 表单容器 */}
-          <Form
-            getFormApi={(formApi) => {
-              formRef.current = formApi;
-            }}
-            initValues={formData}
-          >
-            {/* 步骤内容：保持所有字段挂载，仅隐藏非当前步骤 */}
-            <div className='steps-content'>
+          {/* Form content area */}
+          <div className='px-6 py-5'>
+            <Form
+              getFormApi={(formApi) => {
+                formRef.current = formApi;
+              }}
+              initValues={formData}
+            >
               {[0, 1, 2, 3].map((idx) => (
                 <div
                   key={idx}
-                  style={{ display: currentStep === idx ? 'block' : 'none' }}
+                  style={{
+                    display: currentStep === idx ? 'block' : 'none',
+                  }}
                 >
                   {React.cloneElement(getStepContent(idx), {
                     ...stepNavigationProps,
@@ -325,9 +390,17 @@ const SetupWizard = () => {
                   })}
                 </div>
               ))}
-            </div>
-          </Form>
-        </Card>
+            </Form>
+          </div>
+        </div>
+
+        {/* Footer credit — subtle */}
+        <p
+          className='text-center mt-4 text-xs'
+          style={{ color: 'var(--text-muted)' }}
+        >
+          {t('系统初始化')} — ChongYa
+        </p>
       </div>
     </div>
   );

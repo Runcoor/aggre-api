@@ -21,8 +21,7 @@ import React from 'react';
 import { RadioGroup, Radio } from '@douyinfe/semi-ui';
 
 /**
- * 使用模式选择步骤组件
- * 提供系统使用模式的选择界面
+ * 使用模式选择 — macOS option cards
  */
 const UsageModeStep = ({
   formData,
@@ -32,33 +31,51 @@ const UsageModeStep = ({
 }) => {
   return (
     <>
+      <p
+        className='text-sm mb-3'
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        {t('选择系统运行模式')}
+      </p>
       <RadioGroup
         value={formData.usageMode}
         onChange={handleUsageModeChange}
         type='card'
-        direction='horizontal'
-        className='mt-4'
+        direction='vertical'
+        className='w-full'
         aria-label='使用模式选择'
         name='usage-mode-selection'
       >
         <Radio
           value='external'
-          extra={t('适用于为多个用户提供服务的场景')}
-          style={{ width: '30%', minWidth: 200 }}
+          extra={
+            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+              {t('适用于为多个用户提供服务的场景')}
+            </span>
+          }
+          style={{ width: '100%', marginBottom: '8px' }}
         >
           {t('对外运营模式')}
         </Radio>
         <Radio
           value='self'
-          extra={t('适用于个人使用的场景，不需要设置模型价格')}
-          style={{ width: '30%', minWidth: 200 }}
+          extra={
+            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+              {t('适用于个人使用的场景，不需要设置模型价格')}
+            </span>
+          }
+          style={{ width: '100%', marginBottom: '8px' }}
         >
           {t('自用模式')}
         </Radio>
         <Radio
           value='demo'
-          extra={t('适用于展示系统功能的场景，提供基础功能演示')}
-          style={{ width: '30%', minWidth: 200 }}
+          extra={
+            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+              {t('适用于展示系统功能的场景，提供基础功能演示')}
+            </span>
+          }
+          style={{ width: '100%' }}
         >
           {t('演示站点模式')}
         </Radio>

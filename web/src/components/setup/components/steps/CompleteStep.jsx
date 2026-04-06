@@ -18,14 +18,10 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Avatar, Typography, Descriptions } from '@douyinfe/semi-ui';
 import { CheckCircle } from 'lucide-react';
 
-const { Text, Title } = Typography;
-
 /**
- * 完成步骤组件
- * 显示配置总结和初始化确认界面
+ * 完成步骤组件 — macOS Setup Summary
  */
 const CompleteStep = ({
   setupStatus,
@@ -33,39 +29,104 @@ const CompleteStep = ({
   renderNavigationButtons,
   t,
 }) => {
+  const summaryItems = [
+    {
+      label: t('数据库类型'),
+      value:
+        setupStatus.database_type === 'sqlite'
+          ? 'SQLite'
+          : setupStatus.database_type === 'mysql'
+            ? 'MySQL'
+            : 'PostgreSQL',
+    },
+    {
+      label: t('管理员账号'),
+      value: setupStatus.root_init
+        ? t('已初始化')
+        : formData.username || t('未设置'),
+    },
+    {
+      label: t('使用模式'),
+      value:
+        formData.usageMode === 'external'
+          ? t('对外运营模式')
+          : formData.usageMode === 'self'
+            ? t('自用模式')
+            : t('演示站点模式'),
+    },
+  ];
+
   return (
     <div className='text-center'>
-      <Avatar color='green' className='mx-auto mb-4'>
-        <CheckCircle size={24} />
-      </Avatar>
-      <Title heading={3} className='mb-2'>
-        {t('准备完成初始化')}
-      </Title>
-      <Text type='secondary' className='mb-6 block'>
-        {t('请确认以下设置信息，点击"初始化系统"开始配置')}
-      </Text>
+      {/* Success icon */}
+      <div
+        className='mx-auto mb-3 flex items-center justify-center'
+        style={{
+          width: '48px',
+          height: '48px',
+          borderRadius: '50%',
+          background: 'var(--success)',
+          opacity: 0.9,
+        }}
+      >
+        <CheckCircle size={24} color='#fff' />
+      </div>
 
-      <Descriptions>
-        <Descriptions.Item itemKey={t('数据库类型')}>
-          {setupStatus.database_type === 'sqlite'
-            ? 'SQLite'
-            : setupStatus.database_type === 'mysql'
-              ? 'MySQL'
-              : 'PostgreSQL'}
-        </Descriptions.Item>
-        <Descriptions.Item itemKey={t('管理员账号')}>
-          {setupStatus.root_init
-            ? t('已初始化')
-            : formData.username || t('未设置')}
-        </Descriptions.Item>
-        <Descriptions.Item itemKey={t('使用模式')}>
-          {formData.usageMode === 'external'
-            ? t('对外运营模式')
-            : formData.usageMode === 'self'
-              ? t('自用模式')
-              : t('演示站点模式')}
-        </Descriptions.Item>
-      </Descriptions>
+      {/* Heading — serif */}
+      <h2
+        className='text-lg font-semibold mb-1'
+        style={{
+          fontFamily: 'var(--font-serif)',
+          color: 'var(--text-primary)',
+        }}
+      >
+        {t('准备完成初始化')}
+      </h2>
+      <p
+        className='text-sm mb-5'
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        {t('请确认以下设置信息，点击"初始化系统"开始配置')}
+      </p>
+
+      {/* macOS-style summary card */}
+      <div
+        className='rounded-[var(--radius-md)] text-left'
+        style={{
+          background: 'var(--bg-subtle)',
+          border: '1px solid var(--border-subtle)',
+          overflow: 'hidden',
+        }}
+      >
+        {summaryItems.map((item, index) => (
+          <div
+            key={item.label}
+            className='flex justify-between items-center px-4 py-3'
+            style={{
+              borderBottom:
+                index < summaryItems.length - 1
+                  ? '1px solid var(--border-subtle)'
+                  : 'none',
+            }}
+          >
+            <span
+              className='text-sm'
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              {item.label}
+            </span>
+            <span
+              className='text-sm font-medium'
+              style={{
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              {item.value}
+            </span>
+          </div>
+        ))}
+      </div>
 
       {renderNavigationButtons && renderNavigationButtons()}
     </div>

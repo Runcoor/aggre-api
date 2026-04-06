@@ -19,11 +19,10 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React from 'react';
 import { Button } from '@douyinfe/semi-ui';
-import { IconCheckCircleStroked } from '@douyinfe/semi-icons';
+import { CheckCircle } from 'lucide-react';
 
 /**
- * 步骤导航组件
- * 负责渲染上一步、下一步和完成按钮
+ * 步骤导航组件 — macOS Setup Assistant footer
  */
 const StepNavigation = ({
   currentStep,
@@ -35,31 +34,56 @@ const StepNavigation = ({
   t,
 }) => {
   return (
-    <div className='flex justify-between items-center pt-4'>
-      {/* 上一步按钮 */}
-      {currentStep > 0 && (
-        <Button onClick={prev} className='!rounded-lg'>
+    <div
+      className='flex justify-between items-center mt-6 pt-4'
+      style={{ borderTop: '1px solid var(--border-subtle)' }}
+    >
+      {/* Back button — ghost style */}
+      {currentStep > 0 ? (
+        <Button
+          onClick={prev}
+          className='!rounded-[var(--radius-md)]'
+          style={{
+            background: 'var(--surface-active)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border-default)',
+          }}
+        >
           {t('上一步')}
         </Button>
+      ) : (
+        <div />
       )}
 
-      <div className='flex-1'></div>
-
-      {/* 下一步按钮 */}
+      {/* Next button — accent filled */}
       {currentStep < steps.length - 1 && (
-        <Button type='primary' onClick={next} className='!rounded-lg'>
+        <Button
+          type='primary'
+          onClick={next}
+          className='!rounded-[var(--radius-md)]'
+          style={{
+            background: 'var(--accent)',
+            color: '#fff',
+            border: 'none',
+          }}
+        >
           {t('下一步')}
         </Button>
       )}
 
-      {/* 完成按钮 */}
+      {/* Finish button — accent filled with icon */}
       {currentStep === steps.length - 1 && (
         <Button
           type='primary'
           onClick={onSubmit}
           loading={loading}
-          className='!rounded-lg'
-          icon={<IconCheckCircleStroked />}
+          className='!rounded-[var(--radius-md)]'
+          icon={<CheckCircle size={16} />}
+          style={{
+            background: 'var(--accent)',
+            color: '#fff',
+            border: 'none',
+          }}
         >
           {t('初始化系统')}
         </Button>

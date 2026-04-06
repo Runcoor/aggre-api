@@ -295,7 +295,7 @@ const ExtendDurationModal = ({
     <Modal
       title={
         <div className='flex items-center gap-2'>
-          <FaClock className='text-blue-500' />
+          <FaClock style={{ color: 'var(--accent)' }} />
           <span>{t('延长容器时长')}</span>
         </div>
       }
@@ -425,11 +425,11 @@ const ExtendDurationModal = ({
         <Card
           title={
             <div className='flex items-center gap-2'>
-              <FaCalculator className='text-green-500' />
+              <FaCalculator style={{ color: 'var(--success)' }} />
               <span>{t('费用预估')}</span>
             </div>
           }
-          className='border border-green-200'
+          className='border' style={{ borderColor: 'var(--success)' }}
         >
           {priceEstimation ? (
             <div className='space-y-3'>
@@ -479,16 +479,16 @@ const ExtendDurationModal = ({
                 <Text strong className='text-lg'>
                   {t('预估总费用')}:
                 </Text>
-                <Text strong className='text-lg text-green-600'>
+                <Text strong className='text-lg' style={{ color: 'var(--success)' }}>
                   {typeof estimatedTotalCost === 'number'
                     ? `${estimatedTotalCost.toFixed(4)} ${currencyLabel}`
                     : '--'}
                 </Text>
               </div>
 
-              <div className='bg-blue-50 p-3 rounded-lg'>
+              <div className='p-3 rounded-lg' style={{ background: 'var(--accent-light)' }}>
                 <div className='flex items-start gap-2'>
-                  <FaInfoCircle className='text-blue-500 mt-0.5' />
+                  <FaInfoCircle className='mt-0.5' style={{ color: 'var(--accent)' }} />
                   <div>
                     <Text size='small' type='secondary'>
                       {t('延长后总时长')}: <Text strong>{newTotalTime}</Text>
@@ -519,15 +519,15 @@ const ExtendDurationModal = ({
           )}
         </Card>
 
-        <div className='bg-red-50 border border-red-200 rounded-lg p-3'>
+        <div className='rounded-lg p-3' style={{ background: 'var(--error-light)', border: '1px solid var(--error)' }}>
           <div className='flex items-start gap-2'>
-            <FaExclamationTriangle className='text-red-500 mt-0.5' />
+            <FaExclamationTriangle className='mt-0.5' style={{ color: 'var(--error)' }} />
             <div>
-              <Text strong className='text-red-700'>
+              <Text strong style={{ color: 'var(--error)' }}>
                 {t('确认延长容器时长')}
               </Text>
               <div className='mt-1'>
-                <Text size='small' className='text-red-600'>
+                <Text size='small' style={{ color: 'var(--error)' }}>
                   {t('点击"确认延长"后将立即扣除费用并延长容器运行时间')}
                 </Text>
               </div>

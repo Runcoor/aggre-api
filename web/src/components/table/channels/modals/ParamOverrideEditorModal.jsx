@@ -1956,7 +1956,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
           <div style={{ width: '100%' }}>
             {visualMode === 'legacy' ? (
               <Card
-                className='!rounded-2xl !border-0'
+                style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
                 bodyStyle={{
                   padding: 14,
                   background: 'var(--semi-color-fill-0)',
@@ -1989,7 +1989,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                 <Row gutter={12}>
                   <Col xs={24} md={8}>
                     <Card
-                      className='!rounded-2xl !border-0 h-full'
+                      className='h-full' style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
                       bodyStyle={{
                         padding: 12,
                         background: 'var(--semi-color-fill-0)',
@@ -2185,7 +2185,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                             : null;
                         return (
                           <Card
-                            className='!rounded-2xl !border-0'
+                            style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
                             bodyStyle={{
                               padding: 14,
                               background: 'var(--semi-color-fill-0)',
@@ -3271,7 +3271,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                       })()
                     ) : (
                       <Card
-                        className='!rounded-2xl !border-0'
+                        style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
                         bodyStyle={{
                           padding: 14,
                           background: 'var(--semi-color-fill-0)',
@@ -3285,7 +3285,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
 
                     {visualValidationError ? (
                       <Card
-                        className='!rounded-2xl !border-0 mt-3'
+                        className='mt-3' style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
                         bodyStyle={{
                           padding: 12,
                           background: 'var(--semi-color-fill-0)',
@@ -3319,7 +3319,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
               {t('直接编辑 JSON 文本，保存时会校验格式。')}
             </Text>
             {jsonError ? (
-              <Text className='text-red-500 text-xs mt-2'>{jsonError}</Text>
+              <Text className='text-xs mt-2' style={{ color: 'var(--error)' }}>{jsonError}</Text>
             ) : null}
           </div>
         )}

@@ -300,7 +300,7 @@ const EditTokenModal = (props) => {
       visible={props.visiable}
       width={isMobile ? '100%' : 600}
       footer={
-        <div className='flex justify-end bg-white'>
+        <div className='flex justify-end' style={{ background: 'var(--surface)' }}>
           <Space>
             <Button
               theme='solid'
@@ -338,7 +338,7 @@ const EditTokenModal = (props) => {
               {/* 基本信息 */}
               <Card style={{ borderRadius: 'var(--radius-lg)' }}>
                 <div className='flex items-center mb-2'>
-                  <Avatar size='small' color='blue' className='mr-2 shadow-md'>
+                  <Avatar size='small' color='blue' className='mr-2'>
                     <IconKey size={16} />
                   </Avatar>
                   <div>
@@ -477,7 +477,7 @@ const EditTokenModal = (props) => {
               {/* 额度设置 */}
               <Card style={{ borderRadius: 'var(--radius-lg)' }}>
                 <div className='flex items-center mb-2'>
-                  <Avatar size='small' color='green' className='mr-2 shadow-md'>
+                  <Avatar size='small' color='green' className='mr-2'>
                     <IconCreditCard size={16} />
                   </Avatar>
                   <div>
@@ -530,7 +530,7 @@ const EditTokenModal = (props) => {
                   <Avatar
                     size='small'
                     color='purple'
-                    className='mr-2 shadow-md'
+                    className='mr-2'
                   >
                     <IconLink size={16} />
                   </Avatar>

@@ -88,7 +88,7 @@ const AddUserModal = (props) => {
         visible={props.visible}
         width={isMobile ? '100%' : 600}
         footer={
-          <div className='flex justify-end bg-white'>
+          <div className='flex justify-end' style={{ background: 'var(--surface)' }}>
             <Space>
               <Button
                 theme='solid'
@@ -126,7 +126,7 @@ const AddUserModal = (props) => {
             <div className='p-2'>
               <Card style={{ borderRadius: 'var(--radius-lg)' }}>
                 <div className='flex items-center mb-2'>
-                  <Avatar size='small' color='blue' className='mr-2 shadow-md'>
+                  <Avatar size='small' color='blue' className='mr-2'>
                     <IconUserAdd size={16} />
                   </Avatar>
                   <div>

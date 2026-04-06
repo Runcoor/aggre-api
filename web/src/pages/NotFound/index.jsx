@@ -18,24 +18,78 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Empty } from '@douyinfe/semi-ui';
-import {
-  IllustrationNotFound,
-  IllustrationNotFoundDark,
-} from '@douyinfe/semi-illustrations';
+import { Button } from '@douyinfe/semi-ui';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const NotFound = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
   return (
-    <div className='flex justify-center items-center h-screen p-8'>
-      <Empty
-        image={<IllustrationNotFound style={{ width: 250, height: 250 }} />}
-        darkModeImage={
-          <IllustrationNotFoundDark style={{ width: 250, height: 250 }} />
-        }
-        description={t('页面未找到，请检查您的浏览器地址是否正确')}
-      />
+    <div
+      className='flex items-center justify-center min-h-screen px-4'
+      style={{ background: 'var(--bg-base)' }}
+    >
+      <div
+        className='text-center max-w-md w-full px-8 py-12'
+        style={{
+          background: 'var(--surface)',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border-subtle)',
+        }}
+      >
+        {/* Large error code — serif, muted */}
+        <h1
+          className='text-7xl font-semibold leading-none mb-2'
+          style={{
+            fontFamily: 'var(--font-serif)',
+            color: 'var(--text-muted)',
+          }}
+        >
+          404
+        </h1>
+
+        {/* Title */}
+        <h2
+          className='text-lg font-semibold mb-2'
+          style={{
+            fontFamily: 'var(--font-serif)',
+            color: 'var(--text-primary)',
+          }}
+        >
+          {t('页面未找到')}
+        </h2>
+
+        {/* Description */}
+        <p
+          className='text-sm mb-8'
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          {t('页面未找到，请检查您的浏览器地址是否正确')}
+        </p>
+
+        {/* Action button — accent CTA */}
+        <Button
+          theme='solid'
+          onClick={() => navigate('/')}
+          style={{
+            background: 'var(--accent)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 'var(--radius-md)',
+            height: '36px',
+            padding: '0 24px',
+            fontSize: '14px',
+            fontWeight: 500,
+            transition: 'opacity 150ms ease-out',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.85')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+        >
+          {t('返回首页')}
+        </Button>
+      </div>
     </div>
   );
 };

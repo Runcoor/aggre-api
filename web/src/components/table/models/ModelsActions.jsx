@@ -142,7 +142,8 @@ const ModelsActions = ({
                 href='https://github.com/basellm/llm-metadata'
                 target='_blank'
                 rel='noreferrer'
-                className='text-blue-600 underline'
+                className='underline'
+                style={{ color: 'var(--accent)' }}
               >
                 https://github.com/basellm/llm-metadata
               </a>

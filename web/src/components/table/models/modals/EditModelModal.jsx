@@ -252,7 +252,7 @@ const EditModelModal = (props) => {
       visible={props.visiable}
       width={isMobile ? '100%' : 600}
       footer={
-        <div className='flex justify-end bg-white'>
+        <div className='flex justify-end' style={{ background: 'var(--surface)' }}>
           <Space>
             <Button
               theme='solid'
@@ -290,7 +290,7 @@ const EditModelModal = (props) => {
               {/* 基本信息 */}
               <Card style={{ borderRadius: 'var(--radius-lg)' }}>
                 <div className='flex items-center mb-2'>
-                  <Avatar size='small' color='green' className='mr-2 shadow-md'>
+                  <Avatar size='small' color='green' className='mr-2'>
                     <FileText size={16} />
                   </Avatar>
                   <div>

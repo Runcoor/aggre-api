@@ -64,7 +64,7 @@ const ModelEndpoints = ({ modelData, endpointMap = {}, t }) => {
   return (
     <Card style={{ borderRadius: 'var(--radius-lg)' }} className=' mb-6'>
       <div className='flex items-center mb-4'>
-        <Avatar size='small' color='purple' className='mr-2 shadow-md'>
+        <Avatar size='small' color='purple' className='mr-2'>
           <IconLink size={16} />
         </Avatar>
         <div>

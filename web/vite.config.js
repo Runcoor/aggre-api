@@ -65,7 +65,11 @@ export default defineConfig({
     },
   },
   build: {
+    minify: 'esbuild',
+    sourcemap: false,
+    chunkSizeWarningLimit: 2000,
     rollupOptions: {
+      maxParallelFileOps: 2,
       output: {
         manualChunks: {
           'react-core': ['react', 'react-dom', 'react-router-dom'],

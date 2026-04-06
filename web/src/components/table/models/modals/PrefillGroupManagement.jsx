@@ -245,7 +245,7 @@ const PrefillGroupManagement = ({ visible, onClose }) => {
           <div className='p-2'>
             <Card style={{ borderRadius: 'var(--radius-lg)' }}>
               <div className='flex items-center mb-2'>
-                <Avatar size='small' color='blue' className='mr-2 shadow-md'>
+                <Avatar size='small' color='blue' className='mr-2'>
                   <IconLayers size={16} />
                 </Avatar>
                 <div>

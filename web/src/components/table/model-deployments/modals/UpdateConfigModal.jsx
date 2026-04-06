@@ -196,7 +196,7 @@ const UpdateConfigModal = ({ visible, onCancel, deployment, onSuccess, t }) => {
     <Modal
       title={
         <div className='flex items-center gap-2'>
-          <FaCog className='text-blue-500' />
+          <FaCog style={{ color: 'var(--accent)' }} />
           <span>{t('更新容器配置')}</span>
         </div>
       }
@@ -250,7 +250,7 @@ const UpdateConfigModal = ({ visible, onCancel, deployment, onSuccess, t }) => {
             <Collapse.Panel
               header={
                 <div className='flex items-center gap-2'>
-                  <FaDocker className='text-blue-600' />
+                  <FaDocker style={{ color: 'var(--accent)' }} />
                   <span>{t('镜像配置')}</span>
                 </div>
               }
@@ -288,7 +288,7 @@ const UpdateConfigModal = ({ visible, onCancel, deployment, onSuccess, t }) => {
             <Collapse.Panel
               header={
                 <div className='flex items-center gap-2'>
-                  <FaNetworkWired className='text-green-600' />
+                  <FaNetworkWired style={{ color: 'var(--success)' }} />
                   <span>{t('网络配置')}</span>
                 </div>
               }
@@ -316,7 +316,7 @@ const UpdateConfigModal = ({ visible, onCancel, deployment, onSuccess, t }) => {
             <Collapse.Panel
               header={
                 <div className='flex items-center gap-2'>
-                  <FaTerminal className='text-purple-600' />
+                  <FaTerminal style={{ color: 'var(--text-secondary)' }} />
                   <span>{t('启动配置')}</span>
                 </div>
               }
@@ -342,7 +342,7 @@ const UpdateConfigModal = ({ visible, onCancel, deployment, onSuccess, t }) => {
             <Collapse.Panel
               header={
                 <div className='flex items-center gap-2'>
-                  <FaKey className='text-orange-600' />
+                  <FaKey style={{ color: 'var(--warning)' }} />
                   <span>{t('环境变量')}</span>
                   <Tag size='small'>{envVars.length}</Tag>
                 </div>
@@ -487,15 +487,15 @@ const UpdateConfigModal = ({ visible, onCancel, deployment, onSuccess, t }) => {
         </Form>
 
         {/* Final Warning */}
-        <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-3'>
+        <div className='rounded-lg p-3' style={{ background: 'var(--warning-light)', border: '1px solid var(--warning)' }}>
           <div className='flex items-start gap-2'>
-            <FaExclamationTriangle className='text-yellow-600 mt-0.5' />
+            <FaExclamationTriangle className='mt-0.5' style={{ color: 'var(--warning)' }} />
             <div>
-              <Text strong className='text-yellow-800'>
+              <Text strong style={{ color: 'var(--warning)' }}>
                 {t('配置更新确认')}
               </Text>
               <div className='mt-1'>
-                <Text size='small' className='text-yellow-700'>
+                <Text size='small' style={{ color: 'var(--text-secondary)' }}>
                   {t(
                     '更新配置后，容器可能需要重启以应用新的设置。请确保您了解这些更改的影响。',
                   )}

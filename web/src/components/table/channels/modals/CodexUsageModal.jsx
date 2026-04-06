@@ -285,7 +285,7 @@ const CodexUsageView = ({ t, record, payload, onCopy, onRefresh }) => {
   return (
     <div className='flex flex-col gap-4'>
       {errorMessage && (
-        <div className='rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700'>
+        <div className='px-4 py-3 text-sm' style={{ borderRadius: 'var(--radius-lg)', border: '1px solid var(--error)', background: 'var(--error-light)', color: 'var(--error)' }}>
           {errorMessage}
         </div>
       )}

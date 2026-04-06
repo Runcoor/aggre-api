@@ -136,7 +136,7 @@ const EditPrefillGroupModal = ({
       width={isMobile ? '100%' : 600}
       bodyStyle={{ padding: '0' }}
       footer={
-        <div className='flex justify-end bg-white'>
+        <div className='flex justify-end' style={{ background: 'var(--surface)' }}>
           <Space>
             <Button
               theme='solid'
@@ -190,7 +190,7 @@ const EditPrefillGroupModal = ({
             {/* 基本信息 */}
             <Card style={{ borderRadius: 'var(--radius-lg)' }}>
               <div className='flex items-center mb-2'>
-                <Avatar size='small' color='green' className='mr-2 shadow-md'>
+                <Avatar size='small' color='green' className='mr-2'>
                   <IconLayers size={16} />
                 </Avatar>
                 <div>

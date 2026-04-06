@@ -19,7 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React, { useEffect, useState } from 'react';
 import { API, showError } from '../../../helpers';
-import { Empty, Card, Spin, Typography } from '@douyinfe/semi-ui';
+import { Empty, Card, Typography } from '@douyinfe/semi-ui';
 const { Title } = Typography;
 import {
   IllustrationConstruction,
@@ -150,11 +150,19 @@ const DocumentRenderer = ({ apiEndpoint, title, cacheKey, emptyMessage }) => {
     };
   }, [htmlStyles, cacheKey]);
 
-  // 显示加载状态
+  // 显示加载状态 — macOS activity indicator
   if (loading) {
+    const loaderBars = Array.from({ length: 12 });
     return (
-      <div className='flex justify-center items-center min-h-screen'>
-        <Spin size='large' />
+      <div
+        className='flex flex-col items-center justify-center min-h-screen gap-3'
+        style={{ background: 'var(--bg-base)' }}
+      >
+        <div className='mv-loader mv-loader-large'>
+          {loaderBars.map((_, i) => (
+            <span key={i} className='mv-loader-bar' />
+          ))}
+        </div>
       </div>
     );
   }
@@ -223,7 +231,7 @@ const DocumentRenderer = ({ apiEndpoint, title, cacheKey, emptyMessage }) => {
       <div className='min-h-screen' style={{ background: 'var(--bg-base)' }}>
         <div className='max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8'>
           <div className='rounded-lg p-8' style={{ background: 'var(--surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)' }}>
-            <Title heading={2} className='text-center mb-8'>
+            <Title heading={2} className='text-center mb-8' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
               {title}
             </Title>
             <div

@@ -176,7 +176,7 @@ const EditUserModal = (props) => {
         visible={props.visible}
         width={isMobile ? '100%' : 600}
         footer={
-          <div className='flex justify-end bg-white'>
+          <div className='flex justify-end' style={{ background: 'var(--surface)' }}>
             <Space>
               <Button
                 theme='solid'
@@ -214,7 +214,7 @@ const EditUserModal = (props) => {
                     <Avatar
                       size='small'
                       color='blue'
-                      className='mr-2 shadow-md'
+                      className='mr-2'
                     >
                       <IconUser size={16} />
                     </Avatar>
@@ -276,7 +276,7 @@ const EditUserModal = (props) => {
                       <Avatar
                         size='small'
                         color='green'
-                        className='mr-2 shadow-md'
+                        className='mr-2'
                       >
                         <IconUserGroup size={16} />
                       </Avatar>
@@ -335,7 +335,7 @@ const EditUserModal = (props) => {
                         <Avatar
                           size='small'
                           color='purple'
-                          className='mr-2 shadow-md'
+                          className='mr-2'
                         >
                           <IconLink size={16} />
                         </Avatar>

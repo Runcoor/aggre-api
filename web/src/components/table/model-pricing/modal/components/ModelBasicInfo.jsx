@@ -60,7 +60,7 @@ const ModelBasicInfo = ({ modelData, vendorsMap = {}, t }) => {
   return (
     <Card style={{ borderRadius: 'var(--radius-lg)' }} className=' mb-6'>
       <div className='flex items-center mb-4'>
-        <Avatar size='small' color='blue' className='mr-2 shadow-md'>
+        <Avatar size='small' color='blue' className='mr-2'>
           <IconInfoCircle size={16} />
         </Avatar>
         <div>

@@ -19,9 +19,10 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React from 'react';
 import { useTokenKeys } from '../../hooks/chat/useTokenKeys';
-import { Spin } from '@douyinfe/semi-ui';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+
+const bars = Array.from({ length: 12 });
 
 const ChatPage = () => {
   const { t } = useTranslation();
@@ -29,7 +30,6 @@ const ChatPage = () => {
   const { keys, serverAddress, isLoading } = useTokenKeys(id);
 
   const comLink = (key) => {
-    // console.log('chatLink:', chatLink);
     if (!serverAddress || !key) return '';
     let link = '';
     if (id) {
@@ -66,12 +66,20 @@ const ChatPage = () => {
       allow='camera;microphone'
     />
   ) : (
-    <div className='fixed inset-0 w-screen h-screen flex items-center justify-center bg-white/80 z-[1000] mt-[60px]'>
-      <div className='flex flex-col items-center'>
-        <Spin size='large' spinning={true} tip={null} />
+    <div
+      className='fixed inset-0 w-screen h-screen flex items-center justify-center z-[1000]'
+      style={{ background: 'var(--bg-base)' }}
+    >
+      <div className='flex flex-col items-center gap-4'>
+        {/* macOS activity indicator */}
+        <div className='mv-loader mv-loader-large'>
+          {bars.map((_, i) => (
+            <span key={i} className='mv-loader-bar' />
+          ))}
+        </div>
         <span
-          className='whitespace-nowrap mt-2 text-center'
-          style={{ color: 'var(--semi-color-primary)' }}
+          className='text-sm whitespace-nowrap'
+          style={{ color: 'var(--text-secondary)' }}
         >
           {t('正在跳转...')}
         </span>

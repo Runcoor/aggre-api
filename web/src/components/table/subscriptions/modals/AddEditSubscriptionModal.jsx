@@ -219,7 +219,7 @@ const AddEditSubscriptionModal = ({
         visible={visible}
         width={isMobile ? '100%' : 600}
         footer={
-          <div className='flex justify-end bg-white'>
+          <div className='flex justify-end' style={{ background: 'var(--surface)' }}>
             <Space>
               <Button
                 theme='solid'
@@ -258,7 +258,7 @@ const AddEditSubscriptionModal = ({
                     <Avatar
                       size='small'
                       color='blue'
-                      className='mr-2 shadow-md'
+                      className='mr-2'
                     >
                       <IconCalendarClock size={16} />
                     </Avatar>
@@ -387,7 +387,7 @@ const AddEditSubscriptionModal = ({
                     <Avatar
                       size='small'
                       color='green'
-                      className='mr-2 shadow-md'
+                      className='mr-2'
                     >
                       <Clock size={16} />
                     </Avatar>
@@ -449,7 +449,7 @@ const AddEditSubscriptionModal = ({
                     <Avatar
                       size='small'
                       color='orange'
-                      className='mr-2 shadow-md'
+                      className='mr-2'
                     >
                       <RefreshCw size={16} />
                     </Avatar>
@@ -507,7 +507,7 @@ const AddEditSubscriptionModal = ({
                     <Avatar
                       size='small'
                       color='purple'
-                      className='mr-2 shadow-md'
+                      className='mr-2'
                     >
                       <IconCreditCard size={16} />
                     </Avatar>

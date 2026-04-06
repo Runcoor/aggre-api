@@ -130,7 +130,7 @@ const ModelPricingTable = ({
         <div className='space-y-1'>
           {items.map((item) => (
             <div key={item.key}>
-              <div className='font-semibold text-orange-600'>
+              <div className='font-semibold' style={{ color: 'var(--warning)' }}>
                 {item.label} {item.value}
               </div>
               <div className='text-xs text-mv-text-muted'>{item.suffix}</div>
@@ -155,7 +155,7 @@ const ModelPricingTable = ({
   return (
     <Card style={{ borderRadius: 'var(--radius-lg)' }}>
       <div className='flex items-center mb-4'>
-        <Avatar size='small' color='orange' className='mr-2 shadow-md'>
+        <Avatar size='small' color='orange' className='mr-2'>
           <IconCoinMoneyStroked size={16} />
         </Avatar>
         <div>

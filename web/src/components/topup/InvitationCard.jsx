@@ -40,10 +40,10 @@ const InvitationCard = ({
   handleAffLinkClick,
 }) => {
   return (
-    <Card className='!rounded-2xl shadow-sm border-0'>
+    <Card style={{ borderRadius: 'var(--radius-lg)', background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
       {/* 卡片头部 */}
       <div className='flex items-center mb-4'>
-        <Avatar size='small' color='green' className='mr-3 shadow-md'>
+        <Avatar size='small' color='green' className='mr-3'>
           <Gift size={16} />
         </Avatar>
         <div>

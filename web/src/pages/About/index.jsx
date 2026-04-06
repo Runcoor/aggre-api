@@ -27,6 +27,12 @@ import {
 } from '@douyinfe/semi-illustrations';
 import { useTranslation } from 'react-i18next';
 
+const linkStyle = {
+  color: 'var(--accent)',
+  textDecoration: 'none',
+  transition: 'opacity 150ms ease-out',
+};
+
 const About = () => {
   const { t } = useTranslation();
   const [about, setAbout] = useState('');
@@ -55,28 +61,30 @@ const About = () => {
     displayAbout().then();
   }, []);
 
-  const emptyStyle = {
-    padding: '24px',
-  };
-
   const customDescription = (
-    <div style={{ textAlign: 'center' }}>
+    <div className='text-center text-sm' style={{ color: 'var(--text-secondary)' }}>
       <p>{t('可在设置页面设置关于内容，支持 HTML & Markdown')}</p>
-      {t('New API项目仓库地址：')}
-      <a
-        href='https://github.com/QuantumNous/new-api'
-        target='_blank'
-        rel='noopener noreferrer'
-        className='!text-semi-color-primary'
-      >
-        https://github.com/QuantumNous/new-api
-      </a>
-      <p>
+      <p className='mt-2'>
+        {t('New API项目仓库地址：')}
         <a
           href='https://github.com/QuantumNous/new-api'
           target='_blank'
           rel='noopener noreferrer'
-          className='!text-semi-color-primary'
+          style={linkStyle}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+        >
+          https://github.com/QuantumNous/new-api
+        </a>
+      </p>
+      <p className='mt-3' style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+        <a
+          href='https://github.com/QuantumNous/new-api'
+          target='_blank'
+          rel='noopener noreferrer'
+          style={linkStyle}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
         >
           NewAPI
         </a>{' '}
@@ -85,7 +93,9 @@ const About = () => {
           href='https://github.com/QuantumNous'
           target='_blank'
           rel='noopener noreferrer'
-          className='!text-semi-color-primary'
+          style={linkStyle}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
         >
           QuantumNous
         </a>{' '}
@@ -94,7 +104,9 @@ const About = () => {
           href='https://github.com/songquanpeng/one-api/releases/tag/v0.5.4'
           target='_blank'
           rel='noopener noreferrer'
-          className='!text-semi-color-primary'
+          style={linkStyle}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
         >
           One API v0.5.4
         </a>{' '}
@@ -103,18 +115,22 @@ const About = () => {
           href='https://github.com/songquanpeng'
           target='_blank'
           rel='noopener noreferrer'
-          className='!text-semi-color-primary'
+          style={linkStyle}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
         >
           JustSong
         </a>
       </p>
-      <p>
+      <p className='mt-2' style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
         {t('本项目根据')}
         <a
           href='https://github.com/songquanpeng/one-api/blob/v0.5.4/LICENSE'
           target='_blank'
           rel='noopener noreferrer'
-          className='!text-semi-color-primary'
+          style={linkStyle}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
         >
           {t('MIT许可证')}
         </a>
@@ -123,7 +139,9 @@ const About = () => {
           href='https://www.gnu.org/licenses/agpl-3.0.html'
           target='_blank'
           rel='noopener noreferrer'
-          className='!text-semi-color-primary'
+          style={linkStyle}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.7')}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
         >
           {t('AGPL v3.0协议')}
         </a>
@@ -133,23 +151,40 @@ const About = () => {
   );
 
   return (
-    <div className='mt-[60px] px-2'>
+    <div
+      className='min-h-screen'
+      style={{ background: 'var(--bg-base)' }}
+    >
       {aboutLoaded && about === '' ? (
-        <div className='flex justify-center items-center h-screen p-8'>
-          <Empty
-            image={
-              <IllustrationConstruction style={{ width: 150, height: 150 }} />
-            }
-            darkModeImage={
-              <IllustrationConstructionDark
-                style={{ width: 150, height: 150 }}
-              />
-            }
-            description={t('管理员暂时未设置任何关于内容')}
-            style={emptyStyle}
+        <div className='flex justify-center items-center min-h-screen px-4'>
+          <div
+            className='text-center max-w-lg w-full px-8 py-12'
+            style={{
+              background: 'var(--surface)',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid var(--border-subtle)',
+            }}
           >
-            {customDescription}
-          </Empty>
+            <Empty
+              image={
+                <IllustrationConstruction style={{ width: 120, height: 120 }} />
+              }
+              darkModeImage={
+                <IllustrationConstructionDark
+                  style={{ width: 120, height: 120 }}
+                />
+              }
+              description={
+                <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+                  {t('管理员暂时未设置任何关��内容')}
+                </span>
+              }
+            >
+              <div className='mt-4'>
+                {customDescription}
+              </div>
+            </Empty>
+          </div>
         </div>
       ) : (
         <>
@@ -159,10 +194,22 @@ const About = () => {
               style={{ width: '100%', height: '100vh', border: 'none' }}
             />
           ) : (
-            <div
-              style={{ fontSize: 'larger' }}
-              dangerouslySetInnerHTML={{ __html: about }}
-            ></div>
+            <div className='max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8'>
+              <div
+                className='p-8'
+                style={{
+                  background: 'var(--surface)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--border-subtle)',
+                }}
+              >
+                <div
+                  className='prose prose-lg max-w-none'
+                  style={{ color: 'var(--text-primary)', fontSize: '14px' }}
+                  dangerouslySetInnerHTML={{ __html: about }}
+                />
+              </div>
+            </div>
           )}
         </>
       )}

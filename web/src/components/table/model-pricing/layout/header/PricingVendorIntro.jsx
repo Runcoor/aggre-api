@@ -56,7 +56,12 @@ const COMPONENT_STYLES = {
     fontWeight: '500',
   },
   avatarContainer:
-    'w-16 h-16 rounded-2xl bg-white/90 shadow-md backdrop-blur-sm flex items-center justify-center',
+    'w-16 h-16 backdrop-blur-sm flex items-center justify-center',
+  avatarContainerStyle: {
+    borderRadius: 'var(--radius-lg)',
+    background: 'rgba(255,255,255,0.85)',
+    border: '1px solid rgba(255,255,255,0.6)',
+  },
   titleText: { color: 'white' },
   descriptionText: { color: 'rgba(255,255,255,0.9)' },
 };
@@ -85,7 +90,7 @@ const getVendorDisplayName = (vendorName, t) => {
 };
 
 const createDefaultAvatar = () => (
-  <div className={COMPONENT_STYLES.avatarContainer}>
+  <div className={COMPONENT_STYLES.avatarContainer} style={COMPONENT_STYLES.avatarContainerStyle}>
     <Avatar size='large' color='transparent'>
       AI
     </Avatar>
@@ -127,7 +132,7 @@ const renderVendorAvatar = (vendor, t, isAllVendors = false) => {
 
   return (
     <Tooltip content={displayName} position='top'>
-      <div className={COMPONENT_STYLES.avatarContainer}>{avatarContent}</div>
+      <div className={COMPONENT_STYLES.avatarContainer} style={COMPONENT_STYLES.avatarContainerStyle}>{avatarContent}</div>
     </Tooltip>
   );
 };

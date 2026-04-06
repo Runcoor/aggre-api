@@ -125,7 +125,7 @@ export default function CCSwitchModal({
     () => ({
       marginBottom: 4,
       fontSize: 13,
-      color: 'var(--semi-color-text-1)',
+      color: 'var(--text-secondary)',
     }),
     [],
   );

@@ -24,7 +24,6 @@ import {
   Col,
   Form,
   Row,
-  Spin,
   Modal,
   Input,
   Typography,
@@ -37,6 +36,7 @@ import {
   showWarning,
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 const { Text } = Typography;
 
@@ -234,7 +234,7 @@ export default function GeneralSettings(props) {
 
   return (
     <>
-      <Spin spinning={loading}>
+      <MacSpinner spinning={loading}>
         <Form
           values={inputs}
           getFormApi={(formAPI) => (refForm.current = formAPI)}
@@ -411,7 +411,7 @@ export default function GeneralSettings(props) {
             </Row>
           </Form.Section>
         </Form>
-      </Spin>
+      </MacSpinner>
 
       <Modal
         title={t('警告')}

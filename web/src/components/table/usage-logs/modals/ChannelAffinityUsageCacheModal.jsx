@@ -18,8 +18,9 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Modal, Descriptions, Spin, Typography } from '@douyinfe/semi-ui';
+import { Modal, Descriptions, Typography } from '@douyinfe/semi-ui';
 import { API, showError, timestamp2string } from '../../../../helpers';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text } = Typography;
 
@@ -222,7 +223,7 @@ const ChannelAffinityUsageCacheModal = ({
             ) : null}
           </Text>
         </div>
-        <Spin spinning={loading} tip={t('加载中...')}>
+        <MacSpinner spinning={loading} tip={t('加载中...')}>
           {stats && rows.length > 0 ? (
             <Descriptions data={rows} />
           ) : (
@@ -232,7 +233,7 @@ const ChannelAffinityUsageCacheModal = ({
               </Text>
             </div>
           )}
-        </Spin>
+        </MacSpinner>
       </div>
     </Modal>
   );

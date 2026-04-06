@@ -37,7 +37,6 @@ import {
   Modal,
   SideSheet,
   Space,
-  Spin,
   Typography,
   Card,
   Tag,
@@ -56,6 +55,7 @@ import {
   IconPlus,
 } from '@douyinfe/semi-icons';
 import UserBindingManagementModal from './UserBindingManagementModal';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 
@@ -200,7 +200,7 @@ const EditUserModal = (props) => {
         closeIcon={null}
         onCancel={handleCancel}
       >
-        <Spin spinning={loading}>
+        <MacSpinner spinning={loading}>
           <Form
             initValues={getInitValues()}
             getFormApi={(api) => (formApiRef.current = api)}
@@ -361,7 +361,7 @@ const EditUserModal = (props) => {
               </div>
             )}
           </Form>
-        </Spin>
+        </MacSpinner>
       </SideSheet>
 
       <UserBindingManagementModal

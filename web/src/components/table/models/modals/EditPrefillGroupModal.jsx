@@ -30,12 +30,12 @@ import {
   Col,
   Card,
   Avatar,
-  Spin,
 } from '@douyinfe/semi-ui';
 import { IconLayers, IconSave, IconClose } from '@douyinfe/semi-icons';
 import { API, showError, showSuccess } from '../../../../helpers';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 
@@ -161,7 +161,7 @@ const EditPrefillGroupModal = ({
       }
       closeIcon={null}
     >
-      <Spin spinning={loading}>
+      <MacSpinner spinning={loading}>
         <Form
           getFormApi={(api) => (formRef.current = api)}
           initValues={{
@@ -267,7 +267,7 @@ const EditPrefillGroupModal = ({
             </Card>
           </div>
         </Form>
-      </Spin>
+      </MacSpinner>
     </SideSheet>
   );
 };

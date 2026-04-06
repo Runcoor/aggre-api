@@ -27,7 +27,6 @@ import {
   List,
   Space,
   Input,
-  Spin,
   Popconfirm,
   Tag,
   Empty,
@@ -50,6 +49,7 @@ import {
   showError,
   showSuccess,
 } from '../../../../helpers';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 
@@ -628,8 +628,8 @@ const OllamaModelModal = ({
                       </div>
                     </div>
                   ) : (
-                    <div className='flex items-center gap-2 text-xs text-[var(--semi-color-text-2)]'>
-                      <Spin size='small' />
+                    <div className='flex items-center gap-2 text-xs text-[var(--text-muted)]'>
+                      <MacSpinner size='small' />
                       <span>{t('准备中...')}</span>
                     </div>
                   )}
@@ -703,7 +703,7 @@ const OllamaModelModal = ({
             </Space>
           </div>
 
-          <Spin spinning={loading}>
+          <MacSpinner spinning={loading}>
             {filteredModels.length === 0 ? (
               <Empty
                 title={searchValue ? t('未找到匹配的模型') : t('暂无模型')}
@@ -768,7 +768,7 @@ const OllamaModelModal = ({
                 )}
               />
             )}
-          </Spin>
+          </MacSpinner>
         </Card>
       </Space>
     </Modal>

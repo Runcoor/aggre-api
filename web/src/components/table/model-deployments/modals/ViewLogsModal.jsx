@@ -25,7 +25,6 @@ import {
   Select,
   Input,
   Space,
-  Spin,
   Card,
   Tag,
   Empty,
@@ -51,6 +50,7 @@ import {
   copy,
   timestamp2string,
 } from '../../../../helpers';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text } = Typography;
 
@@ -592,7 +592,7 @@ const ViewLogsModal = ({ visible, onCancel, deployment, t }) => {
 
                 {containerDetailsLoading ? (
                   <div className='flex items-center justify-center py-6'>
-                    <Spin tip={t('加载容器详情中...')} />
+                    <MacSpinner tip={t('加载容器详情中...')} />
                   </div>
                 ) : containerDetails ? (
                   <div className='grid gap-4 md:grid-cols-2 text-sm'>
@@ -687,7 +687,7 @@ const ViewLogsModal = ({ visible, onCancel, deployment, t }) => {
           >
             {loading && logLines.length === 0 ? (
               <div className='flex items-center justify-center p-8'>
-                <Spin tip={t('加载日志中...')} />
+                <MacSpinner tip={t('加载日志中...')} />
               </div>
             ) : filteredLogs.length === 0 ? (
               <Empty

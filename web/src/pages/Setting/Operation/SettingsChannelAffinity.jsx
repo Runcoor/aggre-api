@@ -30,7 +30,6 @@ import {
   Row,
   Select,
   Space,
-  Spin,
   Table,
   Tag,
   Typography,
@@ -59,6 +58,7 @@ import {
   cloneChannelAffinityTemplate,
 } from '../../../constants/channel-affinity-template.constants';
 import ParamOverrideEditorModal from '../../../components/table/channels/modals/ParamOverrideEditorModal';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 const KEY_ENABLED = 'channel_affinity_setting.enabled';
 const KEY_SWITCH_ON_SUCCESS = 'channel_affinity_setting.switch_on_success';
@@ -325,8 +325,8 @@ export default function SettingsChannelAffinity(props) {
               lineHeight: 1.6,
               padding: 10,
               borderRadius: 8,
-              background: 'var(--semi-color-fill-0)',
-              border: '1px solid var(--semi-color-border)',
+              background: 'var(--bg-subtle)',
+              border: '1px solid var(--border-default)',
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-all',
             }}
@@ -890,7 +890,7 @@ export default function SettingsChannelAffinity(props) {
 
   return (
     <>
-      <Spin spinning={loading}>
+      <MacSpinner spinning={loading}>
         <Form
           values={inputs}
           getFormApi={(formAPI) => (refForm.current = formAPI)}
@@ -1043,7 +1043,7 @@ export default function SettingsChannelAffinity(props) {
             )}
           </Form.Section>
         </Form>
-      </Spin>
+      </MacSpinner>
 
       <Modal
         title={isEdit ? t('编辑规则') : t('新增规则')}
@@ -1195,8 +1195,8 @@ export default function SettingsChannelAffinity(props) {
                       marginTop: 8,
                       borderRadius: 10,
                       padding: 10,
-                      background: 'var(--semi-color-fill-0)',
-                      border: '1px solid var(--semi-color-border)',
+                      background: 'var(--bg-subtle)',
+                      border: '1px solid var(--border-default)',
                     }}
                   >
                     <div

@@ -151,7 +151,7 @@ const PaymentConfirmModal = ({
                             className='mr-2'
                             size={16}
                             color={
-                              payMethod.color || 'var(--semi-color-text-2)'
+                              payMethod.color || 'var(--text-muted)'
                             }
                           />
                         )}

@@ -138,7 +138,7 @@ const ModelsPage = () => {
             icon={
               <IconAlertTriangle
                 size='large'
-                style={{ color: 'var(--semi-color-warning)' }}
+                style={{ color: 'var(--warning)' }}
               />
             }
             description={t(

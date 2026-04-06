@@ -25,7 +25,6 @@ import {
   Row,
   Col,
   Typography,
-  Spin,
 } from '@douyinfe/semi-ui';
 const { Text } = Typography;
 import {
@@ -35,6 +34,7 @@ import {
   showSuccess,
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 export default function SettingsPaymentGateway(props) {
   const { t } = useTranslation();
@@ -159,7 +159,7 @@ export default function SettingsPaymentGateway(props) {
   };
 
   return (
-    <Spin spinning={loading}>
+    <MacSpinner spinning={loading}>
       <Form
         initValues={inputs}
         onValueChange={handleFormChange}
@@ -253,6 +253,6 @@ export default function SettingsPaymentGateway(props) {
           <Button onClick={submitStripeSetting}>{t('更新 Stripe 设置')}</Button>
         </Form.Section>
       </Form>
-    </Spin>
+    </MacSpinner>
   );
 }

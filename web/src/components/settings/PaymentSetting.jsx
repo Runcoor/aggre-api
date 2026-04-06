@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState } from 'react';
-import { Card, Spin } from '@douyinfe/semi-ui';
+import { Card } from '@douyinfe/semi-ui';
 import SettingsGeneralPayment from '../../pages/Setting/Payment/SettingsGeneralPayment';
 import SettingsPaymentGateway from '../../pages/Setting/Payment/SettingsPaymentGateway';
 import SettingsPaymentGatewayStripe from '../../pages/Setting/Payment/SettingsPaymentGatewayStripe';
@@ -26,6 +26,7 @@ import SettingsPaymentGatewayCreem from '../../pages/Setting/Payment/SettingsPay
 import SettingsPaymentGatewayWaffo from '../../pages/Setting/Payment/SettingsPaymentGatewayWaffo';
 import { API, showError, toBoolean } from '../../helpers';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../common/ui/MacSpinner';
 
 const PaymentSetting = () => {
   const { t } = useTranslation();
@@ -131,7 +132,7 @@ const PaymentSetting = () => {
 
   return (
     <>
-      <Spin spinning={loading} size='large'>
+      <MacSpinner spinning={loading} size='large'>
         <Card style={{ marginTop: '10px' }}>
           <SettingsGeneralPayment options={inputs} refresh={onRefresh} />
         </Card>
@@ -147,7 +148,7 @@ const PaymentSetting = () => {
         <Card style={{ marginTop: '10px' }}>
           <SettingsPaymentGatewayWaffo options={inputs} refresh={onRefresh} />
         </Card>
-      </Spin>
+      </MacSpinner>
     </>
   );
 };

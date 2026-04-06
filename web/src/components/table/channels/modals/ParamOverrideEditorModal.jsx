@@ -1906,7 +1906,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
           className='w-full' style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
           bodyStyle={{
             padding: 12,
-            background: 'var(--semi-color-fill-0)',
+            background: 'var(--bg-subtle)',
           }}
         >
           <div className='flex items-start justify-between gap-3'>
@@ -1959,7 +1959,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                 style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
                 bodyStyle={{
                   padding: 14,
-                  background: 'var(--semi-color-fill-0)',
+                  background: 'var(--bg-subtle)',
                 }}
               >
                 <Text className='mb-2 block'>{t('旧格式（JSON 对象）')}</Text>
@@ -1992,7 +1992,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                       className='h-full' style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
                       bodyStyle={{
                         padding: 12,
-                        background: 'var(--semi-color-fill-0)',
+                        background: 'var(--bg-subtle)',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: 10,
@@ -2088,16 +2088,16 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                                   style={{
                                     borderRadius: 'var(--radius-lg)',
                                     background: isActive
-                                      ? 'var(--semi-color-primary-light-default)'
-                                      : 'var(--semi-color-bg-2)',
+                                      ? 'var(--accent-light)'
+                                      : 'var(--bg-muted)',
                                     border: isActive
-                                      ? '1px solid var(--semi-color-primary)'
-                                      : '1px solid var(--semi-color-border)',
+                                      ? '1px solid var(--accent)'
+                                      : '1px solid var(--border-default)',
                                     opacity: isDragging ? 0.6 : 1,
                                     boxShadow: isDropTarget
                                       ? dragOverPosition === 'after'
-                                        ? 'inset 0 -3px 0 var(--semi-color-primary)'
-                                        : 'inset 0 3px 0 var(--semi-color-primary)'
+                                        ? 'inset 0 -3px 0 var(--accent)'
+                                        : 'inset 0 3px 0 var(--accent)'
                                       : 'none',
                                   }}
                                 >
@@ -2106,7 +2106,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                                       <div
                                         className='flex-shrink-0'
                                         style={{
-                                          color: 'var(--semi-color-text-2)',
+                                          color: 'var(--text-muted)',
                                           cursor: operations.length > 1 ? 'grab' : 'default',
                                           marginTop: 1,
                                         }}
@@ -2189,7 +2189,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                             style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
                             bodyStyle={{
                               padding: 14,
-                              background: 'var(--semi-color-fill-0)',
+                              background: 'var(--bg-subtle)',
                             }}
                           >
                             <div className='flex items-center justify-between mb-3'>
@@ -2294,8 +2294,8 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                                   className='mt-2 p-3'
                                   style={{
                                     borderRadius: 'var(--radius-lg)',
-                                    background: 'var(--semi-color-bg-1)',
-                                    border: '1px solid var(--semi-color-border)',
+                                    background: 'var(--bg-subtle)',
+                                    border: '1px solid var(--border-default)',
                                   }}
                                 >
                                   <div className='flex items-center justify-between mb-2'>
@@ -2517,8 +2517,8 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                                   className='mt-2 p-3'
                                   style={{
                                     borderRadius: 'var(--radius-lg)',
-                                    background: 'var(--semi-color-bg-1)',
-                                    border: '1px solid var(--semi-color-border)',
+                                    background: 'var(--bg-subtle)',
+                                    border: '1px solid var(--border-default)',
                                   }}
                                 >
                                   <div className='flex items-center justify-between mb-2'>
@@ -2652,7 +2652,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                                       <div
                                         className='mt-2 rounded-lg p-2'
                                         style={{
-                                          background: 'var(--semi-color-fill-0)',
+                                          background: 'var(--bg-subtle)',
                                         }}
                                       >
                                         <div className='flex items-center justify-between mb-2'>
@@ -2684,9 +2684,9 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                                                   className='rounded-lg p-2'
                                                   style={{
                                                     border:
-                                                      '1px solid var(--semi-color-border)',
+                                                      '1px solid var(--border-default)',
                                                     background:
-                                                      'var(--semi-color-bg-0)',
+                                                      'var(--surface)',
                                                   }}
                                                 >
                                                   <div className='flex items-center justify-between mb-2'>
@@ -3278,7 +3278,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                         style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
                         bodyStyle={{
                           padding: 14,
-                          background: 'var(--semi-color-fill-0)',
+                          background: 'var(--bg-subtle)',
                         }}
                       >
                         <Text type='tertiary'>
@@ -3292,7 +3292,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                         className='mt-3' style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
                         bodyStyle={{
                           padding: 12,
-                          background: 'var(--semi-color-fill-0)',
+                          background: 'var(--bg-subtle)',
                         }}
                       >
                         <Space>
@@ -3361,7 +3361,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
           maxHeight: '72vh',
           overflowY: 'auto',
           padding: 16,
-          background: 'var(--semi-color-bg-0)',
+          background: 'var(--surface)',
         }}
       >
         <Space vertical spacing={12} style={{ width: '100%' }}>
@@ -3388,7 +3388,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
             style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
             bodyStyle={{
               padding: 12,
-              background: 'var(--semi-color-fill-0)',
+              background: 'var(--bg-subtle)',
             }}
           >
             <div className='flex items-center gap-2'>
@@ -3415,7 +3415,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
               style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
               bodyStyle={{
                 padding: 20,
-                background: 'var(--semi-color-fill-0)',
+                background: 'var(--bg-subtle)',
               }}
             >
               <Text type='tertiary'>{t('没有匹配的字段')}</Text>
@@ -3428,7 +3428,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                   style={{ borderRadius: 'var(--radius-lg)', border: 'none' }}
                   bodyStyle={{
                     padding: 14,
-                    background: 'var(--semi-color-fill-0)',
+                    background: 'var(--bg-subtle)',
                   }}
                 >
                   <div className='flex items-center justify-between mb-1'>
@@ -3454,7 +3454,7 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                           borderTop:
                             index === 0
                               ? 'none'
-                              : '1px solid var(--semi-color-border)',
+                              : '1px solid var(--border-default)',
                         }}
                       >
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -3464,8 +3464,8 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
                             size='small'
                             className='block mt-1 font-mono'
                             style={{
-                              background: 'var(--semi-color-bg-1)',
-                              border: '1px solid var(--semi-color-border)',
+                              background: 'var(--bg-subtle)',
+                              border: '1px solid var(--border-default)',
                               borderRadius: 8,
                               padding: '4px 8px',
                               width: 'fit-content',

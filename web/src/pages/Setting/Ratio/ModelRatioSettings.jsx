@@ -25,7 +25,6 @@ import {
   Popconfirm,
   Row,
   Space,
-  Spin,
 } from '@douyinfe/semi-ui';
 import {
   compareObjects,
@@ -36,6 +35,7 @@ import {
   verifyJSON,
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 export default function ModelRatioSettings(props) {
   const [loading, setLoading] = useState(false);
@@ -135,7 +135,7 @@ export default function ModelRatioSettings(props) {
   }, [props.options]);
 
   return (
-    <Spin spinning={loading}>
+    <MacSpinner spinning={loading}>
       <Form
         values={inputs}
         getFormApi={(formAPI) => (refForm.current = formAPI)}
@@ -343,6 +343,6 @@ export default function ModelRatioSettings(props) {
           <Button type={'danger'}>{t('重置模型倍率')}</Button>
         </Popconfirm>
       </Space>
-    </Spin>
+    </MacSpinner>
   );
 }

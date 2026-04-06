@@ -27,7 +27,6 @@ import {
   Popconfirm,
   Card,
   Avatar,
-  Spin,
   Empty,
 } from '@douyinfe/semi-ui';
 import { IconPlus, IconLayers } from '@douyinfe/semi-icons';
@@ -49,6 +48,7 @@ import {
   renderLimitedItems,
   renderDescription,
 } from '../../../common/ui/RenderUtils';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 
@@ -241,7 +241,7 @@ const PrefillGroupManagement = ({ visible, onClose }) => {
         bodyStyle={{ padding: '0' }}
         closeIcon={null}
       >
-        <Spin spinning={loading}>
+        <MacSpinner spinning={loading}>
           <div className='p-2'>
             <Card style={{ borderRadius: 'var(--radius-lg)' }}>
               <div className='flex items-center mb-2'>
@@ -291,7 +291,7 @@ const PrefillGroupManagement = ({ visible, onClose }) => {
               )}
             </Card>
           </div>
-        </Spin>
+        </MacSpinner>
       </SideSheet>
 
       {/* 编辑组件 */}

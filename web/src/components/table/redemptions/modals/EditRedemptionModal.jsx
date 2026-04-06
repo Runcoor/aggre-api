@@ -33,7 +33,6 @@ import {
   Modal,
   SideSheet,
   Space,
-  Spin,
   Typography,
   Card,
   Tag,
@@ -48,6 +47,7 @@ import {
   IconClose,
   IconGift,
 } from '@douyinfe/semi-icons';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 
@@ -208,7 +208,7 @@ const EditRedemptionModal = (props) => {
         closeIcon={null}
         onCancel={() => handleCancel()}
       >
-        <Spin spinning={loading}>
+        <MacSpinner spinning={loading}>
           <Form
             initValues={getInitValues()}
             getFormApi={(api) => (formApiRef.current = api)}
@@ -344,7 +344,7 @@ const EditRedemptionModal = (props) => {
               </div>
             )}
           </Form>
-        </Spin>
+        </MacSpinner>
       </SideSheet>
     </>
   );

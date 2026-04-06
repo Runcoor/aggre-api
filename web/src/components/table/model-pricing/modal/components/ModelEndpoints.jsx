@@ -43,7 +43,7 @@ const ModelEndpoints = ({ modelData, endpointMap = {}, t }) => {
         <div
           key={type}
           className='flex justify-between border-b border-dashed last:border-0 py-2 last:pb-0'
-          style={{ borderColor: 'var(--semi-color-border)' }}
+          style={{ borderColor: 'var(--border-default)' }}
         >
           <span className='flex items-center pr-5'>
             <Badge dot type='success' className='mr-2' />

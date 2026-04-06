@@ -18,13 +18,14 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { Card, Spin, Button, Modal } from '@douyinfe/semi-ui';
+import { Card, Button, Modal } from '@douyinfe/semi-ui';
 import { API, showError, showSuccess, toBoolean } from '../../helpers';
 import SettingsAPIInfo from '../../pages/Setting/Dashboard/SettingsAPIInfo';
 import SettingsAnnouncements from '../../pages/Setting/Dashboard/SettingsAnnouncements';
 import SettingsFAQ from '../../pages/Setting/Dashboard/SettingsFAQ';
 import SettingsUptimeKuma from '../../pages/Setting/Dashboard/SettingsUptimeKuma';
 import SettingsDataDashboard from '../../pages/Setting/Dashboard/SettingsDataDashboard';
+import MacSpinner from '../common/ui/MacSpinner';
 
 const DashboardSetting = () => {
   let [inputs, setInputs] = useState({
@@ -123,7 +124,7 @@ const DashboardSetting = () => {
 
   return (
     <>
-      <Spin spinning={loading} size='large'>
+      <MacSpinner spinning={loading} size='large'>
         {/* 用于迁移检测的旧键模态框，下个版本会删除 */}
         <Modal
           title='配置迁移确认'
@@ -165,7 +166,7 @@ const DashboardSetting = () => {
         <Card style={{ marginTop: '10px' }}>
           <SettingsUptimeKuma options={inputs} refresh={onRefresh} />
         </Card>
-      </Spin>
+      </MacSpinner>
     </>
   );
 };

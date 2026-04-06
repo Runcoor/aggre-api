@@ -23,7 +23,6 @@ import {
   Col,
   Form,
   Row,
-  Spin,
   Card,
   Typography,
 } from '@douyinfe/semi-ui';
@@ -36,6 +35,7 @@ import {
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
 import { Server, Cloud, Zap, ArrowUpRight } from 'lucide-react';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 const { Text } = Typography;
 
@@ -165,7 +165,7 @@ export default function SettingModelDeployment(props) {
 
   return (
     <>
-      <Spin spinning={loading}>
+      <MacSpinner spinning={loading}>
         <Form
           values={inputs}
           getFormApi={(formAPI) => (refForm.current = formAPI)}
@@ -186,7 +186,7 @@ export default function SettingModelDeployment(props) {
             {/*  style={{ */}
             {/*    display: 'block', */}
             {/*    marginBottom: '20px',*/}
-            {/*    color: 'var(--semi-color-text-2)'*/}
+            {/*    color: 'var(--text-muted)'*/}
             {/*  }}*/}
             {/*>*/}
             {/*  {t('配置模型部署服务提供商的API密钥和启用状态')}*/}
@@ -252,11 +252,11 @@ export default function SettingModelDeployment(props) {
                           borderRadius: '6px',
                           fontWeight: '500',
                           borderColor: testing
-                            ? 'var(--semi-color-primary)'
-                            : 'var(--semi-color-border)',
+                            ? 'var(--accent)'
+                            : 'var(--border-default)',
                           color: testing
-                            ? 'var(--semi-color-primary)'
-                            : 'var(--semi-color-text-0)',
+                            ? 'var(--accent)'
+                            : 'var(--text-primary)',
                         }}
                       >
                         {testing ? t('连接测试中...') : t('测试连接')}
@@ -267,10 +267,10 @@ export default function SettingModelDeployment(props) {
                 <Col xs={24} lg={10}>
                   <div
                     style={{
-                      background: 'var(--semi-color-fill-0)',
+                      background: 'var(--bg-subtle)',
                       padding: '16px',
                       borderRadius: '8px',
-                      border: '1px solid var(--semi-color-border)',
+                      border: '1px solid var(--border-default)',
                       height: '100%',
                       display: 'flex',
                       flexDirection: 'column',
@@ -292,7 +292,7 @@ export default function SettingModelDeployment(props) {
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '6px',
-                          color: 'var(--semi-color-text-2)',
+                          color: 'var(--text-muted)',
                           fontSize: '13px',
                           lineHeight: 1.6,
                         }}
@@ -327,7 +327,7 @@ export default function SettingModelDeployment(props) {
             </Row>
           </Form.Section>
         </Form>
-      </Spin>
+      </MacSpinner>
     </>
   );
 }

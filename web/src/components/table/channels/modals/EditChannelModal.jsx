@@ -31,7 +31,6 @@ import { CHANNEL_OPTIONS, MODEL_FETCHABLE_CHANNEL_TYPES } from '../../../../cons
 import {
   SideSheet,
   Space,
-  Spin,
   Button,
   Typography,
   Checkbox,
@@ -85,6 +84,7 @@ import {
   IconSearch,
   IconChevronDown,
 } from '@douyinfe/semi-icons';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 
@@ -2316,8 +2316,8 @@ const EditChannelModal = (props) => {
                       className='mt-2 p-3'
                       style={{
                         borderRadius: 'var(--radius-lg)',
-                        backgroundColor: 'var(--semi-color-fill-0)',
-                        border: '1px solid var(--semi-color-fill-2)',
+                        backgroundColor: 'var(--bg-subtle)',
+                        border: '1px solid var(--border-default)',
                       }}
                     >
                       <div className='flex items-center justify-between mb-2'>
@@ -2511,7 +2511,7 @@ const EditChannelModal = (props) => {
 
             return (
             <>
-            <Spin spinning={loading}>
+            <MacSpinner spinning={loading}>
               <div className='p-2 space-y-3' ref={formContainerRef}>
                 {!isEdit && clipboardConfig && (
                   <Banner
@@ -3663,8 +3663,8 @@ const EditChannelModal = (props) => {
                     className='flex items-center justify-between p-3 cursor-pointer transition-colors'
                     style={{
                       borderRadius: 'var(--radius-lg)',
-                      backgroundColor: advancedSettingsOpen ? 'var(--semi-color-primary-light-default)' : 'var(--semi-color-fill-0)',
-                      border: '1px solid var(--semi-color-fill-2)',
+                      backgroundColor: advancedSettingsOpen ? 'var(--accent-light)' : 'var(--bg-subtle)',
+                      border: '1px solid var(--border-default)',
                     }}
                     onClick={() => toggleAdvancedSettings(!advancedSettingsOpen)}
                   >
@@ -3672,8 +3672,8 @@ const EditChannelModal = (props) => {
                       <IconSetting size={16} />
                       <Text className='font-medium'>{t('高级设置')}</Text>
                     </div>
-                    <div className='flex items-center gap-1 text-sm' style={{ color: 'var(--semi-color-primary)' }}>
-                      <Text size='small' style={{ color: 'var(--semi-color-primary)' }}>
+                    <div className='flex items-center gap-1 text-sm' style={{ color: 'var(--accent)' }}>
+                      <Text size='small' style={{ color: 'var(--accent)' }}>
                         {advancedSettingsOpen ? t('收起') : isEdit ? t('向左展开') : t('向右展开')}
                       </Text>
                       <IconChevronDown
@@ -3689,7 +3689,7 @@ const EditChannelModal = (props) => {
                   </div>
                 )}
               </div>
-            </Spin>
+            </MacSpinner>
 
             {/* Desktop: Advanced Settings Side Panel - rendered inside Form tree */}
             {!isMobile && advancedSettingsOpen && (
@@ -3698,9 +3698,9 @@ const EditChannelModal = (props) => {
                 style={{
                   width: 600,
                   [isEdit ? 'right' : 'left']: 600,
-                  backgroundColor: 'var(--semi-color-bg-0)',
-                  borderLeft: isEdit ? 'none' : '1px solid var(--semi-color-border)',
-                  borderRight: isEdit ? '1px solid var(--semi-color-border)' : 'none',
+                  backgroundColor: 'var(--surface)',
+                  borderLeft: isEdit ? 'none' : '1px solid var(--border-default)',
+                  borderRight: isEdit ? '1px solid var(--border-default)' : 'none',
                   animation: `slideIn${isEdit ? 'Left' : 'Right'} 0.3s ease-out`,
                 }}
               >

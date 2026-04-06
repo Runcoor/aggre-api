@@ -202,9 +202,9 @@ export default function SettingsHeaderNavModules(props) {
               <Card
                 style={{
                   borderRadius: '8px',
-                  border: '1px solid var(--semi-color-border)',
+                  border: '1px solid var(--border-default)',
                   transition: 'all 0.2s ease',
-                  background: 'var(--semi-color-bg-1)',
+                  background: 'var(--bg-subtle)',
                   minHeight: '80px',
                 }}
                 bodyStyle={{ padding: '16px' }}
@@ -223,7 +223,7 @@ export default function SettingsHeaderNavModules(props) {
                       style={{
                         fontWeight: '600',
                         fontSize: '14px',
-                        color: 'var(--semi-color-text-0)',
+                        color: 'var(--text-primary)',
                         marginBottom: '4px',
                       }}
                     >
@@ -234,7 +234,7 @@ export default function SettingsHeaderNavModules(props) {
                       size='small'
                       style={{
                         fontSize: '12px',
-                        color: 'var(--semi-color-text-2)',
+                        color: 'var(--text-muted)',
                         lineHeight: '1.4',
                         display: 'block',
                       }}
@@ -262,7 +262,7 @@ export default function SettingsHeaderNavModules(props) {
                     : headerNavModules[module.key]) && (
                     <div
                       style={{
-                        borderTop: '1px solid var(--semi-color-border)',
+                        borderTop: '1px solid var(--border-default)',
                         marginTop: '12px',
                         paddingTop: '12px',
                       }}
@@ -279,7 +279,7 @@ export default function SettingsHeaderNavModules(props) {
                             style={{
                               fontWeight: '500',
                               fontSize: '12px',
-                              color: 'var(--semi-color-text-1)',
+                              color: 'var(--text-secondary)',
                               marginBottom: '2px',
                             }}
                           >
@@ -290,7 +290,7 @@ export default function SettingsHeaderNavModules(props) {
                             size='small'
                             style={{
                               fontSize: '11px',
-                              color: 'var(--semi-color-text-2)',
+                              color: 'var(--text-muted)',
                               lineHeight: '1.4',
                               display: 'block',
                             }}
@@ -322,7 +322,7 @@ export default function SettingsHeaderNavModules(props) {
             justifyContent: 'flex-start',
             alignItems: 'center',
             paddingTop: '8px',
-            borderTop: '1px solid var(--semi-color-border)',
+            borderTop: '1px solid var(--border-default)',
           }}
         >
           <Button

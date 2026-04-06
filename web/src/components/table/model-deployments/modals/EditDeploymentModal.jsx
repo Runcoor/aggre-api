@@ -23,7 +23,6 @@ import {
   Form,
   Button,
   Space,
-  Spin,
   Typography,
   Card,
   InputNumber,
@@ -38,6 +37,7 @@ import { Save, X, Server } from 'lucide-react';
 import { API, showError, showSuccess } from '../../../../helpers';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 
@@ -166,7 +166,7 @@ const EditDeploymentModal = ({
       closeOnEsc={true}
     >
       <div className='p-6 h-full overflow-auto'>
-        <Spin spinning={loading} style={{ width: '100%' }}>
+        <MacSpinner spinning={loading} style={{ width: '100%' }}>
           <Form
             ref={formRef}
             onSubmit={handleSubmit}
@@ -214,7 +214,7 @@ const EditDeploymentModal = ({
               )}
             </Card>
           </Form>
-        </Spin>
+        </MacSpinner>
       </div>
 
       <div className='p-4 border-t flex justify-end' style={{ borderColor: 'var(--border-default)', background: 'var(--bg-subtle)' }}>

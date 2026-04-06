@@ -25,7 +25,6 @@ import {
   Form,
   InputNumber,
   Row,
-  Spin,
   Progress,
   Descriptions,
   Tag,
@@ -42,6 +41,7 @@ import {
   showWarning,
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 const { Text } = Typography;
 
@@ -248,7 +248,7 @@ export default function SettingsPerformance(props) {
 
   return (
     <>
-      <Spin spinning={loading}>
+      <MacSpinner spinning={loading}>
         <Form
           values={inputs}
           getFormApi={(formAPI) => (refForm.current = formAPI)}
@@ -396,7 +396,7 @@ export default function SettingsPerformance(props) {
             </Row>
           </Form.Section>
         </Form>
-      </Spin>
+      </MacSpinner>
 
       {/* 服务器日志管理 */}
       <Form.Section text={t('服务器日志管理')}>
@@ -505,7 +505,7 @@ export default function SettingsPerformance(props) {
       </Form.Section>
 
       {/* 性能统计 */}
-      <Spin spinning={statsLoading}>
+      <MacSpinner spinning={statsLoading}>
         <Form.Section text={t('性能监控')}>
           <Row gutter={16} style={{ marginBottom: 16 }}>
             <Col span={24}>
@@ -539,7 +539,7 @@ export default function SettingsPerformance(props) {
                   <div
                     style={{
                       padding: 16,
-                      background: 'var(--semi-color-fill-0)',
+                      background: 'var(--bg-subtle)',
                       borderRadius: 8,
                       flex: 1,
                       display: 'flex',
@@ -555,8 +555,8 @@ export default function SettingsPerformance(props) {
                       style={{ marginBottom: 8 }}
                       stroke={
                         parseFloat(diskCacheUsagePercent) > 80
-                          ? 'var(--semi-color-danger)'
-                          : 'var(--semi-color-primary)'
+                          ? 'var(--error)'
+                          : 'var(--accent)'
                       }
                     />
                     <div
@@ -587,7 +587,7 @@ export default function SettingsPerformance(props) {
                   <div
                     style={{
                       padding: 16,
-                      background: 'var(--semi-color-fill-0)',
+                      background: 'var(--bg-subtle)',
                       borderRadius: 8,
                       flex: 1,
                       display: 'flex',
@@ -631,7 +631,7 @@ export default function SettingsPerformance(props) {
                     <div
                       style={{
                         padding: 16,
-                        background: 'var(--semi-color-fill-0)',
+                        background: 'var(--bg-subtle)',
                         borderRadius: 8,
                       }}
                     >
@@ -649,10 +649,10 @@ export default function SettingsPerformance(props) {
                         style={{ marginBottom: 8 }}
                         stroke={
                           stats.disk_space_info.used_percent > 90
-                            ? 'var(--semi-color-danger)'
+                            ? 'var(--error)'
                             : stats.disk_space_info.used_percent > 70
-                              ? 'var(--semi-color-warning)'
-                              : 'var(--semi-color-primary)'
+                              ? 'var(--warning)'
+                              : 'var(--accent)'
                         }
                       />
                       <div
@@ -730,7 +730,7 @@ export default function SettingsPerformance(props) {
             </>
           )}
         </Form.Section>
-      </Spin>
+      </MacSpinner>
     </>
   );
 }

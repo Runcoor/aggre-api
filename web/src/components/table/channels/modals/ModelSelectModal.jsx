@@ -22,7 +22,6 @@ import { useIsMobile } from '../../../../hooks/common/useIsMobile';
 import {
   Modal,
   Checkbox,
-  Spin,
   Input,
   Typography,
   Empty,
@@ -37,6 +36,7 @@ import {
 import { IconSearch, IconInfoCircle } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import { getModelCategories } from '../../../../helpers/render';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const ModelSelectModal = ({
   visible,
@@ -343,7 +343,7 @@ const ModelSelectModal = ({
         showClear
       />
 
-      <Spin spinning={!models || models.length === 0}>
+      <MacSpinner spinning={!models || models.length === 0}>
         <div style={{ maxHeight: 400, overflowY: 'auto', paddingRight: 8 }}>
           {filteredModels.length === 0 ? (
             <Empty
@@ -372,7 +372,7 @@ const ModelSelectModal = ({
             </Checkbox.Group>
           )}
         </div>
-      </Spin>
+      </MacSpinner>
 
       <Typography.Text
         type='secondary'

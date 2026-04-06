@@ -106,7 +106,7 @@ import {
 export function getLucideIcon(key, selected = false) {
   const size = 16;
   const strokeWidth = 2;
-  const SELECTED_COLOR = 'var(--semi-color-primary)';
+  const SELECTED_COLOR = 'var(--accent)';
   const iconColor = selected ? SELECTED_COLOR : 'currentColor';
   const commonProps = {
     size,
@@ -556,7 +556,7 @@ export function getOAuthProviderIcon(iconName, size = 20) {
   const iconSize = Number(size) > 0 ? Number(size) : 20;
 
   if (!raw) {
-    return <Layers size={iconSize} color='var(--semi-color-text-2)' />;
+    return <Layers size={iconSize} color='var(--text-muted)' />;
   }
 
   if (isHttpUrl(raw)) {
@@ -937,13 +937,13 @@ export const renderGroupOption = (item) => {
     alignItems: 'center',
     padding: '8px 16px',
     cursor: disabled ? 'not-allowed' : 'pointer',
-    backgroundColor: focused ? 'var(--semi-color-fill-0)' : 'transparent',
+    backgroundColor: focused ? 'var(--bg-subtle)' : 'transparent',
     opacity: disabled ? 0.5 : 1,
     ...(selected && {
-      backgroundColor: 'var(--semi-color-primary-light-default)',
+      backgroundColor: 'var(--accent-light)',
     }),
     '&:hover': {
-      backgroundColor: !disabled && 'var(--semi-color-fill-1)',
+      backgroundColor: !disabled && 'var(--surface-hover)',
     },
   };
 

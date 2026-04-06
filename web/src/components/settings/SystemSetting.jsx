@@ -27,7 +27,6 @@ import {
   Modal,
   Banner,
   TagInput,
-  Spin,
   Card,
   Radio,
   Select,
@@ -43,6 +42,7 @@ import {
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import CustomOAuthSetting from './CustomOAuthSetting';
+import MacSpinner from '../common/ui/MacSpinner';
 
 const SystemSetting = () => {
   const { t } = useTranslation();
@@ -1653,7 +1653,7 @@ const SystemSetting = () => {
             height: '100vh',
           }}
         >
-          <Spin size='large' />
+          <MacSpinner size='large' />
         </div>
       )}
     </div>

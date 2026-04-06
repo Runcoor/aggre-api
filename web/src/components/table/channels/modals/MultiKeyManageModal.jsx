@@ -29,7 +29,6 @@ import {
   Tooltip,
   Popconfirm,
   Empty,
-  Spin,
   Select,
   Row,
   Col,
@@ -47,6 +46,7 @@ import {
   showSuccess,
   timestamp2string,
 } from '../../../../helpers';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text } = Typography;
 
@@ -485,16 +485,16 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
           className='p-4 mb-3'
           style={{
             borderRadius: 'var(--radius-lg)',
-            background: 'var(--semi-color-bg-1)',
-            border: '1px solid var(--semi-color-border)',
+            background: 'var(--bg-subtle)',
+            border: '1px solid var(--border-default)',
           }}
         >
           <Row gutter={16} align='middle'>
             <Col span={8}>
               <div
                 style={{
-                  background: 'var(--semi-color-bg-0)',
-                  border: '1px solid var(--semi-color-border)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-default)',
                   borderRadius: 12,
                   padding: 12,
                 }}
@@ -510,7 +510,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
                     {enabledCount}
                   </Text>
                   <Text
-                    style={{ fontSize: 18, color: 'var(--semi-color-text-2)' }}
+                    style={{ fontSize: 18, color: 'var(--text-muted)' }}
                   >
                     / {total}
                   </Text>
@@ -527,8 +527,8 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
             <Col span={8}>
               <div
                 style={{
-                  background: 'var(--semi-color-bg-0)',
-                  border: '1px solid var(--semi-color-border)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-default)',
                   borderRadius: 12,
                   padding: 12,
                 }}
@@ -544,7 +544,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
                     {manualDisabledCount}
                   </Text>
                   <Text
-                    style={{ fontSize: 18, color: 'var(--semi-color-text-2)' }}
+                    style={{ fontSize: 18, color: 'var(--text-muted)' }}
                   >
                     / {total}
                   </Text>
@@ -561,8 +561,8 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
             <Col span={8}>
               <div
                 style={{
-                  background: 'var(--semi-color-bg-0)',
-                  border: '1px solid var(--semi-color-border)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-default)',
                   borderRadius: 12,
                   padding: 12,
                 }}
@@ -578,7 +578,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
                     {autoDisabledCount}
                   </Text>
                   <Text
-                    style={{ fontSize: 18, color: 'var(--semi-color-text-2)' }}
+                    style={{ fontSize: 18, color: 'var(--text-muted)' }}
                   >
                     / {total}
                   </Text>
@@ -597,7 +597,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
 
         {/* Table */}
         <div className='flex-1 flex flex-col min-h-0'>
-          <Spin spinning={loading}>
+          <MacSpinner spinning={loading}>
             <Card style={{ borderRadius: 'var(--radius-lg)' }}>
               <Table
                 title={() => (
@@ -733,7 +733,7 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
                 }
               />
             </Card>
-          </Spin>
+          </MacSpinner>
         </div>
       </div>
     </Modal>

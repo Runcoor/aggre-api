@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Form, Spin } from '@douyinfe/semi-ui';
+import { Button, Form } from '@douyinfe/semi-ui';
 import {
   API,
   removeTrailingSlash,
@@ -26,6 +26,7 @@ import {
   showSuccess,
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 export default function SettingsGeneralPayment(props) {
   const { t } = useTranslation();
@@ -70,7 +71,7 @@ export default function SettingsGeneralPayment(props) {
   };
 
   return (
-    <Spin spinning={loading}>
+    <MacSpinner spinning={loading}>
       <Form
         initValues={inputs}
         onValueChange={handleFormChange}
@@ -89,6 +90,6 @@ export default function SettingsGeneralPayment(props) {
           <Button onClick={submitServerAddress}>{t('更新服务器地址')}</Button>
         </Form.Section>
       </Form>
-    </Spin>
+    </MacSpinner>
   );
 }

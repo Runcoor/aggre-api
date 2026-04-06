@@ -25,7 +25,6 @@ import {
   Row,
   Col,
   Typography,
-  Spin,
   Table,
   Modal,
   Input,
@@ -33,6 +32,7 @@ import {
 } from '@douyinfe/semi-ui';
 import { API, showError, showSuccess } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 const { Text } = Typography;
 
@@ -318,7 +318,7 @@ export default function SettingsPaymentGatewayWaffo(props) {
   ];
 
   return (
-    <Spin spinning={loading}>
+    <MacSpinner spinning={loading}>
       <Form
         initValues={inputs}
         onValueChange={handleFormChange}
@@ -521,7 +521,7 @@ export default function SettingsPaymentGatewayWaffo(props) {
           <div>
             <div style={{ marginBottom: 4 }}>
               <Text strong>{t('显示名称')}</Text>
-              <span style={{ color: 'var(--semi-color-danger)', marginLeft: 4 }}>*</span>
+              <span style={{ color: 'var(--error)', marginLeft: 4 }}>*</span>
             </div>
             <Input
               value={payMethodForm.name}
@@ -543,7 +543,7 @@ export default function SettingsPaymentGatewayWaffo(props) {
                     width: 32,
                     height: 32,
                     objectFit: 'contain',
-                    border: '1px solid var(--semi-color-border)',
+                    border: '1px solid var(--border-default)',
                     borderRadius: 4,
                   }}
                 />
@@ -603,6 +603,6 @@ export default function SettingsPaymentGatewayWaffo(props) {
           </div>
         </div>
       </Modal>
-    </Spin>
+    </MacSpinner>
   );
 }

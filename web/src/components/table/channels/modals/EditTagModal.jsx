@@ -32,7 +32,6 @@ import {
   Space,
   Button,
   Typography,
-  Spin,
   Banner,
   Card,
   Tag,
@@ -49,6 +48,7 @@ import {
 } from '@douyinfe/semi-icons';
 import { getChannelModels } from '../../../../helpers';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 
@@ -418,7 +418,7 @@ const EditTagModal = (props) => {
         onSubmit={handleSave}
       >
         {() => (
-          <Spin spinning={loading}>
+          <MacSpinner spinning={loading}>
             <div className='p-2'>
               <Card style={{ borderRadius: 'var(--radius-lg)' }} className=' mb-6'>
                 {/* Header: Tag Info */}
@@ -744,7 +744,7 @@ const EditTagModal = (props) => {
                 </div>
               </Card>
             </div>
-          </Spin>
+          </MacSpinner>
         )}
       </Form>
     </SideSheet>

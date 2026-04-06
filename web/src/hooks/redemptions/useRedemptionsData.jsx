@@ -217,7 +217,7 @@ export const useRedemptionsData = () => {
     if (record.status !== REDEMPTION_STATUS.UNUSED || isExpired(record)) {
       return {
         style: {
-          background: 'var(--semi-color-disabled-border)',
+          background: 'var(--bg-muted)',
         },
       };
     } else {

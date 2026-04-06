@@ -803,7 +803,7 @@ export const getLogsColumns = ({
                 style={{
                   marginTop: 2,
                   fontSize: 11,
-                  color: 'var(--semi-color-text-2)',
+                  color: 'var(--text-muted)',
                   whiteSpace: 'nowrap',
                 }}
               >

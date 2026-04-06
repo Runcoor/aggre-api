@@ -154,7 +154,7 @@ const ParamOverrideModal = ({
                 flexWrap: 'wrap',
                 gap: 8,
                 fontSize: 12,
-                color: 'var(--semi-color-text-2)',
+                color: 'var(--text-muted)',
               }}
             >
               {paramOverrideTarget?.modelName ? (
@@ -216,8 +216,8 @@ const ParamOverrideModal = ({
                   style={{
                     padding: '10px 12px',
                     borderRadius: 10,
-                    border: '1px solid var(--semi-color-border)',
-                    background: 'var(--semi-color-fill-0)',
+                    border: '1px solid var(--border-default)',
+                    background: 'var(--bg-subtle)',
                     display: 'flex',
                     gap: 12,
                     alignItems: 'flex-start',
@@ -238,7 +238,7 @@ const ParamOverrideModal = ({
                         padding: '0 8px',
                         borderRadius: 999,
                         background: 'rgba(var(--semi-blue-5), 0.12)',
-                        color: 'var(--semi-color-primary)',
+                        color: 'var(--accent)',
                       }}
                     >
                       {getActionLabel(item.action, t)}
@@ -254,7 +254,7 @@ const ParamOverrideModal = ({
                       lineHeight: 1.6,
                       whiteSpace: 'pre-wrap',
                       wordBreak: 'break-word',
-                      color: 'var(--semi-color-text-0)',
+                      color: 'var(--text-primary)',
                     }}
                   >
                     {item.content}

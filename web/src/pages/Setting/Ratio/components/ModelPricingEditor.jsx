@@ -151,7 +151,7 @@ export default function ModelPricingEditor({
                 padding: 0,
                 color:
                   record.name === selectedModelName
-                    ? 'var(--semi-color-primary)'
+                    ? 'var(--accent)'
                     : undefined,
               }}
             >
@@ -284,9 +284,9 @@ export default function ModelPricingEditor({
               width: '100%',
               padding: '10px 12px',
               borderRadius: 8,
-              background: 'var(--semi-color-primary-light-default)',
-              border: '1px solid var(--semi-color-primary)',
-              color: 'var(--semi-color-primary)',
+              background: 'var(--accent-light)',
+              border: '1px solid var(--accent)',
+              color: 'var(--accent)',
               fontWeight: 600,
             }}
           >
@@ -330,14 +330,14 @@ export default function ModelPricingEditor({
                 onRow={(record) => ({
                   style: {
                     background: selectedModelNames.includes(record.name)
-                      ? 'var(--semi-color-success-light-default)'
+                      ? 'var(--success-light)'
                       : record.name === selectedModelName
-                        ? 'var(--semi-color-primary-light-default)'
+                        ? 'var(--accent-light)'
                         : undefined,
                     boxShadow: selectedModelNames.includes(record.name)
-                      ? 'inset 4px 0 0 var(--semi-color-success)'
+                      ? 'inset 4px 0 0 var(--success)'
                       : record.name === selectedModelName
-                        ? 'inset 4px 0 0 var(--semi-color-primary)'
+                        ? 'inset 4px 0 0 var(--accent)'
                         : undefined,
                     transition: 'background 0.2s ease, box-shadow 0.2s ease',
                   },
@@ -394,7 +394,7 @@ export default function ModelPricingEditor({
                     bodyStyle={{ padding: 12 }}
                     style={{
                       marginBottom: 16,
-                      background: 'var(--semi-color-warning-light-default)',
+                      background: 'var(--warning-light)',
                     }}
                   >
                     <div className='font-medium mb-2'>{t('当前提示')}</div>
@@ -421,7 +421,7 @@ export default function ModelPricingEditor({
                       bodyStyle={{ padding: 16 }}
                       style={{
                         marginBottom: 16,
-                        background: 'var(--semi-color-fill-0)',
+                        background: 'var(--bg-subtle)',
                       }}
                     >
                       <div className='font-medium mb-3'>{t('基础价格')}</div>
@@ -550,7 +550,7 @@ export default function ModelPricingEditor({
                       bodyStyle={{ padding: 16 }}
                       style={{
                         marginBottom: 16,
-                        background: 'var(--semi-color-fill-0)',
+                        background: 'var(--bg-subtle)',
                       }}
                     >
                       <div className='mb-3'>
@@ -658,7 +658,7 @@ export default function ModelPricingEditor({
 
                 <Card
                   bodyStyle={{ padding: 16 }}
-                  style={{ background: 'var(--semi-color-fill-0)' }}
+                  style={{ background: 'var(--bg-subtle)' }}
                 >
                   <div className='font-medium mb-3'>{t('保存预览')}</div>
                   <div className='text-xs text-mv-text-muted mb-3'>

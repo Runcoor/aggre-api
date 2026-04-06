@@ -30,7 +30,6 @@ import {
   Space,
   Row,
   Col,
-  Spin,
   Tooltip,
   Tabs,
   TabPane,
@@ -49,6 +48,7 @@ import { IconGift } from '@douyinfe/semi-icons';
 import { useMinimumLoadingTime } from '../../hooks/common/useMinimumLoadingTime';
 import { getCurrencyConfig } from '../../helpers/render';
 import SubscriptionPlansCard from './SubscriptionPlansCard';
+import MacSpinner from '../common/ui/MacSpinner';
 
 const { Text } = Typography;
 
@@ -225,7 +225,7 @@ const RechargeCard = ({
         {/* 在线充值表单 */}
         {statusLoading ? (
           <div className='py-8 flex justify-center'>
-            <Spin size='large' />
+            <MacSpinner size='large' />
           </div>
         ) : enableOnlineTopUp || enableStripeTopUp || enableCreemTopUp || enableWaffoTopUp ? (
           <Form
@@ -325,7 +325,7 @@ const RechargeCard = ({
                                       size={18}
                                       color={
                                         payMethod.color ||
-                                        'var(--semi-color-text-2)'
+                                        'var(--text-muted)'
                                       }
                                     />
                                   )
@@ -373,7 +373,7 @@ const RechargeCard = ({
                         return (
                           <span
                             style={{
-                              color: 'var(--semi-color-text-2)',
+                              color: 'var(--text-muted)',
                               fontSize: '12px',
                               fontWeight: 'normal',
                             }}
@@ -431,8 +431,8 @@ const RechargeCard = ({
                             cursor: 'pointer',
                             border:
                               selectedPreset === preset.value
-                                ? '2px solid var(--semi-color-primary)'
-                                : '1px solid var(--semi-color-border)',
+                                ? '2px solid var(--accent)'
+                                : '1px solid var(--border-default)',
                             height: '100%',
                             width: '100%',
                           }}
@@ -463,7 +463,7 @@ const RechargeCard = ({
                             </Typography.Title>
                             <div
                               style={{
-                                color: 'var(--semi-color-text-2)',
+                                color: 'var(--text-muted)',
                                 fontSize: '12px',
                                 margin: '4px 0',
                               }}
@@ -509,7 +509,7 @@ const RechargeCard = ({
                             ) : (
                               <CreditCard
                                 size={18}
-                                color='var(--semi-color-text-2)'
+                                color='var(--text-muted)'
                               />
                             )
                           }

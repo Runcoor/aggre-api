@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Col, Form, Row, Spin } from '@douyinfe/semi-ui';
+import { Button, Col, Form, Row } from '@douyinfe/semi-ui';
 import {
   compareObjects,
   API,
@@ -29,6 +29,7 @@ import {
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
 import HttpStatusCodeRulesInput from '../../../components/settings/HttpStatusCodeRulesInput';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 export default function SettingsMonitoring(props) {
   const { t } = useTranslation();
@@ -123,7 +124,7 @@ export default function SettingsMonitoring(props) {
 
   return (
     <>
-      <Spin spinning={loading}>
+      <MacSpinner spinning={loading}>
         <Form
           values={inputs}
           getFormApi={(formAPI) => (refForm.current = formAPI)}
@@ -284,7 +285,7 @@ export default function SettingsMonitoring(props) {
             </Row>
           </Form.Section>
         </Form>
-      </Spin>
+      </MacSpinner>
     </>
   );
 }

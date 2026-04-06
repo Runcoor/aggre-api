@@ -18,11 +18,12 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState } from 'react';
-import { Card, Spin } from '@douyinfe/semi-ui';
+import { Card } from '@douyinfe/semi-ui';
 
 import { API, showError, toBoolean } from '../../helpers';
 import { useTranslation } from 'react-i18next';
 import RequestRateLimit from '../../pages/Setting/RateLimit/SettingsRequestRateLimit';
+import MacSpinner from '../common/ui/MacSpinner';
 
 const RateLimitSetting = () => {
   const { t } = useTranslation();
@@ -76,12 +77,12 @@ const RateLimitSetting = () => {
 
   return (
     <>
-      <Spin spinning={loading} size='large'>
+      <MacSpinner spinning={loading} size='large'>
         {/* AI请求速率限制 */}
         <Card style={{ marginTop: '10px' }}>
           <RequestRateLimit options={inputs} refresh={onRefresh} />
         </Card>
-      </Spin>
+      </MacSpinner>
     </>
   );
 };

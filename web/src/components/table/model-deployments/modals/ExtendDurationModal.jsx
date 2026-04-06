@@ -29,7 +29,6 @@ import {
   Button,
   Tag,
   Banner,
-  Spin,
 } from '@douyinfe/semi-ui';
 import {
   FaClock,
@@ -38,6 +37,7 @@ import {
   FaExclamationTriangle,
 } from 'react-icons/fa';
 import { API, showError, showSuccess } from '../../../../helpers';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text } = Typography;
 
@@ -505,7 +505,7 @@ const ExtendDurationModal = ({
             <div className='text-center text-mv-text-muted py-4'>
               {costLoading ? (
                 <Space align='center' className='justify-center'>
-                  <Spin size='small' />
+                  <MacSpinner size='small' />
                   <Text type='secondary'>{t('计算费用中...')}</Text>
                 </Space>
               ) : priceError ? (

@@ -364,7 +364,7 @@ export const useTokensData = (openFluentNotification, openCCSwitchModal) => {
     if (record.status !== 1) {
       return {
         style: {
-          background: 'var(--semi-color-disabled-border)',
+          background: 'var(--bg-muted)',
         },
       };
     } else {

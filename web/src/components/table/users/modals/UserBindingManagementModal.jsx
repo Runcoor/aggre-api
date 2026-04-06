@@ -27,7 +27,6 @@ import {
 } from '../../../../helpers';
 import {
   Modal,
-  Spin,
   Typography,
   Card,
   Checkbox,
@@ -41,6 +40,7 @@ import {
   IconGithubLogo,
 } from '@douyinfe/semi-icons';
 import { SiDiscord, SiTelegram, SiWechat, SiLinux } from 'react-icons/si';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text } = Typography;
 
@@ -339,7 +339,7 @@ const UserBindingManagementModal = ({
         </div>
       }
     >
-      <Spin spinning={bindingLoading}>
+      <MacSpinner spinning={bindingLoading}>
         <div className='max-h-[68vh] overflow-y-auto pr-1 pb-2'>
           <div className='flex items-center justify-between mb-4 gap-3 flex-wrap'>
             <Checkbox
@@ -431,7 +431,7 @@ const UserBindingManagementModal = ({
             </div>
           )}
         </div>
-      </Spin>
+      </MacSpinner>
     </Modal>
   );
 };

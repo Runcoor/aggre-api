@@ -18,10 +18,11 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState } from 'react';
-import { Card, Spin } from '@douyinfe/semi-ui';
+import { Card } from '@douyinfe/semi-ui';
 import { API, showError, toBoolean } from '../../helpers';
 import { useTranslation } from 'react-i18next';
 import SettingModelDeployment from '../../pages/Setting/Model/SettingModelDeployment';
+import MacSpinner from '../common/ui/MacSpinner';
 
 const ModelDeploymentSetting = () => {
   const { t } = useTranslation();
@@ -73,11 +74,11 @@ const ModelDeploymentSetting = () => {
 
   return (
     <>
-      <Spin spinning={loading} size='large'>
+      <MacSpinner spinning={loading} size='large'>
         <Card style={{ marginTop: '10px' }}>
           <SettingModelDeployment options={inputs} refresh={onRefresh} />
         </Card>
-      </Spin>
+      </MacSpinner>
     </>
   );
 };

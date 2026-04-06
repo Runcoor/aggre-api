@@ -33,7 +33,6 @@ import {
   Button,
   SideSheet,
   Space,
-  Spin,
   Typography,
   Card,
   Tag,
@@ -51,6 +50,7 @@ import {
 } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import { StatusContext } from '../../../../context/Status';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 
@@ -326,7 +326,7 @@ const EditTokenModal = (props) => {
       closeIcon={null}
       onCancel={() => handleCancel()}
     >
-      <Spin spinning={loading}>
+      <MacSpinner spinning={loading}>
         <Form
           key={isEdit ? 'edit' : 'new'}
           initValues={getInitValues()}
@@ -578,7 +578,7 @@ const EditTokenModal = (props) => {
             </div>
           )}
         </Form>
-      </Spin>
+      </MacSpinner>
     </SideSheet>
   );
 };

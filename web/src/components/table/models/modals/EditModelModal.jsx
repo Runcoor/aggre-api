@@ -25,7 +25,6 @@ import {
   Form,
   Button,
   Space,
-  Spin,
   Typography,
   Card,
   Tag,
@@ -38,6 +37,7 @@ import { IconAlertTriangle, IconLink } from '@douyinfe/semi-icons';
 import { API, showError, showSuccess } from '../../../../helpers';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 
@@ -278,7 +278,7 @@ const EditModelModal = (props) => {
       closeIcon={null}
       onCancel={() => handleCancel()}
     >
-      <Spin spinning={loading}>
+      <MacSpinner spinning={loading}>
         <Form
           key={isEdit ? 'edit' : 'new'}
           initValues={getInitValues()}
@@ -453,7 +453,7 @@ const EditModelModal = (props) => {
                       icon={
                         <IconAlertTriangle
                           size='large'
-                          style={{ color: 'var(--semi-color-warning)' }}
+                          style={{ color: 'var(--warning)' }}
                         />
                       }
                       description={t(
@@ -546,7 +546,7 @@ const EditModelModal = (props) => {
             </div>
           )}
         </Form>
-      </Spin>
+      </MacSpinner>
     </SideSheet>
   );
 };

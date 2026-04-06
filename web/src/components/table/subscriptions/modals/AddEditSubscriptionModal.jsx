@@ -28,7 +28,6 @@ import {
   Select,
   SideSheet,
   Space,
-  Spin,
   Tag,
   Typography,
 } from '@douyinfe/semi-ui';
@@ -45,6 +44,7 @@ import {
   displayAmountToQuota,
 } from '../../../../helpers/quota';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 
@@ -243,7 +243,7 @@ const AddEditSubscriptionModal = ({
         closeIcon={null}
         onCancel={handleClose}
       >
-        <Spin spinning={loading}>
+        <MacSpinner spinning={loading}>
           <Form
             key={formKey}
             initValues={buildFormValues()}
@@ -544,7 +544,7 @@ const AddEditSubscriptionModal = ({
               </div>
             )}
           </Form>
-        </Spin>
+        </MacSpinner>
       </SideSheet>
     </>
   );

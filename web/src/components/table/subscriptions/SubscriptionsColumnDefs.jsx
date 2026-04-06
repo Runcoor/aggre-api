@@ -78,7 +78,7 @@ const renderPlanTitle = (text, record, t) => {
       <Divider margin={12} />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         <Text type='tertiary'>{t('价格')}</Text>
-        <Text strong style={{ color: 'var(--semi-color-success)' }}>
+        <Text strong style={{ color: 'var(--success)' }}>
           {convertUSDToCurrency(Number(plan?.price_amount || 0), 2)}
         </Text>
         <Text type='tertiary'>{t('总额度')}</Text>
@@ -127,7 +127,7 @@ const renderPlanTitle = (text, record, t) => {
 
 const renderPrice = (text) => {
   return (
-    <Text strong style={{ color: 'var(--semi-color-success)' }}>
+    <Text strong style={{ color: 'var(--success)' }}>
       {convertUSDToCurrency(Number(text || 0), 2)}
     </Text>
   );

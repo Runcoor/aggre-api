@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState } from 'react';
-import { Card, Spin, Tabs } from '@douyinfe/semi-ui';
+import { Card, Tabs } from '@douyinfe/semi-ui';
 
 import { API, showError, showSuccess, toBoolean } from '../../helpers';
 import { useTranslation } from 'react-i18next';
@@ -27,6 +27,7 @@ import SettingClaudeModel from '../../pages/Setting/Model/SettingClaudeModel';
 import SettingGlobalModel from '../../pages/Setting/Model/SettingGlobalModel';
 import SettingGrokModel from '../../pages/Setting/Model/SettingGrokModel';
 import SettingsChannelAffinity from '../../pages/Setting/Operation/SettingsChannelAffinity';
+import MacSpinner from '../common/ui/MacSpinner';
 
 const ModelSetting = () => {
   const { t } = useTranslation();
@@ -108,7 +109,7 @@ const ModelSetting = () => {
 
   return (
     <>
-      <Spin spinning={loading} size='large'>
+      <MacSpinner spinning={loading} size='large'>
         {/* OpenAI */}
         <Card style={{ marginTop: '10px' }}>
           <SettingGlobalModel options={inputs} refresh={onRefresh} />
@@ -129,7 +130,7 @@ const ModelSetting = () => {
         <Card style={{ marginTop: '10px' }}>
           <SettingGrokModel options={inputs} refresh={onRefresh} />
         </Card>
-      </Spin>
+      </MacSpinner>
     </>
   );
 };

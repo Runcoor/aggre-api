@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState } from 'react';
-import { Card, Spin, Tabs } from '@douyinfe/semi-ui';
+import { Card, Tabs } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 
 import GroupRatioSettings from '../../pages/Setting/Ratio/GroupRatioSettings';
@@ -28,6 +28,7 @@ import ModelRatioNotSetEditor from '../../pages/Setting/Ratio/ModelRationNotSetE
 import UpstreamRatioSync from '../../pages/Setting/Ratio/UpstreamRatioSync';
 
 import { API, showError, toBoolean } from '../../helpers';
+import MacSpinner from '../common/ui/MacSpinner';
 
 const RatioSetting = () => {
   const { t } = useTranslation();
@@ -94,7 +95,7 @@ const RatioSetting = () => {
   }, []);
 
   return (
-    <Spin spinning={loading} size='large'>
+    <MacSpinner spinning={loading} size='large'>
       {/* 模型倍率设置以及价格编辑器 */}
       <Card style={{ marginTop: '10px' }}>
         <Tabs type='card' defaultActiveKey='visual'>
@@ -115,7 +116,7 @@ const RatioSetting = () => {
           </Tabs.TabPane>
         </Tabs>
       </Card>
-    </Spin>
+    </MacSpinner>
   );
 };
 

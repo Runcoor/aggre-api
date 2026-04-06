@@ -25,7 +25,6 @@ import {
   Tag,
   Progress,
   Descriptions,
-  Spin,
   Empty,
   Button,
   Badge,
@@ -49,6 +48,7 @@ import {
   showSuccess,
   timestamp2string,
 } from '../../../../helpers';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 
@@ -166,7 +166,7 @@ const ViewDetailsModal = ({ visible, onCancel, deployment, t }) => {
     >
       {loading && !details ? (
         <div className='flex items-center justify-center py-12'>
-          <Spin size='large' tip={t('加载详情中...')} />
+          <MacSpinner size='large' tip={t('加载详情中...')} />
         </div>
       ) : details ? (
         <div className='space-y-4 max-h-[600px] overflow-y-auto'>
@@ -389,7 +389,7 @@ const ViewDetailsModal = ({ visible, onCancel, deployment, t }) => {
           >
             {containersLoading ? (
               <div className='flex items-center justify-center py-6'>
-                <Spin tip={t('加载容器信息中...')} />
+                <MacSpinner tip={t('加载容器信息中...')} />
               </div>
             ) : containers.length === 0 ? (
               <Empty

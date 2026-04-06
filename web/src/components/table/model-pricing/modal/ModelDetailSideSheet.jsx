@@ -57,7 +57,7 @@ const ModelDetailSideSheet = ({
         padding: '0',
         display: 'flex',
         flexDirection: 'column',
-        borderBottom: '1px solid var(--semi-color-border)',
+        borderBottom: '1px solid var(--border-default)',
       }}
       visible={visible}
       width={isMobile ? '100%' : 600}

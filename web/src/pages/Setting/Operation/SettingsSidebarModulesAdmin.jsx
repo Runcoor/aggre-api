@@ -298,9 +298,9 @@ export default function SettingsSidebarModulesAdmin(props) {
                 alignItems: 'center',
                 marginBottom: '16px',
                 padding: '12px 16px',
-                backgroundColor: 'var(--semi-color-fill-0)',
+                backgroundColor: 'var(--bg-subtle)',
                 borderRadius: '8px',
-                border: '1px solid var(--semi-color-border)',
+                border: '1px solid var(--border-default)',
               }}
             >
               <div>
@@ -308,7 +308,7 @@ export default function SettingsSidebarModulesAdmin(props) {
                   style={{
                     fontWeight: '600',
                     fontSize: '16px',
-                    color: 'var(--semi-color-text-0)',
+                    color: 'var(--text-primary)',
                     marginBottom: '4px',
                   }}
                 >
@@ -319,7 +319,7 @@ export default function SettingsSidebarModulesAdmin(props) {
                   size='small'
                   style={{
                     fontSize: '12px',
-                    color: 'var(--semi-color-text-2)',
+                    color: 'var(--text-muted)',
                     lineHeight: '1.4',
                   }}
                 >
@@ -360,7 +360,7 @@ export default function SettingsSidebarModulesAdmin(props) {
                           style={{
                             fontWeight: '600',
                             fontSize: '14px',
-                            color: 'var(--semi-color-text-0)',
+                            color: 'var(--text-primary)',
                             marginBottom: '4px',
                           }}
                         >
@@ -371,7 +371,7 @@ export default function SettingsSidebarModulesAdmin(props) {
                           size='small'
                           style={{
                             fontSize: '12px',
-                            color: 'var(--semi-color-text-2)',
+                            color: 'var(--text-muted)',
                             lineHeight: '1.4',
                             display: 'block',
                           }}
@@ -404,7 +404,7 @@ export default function SettingsSidebarModulesAdmin(props) {
             justifyContent: 'flex-start',
             alignItems: 'center',
             paddingTop: '8px',
-            borderTop: '1px solid var(--semi-color-border)',
+            borderTop: '1px solid var(--border-default)',
           }}
         >
           <Button

@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Col, Form, Row, Spin } from '@douyinfe/semi-ui';
+import { Button, Col, Form, Row } from '@douyinfe/semi-ui';
 import {
   compareObjects,
   API,
@@ -29,6 +29,7 @@ import {
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 const CLAUDE_HEADER = {
   'claude-3-7-sonnet-20250219-thinking': {
@@ -114,7 +115,7 @@ export default function SettingClaudeModel(props) {
 
   return (
     <>
-      <Spin spinning={loading}>
+      <MacSpinner spinning={loading}>
         <Form
           values={inputs}
           getFormApi={(formAPI) => (refForm.current = formAPI)}
@@ -244,7 +245,7 @@ export default function SettingClaudeModel(props) {
             </Row>
           </Form.Section>
         </Form>
-      </Spin>
+      </MacSpinner>
     </>
   );
 }

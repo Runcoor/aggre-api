@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Form, Row, Col, Typography, Spin } from '@douyinfe/semi-ui';
+import { Button, Form, Row, Col, Typography } from '@douyinfe/semi-ui';
 const { Text } = Typography;
 import {
   API,
@@ -28,6 +28,7 @@ import {
   verifyJSON,
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 export default function SettingsPaymentGateway(props) {
   const { t } = useTranslation();
@@ -210,7 +211,7 @@ export default function SettingsPaymentGateway(props) {
   };
 
   return (
-    <Spin spinning={loading}>
+    <MacSpinner spinning={loading}>
       <Form
         initValues={inputs}
         onValueChange={handleFormChange}
@@ -327,6 +328,6 @@ export default function SettingsPaymentGateway(props) {
           <Button onClick={submitPayAddress}>{t('更新支付设置')}</Button>
         </Form.Section>
       </Form>
-    </Spin>
+    </MacSpinner>
   );
 }

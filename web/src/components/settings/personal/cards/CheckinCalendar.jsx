@@ -24,7 +24,6 @@ import {
   Button,
   Typography,
   Avatar,
-  Spin,
   Tooltip,
   Collapsible,
   Modal,
@@ -38,6 +37,7 @@ import {
 } from 'lucide-react';
 import Turnstile from 'react-turnstile';
 import { API, showError, showSuccess, renderQuota } from '../../../../helpers';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const CheckinCalendar = ({ t, status, turnstileEnabled, turnstileSiteKey }) => {
   const [loading, setLoading] = useState(false);
@@ -311,7 +311,7 @@ const CheckinCalendar = ({ t, status, turnstileEnabled, turnstileSiteKey }) => {
         </div>
 
         {/* 签到日历 - 使用更紧凑的样式 */}
-        <Spin spinning={loading}>
+        <MacSpinner spinning={loading}>
           <div className='rounded-lg overflow-hidden checkin-calendar' style={{ border: '1px solid var(--border-default)' }}>
             <style>{`
             .checkin-calendar .semi-calendar {
@@ -350,7 +350,7 @@ const CheckinCalendar = ({ t, status, turnstileEnabled, turnstileSiteKey }) => {
               background: transparent;
             }
             .checkin-calendar .semi-calendar-month-today .semi-calendar-month-grid-row-cell-day {
-              background: var(--semi-color-primary);
+              background: var(--accent);
               color: white;border-radius: 50%;
               width: 20px;
               height: 20px;
@@ -364,7 +364,7 @@ const CheckinCalendar = ({ t, status, turnstileEnabled, turnstileSiteKey }) => {
               dateGridRender={(dateString, date) => dateRender(dateString)}
             />
           </div>
-        </Spin>
+        </MacSpinner>
 
         {/* 签到说明 */}
         <div className='mt-3 p-2.5 rounded-lg' style={{ background: 'var(--surface-hover)' }}>

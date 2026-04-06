@@ -811,13 +811,13 @@ const CustomOAuthSetting = ({ serverAddress }) => {
                   style={{
                     width: '100%',
                     minHeight: 74,
-                    border: '1px solid var(--semi-color-border)',
-                    borderRadius: 8,
+                    border: '1px solid var(--border-default)',
+                    borderRadius: 'var(--radius-md)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginBottom: 24,
-                    background: 'var(--semi-color-fill-0)',
+                    background: 'var(--bg-subtle)',
                   }}
                 >
                   {getOAuthProviderIcon(formValues.icon || '', 24)}

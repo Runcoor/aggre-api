@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Col, Form, Row, Spin } from '@douyinfe/semi-ui';
+import { Button, Col, Form, Row } from '@douyinfe/semi-ui';
 import {
   API,
   compareObjects,
@@ -27,6 +27,7 @@ import {
   showWarning,
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 const XAI_VIOLATION_FEE_DOC_URL =
   'https://docs.x.ai/docs/models#usage-guidelines-violation-fee';
@@ -97,7 +98,7 @@ export default function SettingGrokModel(props) {
   }, [props.options]);
 
   return (
-    <Spin spinning={loading}>
+    <MacSpinner spinning={loading}>
       <Form
         values={inputs}
         getFormApi={(formAPI) => (refForm.current = formAPI)}
@@ -169,6 +170,6 @@ export default function SettingGrokModel(props) {
           </Row>
         </Form.Section>
       </Form>
-    </Spin>
+    </MacSpinner>
   );
 }

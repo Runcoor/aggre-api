@@ -24,7 +24,6 @@ import {
   Row,
   Col,
   Typography,
-  Spin,
   Table,
   Modal,
   Input,
@@ -35,6 +34,7 @@ const { Text } = Typography;
 import { API, showError, showSuccess } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash2 } from 'lucide-react';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 export default function SettingsPaymentGatewayCreem(props) {
   const { t } = useTranslation();
@@ -253,7 +253,7 @@ export default function SettingsPaymentGatewayCreem(props) {
   ];
 
   return (
-    <Spin spinning={loading}>
+    <MacSpinner spinning={loading}>
       <Form
         initValues={inputs}
         onValueChange={handleFormChange}
@@ -417,6 +417,6 @@ export default function SettingsPaymentGatewayCreem(props) {
           </div>
         </div>
       </Modal>
-    </Spin>
+    </MacSpinner>
   );
 }

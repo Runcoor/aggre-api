@@ -75,11 +75,10 @@ const DeploymentAccessGuard = ({
           <Card
             style={{
               padding: '60px 40px',
-              borderRadius: '16px',
-              border: '1px solid var(--semi-color-border)',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid var(--border-default)',
               background:
-                'linear-gradient(135deg, var(--semi-color-bg-0) 0%, var(--semi-color-fill-0) 100%)',
+                'var(--bg-subtle)',
             }}
           >
             {/* 图标区域 */}
@@ -92,13 +91,12 @@ const DeploymentAccessGuard = ({
                   width: '120px',
                   height: '120px',
                   borderRadius: '50%',
-                  background:
-                    'linear-gradient(135deg, rgba(var(--semi-orange-4), 0.15) 0%, rgba(var(--semi-orange-5), 0.1) 100%)',
-                  border: '3px solid rgba(var(--semi-orange-4), 0.3)',
+                  background: 'var(--warning-light)',
+                  border: '1px solid var(--warning)',
                   marginBottom: '24px',
                 }}
               >
-                <AlertCircle size={56} color='var(--semi-color-warning)' />
+                <AlertCircle size={56} color='var(--warning)' />
               </div>
             </div>
 
@@ -107,7 +105,7 @@ const DeploymentAccessGuard = ({
               <Title
                 heading={2}
                 style={{
-                  color: 'var(--semi-color-text-0)',
+                  color: 'var(--text-primary)',
                   margin: '0 0 12px 0',
                   fontSize: '28px',
                   fontWeight: '700',
@@ -119,7 +117,7 @@ const DeploymentAccessGuard = ({
                 style={{
                   fontSize: '18px',
                   lineHeight: '1.6',
-                  color: 'var(--semi-color-text-1)',
+                  color: 'var(--text-secondary)',
                   display: 'block',
                 }}
               >
@@ -130,10 +128,10 @@ const DeploymentAccessGuard = ({
             {/* 配置要求区域 */}
             <div
               style={{
-                backgroundColor: 'var(--semi-color-bg-1)',
+                backgroundColor: 'var(--bg-subtle)',
                 padding: '24px',
                 borderRadius: '12px',
-                border: '1px solid var(--semi-color-border)',
+                border: '1px solid var(--border-default)',
                 margin: '32px 0',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
               }}
@@ -158,13 +156,13 @@ const DeploymentAccessGuard = ({
                     backgroundColor: 'rgba(var(--semi-blue-4), 0.15)',
                   }}
                 >
-                  <Server size={20} color='var(--semi-color-primary)' />
+                  <Server size={20} color='var(--accent)' />
                 </div>
                 <Text
                   strong
                   style={{
                     fontSize: '16px',
-                    color: 'var(--semi-color-text-0)',
+                    color: 'var(--text-primary)',
                   }}
                 >
                   {t('需要配置的项目')}
@@ -190,14 +188,14 @@ const DeploymentAccessGuard = ({
                       width: '6px',
                       height: '6px',
                       borderRadius: '50%',
-                      backgroundColor: 'var(--semi-color-primary)',
+                      backgroundColor: 'var(--accent)',
                       flexShrink: 0,
                     }}
                   ></div>
                   <Text
                     style={{
                       fontSize: '15px',
-                      color: 'var(--semi-color-text-1)',
+                      color: 'var(--text-secondary)',
                     }}
                   >
                     {t('启用 io.net 部署开关')}
@@ -211,14 +209,14 @@ const DeploymentAccessGuard = ({
                       width: '6px',
                       height: '6px',
                       borderRadius: '50%',
-                      backgroundColor: 'var(--semi-color-primary)',
+                      backgroundColor: 'var(--accent)',
                       flexShrink: 0,
                     }}
                   ></div>
                   <Text
                     style={{
                       fontSize: '15px',
-                      color: 'var(--semi-color-text-1)',
+                      color: 'var(--text-secondary)',
                     }}
                   >
                     {t('配置有效的 io.net API Key')}
@@ -240,20 +238,20 @@ const DeploymentAccessGuard = ({
                   borderRadius: '8px',
                   fontSize: '16px',
                   fontWeight: '500',
-                  color: 'var(--semi-color-primary)',
-                  background: 'var(--semi-color-fill-0)',
-                  border: '1px solid var(--semi-color-border)',
+                  color: 'var(--accent)',
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-default)',
                   transition: 'all 0.2s ease',
                   textDecoration: 'none',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--semi-color-fill-1)';
+                  e.currentTarget.style.background = 'var(--surface-hover)';
                   e.currentTarget.style.transform = 'translateY(-1px)';
                   e.currentTarget.style.boxShadow =
                     '0 2px 8px rgba(0, 0, 0, 0.1)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--semi-color-fill-0)';
+                  e.currentTarget.style.background = 'var(--bg-subtle)';
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
@@ -268,7 +266,7 @@ const DeploymentAccessGuard = ({
               type='tertiary'
               style={{
                 fontSize: '14px',
-                color: 'var(--semi-color-text-2)',
+                color: 'var(--text-muted)',
                 lineHeight: '1.5',
               }}
             >
@@ -321,11 +319,10 @@ const DeploymentAccessGuard = ({
           <Card
             style={{
               padding: '60px 40px',
-              borderRadius: '16px',
-              border: '1px solid var(--semi-color-border)',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid var(--border-default)',
               background:
-                'linear-gradient(135deg, var(--semi-color-bg-0) 0%, var(--semi-color-fill-0) 100%)',
+                'var(--bg-subtle)',
             }}
           >
             <div style={{ marginBottom: '32px' }}>
@@ -337,13 +334,12 @@ const DeploymentAccessGuard = ({
                   width: '120px',
                   height: '120px',
                   borderRadius: '50%',
-                  background:
-                    'linear-gradient(135deg, rgba(var(--semi-red-4), 0.15) 0%, rgba(var(--semi-red-5), 0.1) 100%)',
-                  border: '3px solid rgba(var(--semi-red-4), 0.3)',
+                  background: 'var(--error-light)',
+                  border: '1px solid var(--error)',
                   marginBottom: '24px',
                 }}
               >
-                <WifiOff size={56} color='var(--semi-color-danger)' />
+                <WifiOff size={56} color='var(--error)' />
               </div>
             </div>
 
@@ -351,7 +347,7 @@ const DeploymentAccessGuard = ({
               <Title
                 heading={2}
                 style={{
-                  color: 'var(--semi-color-text-0)',
+                  color: 'var(--text-primary)',
                   margin: '0 0 12px 0',
                   fontSize: '28px',
                   fontWeight: '700',
@@ -363,7 +359,7 @@ const DeploymentAccessGuard = ({
                 style={{
                   fontSize: '18px',
                   lineHeight: '1.6',
-                  color: 'var(--semi-color-text-1)',
+                  color: 'var(--text-secondary)',
                   display: 'block',
                 }}
               >

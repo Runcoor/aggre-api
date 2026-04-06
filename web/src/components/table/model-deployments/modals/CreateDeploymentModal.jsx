@@ -31,7 +31,6 @@ import {
   Button,
   Typography,
   Space,
-  Spin,
   Tag,
   Row,
   Col,
@@ -46,6 +45,7 @@ import {
 } from '@douyinfe/semi-icons';
 import { API } from '../../../../helpers';
 import { showError, showSuccess, copy } from '../../../../helpers';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 const { Option } = Select;
@@ -808,7 +808,7 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
     <div style={{ marginTop: 12 }}>
       {loadingPrice ? (
         <Space spacing={8} align='center'>
-          <Spin size='small' />
+          <MacSpinner size='small' />
           <Text size='small' type='tertiary'>
             {t('价格计算中...')}
           </Text>
@@ -999,7 +999,7 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
                       <Option key={hardware.id} value={hardware.id}>
                         <div className='flex flex-col gap-1'>
                           <Text strong>{displayName}</Text>
-                          <div className='flex items-center gap-2 text-xs text-[var(--semi-color-text-2)]'>
+                          <div className='flex items-center gap-2 text-xs text-[var(--text-muted)]'>
                             <span>
                               {t('最大GPU数量')}: {hardware.max_gpus}
                             </span>
@@ -1041,7 +1041,7 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
               label={
                 <Space>
                   {t('部署位置')}
-                  {loadingReplicas && <Spin size='small' />}
+                  {loadingReplicas && <MacSpinner size='small' />}
                 </Space>
               }
               placeholder={
@@ -1416,8 +1416,8 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
                   <div
                     className='flex flex-col gap-1 rounded-md px-4 py-3'
                     style={{
-                      border: '1px solid var(--semi-color-border)',
-                      backgroundColor: 'var(--semi-color-fill-0)',
+                      border: '1px solid var(--border-default)',
+                      backgroundColor: 'var(--bg-subtle)',
                     }}
                   >
                     <Text size='small' type='tertiary'>
@@ -1427,7 +1427,7 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
                       style={{
                         fontSize: 24,
                         fontWeight: 600,
-                        color: 'var(--semi-color-text-0)',
+                        color: 'var(--text-primary)',
                       }}
                     >
                       {typeof priceEstimation.estimated_cost === 'number'
@@ -1438,8 +1438,8 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
                   <div
                     className='flex flex-col gap-1 rounded-md px-4 py-3'
                     style={{
-                      border: '1px solid var(--semi-color-border)',
-                      backgroundColor: 'var(--semi-color-fill-0)',
+                      border: '1px solid var(--border-default)',
+                      backgroundColor: 'var(--bg-subtle)',
                     }}
                   >
                     <Text size='small' type='tertiary'>
@@ -1455,8 +1455,8 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
                   <div
                     className='flex flex-col gap-1 rounded-md px-4 py-3'
                     style={{
-                      border: '1px solid var(--semi-color-border)',
-                      backgroundColor: 'var(--semi-color-fill-0)',
+                      border: '1px solid var(--border-default)',
+                      backgroundColor: 'var(--bg-subtle)',
                     }}
                   >
                     <Text size='small' type='tertiary'>
@@ -1477,8 +1477,8 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
                       key={item.key}
                       className='flex items-center justify-between gap-3 rounded-md px-3 py-2'
                       style={{
-                        border: '1px solid var(--semi-color-border)',
-                        backgroundColor: 'var(--semi-color-fill-0)',
+                        border: '1px solid var(--border-default)',
+                        backgroundColor: 'var(--bg-subtle)',
                       }}
                     >
                       <Text size='small' type='tertiary'>
@@ -1495,7 +1495,7 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
 
             {priceEstimation && loadingPrice && (
               <Space align='center' spacing={8} style={{ marginTop: 12 }}>
-                <Spin size='small' />
+                <MacSpinner size='small' />
                 <Text size='small' type='tertiary'>
                   {t('价格重新计算中...')}
                 </Text>

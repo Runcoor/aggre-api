@@ -24,7 +24,6 @@ import {
   Button,
   SideSheet,
   Space,
-  Spin,
   Typography,
   Card,
   Tag,
@@ -35,6 +34,7 @@ import {
 } from '@douyinfe/semi-ui';
 import { IconSave, IconClose, IconUserAdd } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text, Title } = Typography;
 
@@ -112,7 +112,7 @@ const AddUserModal = (props) => {
         closeIcon={null}
         onCancel={() => handleCancel()}
       >
-        <Spin spinning={loading}>
+        <MacSpinner spinning={loading}>
           <Form
             initValues={getInitValues()}
             getFormApi={(api) => (formApiRef.current = api)}
@@ -177,7 +177,7 @@ const AddUserModal = (props) => {
               </Card>
             </div>
           </Form>
-        </Spin>
+        </MacSpinner>
       </SideSheet>
     </>
   );

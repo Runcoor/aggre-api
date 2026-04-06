@@ -18,9 +18,10 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Typography, Spin } from '@douyinfe/semi-ui';
+import { Modal, Button, Typography } from '@douyinfe/semi-ui';
 import { IconExternalOpen, IconCopy } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const { Text } = Typography;
 
@@ -131,7 +132,7 @@ const ContentModal = ({
               zIndex: 10,
             }}
           >
-            <Spin size='large' />
+            <MacSpinner size='large' />
           </div>
         )}
         <video

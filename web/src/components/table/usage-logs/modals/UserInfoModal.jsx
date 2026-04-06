@@ -36,7 +36,7 @@ const UserInfoModal = ({
     alignItems: 'center',
     marginBottom: '2px',
     fontSize: '12px',
-    color: 'var(--semi-color-text-2)',
+    color: 'var(--text-muted)',
     gap: '6px',
   };
 
@@ -50,7 +50,7 @@ const UserInfoModal = ({
   const valueStyle = {
     fontSize: '14px',
     fontWeight: '600',
-    color: 'var(--semi-color-text-0)',
+    color: 'var(--text-primary)',
   };
 
   const rowStyle = {

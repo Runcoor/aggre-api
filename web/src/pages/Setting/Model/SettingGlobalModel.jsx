@@ -23,7 +23,6 @@ import {
   Col,
   Form,
   Row,
-  Spin,
   Banner,
   Tag,
   Divider,
@@ -37,6 +36,7 @@ import {
   verifyJSON,
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 const thinkingExample = JSON.stringify(
   ['moonshotai/kimi-k2-thinking', 'kimi-k2-thinking'],
@@ -181,7 +181,7 @@ export default function SettingGlobalModel(props) {
 
   return (
     <>
-      <Spin spinning={loading}>
+      <MacSpinner spinning={loading}>
         <Form
           values={inputs}
           getFormApi={(formAPI) => (refForm.current = formAPI)}
@@ -410,7 +410,7 @@ export default function SettingGlobalModel(props) {
             </Row>
           </Form.Section>
         </Form>
-      </Spin>
+      </MacSpinner>
     </>
   );
 }

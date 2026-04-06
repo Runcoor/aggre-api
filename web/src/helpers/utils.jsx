@@ -880,7 +880,7 @@ export const formatPriceInfo = (priceData, t, quotaDisplayType = 'USD') => {
   return (
     <>
       {items.map((item) => (
-        <span key={item.key} style={{ color: 'var(--semi-color-text-1)' }}>
+        <span key={item.key} style={{ color: 'var(--text-secondary)' }}>
           {item.label} {item.value}
           {item.suffix}
         </span>
@@ -915,7 +915,7 @@ export const createCardProPagination = ({
       {!isMobile && (
         <span
           className='text-sm select-none'
-          style={{ color: 'var(--semi-color-text-2)' }}
+          style={{ color: 'var(--text-muted)' }}
         >
           {totalText}
         </span>

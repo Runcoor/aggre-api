@@ -21,7 +21,6 @@ import React from 'react';
 import {
   Card,
   Button,
-  Spin,
   Tabs,
   TabPane,
   Tag,
@@ -33,6 +32,7 @@ import {
   IllustrationConstructionDark,
 } from '@douyinfe/semi-illustrations';
 import ScrollableContainer from '../common/ui/ScrollableContainer';
+import MacSpinner from '../common/ui/MacSpinner';
 
 const UptimePanel = ({
   uptimeData,
@@ -79,7 +79,7 @@ const UptimePanel = ({
     >
       {/* 内容区域 */}
       <div className='relative'>
-        <Spin spinning={uptimeLoading}>
+        <MacSpinner spinning={uptimeLoading}>
           {uptimeData.length > 0 ? (
             uptimeData.length === 1 ? (
               <ScrollableContainer maxHeight='24rem'>
@@ -134,7 +134,7 @@ const UptimePanel = ({
               />
             </div>
           )}
-        </Spin>
+        </MacSpinner>
       </div>
 
       {/* 图例 */}

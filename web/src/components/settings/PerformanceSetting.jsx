@@ -18,9 +18,10 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState } from 'react';
-import { Card, Spin } from '@douyinfe/semi-ui';
+import { Card } from '@douyinfe/semi-ui';
 import SettingsPerformance from '../../pages/Setting/Performance/SettingsPerformance';
 import { API, showError, toBoolean } from '../../helpers';
+import MacSpinner from '../common/ui/MacSpinner';
 
 const PerformanceSetting = () => {
   let [inputs, setInputs] = useState({
@@ -67,12 +68,12 @@ const PerformanceSetting = () => {
 
   return (
     <>
-      <Spin spinning={loading} size='large'>
+      <MacSpinner spinning={loading} size='large'>
         {/* 性能设置 */}
         <Card style={{ marginTop: '10px' }}>
           <SettingsPerformance options={inputs} refresh={onRefresh} />
         </Card>
-      </Spin>
+      </MacSpinner>
     </>
   );
 };

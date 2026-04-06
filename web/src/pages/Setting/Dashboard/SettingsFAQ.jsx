@@ -95,7 +95,7 @@ const SettingsFAQ = ({ options, refresh }) => {
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              color: 'var(--semi-color-text-1)',
+              color: 'var(--text-secondary)',
             }}
           >
             {text}

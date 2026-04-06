@@ -127,7 +127,7 @@ const SettingsAnnouncements = ({ options, refresh }) => {
           <div
             style={{
               fontSize: '12px',
-              color: 'var(--semi-color-text-2)',
+              color: 'var(--text-muted)',
               marginTop: '2px',
             }}
           >
@@ -159,7 +159,7 @@ const SettingsAnnouncements = ({ options, refresh }) => {
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              color: 'var(--semi-color-text-2)',
+              color: 'var(--text-muted)',
             }}
           >
             {text || '-'}

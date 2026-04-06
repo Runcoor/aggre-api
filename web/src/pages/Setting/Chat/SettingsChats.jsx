@@ -24,7 +24,6 @@ import {
   Dropdown,
   Form,
   Space,
-  Spin,
   RadioGroup,
   Radio,
   Table,
@@ -49,6 +48,7 @@ import {
   verifyJSON,
 } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 export default function SettingsChats(props) {
   const { t } = useTranslation();
@@ -376,7 +376,7 @@ export default function SettingsChats(props) {
   ];
 
   return (
-    <Spin spinning={loading}>
+    <MacSpinner spinning={loading}>
       <Space vertical style={{ width: '100%' }}>
         <Form.Section text={t('聊天设置')}>
           <Banner
@@ -557,6 +557,6 @@ export default function SettingsChats(props) {
           />
         </Form>
       </Modal>
-    </Spin>
+    </MacSpinner>
   );
 }

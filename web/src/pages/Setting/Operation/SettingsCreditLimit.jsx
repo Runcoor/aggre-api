@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Col, Form, Row, Spin } from '@douyinfe/semi-ui';
+import { Button, Col, Form, Row } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 import {
   compareObjects,
@@ -27,6 +27,7 @@ import {
   showSuccess,
   showWarning,
 } from '../../../helpers';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 export default function SettingsCreditLimit(props) {
   const { t } = useTranslation();
@@ -89,7 +90,7 @@ export default function SettingsCreditLimit(props) {
   }, [props.options]);
   return (
     <>
-      <Spin spinning={loading}>
+      <MacSpinner spinning={loading}>
         <Form
           values={inputs}
           getFormApi={(formAPI) => (refForm.current = formAPI)}
@@ -192,7 +193,7 @@ export default function SettingsCreditLimit(props) {
             </Row>
           </Form.Section>
         </Form>
-      </Spin>
+      </MacSpinner>
     </>
   );
 }

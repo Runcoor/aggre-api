@@ -23,7 +23,6 @@ import {
   Col,
   Form,
   Row,
-  Spin,
   DatePicker,
   Typography,
   Modal,
@@ -37,6 +36,7 @@ import {
   showSuccess,
   showWarning,
 } from '../../../helpers';
+import MacSpinner from '../../../components/common/ui/MacSpinner';
 
 const { Text } = Typography;
 
@@ -193,7 +193,7 @@ export default function SettingsLog(props) {
   }, [props.options]);
   return (
     <>
-      <Spin spinning={loading}>
+      <MacSpinner spinning={loading}>
         <Form
           values={inputs}
           getFormApi={(formAPI) => (refForm.current = formAPI)}
@@ -217,7 +217,7 @@ export default function SettingsLog(props) {
                 />
               </Col>
               <Col xs={24} sm={12} md={8} lg={8} xl={8}>
-                <Spin spinning={loadingCleanHistoryLog}>
+                <MacSpinner spinning={loadingCleanHistoryLog}>
                   <Form.DatePicker
                     label={t('清除历史日志')}
                     field={'historyTimestamp'}
@@ -244,7 +244,7 @@ export default function SettingsLog(props) {
                   >
                     {t('清除历史日志')}
                   </Button>
-                </Spin>
+                </MacSpinner>
               </Col>
             </Row>
 
@@ -255,7 +255,7 @@ export default function SettingsLog(props) {
             </Row>
           </Form.Section>
         </Form>
-      </Spin>
+      </MacSpinner>
     </>
   );
 }

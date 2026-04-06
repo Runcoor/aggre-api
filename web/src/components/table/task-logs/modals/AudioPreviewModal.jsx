@@ -53,8 +53,8 @@ const AudioClipCard = ({ clip }) => {
         gap: '16px',
         padding: '16px',
         borderRadius: '8px',
-        border: '1px solid var(--semi-color-border)',
-        background: 'var(--semi-color-bg-1)',
+        border: '1px solid var(--border-default)',
+        background: 'var(--bg-subtle)',
       }}
     >
       {imageUrl && (

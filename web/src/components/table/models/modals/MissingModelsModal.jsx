@@ -21,7 +21,6 @@ import React, { useEffect, useState } from 'react';
 import {
   Modal,
   Table,
-  Spin,
   Button,
   Typography,
   Empty,
@@ -35,6 +34,7 @@ import { IconSearch } from '@douyinfe/semi-icons';
 import { API, showError } from '../../../../helpers';
 import { MODEL_TABLE_PAGE_SIZE } from '../../../../constants';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
+import MacSpinner from '../../../common/ui/MacSpinner';
 
 const MissingModelsModal = ({ visible, onClose, onConfigureModel, t }) => {
   const [loading, setLoading] = useState(false);
@@ -116,7 +116,7 @@ const MissingModelsModal = ({ visible, onClose, onConfigureModel, t }) => {
           <div className='flex items-center gap-2'>
             <Typography.Text
               strong
-              className='!text-[var(--semi-color-text-0)] !text-base'
+              className='!text-[var(--text-primary)] !text-base'
             >
               {t('未配置的模型列表')}
             </Typography.Text>
@@ -132,7 +132,7 @@ const MissingModelsModal = ({ visible, onClose, onConfigureModel, t }) => {
       size={isMobile ? 'full-width' : 'medium'}
       className='!rounded-lg'
     >
-      <Spin spinning={loading}>
+      <MacSpinner spinning={loading}>
         {missingModels.length === 0 && !loading ? (
           <Empty
             image={<IllustrationNoResult style={{ width: 150, height: 150 }} />}
@@ -190,7 +190,7 @@ const MissingModelsModal = ({ visible, onClose, onConfigureModel, t }) => {
             )}
           </div>
         )}
-      </Spin>
+      </MacSpinner>
     </Modal>
   );
 };

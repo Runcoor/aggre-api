@@ -47,22 +47,37 @@ const ColumnSelectorModal = ({
 
   return (
     <Modal
-      title={t('列设置')}
+      title={
+        <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600 }}>
+          {t('列设置')}
+        </span>
+      }
       visible={showColumnSelector}
       onCancel={() => setShowColumnSelector(false)}
+      centered
       footer={
-        <div className='flex justify-end'>
-          <Button onClick={() => initDefaultColumns()}>{t('重置')}</Button>
-          <Button onClick={() => setShowColumnSelector(false)}>
-            {t('取消')}
+        <div className='flex items-center justify-between'>
+          <Button
+            type='tertiary'
+            theme='borderless'
+            size='small'
+            onClick={() => initDefaultColumns()}
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            {t('重置')}
           </Button>
-          <Button onClick={() => setShowColumnSelector(false)}>
-            {t('确定')}
-          </Button>
+          <div className='flex gap-2'>
+            <Button type='tertiary' onClick={() => setShowColumnSelector(false)}>
+              {t('取消')}
+            </Button>
+            <Button type='primary' theme='solid' onClick={() => setShowColumnSelector(false)}>
+              {t('确定')}
+            </Button>
+          </div>
         </div>
       }
     >
-      <div style={{ marginBottom: 20 }}>
+      <div className='flex items-center justify-between mb-3 px-1'>
         <Checkbox
           checked={Object.values(visibleColumns).every((v) => v === true)}
           indeterminate={
@@ -71,12 +86,18 @@ const ColumnSelectorModal = ({
           }
           onChange={(e) => handleSelectAll(e.target.checked)}
         >
-          {t('全选')}
+          <span className='text-sm font-medium' style={{ color: 'var(--text-primary)' }}>
+            {t('全选')}
+          </span>
         </Checkbox>
       </div>
       <div
-        className='flex flex-wrap max-h-96 overflow-y-auto rounded-lg p-4'
-        style={{ border: '1px solid var(--semi-color-border)' }}
+        className='flex flex-wrap max-h-96 overflow-y-auto p-4'
+        style={{
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border-default)',
+          background: 'var(--bg-subtle)',
+        }}
       >
         {allColumns.map((column) => {
           // Skip admin-only columns for non-admin users

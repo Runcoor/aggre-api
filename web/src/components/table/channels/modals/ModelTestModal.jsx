@@ -139,7 +139,12 @@ const ModelTestModal = ({
       dataIndex: 'model',
       render: (text) => (
         <div className='flex items-center'>
-          <Typography.Text strong>{text}</Typography.Text>
+          <span
+            className='text-sm font-medium'
+            style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}
+          >
+            {text}
+          </span>
         </div>
       ),
     },
@@ -173,12 +178,12 @@ const ModelTestModal = ({
               {testResult.success ? t('成功') : t('失败')}
             </Tag>
             {testResult.success && (
-              <Typography.Text type='tertiary'>
+              <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
                 {t('请求时长: ${time}s').replace(
                   '${time}',
                   testResult.time.toFixed(2),
                 )}
-              </Typography.Text>
+              </span>
             )}
           </div>
         );
@@ -220,86 +225,118 @@ const ModelTestModal = ({
     }));
   })();
 
+  const totalModels = hasChannel ? currentTestChannel.models.split(',').length : 0;
+
   return (
     <Modal
       title={
         hasChannel ? (
-          <div className='flex flex-col gap-2 w-full'>
-            <div className='flex items-center gap-2'>
-              <Typography.Text
-                strong
-                className='!text-[var(--semi-color-text-0)] !text-base'
-              >
-                {currentTestChannel.name} {t('渠道的模型测试')}
-              </Typography.Text>
-              <Typography.Text type='tertiary' size='small'>
-                {t('共')} {currentTestChannel.models.split(',').length}{' '}
-                {t('个模型')}
-              </Typography.Text>
-            </div>
+          <div className='flex flex-col gap-1'>
+            <span
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 600,
+                fontSize: '16px',
+                color: 'var(--text-primary)',
+              }}
+            >
+              {currentTestChannel.name}
+            </span>
+            <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
+              {t('渠道的模型测试')} · {totalModels} {t('个模型')}
+            </span>
           </div>
         ) : null
       }
       visible={showModelTestModal}
       onCancel={handleCloseModal}
+      centered
       footer={
         hasChannel ? (
-          <div className='flex justify-end'>
-            {isBatchTesting ? (
-              <Button type='danger' onClick={handleCloseModal}>
-                {t('停止测试')}
+          <div className='flex items-center justify-between'>
+            <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
+              {filteredModels.length !== totalModels
+                ? `${filteredModels.length} / ${totalModels} ${t('个模型')}`
+                : ''}
+            </span>
+            <div className='flex gap-2'>
+              {isBatchTesting ? (
+                <Button
+                  type='danger'
+                  theme='solid'
+                  onClick={handleCloseModal}
+                >
+                  {t('停止测试')}
+                </Button>
+              ) : (
+                <Button type='tertiary' onClick={handleCloseModal}>
+                  {t('取消')}
+                </Button>
+              )}
+              <Button
+                type='primary'
+                theme='solid'
+                onClick={batchTestModels}
+                loading={isBatchTesting}
+                disabled={isBatchTesting}
+              >
+                {isBatchTesting
+                  ? t('测试中...')
+                  : t('批量测试${count}个模型').replace(
+                      '${count}',
+                      filteredModels.length,
+                    )}
               </Button>
-            ) : (
-              <Button type='tertiary' onClick={handleCloseModal}>
-                {t('取消')}
-              </Button>
-            )}
-            <Button
-              onClick={batchTestModels}
-              loading={isBatchTesting}
-              disabled={isBatchTesting}
-            >
-              {isBatchTesting
-                ? t('测试中...')
-                : t('批量测试${count}个模型').replace(
-                    '${count}',
-                    filteredModels.length,
-                  )}
-            </Button>
+            </div>
           </div>
         ) : null
       }
       maskClosable={!isBatchTesting}
-      className='!rounded-lg'
       size={isMobile ? 'full-width' : 'large'}
     >
       {hasChannel && (
         <div className='model-test-scroll'>
-          {/* Endpoint toolbar */}
-          <div className='flex flex-col sm:flex-row sm:items-center gap-2 w-full mb-2'>
-            <div className='flex items-center gap-2 flex-1 min-w-0'>
-              <Typography.Text strong className='shrink-0'>
-                {t('端点类型')}:
-              </Typography.Text>
-              <Select
-                value={selectedEndpointType}
-                onChange={setSelectedEndpointType}
-                optionList={endpointTypeOptions}
-                className='!w-full min-w-0'
-                placeholder={t('选择端点类型')}
-              />
-            </div>
-            <div className='flex items-center justify-between sm:justify-end gap-2 shrink-0'>
-              <Typography.Text strong className='shrink-0'>
-                {t('流式')}:
-              </Typography.Text>
-              <Switch
-                checked={isStreamTest}
-                onChange={setIsStreamTest}
-                size='small'
-                disabled={streamToggleDisabled}
-                aria-label={t('流式')}
-              />
+          {/* Endpoint config card */}
+          <div
+            className='p-3 mb-3'
+            style={{
+              borderRadius: 'var(--radius-lg)',
+              background: 'var(--bg-subtle)',
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            <div className='flex flex-col sm:flex-row sm:items-center gap-2 w-full'>
+              <div className='flex items-center gap-2 flex-1 min-w-0'>
+                <span
+                  className='text-xs font-medium shrink-0'
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  {t('端点类型')}
+                </span>
+                <Select
+                  value={selectedEndpointType}
+                  onChange={setSelectedEndpointType}
+                  optionList={endpointTypeOptions}
+                  className='!w-full min-w-0'
+                  placeholder={t('选择端点类型')}
+                  size='small'
+                />
+              </div>
+              <div className='flex items-center justify-between sm:justify-end gap-2 shrink-0'>
+                <span
+                  className='text-xs font-medium shrink-0'
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  {t('流式')}
+                </span>
+                <Switch
+                  checked={isStreamTest}
+                  onChange={setIsStreamTest}
+                  size='small'
+                  disabled={streamToggleDisabled}
+                  aria-label={t('流式')}
+                />
+              </div>
             </div>
           </div>
 
@@ -307,13 +344,13 @@ const ModelTestModal = ({
             type='info'
             closeIcon={null}
             icon={<IconInfoCircle />}
-            className='!rounded-lg mb-2'
+            style={{ borderRadius: 'var(--radius-md)', marginBottom: '8px' }}
             description={t(
               '说明：本页测试为非流式请求；若渠道仅支持流式返回，可能出现测试失败，请以实际使用为准。',
             )}
           />
 
-          {/* 搜索与操作按钮 */}
+          {/* Search and action bar */}
           <div className='flex flex-col sm:flex-row sm:items-center gap-2 w-full mb-2'>
             <Input
               placeholder={t('搜索模型...')}
@@ -325,11 +362,24 @@ const ModelTestModal = ({
               className='!w-full sm:!flex-1'
               prefix={<IconSearch />}
               showClear
+              size='small'
             />
 
-            <div className='flex items-center justify-end gap-2'>
-              <Button onClick={handleCopySelected}>{t('复制已选')}</Button>
-              <Button type='tertiary' onClick={handleSelectSuccess}>
+            <div className='flex items-center justify-end gap-1'>
+              <Button
+                size='small'
+                type='tertiary'
+                theme='light'
+                onClick={handleCopySelected}
+              >
+                {t('复制已选')}
+              </Button>
+              <Button
+                size='small'
+                type='tertiary'
+                theme='borderless'
+                onClick={handleSelectSuccess}
+              >
                 {t('选择成功')}
               </Button>
             </div>

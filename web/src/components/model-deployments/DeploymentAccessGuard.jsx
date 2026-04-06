@@ -18,12 +18,10 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Card, Button, Typography } from '@douyinfe/semi-ui';
+import { Button } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Settings, Server, AlertCircle, WifiOff } from 'lucide-react';
-
-const { Title, Text } = Typography;
 
 const DeploymentAccessGuard = ({
   children,
@@ -43,12 +41,16 @@ const DeploymentAccessGuard = ({
 
   if (loading) {
     return (
-      <div className='mt-[60px] px-2'>
-        <Card loading={true} style={{ minHeight: '400px' }}>
-          <div style={{ textAlign: 'center', padding: '50px 0' }}>
-            <Text type='secondary'>{t('加载设置中...')}</Text>
-          </div>
-        </Card>
+      <div
+        className='mt-[60px] px-4 flex items-center justify-center'
+        style={{ minHeight: 'calc(100vh - 120px)' }}
+      >
+        <div className='text-center'>
+          <div className='mv-loader mx-auto mb-4' />
+          <p className='text-sm' style={{ color: 'var(--text-muted)' }}>
+            {t('加载设置中...')}
+          </p>
+        </div>
       </div>
     );
   }
@@ -56,222 +58,128 @@ const DeploymentAccessGuard = ({
   if (!isEnabled) {
     return (
       <div
-        className='mt-[60px] px-4'
-        style={{
-          minHeight: 'calc(100vh - 60px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        className='mt-[60px] px-4 flex items-center justify-center'
+        style={{ minHeight: 'calc(100vh - 120px)' }}
       >
-        <div
-          style={{
-            maxWidth: '600px',
-            width: '100%',
-            textAlign: 'center',
-            padding: '0 20px',
-          }}
-        >
-          <Card
+        <div style={{ maxWidth: '480px', width: '100%', textAlign: 'center' }}>
+          <div
+            className='rounded-[var(--radius-lg)]'
             style={{
-              padding: '60px 40px',
-              borderRadius: 'var(--radius-lg)',
+              padding: '48px 32px',
+              background: 'var(--surface)',
               border: '1px solid var(--border-default)',
-              background:
-                'var(--bg-subtle)',
             }}
           >
-            {/* 图标区域 */}
-            <div style={{ marginBottom: '32px' }}>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '120px',
-                  height: '120px',
-                  borderRadius: '50%',
-                  background: 'var(--warning-light)',
-                  border: '1px solid var(--warning)',
-                  marginBottom: '24px',
-                }}
-              >
-                <AlertCircle size={56} color='var(--warning)' />
-              </div>
-            </div>
-
-            {/* 标题区域 */}
-            <div style={{ marginBottom: '24px' }}>
-              <Title
-                heading={2}
-                style={{
-                  color: 'var(--text-primary)',
-                  margin: '0 0 12px 0',
-                  fontSize: '28px',
-                  fontWeight: '700',
-                }}
-              >
-                {t('模型部署服务未启用')}
-              </Title>
-              <Text
-                style={{
-                  fontSize: '18px',
-                  lineHeight: '1.6',
-                  color: 'var(--text-secondary)',
-                  display: 'block',
-                }}
-              >
-                {t('访问模型部署功能需要先启用 io.net 部署服务')}
-              </Text>
-            </div>
-
-            {/* 配置要求区域 */}
+            {/* Icon — restrained */}
             <div
+              className='mx-auto mb-5 flex items-center justify-center'
               style={{
-                backgroundColor: 'var(--bg-subtle)',
-                padding: '24px',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border-default)',
-                margin: '32px 0',
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'var(--warning-light)',
+              }}
+            >
+              <AlertCircle size={32} color='var(--warning)' />
+            </div>
+
+            {/* Title — serif */}
+            <h2
+              className='text-xl font-semibold mb-2'
+              style={{
+                fontFamily: 'var(--font-serif)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              {t('模型部署服务未启用')}
+            </h2>
+            <p
+              className='text-sm mb-6'
+              style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}
+            >
+              {t('访问模型部署功能需要先启用 io.net 部署服务')}
+            </p>
+
+            {/* Requirements card */}
+            <div
+              className='rounded-[var(--radius-md)] text-left mb-6'
+              style={{
+                background: 'var(--bg-subtle)',
+                border: '1px solid var(--border-subtle)',
+                overflow: 'hidden',
               }}
             >
               <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '12px',
-                  marginBottom: '16px',
-                }}
+                className='flex items-center gap-2 px-4 py-3'
+                style={{ borderBottom: '1px solid var(--border-subtle)' }}
               >
                 <div
+                  className='flex items-center justify-center'
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
-                    backgroundColor: 'var(--accent-light)',
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: 'var(--radius-sm)',
+                    background: 'var(--accent-light)',
                   }}
                 >
-                  <Server size={20} color='var(--accent)' />
+                  <Server size={16} color='var(--accent)' />
                 </div>
-                <Text
-                  strong
-                  style={{
-                    fontSize: '16px',
-                    color: 'var(--text-primary)',
-                  }}
+                <span
+                  className='text-sm font-medium'
+                  style={{ color: 'var(--text-primary)' }}
                 >
                   {t('需要配置的项目')}
-                </Text>
+                </span>
               </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                  alignItems: 'flex-start',
-                  textAlign: 'left',
-                  maxWidth: '320px',
-                  margin: '0 auto',
-                }}
-              >
-                <div
-                  style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
-                >
-                  <div
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--accent)',
-                      flexShrink: 0,
-                    }}
-                  ></div>
-                  <Text
-                    style={{
-                      fontSize: '15px',
-                      color: 'var(--text-secondary)',
-                    }}
-                  >
-                    {t('启用 io.net 部署开关')}
-                  </Text>
-                </div>
-                <div
-                  style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
-                >
-                  <div
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--accent)',
-                      flexShrink: 0,
-                    }}
-                  ></div>
-                  <Text
-                    style={{
-                      fontSize: '15px',
-                      color: 'var(--text-secondary)',
-                    }}
-                  >
-                    {t('配置有效的 io.net API Key')}
-                  </Text>
-                </div>
+              <div className='px-4 py-3 flex flex-col gap-3'>
+                {[
+                  t('启用 io.net 部署开关'),
+                  t('配置有效的 io.net API Key'),
+                ].map((item) => (
+                  <div key={item} className='flex items-center gap-3'>
+                    <div
+                      style={{
+                        width: '5px',
+                        height: '5px',
+                        borderRadius: '50%',
+                        background: 'var(--accent)',
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span
+                      className='text-sm'
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
+                      {item}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* 操作链接区域 */}
-            <div style={{ marginBottom: '20px' }}>
-              <div
-                onClick={handleGoToSettings}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  cursor: 'pointer',
-                  padding: '12px 24px',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontWeight: '500',
-                  color: 'var(--accent)',
-                  background: 'var(--bg-subtle)',
-                  border: '1px solid var(--border-default)',
-                  transition: 'all 0.2s ease',
-                  textDecoration: 'none',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--surface-hover)';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow =
-                    '0 2px 8px rgba(0, 0, 0, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--bg-subtle)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <Settings size={18} />
-                {t('前往设置页面')}
-              </div>
-            </div>
-
-            {/* 底部提示 */}
-            <Text
-              type='tertiary'
+            {/* Action button — accent */}
+            <Button
+              type='primary'
+              icon={<Settings size={16} />}
+              onClick={handleGoToSettings}
+              className='!rounded-[var(--radius-md)] mb-4'
               style={{
-                fontSize: '14px',
-                color: 'var(--text-muted)',
-                lineHeight: '1.5',
+                background: 'var(--accent)',
+                color: '#fff',
+                border: 'none',
               }}
             >
+              {t('前往设置页面')}
+            </Button>
+
+            {/* Hint */}
+            <p
+              className='text-xs'
+              style={{ color: 'var(--text-muted)', lineHeight: 1.5 }}
+            >
               {t('配置完成后刷新页面即可使用模型部署功能')}
-            </Text>
-          </Card>
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -279,12 +187,16 @@ const DeploymentAccessGuard = ({
 
   if (connectionLoading || (connectionOk === null && !connectionError)) {
     return (
-      <div className='mt-[60px] px-2'>
-        <Card loading={true} style={{ minHeight: '400px' }}>
-          <div style={{ textAlign: 'center', padding: '50px 0' }}>
-            <Text type='secondary'>{t('正在检查 io.net 连接...')}</Text>
-          </div>
-        </Card>
+      <div
+        className='mt-[60px] px-4 flex items-center justify-center'
+        style={{ minHeight: 'calc(100vh - 120px)' }}
+      >
+        <div className='text-center'>
+          <div className='mv-loader mx-auto mb-4' />
+          <p className='text-sm' style={{ color: 'var(--text-muted)' }}>
+            {t('正在检查 io.net 连接...')}
+          </p>
+        </div>
       </div>
     );
   }
@@ -299,103 +211,89 @@ const DeploymentAccessGuard = ({
 
     return (
       <div
-        className='mt-[60px] px-4'
-        style={{
-          minHeight: 'calc(100vh - 60px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        className='mt-[60px] px-4 flex items-center justify-center'
+        style={{ minHeight: 'calc(100vh - 120px)' }}
       >
-        <div
-          style={{
-            maxWidth: '600px',
-            width: '100%',
-            textAlign: 'center',
-            padding: '0 20px',
-          }}
-        >
-          <Card
+        <div style={{ maxWidth: '480px', width: '100%', textAlign: 'center' }}>
+          <div
+            className='rounded-[var(--radius-lg)]'
             style={{
-              padding: '60px 40px',
-              borderRadius: 'var(--radius-lg)',
+              padding: '48px 32px',
+              background: 'var(--surface)',
               border: '1px solid var(--border-default)',
-              background:
-                'var(--bg-subtle)',
             }}
           >
-            <div style={{ marginBottom: '32px' }}>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '120px',
-                  height: '120px',
-                  borderRadius: '50%',
-                  background: 'var(--error-light)',
-                  border: '1px solid var(--error)',
-                  marginBottom: '24px',
-                }}
-              >
-                <WifiOff size={56} color='var(--error)' />
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <Title
-                heading={2}
-                style={{
-                  color: 'var(--text-primary)',
-                  margin: '0 0 12px 0',
-                  fontSize: '28px',
-                  fontWeight: '700',
-                }}
-              >
-                {title}
-              </Title>
-              <Text
-                style={{
-                  fontSize: '18px',
-                  lineHeight: '1.6',
-                  color: 'var(--text-secondary)',
-                  display: 'block',
-                }}
-              >
-                {description}
-              </Text>
-              {detail ? (
-                <Text
-                  type='tertiary'
-                  style={{
-                    fontSize: '14px',
-                    lineHeight: '1.5',
-                    display: 'block',
-                    marginTop: '8px',
-                  }}
-                >
-                  {detail}
-                </Text>
-              ) : null}
-            </div>
-
+            {/* Icon — restrained error */}
             <div
-              style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}
+              className='mx-auto mb-5 flex items-center justify-center'
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'var(--error-light)',
+              }}
             >
+              <WifiOff size={32} color='var(--error)' />
+            </div>
+
+            {/* Title — serif */}
+            <h2
+              className='text-xl font-semibold mb-2'
+              style={{
+                fontFamily: 'var(--font-serif)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              {title}
+            </h2>
+            <p
+              className='text-sm mb-1'
+              style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}
+            >
+              {description}
+            </p>
+            {detail && (
+              <p
+                className='text-xs mb-6'
+                style={{
+                  color: 'var(--text-muted)',
+                  fontFamily: 'var(--font-mono)',
+                }}
+              >
+                {detail}
+              </p>
+            )}
+
+            {/* Actions */}
+            <div className='flex gap-3 justify-center mt-6'>
               <Button
                 type='primary'
-                icon={<Settings size={18} />}
+                icon={<Settings size={16} />}
                 onClick={handleGoToSettings}
+                className='!rounded-[var(--radius-md)]'
+                style={{
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  border: 'none',
+                }}
               >
                 {t('前往设置')}
               </Button>
-              {onRetry ? (
-                <Button type='tertiary' onClick={onRetry}>
+              {onRetry && (
+                <Button
+                  onClick={onRetry}
+                  className='!rounded-[var(--radius-md)]'
+                  style={{
+                    background: 'var(--surface-active)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-default)',
+                  }}
+                >
                   {t('重试连接')}
                 </Button>
-              ) : null}
+              )}
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     );

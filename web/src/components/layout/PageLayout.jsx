@@ -179,6 +179,21 @@ const PageLayout = () => {
           background: 'var(--bg-base)',
         }}
       >
+        {/* Mobile drawer backdrop */}
+        {isMobile && drawerOpen && (
+          <div
+            onClick={() => setDrawerOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              top: 'var(--header-height)',
+              zIndex: 98,
+              background: 'rgba(0,0,0,0.4)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+            }}
+          />
+        )}
         {showSider && (
           <Sider
             className='app-sider'
@@ -189,7 +204,7 @@ const PageLayout = () => {
               zIndex: 99,
               border: 'none',
               paddingRight: '0',
-              width: 'var(--sidebar-current-width)',
+              width: isMobile ? 'var(--sidebar-width)' : 'var(--sidebar-current-width)',
               background: 'transparent',
             }}
           >

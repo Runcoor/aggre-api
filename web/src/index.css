@@ -443,6 +443,29 @@ html.dark .semi-table-thead > .semi-table-row > .semi-table-row-head {
   -webkit-backdrop-filter: blur(4px);
 }
 
+/* Modal mobile responsiveness — prevent overflow on small screens */
+@media (max-width: 767px) {
+  .semi-modal {
+    max-width: calc(100vw - 32px) !important;
+    margin: 16px auto !important;
+  }
+  .semi-modal .semi-modal-content {
+    max-width: 100% !important;
+  }
+  .semi-modal-fullscreen,
+  .semi-modal-full-width {
+    max-width: 100vw !important;
+    margin: 0 !important;
+  }
+  .semi-sidesheet {
+    max-width: 100vw !important;
+  }
+  .semi-sidesheet-inner {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+}
+
 /* --- SideSheet Overrides --- */
 .semi-sidesheet-inner {
   background: var(--surface);

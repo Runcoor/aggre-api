@@ -23,7 +23,6 @@ import {
   Dropdown,
   Space,
   SplitButtonGroup,
-  Tag,
   AvatarGroup,
   Avatar,
   Tooltip,
@@ -60,30 +59,39 @@ function renderTimestamp(timestamp) {
   return <>{timestamp2string(timestamp)}</>;
 }
 
+// Status style map using iOS system colors
+const tokenStatusStyleMap = {
+  1: { color: 'var(--success)', bg: 'rgba(52, 199, 89, 0.12)', label: '已启用' },
+  2: { color: 'var(--error)', bg: 'rgba(255, 59, 48, 0.12)', label: '已禁用' },
+  3: { color: 'var(--warning)', bg: 'rgba(255, 149, 0, 0.12)', label: '已过期' },
+  4: { color: 'var(--text-muted)', bg: 'var(--surface-active)', label: '已耗尽' },
+};
+
+const StatusBadge = ({ style, children }) => (
+  <span
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      padding: '1px 8px',
+      borderRadius: 'var(--radius-sm)',
+      fontSize: '12px',
+      fontWeight: 500,
+      lineHeight: '20px',
+      whiteSpace: 'nowrap',
+      ...style,
+    }}
+  >
+    {children}
+  </span>
+);
+
 // Render status column only (no usage)
 const renderStatus = (text, record, t) => {
-  const enabled = text === 1;
-
-  let tagColor = 'black';
-  let tagText = t('未知状态');
-  if (enabled) {
-    tagColor = 'green';
-    tagText = t('已启用');
-  } else if (text === 2) {
-    tagColor = 'red';
-    tagText = t('已禁用');
-  } else if (text === 3) {
-    tagColor = 'yellow';
-    tagText = t('已过期');
-  } else if (text === 4) {
-    tagColor = 'grey';
-    tagText = t('已耗尽');
-  }
-
+  const cfg = tokenStatusStyleMap[text] || { color: 'var(--text-muted)', bg: 'var(--surface-active)', label: '未知状态' };
   return (
-    <Tag color={tagColor} shape='circle' size='small'>
-      {tagText}
-    </Tag>
+    <StatusBadge style={{ color: cfg.color, background: cfg.bg }}>
+      {t(cfg.label)}
+    </StatusBadge>
   );
 };
 
@@ -97,10 +105,10 @@ const renderGroupColumn = (text, record, t) => {
         )}
         position='top'
       >
-        <Tag color='white' shape='circle'>
+        <StatusBadge style={{ color: 'var(--accent)', background: 'rgba(10, 132, 255, 0.12)' }}>
           {t('智能熔断')}
           {record && record.cross_group_retry ? `(${t('跨分组')})` : ''}
-        </Tag>
+        </StatusBadge>
       </Tooltip>
     );
   }
@@ -237,9 +245,9 @@ const renderModelLimits = (text, record, t) => {
     return <AvatarGroup size='extra-extra-small'>{vendorAvatars}</AvatarGroup>;
   } else {
     return (
-      <Tag color='white' shape='circle'>
+      <StatusBadge style={{ color: 'var(--text-muted)', background: 'var(--surface-active)' }}>
         {t('无限制')}
-      </Tag>
+      </StatusBadge>
     );
   }
 };
@@ -248,9 +256,9 @@ const renderModelLimits = (text, record, t) => {
 const renderAllowIps = (text, t) => {
   if (!text || text.trim() === '') {
     return (
-      <Tag color='white' shape='circle'>
+      <StatusBadge style={{ color: 'var(--text-muted)', background: 'var(--surface-active)' }}>
         {t('无限制')}
-      </Tag>
+      </StatusBadge>
     );
   }
 
@@ -262,26 +270,28 @@ const renderAllowIps = (text, t) => {
   const displayIps = ips.slice(0, 1);
   const extraCount = ips.length - displayIps.length;
 
-  const ipTags = displayIps.map((ip, idx) => (
-    <Tag key={idx} shape='circle'>
+  const ipElements = displayIps.map((ip, idx) => (
+    <StatusBadge key={idx} style={{ color: 'var(--text-secondary)', background: 'var(--surface-active)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
       {ip}
-    </Tag>
+    </StatusBadge>
   ));
 
   if (extraCount > 0) {
-    ipTags.push(
+    ipElements.push(
       <Tooltip
         key='extra'
         content={ips.slice(1).join(', ')}
         position='top'
         showArrow
       >
-        <Tag shape='circle'>{'+' + extraCount}</Tag>
+        <StatusBadge style={{ color: 'var(--text-muted)', background: 'var(--surface-active)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+          {'+' + extraCount}
+        </StatusBadge>
       </Tooltip>,
     );
   }
 
-  return <Space wrap>{ipTags}</Space>;
+  return <div className='flex flex-wrap gap-1'>{ipElements}</div>;
 };
 
 // Render separate quota usage column
@@ -300,9 +310,9 @@ const renderQuotaUsage = (text, record, t) => {
     );
     return (
       <Popover content={popoverContent} position='top'>
-        <Tag color='white' shape='circle'>
+        <StatusBadge style={{ color: 'var(--accent)', background: 'rgba(10, 132, 255, 0.12)' }}>
           {t('无限额度')}
-        </Tag>
+        </StatusBadge>
       </Popover>
     );
   }
@@ -322,18 +332,27 @@ const renderQuotaUsage = (text, record, t) => {
   );
   return (
     <Popover content={popoverContent} position='top'>
-      <Tag color='white' shape='circle'>
-        <div className='flex flex-col items-end'>
-          <span className='text-xs leading-none'>{`${renderQuota(remain)} / ${renderQuota(total)}`}</span>
-          <Progress
-            percent={percent}
-            stroke={getProgressColor(percent)}
-            aria-label='quota usage'
-            format={() => `${percent.toFixed(0)}%`}
-            style={{ width: '100%', marginTop: '1px', marginBottom: 0 }}
-          />
-        </div>
-      </Tag>
+      <span
+        style={{
+          display: 'inline-flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          padding: '2px 8px',
+          borderRadius: 'var(--radius-sm)',
+          background: 'var(--surface-active)',
+        }}
+      >
+        <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', lineHeight: '16px' }}>
+          {`${renderQuota(remain)} / ${renderQuota(total)}`}
+        </span>
+        <Progress
+          percent={percent}
+          stroke={getProgressColor(percent)}
+          aria-label='quota usage'
+          format={() => `${percent.toFixed(0)}%`}
+          style={{ width: '100%', marginTop: '1px', marginBottom: 0 }}
+        />
+      </span>
     </Popover>
   );
 };

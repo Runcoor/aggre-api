@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Tag, Button, Space, Popover, Dropdown } from '@douyinfe/semi-ui';
+import { Button, Space, Popover, Dropdown } from '@douyinfe/semi-ui';
 import { IconMore } from '@douyinfe/semi-icons';
 import { renderQuota, timestamp2string } from '../../../helpers';
 import {
@@ -26,6 +26,37 @@ import {
   REDEMPTION_STATUS_MAP,
   REDEMPTION_ACTIONS,
 } from '../../../constants/redemption.constants';
+
+// iOS-style inline badge
+const InlineBadge = ({ color, bg, mono, children, style: extraStyle }) => (
+  <span
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      padding: '1px 8px',
+      borderRadius: 'var(--radius-sm)',
+      fontSize: '12px',
+      fontWeight: 500,
+      fontFamily: mono ? 'var(--font-mono)' : undefined,
+      color: color || 'var(--text-secondary)',
+      background: bg || 'var(--surface-active)',
+      lineHeight: '20px',
+      whiteSpace: 'nowrap',
+      ...extraStyle,
+    }}
+  >
+    {children}
+  </span>
+);
+
+// Map Semi color names to iOS system colors
+const semiColorToIOS = {
+  green: { color: 'var(--success)', bg: 'rgba(52, 199, 89, 0.12)' },
+  red: { color: 'var(--error)', bg: 'rgba(255, 59, 48, 0.12)' },
+  grey: { color: 'var(--text-muted)', bg: 'var(--surface-active)' },
+  orange: { color: 'var(--warning)', bg: 'rgba(255, 149, 0, 0.12)' },
+  black: { color: 'var(--text-muted)', bg: 'var(--surface-active)' },
+};
 
 /**
  * Check if redemption code is expired
@@ -50,27 +81,18 @@ const renderTimestamp = (timestamp) => {
  */
 const renderStatus = (status, record, t) => {
   if (isExpired(record)) {
-    return (
-      <Tag color='orange' shape='circle'>
-        {t('已过期')}
-      </Tag>
-    );
+    const s = semiColorToIOS.orange;
+    return <InlineBadge color={s.color} bg={s.bg}>{t('已过期')}</InlineBadge>;
   }
 
   const statusConfig = REDEMPTION_STATUS_MAP[status];
   if (statusConfig) {
-    return (
-      <Tag color={statusConfig.color} shape='circle'>
-        {t(statusConfig.text)}
-      </Tag>
-    );
+    const s = semiColorToIOS[statusConfig.color] || semiColorToIOS.grey;
+    return <InlineBadge color={s.color} bg={s.bg}>{t(statusConfig.text)}</InlineBadge>;
   }
 
-  return (
-    <Tag color='black' shape='circle'>
-      {t('未知状态')}
-    </Tag>
-  );
+  const s = semiColorToIOS.grey;
+  return <InlineBadge color={s.color} bg={s.bg}>{t('未知状态')}</InlineBadge>;
 };
 
 /**
@@ -110,9 +132,9 @@ export const getRedemptionsColumns = ({
       render: (text) => {
         return (
           <div>
-            <Tag color='grey' shape='circle'>
+            <InlineBadge mono>
               {renderQuota(parseInt(text))}
-            </Tag>
+            </InlineBadge>
           </div>
         );
       },

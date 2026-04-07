@@ -27,7 +27,6 @@ import {
   SplitButtonGroup,
   Tag,
   Tooltip,
-  Typography,
 } from '@douyinfe/semi-ui';
 import {
   timestamp2string,
@@ -125,15 +124,22 @@ const renderType = (type, record = {}, t) => {
           </div>
         }
       >
-        <span>
-          <Tag
-            color='purple'
-            type='light'
-            className='cursor-pointer'
-            onClick={handleNavigate}
-          >
-            IO.NET
-          </Tag>
+        <span
+          className='cursor-pointer transition-colors duration-150'
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '1px 8px',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '11px',
+            fontWeight: 600,
+            color: 'var(--info, #5856D6)',
+            background: 'rgba(88, 86, 214, 0.12)',
+            lineHeight: '18px',
+          }}
+          onClick={handleNavigate}
+        >
+          IO.NET
         </span>
       </Tooltip>
     </Space>
@@ -142,9 +148,58 @@ const renderType = (type, record = {}, t) => {
 
 const renderTagType = (t) => {
   return (
-    <Tag color='light-blue' shape='circle' type='light'>
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '1px 8px',
+        borderRadius: 'var(--radius-sm)',
+        fontSize: '12px',
+        fontWeight: 500,
+        color: 'var(--accent)',
+        background: 'rgba(10, 132, 255, 0.12)',
+        lineHeight: '20px',
+        whiteSpace: 'nowrap',
+      }}
+    >
       {t('标签聚合')}
-    </Tag>
+    </span>
+  );
+};
+
+const statusStyleMap = {
+  1: { color: 'var(--success)', bg: 'rgba(52, 199, 89, 0.12)' },
+  2: { color: 'var(--error)', bg: 'rgba(255, 59, 48, 0.12)' },
+  3: { color: 'var(--warning)', bg: 'rgba(255, 149, 0, 0.12)' },
+  default: { color: 'var(--text-muted)', bg: 'var(--surface-active)' },
+};
+
+const statusLabelMap = {
+  1: '已启用',
+  2: '已禁用',
+  3: '自动禁用',
+};
+
+const StatusBadge = ({ status, suffix, t }) => {
+  const style = statusStyleMap[status] || statusStyleMap.default;
+  const label = statusLabelMap[status] || '未知状态';
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '1px 8px',
+        borderRadius: 'var(--radius-sm)',
+        fontSize: '12px',
+        fontWeight: 500,
+        color: style.color,
+        background: style.bg,
+        lineHeight: '20px',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {t(label)}{suffix ? ` ${suffix}` : ''}
+    </span>
   );
 };
 
@@ -157,100 +212,54 @@ const renderStatus = (status, channelInfo = undefined, t) => {
         enabledKeySize =
           keySize - Object.keys(channelInfo.multi_key_status_list).length;
       }
-      return renderMultiKeyStatus(status, keySize, enabledKeySize, t);
+      return <StatusBadge status={status} suffix={`${enabledKeySize}/${keySize}`} t={t} />;
     }
   }
-  switch (status) {
-    case 1:
-      return (
-        <Tag color='green' shape='circle'>
-          {t('已启用')}
-        </Tag>
-      );
-    case 2:
-      return (
-        <Tag color='red' shape='circle'>
-          {t('已禁用')}
-        </Tag>
-      );
-    case 3:
-      return (
-        <Tag color='yellow' shape='circle'>
-          {t('自动禁用')}
-        </Tag>
-      );
-    default:
-      return (
-        <Tag color='grey' shape='circle'>
-          {t('未知状态')}
-        </Tag>
-      );
-  }
-};
-
-const renderMultiKeyStatus = (status, keySize, enabledKeySize, t) => {
-  switch (status) {
-    case 1:
-      return (
-        <Tag color='green' shape='circle'>
-          {t('已启用')} {enabledKeySize}/{keySize}
-        </Tag>
-      );
-    case 2:
-      return (
-        <Tag color='red' shape='circle'>
-          {t('已禁用')} {enabledKeySize}/{keySize}
-        </Tag>
-      );
-    case 3:
-      return (
-        <Tag color='yellow' shape='circle'>
-          {t('自动禁用')} {enabledKeySize}/{keySize}
-        </Tag>
-      );
-    default:
-      return (
-        <Tag color='grey' shape='circle'>
-          {t('未知状态')} {enabledKeySize}/{keySize}
-        </Tag>
-      );
-  }
+  return <StatusBadge status={status} t={t} />;
 };
 
 const renderResponseTime = (responseTime, t) => {
   let time = responseTime / 1000;
   time = time.toFixed(2) + t(' 秒');
+
+  let color, bg;
   if (responseTime === 0) {
-    return (
-      <Tag color='grey' shape='circle'>
-        {t('未测试')}
-      </Tag>
-    );
+    color = 'var(--text-muted)';
+    bg = 'var(--surface-active)';
+    time = t('未测试');
   } else if (responseTime <= 1000) {
-    return (
-      <Tag color='green' shape='circle'>
-        {time}
-      </Tag>
-    );
+    color = 'var(--success)';
+    bg = 'rgba(52, 199, 89, 0.12)';
   } else if (responseTime <= 3000) {
-    return (
-      <Tag color='lime' shape='circle'>
-        {time}
-      </Tag>
-    );
+    color = 'var(--success)';
+    bg = 'rgba(52, 199, 89, 0.08)';
   } else if (responseTime <= 5000) {
-    return (
-      <Tag color='yellow' shape='circle'>
-        {time}
-      </Tag>
-    );
+    color = 'var(--warning)';
+    bg = 'rgba(255, 149, 0, 0.12)';
   } else {
-    return (
-      <Tag color='red' shape='circle'>
-        {time}
-      </Tag>
-    );
+    color = 'var(--error)';
+    bg = 'rgba(255, 59, 48, 0.12)';
   }
+
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '1px 8px',
+        borderRadius: 'var(--radius-sm)',
+        fontSize: '12px',
+        fontFamily: responseTime > 0 ? 'var(--font-mono)' : undefined,
+        fontWeight: 500,
+        color,
+        background: bg,
+        lineHeight: '20px',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {time}
+    </span>
+  );
 };
 
 const isRequestPassThroughEnabled = (record) => {
@@ -409,12 +418,20 @@ export const getChannelsColumns = ({
               <Space spacing={4} align='center'>
                 {pendingAddCount > 0 ? (
                   <Tooltip content={t('点击处理新增模型')} position='top'>
-                    <Tag
-                      color='green'
-                      type='light'
-                      size='small'
-                      shape='circle'
-                      className='cursor-pointer transition-all duration-150 hover:opacity-85 hover:-translate-y-px active:scale-95'
+                    <span
+                      className='cursor-pointer transition-colors duration-150'
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        padding: '0px 6px',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 600,
+                        color: 'var(--success)',
+                        background: 'rgba(52, 199, 89, 0.12)',
+                        lineHeight: '18px',
+                      }}
                       onClick={(e) => {
                         e.stopPropagation();
                         openUpstreamUpdateModal(
@@ -426,17 +443,25 @@ export const getChannelsColumns = ({
                       }}
                     >
                       +{pendingAddCount}
-                    </Tag>
+                    </span>
                   </Tooltip>
                 ) : null}
                 {pendingRemoveCount > 0 ? (
                   <Tooltip content={t('点击处理删除模型')} position='top'>
-                    <Tag
-                      color='red'
-                      type='light'
-                      size='small'
-                      shape='circle'
-                      className='cursor-pointer transition-all duration-150 hover:opacity-85 hover:-translate-y-px active:scale-95'
+                    <span
+                      className='cursor-pointer transition-colors duration-150'
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        padding: '0px 6px',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 600,
+                        color: 'var(--error)',
+                        background: 'rgba(255, 59, 48, 0.12)',
+                        lineHeight: '18px',
+                      }}
                       onClick={(e) => {
                         e.stopPropagation();
                         openUpstreamUpdateModal(
@@ -448,7 +473,7 @@ export const getChannelsColumns = ({
                       }}
                     >
                       -{pendingRemoveCount}
-                    </Tag>
+                    </span>
                   </Tooltip>
                 ) : null}
               </Space>
@@ -527,46 +552,59 @@ export const getChannelsColumns = ({
       title: t('已用/剩余'),
       dataIndex: 'expired_time',
       render: (text, record, index) => {
+        const quotaBadgeStyle = {
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '1px 8px',
+          borderRadius: 'var(--radius-sm)',
+          fontSize: '12px',
+          fontFamily: 'var(--font-mono)',
+          fontWeight: 500,
+          color: 'var(--text-secondary)',
+          background: 'var(--surface-active)',
+          lineHeight: '20px',
+          whiteSpace: 'nowrap',
+        };
         if (record.children === undefined) {
           return (
-            <div>
-              <Space spacing={1}>
-                <Tooltip content={t('已用额度')}>
-                  <Tag color='white' type='ghost' shape='circle'>
-                    {renderQuota(record.used_quota)}
-                  </Tag>
-                </Tooltip>
-                <Tooltip
-                  content={
-                    record.type === 57
-                      ? t('查看 Codex 帐号信息与用量')
-                      : t('剩余额度') +
-                        ': ' +
-                        renderQuotaWithAmount(record.balance) +
-                        t('，点击更新')
-                  }
+            <div className='flex items-center gap-1'>
+              <Tooltip content={t('已用额度')}>
+                <span style={quotaBadgeStyle}>
+                  {renderQuota(record.used_quota)}
+                </span>
+              </Tooltip>
+              <Tooltip
+                content={
+                  record.type === 57
+                    ? t('查看 Codex 帐号信息与用量')
+                    : t('剩余额度') +
+                      ': ' +
+                      renderQuotaWithAmount(record.balance) +
+                      t('，点击更新')
+                }
+              >
+                <span
+                  style={{
+                    ...quotaBadgeStyle,
+                    color: record.type === 57 ? 'var(--accent)' : 'var(--text-secondary)',
+                    background: record.type === 57 ? 'rgba(10, 132, 255, 0.12)' : 'var(--surface-active)',
+                    cursor: record.type === 57 ? 'pointer' : 'default',
+                  }}
+                  onClick={() => updateChannelBalance(record)}
                 >
-                  <Tag
-                    color={record.type === 57 ? 'light-blue' : 'white'}
-                    type={record.type === 57 ? 'light' : 'ghost'}
-                    shape='circle'
-                    className={record.type === 57 ? 'cursor-pointer' : ''}
-                    onClick={() => updateChannelBalance(record)}
-                  >
-                    {record.type === 57
-                      ? t('帐号信息')
-                      : renderQuotaWithAmount(record.balance)}
-                  </Tag>
-                </Tooltip>
-              </Space>
+                  {record.type === 57
+                    ? t('帐号信息')
+                    : renderQuotaWithAmount(record.balance)}
+                </span>
+              </Tooltip>
             </div>
           );
         } else {
           return (
             <Tooltip content={t('已用额度')}>
-              <Tag color='white' type='ghost' shape='circle'>
+              <span style={quotaBadgeStyle}>
                 {renderQuota(record.used_quota)}
-              </Tag>
+              </span>
             </Tooltip>
           );
         }

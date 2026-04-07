@@ -21,7 +21,6 @@ import React from 'react';
 import {
   Button,
   Space,
-  Tag,
   Typography,
   Modal,
   Tooltip,
@@ -29,7 +28,6 @@ import {
 import {
   timestamp2string,
   getLobeHubIcon,
-  stringToColor,
 } from '../../../helpers';
 import {
   renderLimitedItems,
@@ -54,18 +52,38 @@ const renderModelIconCol = (record, vendorMap) => {
   );
 };
 
+// iOS-style inline badge helper
+const InlineBadge = ({ color, bg, mono, children, style: extraStyle }) => (
+  <span
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+      padding: '1px 8px',
+      borderRadius: 'var(--radius-sm)',
+      fontSize: '12px',
+      fontWeight: 500,
+      fontFamily: mono ? 'var(--font-mono)' : undefined,
+      color: color || 'var(--text-secondary)',
+      background: bg || 'var(--surface-active)',
+      lineHeight: '20px',
+      whiteSpace: 'nowrap',
+      ...extraStyle,
+    }}
+  >
+    {children}
+  </span>
+);
+
 // Render vendor column with icon
 const renderVendorTag = (vendorId, vendorMap, t) => {
   if (!vendorId || !vendorMap[vendorId]) return '-';
   const v = vendorMap[vendorId];
   return (
-    <Tag
-      color='white'
-      shape='circle'
-      prefixIcon={getLobeHubIcon(v.icon || 'Layers', 14)}
-    >
+    <InlineBadge>
+      {getLobeHubIcon(v.icon || 'Layers', 14)}
       {v.name}
-    </Tag>
+    </InlineBadge>
   );
 };
 
@@ -75,9 +93,9 @@ const renderGroups = (groups) => {
   return renderLimitedItems({
     items: groups,
     renderItem: (g, idx) => (
-      <Tag key={idx} size='small' shape='circle' color={stringToColor(g)}>
+      <InlineBadge key={idx} style={{ fontSize: '11px', padding: '0px 6px' }}>
         {g}
-      </Tag>
+      </InlineBadge>
     ),
   });
 };
@@ -89,9 +107,9 @@ const renderTags = (text) => {
   return renderLimitedItems({
     items: tagsArr,
     renderItem: (tag, idx) => (
-      <Tag key={idx} size='small' shape='circle' color={stringToColor(tag)}>
+      <InlineBadge key={idx} style={{ fontSize: '11px', padding: '0px 6px' }}>
         {tag}
-      </Tag>
+      </InlineBadge>
     ),
   });
 };
@@ -106,9 +124,9 @@ const renderEndpoints = (value) => {
       return renderLimitedItems({
         items: keys,
         renderItem: (key, idx) => (
-          <Tag key={idx} size='small' shape='circle' color={stringToColor(key)}>
+          <InlineBadge key={idx} mono style={{ fontSize: '11px', padding: '0px 6px' }}>
             {key}
-          </Tag>
+          </InlineBadge>
         ),
         maxDisplay: 3,
       });
@@ -118,9 +136,9 @@ const renderEndpoints = (value) => {
       return renderLimitedItems({
         items: parsed,
         renderItem: (ep, idx) => (
-          <Tag key={idx} color='white' size='small' shape='circle'>
+          <InlineBadge key={idx} mono style={{ fontSize: '11px', padding: '0px 6px' }}>
             {ep}
-          </Tag>
+          </InlineBadge>
         ),
         maxDisplay: 3,
       });
@@ -139,22 +157,22 @@ const renderQuotaTypes = (arr, t) => {
     renderItem: (qt, idx) => {
       if (qt === 1) {
         return (
-          <Tag key={`${qt}-${idx}`} color='teal' size='small' shape='circle'>
+          <InlineBadge key={`${qt}-${idx}`} color='var(--success)' bg='rgba(52, 199, 89, 0.12)' style={{ fontSize: '11px', padding: '0px 6px' }}>
             {t('按次计费')}
-          </Tag>
+          </InlineBadge>
         );
       }
       if (qt === 0) {
         return (
-          <Tag key={`${qt}-${idx}`} color='violet' size='small' shape='circle'>
+          <InlineBadge key={`${qt}-${idx}`} color='var(--info, #5856D6)' bg='rgba(88, 86, 214, 0.12)' style={{ fontSize: '11px', padding: '0px 6px' }}>
             {t('按量计费')}
-          </Tag>
+          </InlineBadge>
         );
       }
       return (
-        <Tag key={`${qt}-${idx}`} color='white' size='small' shape='circle'>
+        <InlineBadge key={`${qt}-${idx}`} style={{ fontSize: '11px', padding: '0px 6px' }}>
           {qt}
-        </Tag>
+        </InlineBadge>
       );
     },
     maxDisplay: 3,
@@ -167,9 +185,9 @@ const renderBoundChannels = (channels) => {
   return renderLimitedItems({
     items: channels,
     renderItem: (c, idx) => (
-      <Tag key={idx} color='white' size='small' shape='circle'>
+      <InlineBadge key={idx} style={{ fontSize: '11px', padding: '0px 6px' }}>
         {c.name}({c.type})
-      </Tag>
+      </InlineBadge>
     ),
   });
 };
@@ -236,26 +254,34 @@ const renderOperations = (
   );
 };
 
-// 名称匹配类型渲染（带匹配数量 Tooltip）
-const renderNameRule = (rule, record, t) => {
-  const map = {
-    0: { color: 'green', label: t('精确') },
-    1: { color: 'blue', label: t('前缀') },
-    2: { color: 'orange', label: t('包含') },
-    3: { color: 'purple', label: t('后缀') },
-  };
-  const cfg = map[rule];
-  if (!cfg) return '-';
+// 名称匹配类型渲染（带匹配数量 Tooltip）— iOS system colors
+const nameRuleStyleMap = {
+  0: { color: 'var(--success)', bg: 'rgba(52, 199, 89, 0.12)' },
+  1: { color: 'var(--accent)', bg: 'rgba(10, 132, 255, 0.12)' },
+  2: { color: 'var(--warning)', bg: 'rgba(255, 149, 0, 0.12)' },
+  3: { color: 'var(--info, #5856D6)', bg: 'rgba(88, 86, 214, 0.12)' },
+};
 
-  let label = cfg.label;
+const nameRuleLabelMap = {
+  0: '精确',
+  1: '前缀',
+  2: '包含',
+  3: '后缀',
+};
+
+const renderNameRule = (rule, record, t) => {
+  const style = nameRuleStyleMap[rule];
+  if (!style) return '-';
+
+  let label = t(nameRuleLabelMap[rule]);
   if (rule !== 0 && record.matched_count) {
-    label = `${cfg.label} ${record.matched_count}${t('个模型')}`;
+    label = `${label} ${record.matched_count}${t('个模型')}`;
   }
 
-  const tagElement = (
-    <Tag color={cfg.color} size='small' shape='circle'>
+  const badgeElement = (
+    <InlineBadge color={style.color} bg={style.bg} style={{ fontSize: '11px', padding: '0px 6px' }}>
       {label}
-    </Tag>
+    </InlineBadge>
   );
 
   if (
@@ -263,12 +289,12 @@ const renderNameRule = (rule, record, t) => {
     !record.matched_models ||
     record.matched_models.length === 0
   ) {
-    return tagElement;
+    return badgeElement;
   }
 
   return (
     <Tooltip content={record.matched_models.join(', ')} showArrow>
-      {tagElement}
+      {badgeElement}
     </Tooltip>
   );
 };
@@ -307,9 +333,13 @@ export const getModelsColumns = ({
       title: t('参与官方同步'),
       dataIndex: 'sync_official',
       render: (val) => (
-        <Tag size='small' shape='circle' color={val === 1 ? 'green' : 'orange'}>
+        <InlineBadge
+          color={val === 1 ? 'var(--success)' : 'var(--warning)'}
+          bg={val === 1 ? 'rgba(52, 199, 89, 0.12)' : 'rgba(255, 149, 0, 0.12)'}
+          style={{ fontSize: '11px', padding: '0px 6px' }}
+        >
           {val === 1 ? t('是') : t('否')}
-        </Tag>
+        </InlineBadge>
       ),
     },
     {

@@ -21,7 +21,6 @@ import React from 'react';
 import {
   Button,
   Space,
-  Tag,
   Tooltip,
   Progress,
   Popover,
@@ -31,36 +30,45 @@ import {
 import { IconMore } from '@douyinfe/semi-icons';
 import { renderGroup, renderNumber, renderQuota } from '../../../helpers';
 
+// iOS-style inline badge helper
+const InlineBadge = ({ color, bg, mono, children, style: extraStyle }) => (
+  <span
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+      padding: '1px 8px',
+      borderRadius: 'var(--radius-sm)',
+      fontSize: '12px',
+      fontWeight: 500,
+      fontFamily: mono ? 'var(--font-mono)' : undefined,
+      color: color || 'var(--text-secondary)',
+      background: bg || 'var(--surface-active)',
+      lineHeight: '20px',
+      whiteSpace: 'nowrap',
+      ...extraStyle,
+    }}
+  >
+    {children}
+  </span>
+);
+
+const roleStyleMap = {
+  1: { color: 'var(--accent)', bg: 'rgba(10, 132, 255, 0.12)', label: '普通用户' },
+  10: { color: 'var(--warning)', bg: 'rgba(255, 149, 0, 0.12)', label: '管理员' },
+  100: { color: 'var(--error)', bg: 'rgba(255, 59, 48, 0.12)', label: '超级管理员' },
+};
+
 /**
  * Render user role
  */
 const renderRole = (role, t) => {
-  switch (role) {
-    case 1:
-      return (
-        <Tag color='blue' shape='circle'>
-          {t('普通用户')}
-        </Tag>
-      );
-    case 10:
-      return (
-        <Tag color='yellow' shape='circle'>
-          {t('管理员')}
-        </Tag>
-      );
-    case 100:
-      return (
-        <Tag color='orange' shape='circle'>
-          {t('超级管理员')}
-        </Tag>
-      );
-    default:
-      return (
-        <Tag color='red' shape='circle'>
-          {t('未知身份')}
-        </Tag>
-      );
-  }
+  const cfg = roleStyleMap[role] || { color: 'var(--text-muted)', bg: 'var(--surface-active)', label: '未知身份' };
+  return (
+    <InlineBadge color={cfg.color} bg={cfg.bg}>
+      {t(cfg.label)}
+    </InlineBadge>
+  );
 };
 
 /**
@@ -75,20 +83,18 @@ const renderUsername = (text, record) => {
   const displayRemark =
     remark.length > maxLen ? remark.slice(0, maxLen) + '…' : remark;
   return (
-    <Space spacing={2}>
+    <div className='flex items-center gap-1'>
       <span>{text}</span>
       <Tooltip content={remark} position='top' showArrow>
-        <Tag color='white' shape='circle' className='!text-xs'>
-          <div className='flex items-center gap-1'>
-            <div
-              className='w-2 h-2 flex-shrink-0 rounded-full'
-              style={{ backgroundColor: 'var(--success)' }}
-            />
-            {displayRemark}
-          </div>
-        </Tag>
+        <InlineBadge style={{ fontSize: '11px', padding: '0px 6px' }}>
+          <div
+            className='w-1.5 h-1.5 flex-shrink-0 rounded-full'
+            style={{ backgroundColor: 'var(--success)' }}
+          />
+          {displayRemark}
+        </InlineBadge>
       </Tooltip>
-    </Space>
+    </div>
   );
 };
 
@@ -98,24 +104,28 @@ const renderUsername = (text, record) => {
 const renderStatistics = (text, record, showEnableDisableModal, t) => {
   const isDeleted = record.DeletedAt !== null;
 
-  // Determine tag text & color like original status column
-  let tagColor = 'grey';
+  // Determine status style using iOS system colors
+  let statusColor = 'var(--text-muted)';
+  let statusBg = 'var(--surface-active)';
   let tagText = t('未知状态');
   if (isDeleted) {
-    tagColor = 'red';
+    statusColor = 'var(--error)';
+    statusBg = 'rgba(255, 59, 48, 0.12)';
     tagText = t('已注销');
   } else if (record.status === 1) {
-    tagColor = 'green';
+    statusColor = 'var(--success)';
+    statusBg = 'rgba(52, 199, 89, 0.12)';
     tagText = t('已启用');
   } else if (record.status === 2) {
-    tagColor = 'red';
+    statusColor = 'var(--error)';
+    statusBg = 'rgba(255, 59, 48, 0.12)';
     tagText = t('已禁用');
   }
 
   const content = (
-    <Tag color={tagColor} shape='circle' size='small'>
+    <InlineBadge color={statusColor} bg={statusBg} style={{ fontSize: '11px', padding: '0px 6px' }}>
       {tagText}
-    </Tag>
+    </InlineBadge>
   );
 
   const tooltipContent = (
@@ -155,17 +165,26 @@ const renderQuotaUsage = (text, record, t) => {
   );
   return (
     <Popover content={popoverContent} position='top'>
-      <Tag color='white' shape='circle'>
-        <div className='flex flex-col items-end'>
-          <span className='text-xs leading-none'>{`${renderQuota(remain)} / ${renderQuota(total)}`}</span>
-          <Progress
-            percent={percent}
-            aria-label='quota usage'
-            format={() => `${percent.toFixed(0)}%`}
-            style={{ width: '100%', marginTop: '1px', marginBottom: 0 }}
-          />
-        </div>
-      </Tag>
+      <span
+        style={{
+          display: 'inline-flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          padding: '2px 8px',
+          borderRadius: 'var(--radius-sm)',
+          background: 'var(--surface-active)',
+        }}
+      >
+        <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', lineHeight: '16px' }}>
+          {`${renderQuota(remain)} / ${renderQuota(total)}`}
+        </span>
+        <Progress
+          percent={percent}
+          aria-label='quota usage'
+          format={() => `${percent.toFixed(0)}%`}
+          style={{ width: '100%', marginTop: '1px', marginBottom: 0 }}
+        />
+      </span>
     </Popover>
   );
 };
@@ -175,20 +194,18 @@ const renderQuotaUsage = (text, record, t) => {
  */
 const renderInviteInfo = (text, record, t) => {
   return (
-    <div>
-      <Space spacing={1}>
-        <Tag color='white' shape='circle' className='!text-xs'>
-          {t('邀请')}: {renderNumber(record.aff_count)}
-        </Tag>
-        <Tag color='white' shape='circle' className='!text-xs'>
-          {t('收益')}: {renderQuota(record.aff_history_quota)}
-        </Tag>
-        <Tag color='white' shape='circle' className='!text-xs'>
-          {record.inviter_id === 0
-            ? t('无邀请人')
-            : `${t('邀请人')}: ${record.inviter_id}`}
-        </Tag>
-      </Space>
+    <div className='flex flex-wrap gap-1'>
+      <InlineBadge mono style={{ fontSize: '11px', padding: '0px 6px' }}>
+        {t('邀请')}: {renderNumber(record.aff_count)}
+      </InlineBadge>
+      <InlineBadge mono style={{ fontSize: '11px', padding: '0px 6px' }}>
+        {t('收益')}: {renderQuota(record.aff_history_quota)}
+      </InlineBadge>
+      <InlineBadge style={{ fontSize: '11px', padding: '0px 6px' }}>
+        {record.inviter_id === 0
+          ? t('无邀请人')
+          : `${t('邀请人')}: ${record.inviter_id}`}
+      </InlineBadge>
     </div>
   );
 };

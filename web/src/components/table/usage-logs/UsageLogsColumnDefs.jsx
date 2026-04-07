@@ -21,7 +21,6 @@ import React from 'react';
 import {
   Avatar,
   Space,
-  Tag,
   Tooltip,
   Popover,
   Typography,
@@ -37,23 +36,48 @@ import {
 import { IconHelpCircle } from '@douyinfe/semi-icons';
 import { CircleAlert, Route, Sparkles } from 'lucide-react';
 
-const colors = [
-  'amber',
-  'blue',
-  'cyan',
-  'green',
-  'grey',
-  'indigo',
-  'light-blue',
-  'lime',
-  'orange',
-  'pink',
-  'purple',
-  'red',
-  'teal',
-  'violet',
-  'yellow',
+// iOS system color palette for channel badges
+const channelColors = [
+  { color: 'var(--warning)', bg: 'rgba(255, 149, 0, 0.12)' },
+  { color: 'var(--accent)', bg: 'rgba(10, 132, 255, 0.12)' },
+  { color: '#32ADE6', bg: 'rgba(50, 173, 230, 0.12)' },
+  { color: 'var(--success)', bg: 'rgba(52, 199, 89, 0.12)' },
+  { color: 'var(--text-muted)', bg: 'var(--surface-active)' },
+  { color: '#5856D6', bg: 'rgba(88, 86, 214, 0.12)' },
+  { color: '#007AFF', bg: 'rgba(0, 122, 255, 0.12)' },
+  { color: '#34C759', bg: 'rgba(52, 199, 89, 0.08)' },
+  { color: '#FF9500', bg: 'rgba(255, 149, 0, 0.08)' },
+  { color: '#FF2D55', bg: 'rgba(255, 45, 85, 0.12)' },
+  { color: '#AF52DE', bg: 'rgba(175, 82, 222, 0.12)' },
+  { color: 'var(--error)', bg: 'rgba(255, 59, 48, 0.12)' },
+  { color: '#30B0C7', bg: 'rgba(48, 176, 199, 0.12)' },
+  { color: '#5856D6', bg: 'rgba(88, 86, 214, 0.08)' },
+  { color: '#FFCC00', bg: 'rgba(255, 204, 0, 0.15)' },
 ];
+
+// iOS-style inline badge helper
+const InlineBadge = ({ color, bg, mono, children, style: extraStyle, ...rest }) => (
+  <span
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+      padding: '1px 8px',
+      borderRadius: 'var(--radius-sm)',
+      fontSize: '12px',
+      fontWeight: 500,
+      fontFamily: mono ? 'var(--font-mono)' : undefined,
+      color: color || 'var(--text-secondary)',
+      background: bg || 'var(--surface-active)',
+      lineHeight: '20px',
+      whiteSpace: 'nowrap',
+      ...extraStyle,
+    }}
+    {...rest}
+  >
+    {children}
+  </span>
+);
 
 function formatRatio(ratio) {
   if (ratio === undefined || ratio === null) {
@@ -93,52 +117,23 @@ function buildChannelAffinityTooltip(affinity, t) {
   );
 }
 
-// Render functions
+// Render functions — iOS system colors
+const logTypeStyleMap = {
+  1: { color: '#32ADE6', bg: 'rgba(50, 173, 230, 0.12)', label: '充值' },
+  2: { color: 'var(--success)', bg: 'rgba(52, 199, 89, 0.12)', label: '消费' },
+  3: { color: 'var(--warning)', bg: 'rgba(255, 149, 0, 0.12)', label: '管理' },
+  4: { color: '#AF52DE', bg: 'rgba(175, 82, 222, 0.12)', label: '系统' },
+  5: { color: 'var(--error)', bg: 'rgba(255, 59, 48, 0.12)', label: '错误' },
+  6: { color: '#30B0C7', bg: 'rgba(48, 176, 199, 0.12)', label: '退款' },
+};
+
 function renderType(type, t) {
-  switch (type) {
-    case 1:
-      return (
-        <Tag color='cyan' shape='circle'>
-          {t('充值')}
-        </Tag>
-      );
-    case 2:
-      return (
-        <Tag color='lime' shape='circle'>
-          {t('消费')}
-        </Tag>
-      );
-    case 3:
-      return (
-        <Tag color='orange' shape='circle'>
-          {t('管理')}
-        </Tag>
-      );
-    case 4:
-      return (
-        <Tag color='purple' shape='circle'>
-          {t('系统')}
-        </Tag>
-      );
-    case 5:
-      return (
-        <Tag color='red' shape='circle'>
-          {t('错误')}
-        </Tag>
-      );
-    case 6:
-      return (
-        <Tag color='teal' shape='circle'>
-          {t('退款')}
-        </Tag>
-      );
-    default:
-      return (
-        <Tag color='grey' shape='circle'>
-          {t('未知')}
-        </Tag>
-      );
-  }
+  const cfg = logTypeStyleMap[type] || { color: 'var(--text-muted)', bg: 'var(--surface-active)', label: '未知' };
+  return (
+    <InlineBadge color={cfg.color} bg={cfg.bg}>
+      {t(cfg.label)}
+    </InlineBadge>
+  );
 }
 
 function buildStreamStatusTooltip(ss, t) {
@@ -168,9 +163,9 @@ function renderIsStream(bool, t, streamStatus) {
   if (bool) {
     return (
       <span style={{ position: 'relative', display: 'inline-block' }}>
-        <Tag color='blue' shape='circle'>
+        <InlineBadge color='var(--accent)' bg='rgba(10, 132, 255, 0.12)'>
           {t('流')}
-        </Tag>
+        </InlineBadge>
         {isError && (
           <Tooltip content={buildStreamStatusTooltip(streamStatus, t)}>
             <span
@@ -196,73 +191,47 @@ function renderIsStream(bool, t, streamStatus) {
     );
   } else {
     return (
-      <Tag color='purple' shape='circle'>
+      <InlineBadge color='#AF52DE' bg='rgba(175, 82, 222, 0.12)'>
         {t('非流')}
-      </Tag>
+      </InlineBadge>
     );
   }
 }
 
+function getTimeColor(time, thresholds) {
+  if (time < thresholds[0]) return { color: 'var(--success)', bg: 'rgba(52, 199, 89, 0.12)' };
+  if (time < thresholds[1]) return { color: 'var(--warning)', bg: 'rgba(255, 149, 0, 0.12)' };
+  return { color: 'var(--error)', bg: 'rgba(255, 59, 48, 0.12)' };
+}
+
 function renderUseTime(type, t) {
   const time = parseInt(type);
-  if (time < 101) {
-    return (
-      <Tag color='green' shape='circle'>
-        {' '}
-        {time} s{' '}
-      </Tag>
-    );
-  } else if (time < 300) {
-    return (
-      <Tag color='orange' shape='circle'>
-        {' '}
-        {time} s{' '}
-      </Tag>
-    );
-  } else {
-    return (
-      <Tag color='red' shape='circle'>
-        {' '}
-        {time} s{' '}
-      </Tag>
-    );
-  }
+  const style = getTimeColor(time, [101, 300]);
+  return (
+    <InlineBadge mono color={style.color} bg={style.bg} style={{ fontSize: '11px', padding: '0px 6px' }}>
+      {time} s
+    </InlineBadge>
+  );
 }
 
 function renderFirstUseTime(type, t) {
   let time = parseFloat(type) / 1000.0;
   time = time.toFixed(1);
-  if (time < 3) {
-    return (
-      <Tag color='green' shape='circle'>
-        {' '}
-        {time} s{' '}
-      </Tag>
-    );
-  } else if (time < 10) {
-    return (
-      <Tag color='orange' shape='circle'>
-        {' '}
-        {time} s{' '}
-      </Tag>
-    );
-  } else {
-    return (
-      <Tag color='red' shape='circle'>
-        {' '}
-        {time} s{' '}
-      </Tag>
-    );
-  }
+  const style = getTimeColor(parseFloat(time), [3, 10]);
+  return (
+    <InlineBadge mono color={style.color} bg={style.bg} style={{ fontSize: '11px', padding: '0px 6px' }}>
+      {time} s
+    </InlineBadge>
+  );
 }
 
 function renderBillingTag(record, t) {
   const other = getLogOther(record.other);
   if (other?.billing_source === 'subscription') {
     return (
-      <Tag color='green' shape='circle'>
+      <InlineBadge color='var(--success)' bg='rgba(52, 199, 89, 0.12)'>
         {t('订阅抵扣')}
-      </Tag>
+      </InlineBadge>
     );
   }
   return null;
@@ -558,12 +527,10 @@ export const getLogsColumns = ({
             <span style={{ position: 'relative', display: 'inline-block' }}>
               <Tooltip content={record.channel_name || t('未知渠道')}>
                 <span>
-                  <Tag
-                    color={colors[parseInt(text) % colors.length]}
-                    shape='circle'
-                  >
-                    {text}
-                  </Tag>
+                  {(() => {
+                    const c = channelColors[parseInt(text) % channelColors.length];
+                    return <InlineBadge mono color={c.color} bg={c.bg}>{text}</InlineBadge>;
+                  })()}
                 </span>
               </Tooltip>
               {showMarker && (
@@ -606,9 +573,9 @@ export const getLogsColumns = ({
               )}
             </span>
             {isMultiKey && (
-              <Tag color='white' shape='circle'>
+              <InlineBadge mono style={{ fontSize: '11px', padding: '0px 6px' }}>
                 {multiKeyIndex}
-              </Tag>
+              </InlineBadge>
             )}
           </Space>
         ) : null;
@@ -649,16 +616,14 @@ export const getLogsColumns = ({
           record.type === 5 ||
           record.type === 6 ? (
           <div>
-            <Tag
-              color='grey'
-              shape='circle'
+            <InlineBadge
+              style={{ cursor: 'pointer', fontSize: '11px', padding: '0px 6px' }}
               onClick={(event) => {
                 copyText(event, text);
               }}
             >
-              {' '}
-              {t(text)}{' '}
-            </Tag>
+              {t(text)}
+            </InlineBadge>
           </div>
         ) : (
           <></>
@@ -878,17 +843,17 @@ export const getLogsColumns = ({
       render: (text, record, index) => {
         return (record.type === 2 || record.type === 5) && text ? (
           <Tooltip content={text}>
-            <span>
-              <Tag
-                color='orange'
-                shape='circle'
-                onClick={(event) => {
-                  copyText(event, text);
-                }}
-              >
-                {text}
-              </Tag>
-            </span>
+            <InlineBadge
+              mono
+              color='var(--warning)'
+              bg='rgba(255, 149, 0, 0.12)'
+              style={{ cursor: 'pointer', fontSize: '11px', padding: '0px 6px' }}
+              onClick={(event) => {
+                copyText(event, text);
+              }}
+            >
+              {text}
+            </InlineBadge>
           </Tooltip>
         ) : (
           <></>

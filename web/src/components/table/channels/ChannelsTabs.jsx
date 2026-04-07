@@ -18,9 +18,30 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Tabs, TabPane, Tag } from '@douyinfe/semi-ui';
+import { Tabs, TabPane } from '@douyinfe/semi-ui';
 import { CHANNEL_OPTIONS } from '../../../constants';
 import { getChannelIcon } from '../../../helpers';
+
+const CountBadge = ({ count, active }) => (
+  <span
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minWidth: '20px',
+      padding: '0 6px',
+      borderRadius: 'var(--radius-sm)',
+      fontSize: '11px',
+      fontFamily: 'var(--font-mono)',
+      fontWeight: 600,
+      color: active ? '#fff' : 'var(--text-muted)',
+      background: active ? 'var(--accent)' : 'var(--surface-active)',
+      lineHeight: '18px',
+    }}
+  >
+    {count}
+  </span>
+);
 
 const ChannelsTabs = ({
   enableTagMode,
@@ -56,12 +77,7 @@ const ChannelsTabs = ({
         tab={
           <span className='flex items-center gap-2'>
             {t('全部')}
-            <Tag
-              color={activeTypeKey === 'all' ? 'red' : 'grey'}
-              shape='circle'
-            >
-              {channelTypeCounts['all'] || 0}
-            </Tag>
+            <CountBadge count={channelTypeCounts['all'] || 0} active={activeTypeKey === 'all'} />
           </span>
         }
       />
@@ -79,12 +95,7 @@ const ChannelsTabs = ({
               <span className='flex items-center gap-2'>
                 {getChannelIcon(option.value)}
                 {option.label}
-                <Tag
-                  color={activeTypeKey === key ? 'red' : 'grey'}
-                  shape='circle'
-                >
-                  {count}
-                </Tag>
+                <CountBadge count={count} active={activeTypeKey === key} />
               </span>
             }
           />

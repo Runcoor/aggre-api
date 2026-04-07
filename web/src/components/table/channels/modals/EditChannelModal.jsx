@@ -2131,14 +2131,20 @@ const EditChannelModal = (props) => {
         placement={isEdit ? 'right' : 'left'}
         title={
           <div className='flex items-center justify-between w-full'>
-            <Space>
-              <Tag color='blue' shape='circle'>
-                {isEdit ? t('编辑') : t('新建')}
-              </Tag>
-              <Title heading={4} className='m-0'>
+            <div className='flex items-center gap-2.5'>
+              <span
+                className='w-7 h-7 flex items-center justify-center'
+                style={{ borderRadius: 'var(--radius-sm)', background: isEdit ? 'rgba(0, 122, 255, 0.12)' : 'rgba(52, 199, 89, 0.15)', color: isEdit ? 'var(--accent)' : 'var(--success)' }}
+              >
+                <IconServer size={16} />
+              </span>
+              <span
+                className='text-base font-semibold'
+                style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+              >
                 {isEdit ? t('更新渠道信息') : t('创建新的渠道')}
-              </Title>
-            </Space>
+              </span>
+            </div>
             {!isEdit && (
               <Button
                 size='small'
@@ -2146,6 +2152,7 @@ const EditChannelModal = (props) => {
                 className='ec-dbcd0a3c01b55203 shrink-0'
                 icon={<IconBolt />}
                 onClick={pasteFromClipboard}
+                style={{ borderRadius: 'var(--radius-sm)' }}
               >
                 {t('从剪贴板粘贴配置')}
               </Button>
@@ -2156,21 +2163,25 @@ const EditChannelModal = (props) => {
         visible={props.visible}
         width={isMobile ? '100%' : 600}
         footer={
-          <div className='flex justify-end items-center gap-2'>
+          <div
+            className='flex justify-end items-center gap-2 px-4 py-3'
+            style={{ background: 'var(--surface)', borderTop: '1px solid var(--border-subtle)' }}
+          >
+            <Button
+              theme='light'
+              onClick={handleCancel}
+              icon={<IconClose />}
+              style={{ borderRadius: 'var(--radius-md)', background: 'var(--surface-active)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }}
+            >
+              {t('取消')}
+            </Button>
             <Button
               theme='solid'
               onClick={() => formApiRef.current?.submitForm()}
               icon={<IconSave />}
+              style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent)', color: '#fff', border: 'none' }}
             >
               {t('提交')}
-            </Button>
-            <Button
-              theme='light'
-              type='primary'
-              onClick={handleCancel}
-              icon={<IconClose />}
-            >
-              {t('取消')}
             </Button>
           </div>
         }

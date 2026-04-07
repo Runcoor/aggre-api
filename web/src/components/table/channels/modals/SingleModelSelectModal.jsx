@@ -26,7 +26,6 @@ import {
   Input,
   Modal,
   Radio,
-  Typography,
 } from '@douyinfe/semi-ui';
 import {
   IllustrationNoResult,
@@ -112,10 +111,19 @@ const SingleModelSelectModal = ({
   return (
     <Modal
       header={
-        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 py-4'>
-          <Typography.Title heading={5} className='m-0'>
+        <div className='flex items-center gap-2 py-4'>
+          <span
+            className='w-6 h-6 flex items-center justify-center'
+            style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}
+          >
+            <IconSearch size={14} />
+          </span>
+          <span
+            className='text-base font-semibold'
+            style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+          >
             {t('选择模型')}
-          </Typography.Title>
+          </span>
         </div>
       }
       visible={visible}

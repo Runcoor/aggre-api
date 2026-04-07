@@ -34,7 +34,7 @@ import {
   TextArea,
   Typography,
 } from '@douyinfe/semi-ui';
-import { IconDelete, IconMenu, IconPlus } from '@douyinfe/semi-icons';
+import { IconDelete, IconMenu, IconPlus, IconSetting } from '@douyinfe/semi-icons';
 import { copy, showError, showSuccess, verifyJSON } from '../../../../helpers';
 import {
   CLAUDE_CLI_HEADER_PASSTHROUGH_TEMPLATE,
@@ -1892,7 +1892,19 @@ const ParamOverrideEditorModal = ({ visible, value, onSave, onCancel }) => {
   return (
     <>
       <Modal
-      title={t('参数覆盖')}
+      title={
+        <div className='flex items-center gap-2'>
+          <span
+            className='w-6 h-6 flex items-center justify-center'
+            style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}
+          >
+            <IconSetting size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {t('参数覆盖')}
+          </span>
+        </div>
+      }
       visible={visible}
       width={1120}
       bodyStyle={{ maxHeight: '76vh', overflowY: 'auto', paddingTop: 10 }}

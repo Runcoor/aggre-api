@@ -272,14 +272,14 @@ const ModelSelectModal = ({
           >
             <div className='flex items-center gap-2 mb-3'>
               {categoryData.icon}
-              <Typography.Text type='secondary' size='small'>
+              <span className='text-xs' style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                 {t('已选择 {{selected}} / {{total}}', {
                   selected: categoryData.models.filter((model) =>
                     checkedList.includes(model),
                   ).length,
                   total: categoryData.models.length,
                 })}
-              </Typography.Text>
+              </span>
             </div>
             <div className='grid grid-cols-2 gap-x-4'>
               {categoryData.models.map((model) => (
@@ -311,9 +311,20 @@ const ModelSelectModal = ({
     <Modal
       header={
         <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 py-4'>
-          <Typography.Title heading={5} className='m-0'>
-            {t('选择模型')}
-          </Typography.Title>
+          <div className='flex items-center gap-2'>
+            <span
+              className='w-6 h-6 flex items-center justify-center'
+              style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}
+            >
+              <IconSearch size={14} />
+            </span>
+            <span
+              className='text-base font-semibold'
+              style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+            >
+              {t('选择模型')}
+            </span>
+          </div>
           <div className='flex-shrink-0'>
             <Tabs
               type='slash'
@@ -374,10 +385,9 @@ const ModelSelectModal = ({
         </div>
       </MacSpinner>
 
-      <Typography.Text
-        type='secondary'
-        size='small'
-        className='block text-right mt-4'
+      <div
+        className='block text-right mt-4 text-xs'
+        style={{ color: 'var(--text-secondary)' }}
       >
         <div className='flex items-center justify-end gap-2'>
           {(() => {
@@ -411,7 +421,7 @@ const ModelSelectModal = ({
             );
           })()}
         </div>
-      </Typography.Text>
+      </div>
     </Modal>
   );
 };

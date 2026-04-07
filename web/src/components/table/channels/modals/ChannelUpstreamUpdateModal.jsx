@@ -209,7 +209,19 @@ const ChannelUpstreamUpdateModal = ({
   return (
     <Modal
       visible={visible}
-      title={t('处理上游模型更新')}
+      title={
+        <div className='flex items-center gap-2'>
+          <span
+            className='w-6 h-6 flex items-center justify-center'
+            style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(255, 149, 0, 0.12)', color: 'var(--warning)' }}
+          >
+            <IconSearch size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {t('处理上游模型更新')}
+          </span>
+        </div>
+      }
       okText={t('确定')}
       cancelText={t('取消')}
       size={isMobile ? 'full-width' : 'medium'}
@@ -221,11 +233,11 @@ const ChannelUpstreamUpdateModal = ({
       onOk={handleSubmit}
     >
       <div className='flex flex-col gap-3'>
-        <Typography.Text type='secondary' size='small'>
+        <p className='text-xs m-0' style={{ color: 'var(--text-secondary)' }}>
           {t(
             '可勾选需要执行的变更：新增会加入渠道模型列表，删除会从渠道模型列表移除。',
           )}
-        </Typography.Text>
+        </p>
 
         <Tabs
           type='slash'
@@ -292,12 +304,12 @@ const ChannelUpstreamUpdateModal = ({
         </div>
 
         <div className='flex items-center justify-end gap-2'>
-          <Typography.Text type='secondary' size='small'>
+          <p className='text-xs m-0' style={{ color: 'var(--text-secondary)' }}>
             {t('已选择 {{selected}} / {{total}}', {
               selected: checkedCount,
               total: currentModels.length,
             })}
-          </Typography.Text>
+          </p>
           <Checkbox
             checked={isAllChecked}
             indeterminate={isIndeterminate}

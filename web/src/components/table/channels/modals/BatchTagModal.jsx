@@ -18,7 +18,8 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Modal, Input, Typography } from '@douyinfe/semi-ui';
+import { Modal, Input } from '@douyinfe/semi-ui';
+import { IconBookmark } from '@douyinfe/semi-icons';
 
 const BatchTagModal = ({
   showBatchSetTag,
@@ -31,31 +32,46 @@ const BatchTagModal = ({
 }) => {
   return (
     <Modal
-      title={t('批量设置标签')}
+      title={
+        <div className='flex items-center gap-2'>
+          <span
+            className='w-6 h-6 flex items-center justify-center'
+            style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}
+          >
+            <IconBookmark size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {t('批量设置标签')}
+          </span>
+        </div>
+      }
       visible={showBatchSetTag}
       onOk={batchSetChannelTag}
       onCancel={() => setShowBatchSetTag(false)}
       maskClosable={false}
       centered={true}
       size='small'
-      className='!rounded-lg'
+      okButtonProps={{
+        style: { background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)' },
+      }}
+      cancelButtonProps={{
+        style: { borderRadius: 'var(--radius-md)', background: 'var(--surface-active)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' },
+      }}
     >
-      <div className='mb-5'>
-        <Typography.Text>{t('请输入要设置的标签名称')}</Typography.Text>
-      </div>
+      <p className='text-sm mb-3 mt-0' style={{ color: 'var(--text-secondary)' }}>
+        {t('请输入要设置的标签名称')}
+      </p>
       <Input
         placeholder={t('请输入标签名称')}
         value={batchSetTagValue}
         onChange={(v) => setBatchSetTagValue(v)}
       />
-      <div className='mt-4'>
-        <Typography.Text type='secondary'>
-          {t('已选择 ${count} 个渠道').replace(
-            '${count}',
-            selectedChannels.length,
-          )}
-        </Typography.Text>
-      </div>
+      <p className='text-xs mt-3 mb-0' style={{ color: 'var(--text-muted)' }}>
+        {t('已选择 ${count} 个渠道').replace(
+          '${count}',
+          selectedChannels.length,
+        )}
+      </p>
     </Modal>
   );
 };

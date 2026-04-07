@@ -374,39 +374,47 @@ const EditTagModal = (props) => {
     <SideSheet
       placement='right'
       title={
-        <Space>
-          <Tag color='blue' shape='circle'>
-            {t('编辑')}
-          </Tag>
-          <Title heading={4} className='m-0'>
+        <div className='flex items-center gap-2.5'>
+          <span
+            className='w-7 h-7 flex items-center justify-center'
+            style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}
+          >
+            <IconBookmark size={16} />
+          </span>
+          <span
+            className='text-base font-semibold'
+            style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+          >
             {t('编辑标签')}
-          </Title>
-        </Space>
+          </span>
+        </div>
       }
       bodyStyle={{ padding: '0' }}
       visible={visible}
       width={600}
       onCancel={handleClose}
       footer={
-        <div className='flex justify-end'>
-          <Space>
-            <Button
-              theme='solid'
-              onClick={() => formApiRef.current?.submitForm()}
-              loading={loading}
-              icon={<IconSave />}
-            >
-              {t('保存')}
-            </Button>
-            <Button
-              theme='light'
-              type='primary'
-              onClick={handleClose}
-              icon={<IconClose />}
-            >
-              {t('取消')}
-            </Button>
-          </Space>
+        <div
+          className='flex justify-end gap-2 px-4 py-3'
+          style={{ background: 'var(--surface)', borderTop: '1px solid var(--border-subtle)' }}
+        >
+          <Button
+            theme='light'
+            onClick={handleClose}
+            icon={<IconClose />}
+            style={{ borderRadius: 'var(--radius-md)', background: 'var(--surface-active)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }}
+          >
+            {t('取消')}
+          </Button>
+          <Button
+            theme='solid'
+            onClick={() => formApiRef.current?.submitForm()}
+            loading={loading}
+            icon={<IconSave />}
+            style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent)', color: '#fff', border: 'none' }}
+          >
+            {t('保存')}
+          </Button>
         </div>
       }
       closeIcon={null}

@@ -41,6 +41,7 @@ import {
   IconRefresh,
   IconSearch,
   IconPlus,
+  IconServer,
 } from '@douyinfe/semi-icons';
 import {
   API,
@@ -529,13 +530,29 @@ const OllamaModelModal = ({
 
   return (
     <Modal
-      title={t('Ollama 模型管理')}
+      title={
+        <div className='flex items-center gap-2'>
+          <span
+            className='w-6 h-6 flex items-center justify-center'
+            style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}
+          >
+            <IconServer size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {t('Ollama 模型管理')}
+          </span>
+        </div>
+      }
       visible={visible}
       onCancel={onCancel}
       width={720}
       style={{ maxWidth: '95vw' }}
       footer={
-        <Button theme='solid' type='primary' onClick={onCancel}>
+        <Button
+          theme='solid'
+          onClick={onCancel}
+          style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent)', color: '#fff', border: 'none' }}
+        >
           {t('关闭')}
         </Button>
       }
@@ -652,7 +669,7 @@ const OllamaModelModal = ({
                 {t('已有模型')}
               </Title>
               {models.length > 0 ? (
-                <Tag color='blue'>{models.length}</Tag>
+                <span className='text-xs px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{models.length}</span>
               ) : null}
             </div>
             <Space wrap>
@@ -733,9 +750,9 @@ const OllamaModelModal = ({
                             {model.id}
                           </Text>
                           <div className='flex items-center space-x-2 mt-1'>
-                            <Tag color='cyan' size='small'>
+                            <span className='text-[10px] px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(90, 200, 250, 0.12)', color: 'var(--info)' }}>
                               {model.owned_by || 'ollama'}
-                            </Tag>
+                            </span>
                             {model.size && (
                               <Text type='tertiary' size='small'>
                                 {formatModelSize(model.size)}

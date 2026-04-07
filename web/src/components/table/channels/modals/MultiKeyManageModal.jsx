@@ -40,6 +40,7 @@ import {
   IllustrationNoResult,
   IllustrationNoResultDark,
 } from '@douyinfe/semi-illustrations';
+import { IconKey } from '@douyinfe/semi-icons';
 import {
   API,
   showError,
@@ -325,34 +326,24 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
 
   // 取消饼图：不再需要图表数据与配置
 
-  // Get status tag component
+  // Get status badge
   const renderStatusTag = (status) => {
+    let label, color, bg;
     switch (status) {
       case 1:
-        return (
-          <Tag color='green' shape='circle' size='small'>
-            {t('已启用')}
-          </Tag>
-        );
+        label = t('已启用'); color = 'var(--success)'; bg = 'rgba(52, 199, 89, 0.12)'; break;
       case 2:
-        return (
-          <Tag color='red' shape='circle' size='small'>
-            {t('已禁用')}
-          </Tag>
-        );
+        label = t('已禁用'); color = 'var(--error)'; bg = 'rgba(255, 59, 48, 0.12)'; break;
       case 3:
-        return (
-          <Tag color='orange' shape='circle' size='small'>
-            {t('自动禁用')}
-          </Tag>
-        );
+        label = t('自动禁用'); color = 'var(--warning)'; bg = 'rgba(255, 149, 0, 0.12)'; break;
       default:
-        return (
-          <Tag color='grey' shape='circle' size='small'>
-            {t('未知状态')}
-          </Tag>
-        );
+        label = t('未知状态'); color = 'var(--text-muted)'; bg = 'var(--surface-active)'; break;
     }
+    return (
+      <span className='inline-flex items-center text-xs px-2 py-0.5 font-medium' style={{ borderRadius: 'var(--radius-sm)', background: bg, color }}>
+        {label}
+      </span>
+    );
   };
 
   // Table columns definition
@@ -455,24 +446,32 @@ const MultiKeyManageModal = ({ visible, onCancel, channel, onRefresh }) => {
   return (
     <Modal
       title={
-        <Space>
-          <Text>{t('多密钥管理')}</Text>
+        <div className='flex items-center gap-2 flex-wrap'>
+          <span
+            className='w-6 h-6 flex items-center justify-center'
+            style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}
+          >
+            <IconKey size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {t('多密钥管理')}
+          </span>
           {channel?.name && (
-            <Tag size='small' shape='circle' color='white'>
+            <span className='text-xs px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--surface-active)', color: 'var(--text-secondary)' }}>
               {channel.name}
-            </Tag>
+            </span>
           )}
-          <Tag size='small' shape='circle' color='white'>
+          <span className='text-xs px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--surface-active)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
             {t('总密钥数')}: {total}
-          </Tag>
+          </span>
           {channel?.channel_info?.multi_key_mode && (
-            <Tag size='small' shape='circle' color='white'>
+            <span className='text-xs px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--surface-active)', color: 'var(--text-muted)' }}>
               {channel.channel_info.multi_key_mode === 'random'
                 ? t('随机模式')
                 : t('轮询模式')}
-            </Tag>
+            </span>
           )}
-        </Space>
+        </div>
       }
       visible={visible}
       onCancel={onCancel}

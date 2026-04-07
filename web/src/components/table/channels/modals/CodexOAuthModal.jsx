@@ -22,14 +22,11 @@ import { useTranslation } from 'react-i18next';
 import {
   Modal,
   Button,
-  Space,
-  Typography,
   Input,
   Banner,
 } from '@douyinfe/semi-ui';
+import { IconKey } from '@douyinfe/semi-icons';
 import { API, copy, showError, showSuccess } from '../../../../helpers';
-
-const { Text } = Typography;
 
 const CodexOAuthModal = ({ visible, onCancel, onSuccess }) => {
   const { t } = useTranslation();
@@ -109,29 +106,46 @@ const CodexOAuthModal = ({ visible, onCancel, onSuccess }) => {
 
   return (
     <Modal
-      title={t('Codex 授权')}
+      title={
+        <div className='flex items-center gap-2'>
+          <span
+            className='w-6 h-6 flex items-center justify-center'
+            style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}
+          >
+            <IconKey size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {t('Codex 授权')}
+          </span>
+        </div>
+      }
       visible={visible}
       onCancel={onCancel}
       maskClosable={false}
       closeOnEsc
       width={720}
       footer={
-        <Space>
-          <Button theme='borderless' onClick={onCancel} disabled={loading}>
+        <div className='flex justify-end gap-2'>
+          <Button
+            theme='borderless'
+            onClick={onCancel}
+            disabled={loading}
+            style={{ borderRadius: 'var(--radius-md)', background: 'var(--surface-active)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }}
+          >
             {t('取消')}
           </Button>
           <Button
             theme='solid'
-            type='primary'
             onClick={completeOAuth}
             loading={loading}
+            style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent)', color: '#fff', border: 'none' }}
           >
             {t('生成并填入')}
           </Button>
-        </Space>
+        </div>
       }
     >
-      <Space vertical spacing='tight' style={{ width: '100%' }}>
+      <div className='space-y-4'>
         <Banner
           type='info'
           description={t(
@@ -139,18 +153,23 @@ const CodexOAuthModal = ({ visible, onCancel, onSuccess }) => {
           )}
         />
 
-        <Space wrap>
-          <Button type='primary' onClick={startOAuth} loading={loading}>
+        <div className='flex items-center gap-2 flex-wrap'>
+          <Button
+            onClick={startOAuth}
+            loading={loading}
+            style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent)', color: '#fff', border: 'none' }}
+          >
             {t('打开授权页面')}
           </Button>
           <Button
             theme='outline'
             disabled={!authorizeUrl || loading}
             onClick={() => copy(authorizeUrl)}
+            style={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)' }}
           >
             {t('复制授权链接')}
           </Button>
-        </Space>
+        </div>
 
         <Input
           value={input}
@@ -159,12 +178,12 @@ const CodexOAuthModal = ({ visible, onCancel, onSuccess }) => {
           showClear
         />
 
-        <Text type='tertiary' size='small'>
+        <p className='text-xs m-0' style={{ color: 'var(--text-muted)' }}>
           {t(
             '说明：生成结果是可直接粘贴到渠道密钥里的 JSON（包含 access_token / refresh_token / account_id）。',
           )}
-        </Text>
-      </Space>
+        </p>
+      </div>
     </Modal>
   );
 };

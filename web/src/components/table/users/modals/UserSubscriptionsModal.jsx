@@ -24,11 +24,8 @@ import {
   Modal,
   Select,
   SideSheet,
-  Space,
-  Tag,
-  Typography,
 } from '@douyinfe/semi-ui';
-import { IconPlusCircle } from '@douyinfe/semi-icons';
+import { IconPlusCircle, IconCreditCard } from '@douyinfe/semi-icons';
 import {
   IllustrationNoResult,
   IllustrationNoResultDark,
@@ -38,38 +35,41 @@ import { convertUSDToCurrency } from '../../../../helpers/render';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
 import CardTable from '../../../common/ui/CardTable';
 
-const { Text } = Typography;
-
 function formatTs(ts) {
   if (!ts) return '-';
   return new Date(ts * 1000).toLocaleString();
 }
 
-function renderStatusTag(sub, t) {
+function renderStatusBadge(sub, t) {
   const now = Date.now() / 1000;
   const end = sub?.end_time || 0;
   const status = sub?.status || '';
 
   const isExpiredByTime = end > 0 && end < now;
   const isActive = status === 'active' && !isExpiredByTime;
+
+  let label, color, bg;
   if (isActive) {
-    return (
-      <Tag color='green' shape='circle' size='small'>
-        {t('生效')}
-      </Tag>
-    );
+    label = t('生效');
+    color = 'var(--success)';
+    bg = 'rgba(52, 199, 89, 0.12)';
+  } else if (status === 'cancelled') {
+    label = t('已作废');
+    color = 'var(--text-muted)';
+    bg = 'var(--surface-active)';
+  } else {
+    label = t('已过期');
+    color = 'var(--text-muted)';
+    bg = 'var(--surface-active)';
   }
-  if (status === 'cancelled') {
-    return (
-      <Tag color='grey' shape='circle' size='small'>
-        {t('已作废')}
-      </Tag>
-    );
-  }
+
   return (
-    <Tag color='grey' shape='circle' size='small'>
-      {t('已过期')}
-    </Tag>
+    <span
+      className='inline-flex items-center text-xs px-2 py-0.5 font-medium'
+      style={{ borderRadius: 'var(--radius-sm)', background: bg, color }}
+    >
+      {label}
+    </span>
   );
 }
 
@@ -276,7 +276,7 @@ const UserSubscriptionsModal = ({ visible, onCancel, user, t, onSuccess }) => {
         title: t('状态'),
         key: 'status',
         width: 90,
-        render: (_, record) => renderStatusTag(record?.subscription, t),
+        render: (_, record) => renderStatusBadge(record?.subscription, t),
       },
       {
         title: t('有效期'),
@@ -305,9 +305,15 @@ const UserSubscriptionsModal = ({ visible, onCancel, user, t, onSuccess }) => {
           const total = Number(sub?.amount_total || 0);
           const used = Number(sub?.amount_used || 0);
           return (
-            <Text type={total > 0 ? 'secondary' : 'tertiary'}>
+            <span
+              className='text-xs'
+              style={{
+                color: total > 0 ? 'var(--text-secondary)' : 'var(--text-muted)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
               {total > 0 ? `${used}/${total}` : t('不限')}
-            </Text>
+            </span>
           );
         },
       },
@@ -324,25 +330,36 @@ const UserSubscriptionsModal = ({ visible, onCancel, user, t, onSuccess }) => {
           const isActive = sub?.status === 'active' && !isExpired;
           const isCancelled = sub?.status === 'cancelled';
           return (
-            <Space>
-              <Button
-                size='small'
-                type='warning'
-                theme='light'
+            <div className='flex items-center gap-1.5'>
+              <button
+                className='text-xs px-2 py-1 transition-colors duration-150'
                 disabled={!isActive || isCancelled}
                 onClick={() => invalidateSubscription(sub?.id)}
+                style={{
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(255, 149, 0, 0.10)',
+                  color: (!isActive || isCancelled) ? 'var(--text-muted)' : 'var(--warning)',
+                  border: 'none',
+                  cursor: (!isActive || isCancelled) ? 'not-allowed' : 'pointer',
+                  opacity: (!isActive || isCancelled) ? 0.5 : 1,
+                }}
               >
                 {t('作废')}
-              </Button>
-              <Button
-                size='small'
-                type='danger'
-                theme='light'
+              </button>
+              <button
+                className='text-xs px-2 py-1 transition-colors duration-150'
                 onClick={() => deleteSubscription(sub?.id)}
+                style={{
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(255, 59, 48, 0.10)',
+                  color: 'var(--error)',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
               >
                 {t('删除')}
-              </Button>
-            </Space>
+              </button>
+            </div>
           );
         },
       },
@@ -357,17 +374,29 @@ const UserSubscriptionsModal = ({ visible, onCancel, user, t, onSuccess }) => {
       bodyStyle={{ padding: 0 }}
       onCancel={onCancel}
       title={
-        <Space>
-          <Tag color='blue' shape='circle'>
-            {t('管理')}
-          </Tag>
-          <Typography.Title heading={4} className='m-0'>
-            {t('用户订阅管理')}
-          </Typography.Title>
-          <Text type='tertiary' className='ml-2'>
-            {user?.username || '-'} (ID: {user?.id || '-'})
-          </Text>
-        </Space>
+        <div className='flex items-center gap-2.5'>
+          <span
+            className='w-7 h-7 flex items-center justify-center'
+            style={{
+              borderRadius: 'var(--radius-sm)',
+              background: 'rgba(0, 122, 255, 0.12)',
+              color: 'var(--accent)',
+            }}
+          >
+            <IconCreditCard size={16} />
+          </span>
+          <div>
+            <span
+              className='text-base font-semibold'
+              style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+            >
+              {t('用户订阅管理')}
+            </span>
+            <span className='text-xs ml-2' style={{ color: 'var(--text-muted)' }}>
+              {user?.username || '-'} (ID: {user?.id || '-'})
+            </span>
+          </div>
+        </div>
       }
     >
       <div className='p-4'>
@@ -384,11 +413,16 @@ const UserSubscriptionsModal = ({ visible, onCancel, user, t, onSuccess }) => {
               style={{ minWidth: isMobile ? undefined : 300, flex: 1 }}
             />
             <Button
-              type='primary'
               theme='solid'
               icon={<IconPlusCircle />}
               loading={creating}
               onClick={createSubscription}
+              style={{
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--accent)',
+                color: '#fff',
+                border: 'none',
+              }}
             >
               {t('新增订阅')}
             </Button>

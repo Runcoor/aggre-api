@@ -19,6 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React from 'react';
 import { Modal } from '@douyinfe/semi-ui';
+import { IconStop, IconPlay } from '@douyinfe/semi-icons';
 
 const EnableDisableUserModal = ({
   visible,
@@ -29,16 +30,37 @@ const EnableDisableUserModal = ({
   t,
 }) => {
   const isDisable = action === 'disable';
+  const iconColor = isDisable ? 'var(--warning)' : 'var(--success)';
+  const iconBg = isDisable ? 'rgba(255, 149, 0, 0.12)' : 'rgba(52, 199, 89, 0.12)';
 
   return (
     <Modal
-      title={isDisable ? t('确定要禁用此用户吗？') : t('确定要启用此用户吗？')}
+      title={
+        <div className='flex items-center gap-2'>
+          <span
+            className='w-6 h-6 flex items-center justify-center'
+            style={{ borderRadius: 'var(--radius-sm)', background: iconBg, color: iconColor }}
+          >
+            {isDisable ? <IconStop size={14} /> : <IconPlay size={14} />}
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {isDisable ? t('确定要禁用此用户吗？') : t('确定要启用此用户吗？')}
+          </span>
+        </div>
+      }
       visible={visible}
       onCancel={onCancel}
       onOk={onConfirm}
-      type='warning'
+      okButtonProps={{
+        style: { background: iconColor, color: '#fff', border: 'none', borderRadius: 'var(--radius-md)' },
+      }}
+      cancelButtonProps={{
+        style: { borderRadius: 'var(--radius-md)', background: 'var(--surface-active)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' },
+      }}
     >
-      {isDisable ? t('此操作将禁用用户账户') : t('此操作将启用用户账户')}
+      <p className='text-sm m-0' style={{ color: 'var(--text-secondary)' }}>
+        {isDisable ? t('此操作将禁用用户账户') : t('此操作将启用用户账户')}
+      </p>
     </Modal>
   );
 };

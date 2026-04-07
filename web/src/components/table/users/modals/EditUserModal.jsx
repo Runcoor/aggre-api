@@ -36,12 +36,7 @@ import {
   Button,
   Modal,
   SideSheet,
-  Space,
-  Typography,
-  Card,
-  Tag,
   Form,
-  Avatar,
   Row,
   Col,
   InputNumber,
@@ -56,8 +51,6 @@ import {
 } from '@douyinfe/semi-icons';
 import UserBindingManagementModal from './UserBindingManagementModal';
 import MacSpinner from '../../../common/ui/MacSpinner';
-
-const { Text, Title } = Typography;
 
 const EditUserModal = (props) => {
   const { t } = useTranslation();
@@ -163,38 +156,63 @@ const EditUserModal = (props) => {
       <SideSheet
         placement='right'
         title={
-          <Space>
-            <Tag color='blue' shape='circle'>
-              {t(isEdit ? '编辑' : '新建')}
-            </Tag>
-            <Title heading={4} className='m-0'>
+          <div className='flex items-center gap-2.5'>
+            <span
+              className='w-7 h-7 flex items-center justify-center'
+              style={{
+                borderRadius: 'var(--radius-sm)',
+                background: 'rgba(0, 122, 255, 0.12)',
+                color: 'var(--accent)',
+              }}
+            >
+              <IconUser size={16} />
+            </span>
+            <span
+              className='text-base font-semibold'
+              style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+            >
               {isEdit ? t('编辑用户') : t('创建用户')}
-            </Title>
-          </Space>
+            </span>
+          </div>
         }
         bodyStyle={{ padding: 0 }}
         visible={props.visible}
         width={isMobile ? '100%' : 600}
         footer={
-          <div className='flex justify-end' style={{ background: 'var(--surface)' }}>
-            <Space>
-              <Button
-                theme='solid'
-                onClick={() => formApiRef.current?.submitForm()}
-                icon={<IconSave />}
-                loading={loading}
-              >
-                {t('提交')}
-              </Button>
-              <Button
-                theme='light'
-                type='primary'
-                onClick={handleCancel}
-                icon={<IconClose />}
-              >
-                {t('取消')}
-              </Button>
-            </Space>
+          <div
+            className='flex justify-end gap-2 px-4 py-3'
+            style={{
+              background: 'var(--surface)',
+              borderTop: '1px solid var(--border-subtle)',
+            }}
+          >
+            <Button
+              theme='light'
+              onClick={handleCancel}
+              icon={<IconClose />}
+              style={{
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--surface-active)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-default)',
+              }}
+            >
+              {t('取消')}
+            </Button>
+            <Button
+              theme='solid'
+              onClick={() => formApiRef.current?.submitForm()}
+              icon={<IconSave />}
+              loading={loading}
+              style={{
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--accent)',
+                color: '#fff',
+                border: 'none',
+              }}
+            >
+              {t('提交')}
+            </Button>
           </div>
         }
         closeIcon={null}
@@ -207,156 +225,148 @@ const EditUserModal = (props) => {
             onSubmit={submit}
           >
             {({ values }) => (
-              <div className='p-2 space-y-3'>
+              <div className='p-4 space-y-4'>
                 {/* 基本信息 */}
-                <Card style={{ borderRadius: 'var(--radius-lg)' }}>
-                  <div className='flex items-center mb-2'>
-                    <Avatar
-                      size='small'
-                      color='blue'
-                      className='mr-2'
+                <div
+                  className='rounded-[var(--radius-lg)]'
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}
+                >
+                  <div
+                    className='flex items-center gap-2.5 px-5 py-3'
+                    style={{ borderBottom: '1px solid var(--border-subtle)' }}
+                  >
+                    <span
+                      className='w-7 h-7 flex items-center justify-center flex-shrink-0'
+                      style={{
+                        borderRadius: 'var(--radius-sm)',
+                        background: 'rgba(0, 122, 255, 0.12)',
+                        color: 'var(--accent)',
+                      }}
                     >
-                      <IconUser size={16} />
-                    </Avatar>
+                      <IconUser size={15} />
+                    </span>
                     <div>
-                      <Text className='text-lg font-medium'>
+                      <h4 className='text-sm font-semibold m-0' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
                         {t('基本信息')}
-                      </Text>
-                      <div className='text-xs text-mv-text-secondary'>
+                      </h4>
+                      <p className='text-xs m-0' style={{ color: 'var(--text-muted)' }}>
                         {t('用户的基本账户信息')}
-                      </div>
+                      </p>
                     </div>
                   </div>
-
-                  <Row gutter={12}>
-                    <Col span={24}>
-                      <Form.Input
-                        field='username'
-                        label={t('用户名')}
-                        placeholder={t('请输入新的用户名')}
-                        rules={[{ required: true, message: t('请输入用户名') }]}
-                        showClear
-                      />
-                    </Col>
-
-                    <Col span={24}>
-                      <Form.Input
-                        field='password'
-                        label={t('密码')}
-                        placeholder={t('请输入新的密码，最短 8 位')}
-                        mode='password'
-                        showClear
-                      />
-                    </Col>
-
-                    <Col span={24}>
-                      <Form.Input
-                        field='display_name'
-                        label={t('显示名称')}
-                        placeholder={t('请输入新的显示名称')}
-                        showClear
-                      />
-                    </Col>
-
-                    <Col span={24}>
-                      <Form.Input
-                        field='remark'
-                        label={t('备注')}
-                        placeholder={t('请输入备注（仅管理员可见）')}
-                        showClear
-                      />
-                    </Col>
-                  </Row>
-                </Card>
+                  <div className='px-5 py-4'>
+                    <Row gutter={12}>
+                      <Col span={24}>
+                        <Form.Input field='username' label={t('用户名')} placeholder={t('请输入新的用户名')} rules={[{ required: true, message: t('请输入用户名') }]} showClear />
+                      </Col>
+                      <Col span={24}>
+                        <Form.Input field='password' label={t('密码')} placeholder={t('请输入新的密码，最短 8 位')} mode='password' showClear />
+                      </Col>
+                      <Col span={24}>
+                        <Form.Input field='display_name' label={t('显示名称')} placeholder={t('请输入新的显示名称')} showClear />
+                      </Col>
+                      <Col span={24}>
+                        <Form.Input field='remark' label={t('备注')} placeholder={t('请输入备注（仅管理员可见）')} showClear />
+                      </Col>
+                    </Row>
+                  </div>
+                </div>
 
                 {/* 权限设置 */}
                 {userId && (
-                  <Card style={{ borderRadius: 'var(--radius-lg)' }}>
-                    <div className='flex items-center mb-2'>
-                      <Avatar
-                        size='small'
-                        color='green'
-                        className='mr-2'
+                  <div
+                    className='rounded-[var(--radius-lg)]'
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}
+                  >
+                    <div
+                      className='flex items-center gap-2.5 px-5 py-3'
+                      style={{ borderBottom: '1px solid var(--border-subtle)' }}
+                    >
+                      <span
+                        className='w-7 h-7 flex items-center justify-center flex-shrink-0'
+                        style={{
+                          borderRadius: 'var(--radius-sm)',
+                          background: 'rgba(52, 199, 89, 0.12)',
+                          color: 'var(--success)',
+                        }}
                       >
-                        <IconUserGroup size={16} />
-                      </Avatar>
+                        <IconUserGroup size={15} />
+                      </span>
                       <div>
-                        <Text className='text-lg font-medium'>
+                        <h4 className='text-sm font-semibold m-0' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
                           {t('权限设置')}
-                        </Text>
-                        <div className='text-xs text-mv-text-secondary'>
+                        </h4>
+                        <p className='text-xs m-0' style={{ color: 'var(--text-muted)' }}>
                           {t('用户分组和额度管理')}
-                        </div>
+                        </p>
                       </div>
                     </div>
-
-                    <Row gutter={12}>
-                      <Col span={24}>
-                        <Form.Select
-                          field='group'
-                          label={t('分组')}
-                          placeholder={t('请选择分组')}
-                          optionList={groupOptions}
-                          allowAdditions
-                          search
-                          rules={[{ required: true, message: t('请选择分组') }]}
-                        />
-                      </Col>
-
-                      <Col span={10}>
-                        <Form.InputNumber
-                          field='quota'
-                          label={t('剩余额度')}
-                          placeholder={t('请输入新的剩余额度')}
-                          step={500000}
-                          extraText={renderQuotaWithPrompt(values.quota || 0)}
-                          rules={[{ required: true, message: t('请输入额度') }]}
-                          style={{ width: '100%' }}
-                        />
-                      </Col>
-
-                      <Col span={14}>
-                        <Form.Slot label={t('添加额度')}>
-                          <Button
-                            icon={<IconPlus />}
-                            onClick={() => setIsModalOpen(true)}
-                          />
-                        </Form.Slot>
-                      </Col>
-                    </Row>
-                  </Card>
+                    <div className='px-5 py-4'>
+                      <Row gutter={12}>
+                        <Col span={24}>
+                          <Form.Select field='group' label={t('分组')} placeholder={t('请选择分组')} optionList={groupOptions} allowAdditions search rules={[{ required: true, message: t('请选择分组') }]} />
+                        </Col>
+                        <Col span={10}>
+                          <Form.InputNumber field='quota' label={t('剩余额度')} placeholder={t('请输入新的剩余额度')} step={500000} extraText={renderQuotaWithPrompt(values.quota || 0)} rules={[{ required: true, message: t('请输入额度') }]} style={{ width: '100%' }} />
+                        </Col>
+                        <Col span={14}>
+                          <Form.Slot label={t('添加额度')}>
+                            <Button
+                              icon={<IconPlus />}
+                              onClick={() => setIsModalOpen(true)}
+                              style={{
+                                borderRadius: 'var(--radius-md)',
+                                background: 'var(--surface-active)',
+                                border: '1px solid var(--border-default)',
+                              }}
+                            />
+                          </Form.Slot>
+                        </Col>
+                      </Row>
+                    </div>
+                  </div>
                 )}
 
                 {/* 绑定信息入口 */}
                 {userId && (
-                  <Card style={{ borderRadius: 'var(--radius-lg)' }}>
-                    <div className='flex items-center justify-between gap-3'>
-                      <div className='flex items-center min-w-0'>
-                        <Avatar
-                          size='small'
-                          color='purple'
-                          className='mr-2'
-                        >
-                          <IconLink size={16} />
-                        </Avatar>
-                        <div className='min-w-0'>
-                          <Text className='text-lg font-medium'>
-                            {t('绑定信息')}
-                          </Text>
-                          <div className='text-xs text-mv-text-secondary'>
-                            {t('管理用户已绑定的第三方账户，支持筛选与解绑')}
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        type='primary'
-                        theme='outline'
-                        onClick={openBindingModal}
+                  <div
+                    className='rounded-[var(--radius-lg)] flex items-center justify-between gap-3 px-5 py-4'
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}
+                  >
+                    <div className='flex items-center gap-2.5 min-w-0'>
+                      <span
+                        className='w-7 h-7 flex items-center justify-center flex-shrink-0'
+                        style={{
+                          borderRadius: 'var(--radius-sm)',
+                          background: 'rgba(175, 82, 222, 0.12)',
+                          color: 'var(--info)',
+                        }}
                       >
-                        {t('管理绑定')}
-                      </Button>
+                        <IconLink size={15} />
+                      </span>
+                      <div className='min-w-0'>
+                        <h4 className='text-sm font-semibold m-0' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
+                          {t('绑定信息')}
+                        </h4>
+                        <p className='text-xs m-0 truncate' style={{ color: 'var(--text-muted)' }}>
+                          {t('管理用户已绑定的第三方账户，支持筛选与解绑')}
+                        </p>
+                      </div>
                     </div>
-                  </Card>
+                    <Button
+                      theme='light'
+                      onClick={openBindingModal}
+                      style={{
+                        borderRadius: 'var(--radius-md)',
+                        background: 'var(--accent)',
+                        color: '#fff',
+                        border: 'none',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {t('管理绑定')}
+                    </Button>
+                  </div>
                 )}
               </div>
             )}
@@ -387,9 +397,20 @@ const EditUserModal = (props) => {
         }}
         closable={null}
         title={
-          <div className='flex items-center'>
-            <IconPlus className='mr-2' />
-            {t('添加额度')}
+          <div className='flex items-center gap-2'>
+            <span
+              className='w-6 h-6 flex items-center justify-center'
+              style={{
+                borderRadius: 'var(--radius-sm)',
+                background: 'rgba(0, 122, 255, 0.12)',
+                color: 'var(--accent)',
+              }}
+            >
+              <IconPlus size={14} />
+            </span>
+            <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+              {t('添加额度')}
+            </span>
           </div>
         }
       >
@@ -397,20 +418,20 @@ const EditUserModal = (props) => {
           {(() => {
             const current = formApiRef.current?.getValue('quota') || 0;
             return (
-              <Text type='secondary' className='block mb-2'>
+              <p className='text-sm m-0 mb-2' style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
                 {`${t('新额度：')}${renderQuota(current)} + ${renderQuota(addQuotaLocal)} = ${renderQuota(current + parseInt(addQuotaLocal || 0))}`}
-              </Text>
+              </p>
             );
           })()}
         </div>
         {getCurrencyConfig().type !== 'TOKENS' && (
           <div className='mb-3'>
             <div className='mb-1'>
-              <Text size='small'>{t('金额')}</Text>
-              <Text size='small' type='tertiary'>
+              <span className='text-xs' style={{ color: 'var(--text-primary)' }}>{t('金额')}</span>
+              <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
                 {' '}
                 ({t('仅用于换算，实际保存的是额度')})
-              </Text>
+              </span>
             </div>
             <InputNumber
               prefix={getCurrencyConfig().symbol}
@@ -432,7 +453,7 @@ const EditUserModal = (props) => {
         )}
         <div>
           <div className='mb-1'>
-            <Text size='small'>{t('额度')}</Text>
+            <span className='text-xs' style={{ color: 'var(--text-primary)' }}>{t('额度')}</span>
           </div>
           <InputNumber
             placeholder={t('输入额度')}

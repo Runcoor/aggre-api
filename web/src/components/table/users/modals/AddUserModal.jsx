@@ -23,11 +23,6 @@ import { useIsMobile } from '../../../../hooks/common/useIsMobile';
 import {
   Button,
   SideSheet,
-  Space,
-  Typography,
-  Card,
-  Tag,
-  Avatar,
   Form,
   Row,
   Col,
@@ -35,8 +30,6 @@ import {
 import { IconSave, IconClose, IconUserAdd } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import MacSpinner from '../../../common/ui/MacSpinner';
-
-const { Text, Title } = Typography;
 
 const AddUserModal = (props) => {
   const { t } = useTranslation();
@@ -75,38 +68,63 @@ const AddUserModal = (props) => {
       <SideSheet
         placement={'left'}
         title={
-          <Space>
-            <Tag color='green' shape='circle'>
-              {t('新建')}
-            </Tag>
-            <Title heading={4} className='m-0'>
+          <div className='flex items-center gap-2.5'>
+            <span
+              className='w-7 h-7 flex items-center justify-center'
+              style={{
+                borderRadius: 'var(--radius-sm)',
+                background: 'rgba(52, 199, 89, 0.15)',
+                color: 'var(--success)',
+              }}
+            >
+              <IconUserAdd size={16} />
+            </span>
+            <span
+              className='text-base font-semibold'
+              style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+            >
               {t('添加用户')}
-            </Title>
-          </Space>
+            </span>
+          </div>
         }
         bodyStyle={{ padding: '0' }}
         visible={props.visible}
         width={isMobile ? '100%' : 600}
         footer={
-          <div className='flex justify-end' style={{ background: 'var(--surface)' }}>
-            <Space>
-              <Button
-                theme='solid'
-                onClick={() => formApiRef.current?.submitForm()}
-                icon={<IconSave />}
-                loading={loading}
-              >
-                {t('提交')}
-              </Button>
-              <Button
-                theme='light'
-                type='primary'
-                onClick={handleCancel}
-                icon={<IconClose />}
-              >
-                {t('取消')}
-              </Button>
-            </Space>
+          <div
+            className='flex justify-end gap-2 px-4 py-3'
+            style={{
+              background: 'var(--surface)',
+              borderTop: '1px solid var(--border-subtle)',
+            }}
+          >
+            <Button
+              theme='light'
+              onClick={handleCancel}
+              icon={<IconClose />}
+              style={{
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--surface-active)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-default)',
+              }}
+            >
+              {t('取消')}
+            </Button>
+            <Button
+              theme='solid'
+              onClick={() => formApiRef.current?.submitForm()}
+              icon={<IconSave />}
+              loading={loading}
+              style={{
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--accent)',
+                color: '#fff',
+                border: 'none',
+              }}
+            >
+              {t('提交')}
+            </Button>
           </div>
         }
         closeIcon={null}
@@ -123,58 +141,80 @@ const AddUserModal = (props) => {
               formApiRef.current?.scrollToError();
             }}
           >
-            <div className='p-2'>
-              <Card style={{ borderRadius: 'var(--radius-lg)' }}>
-                <div className='flex items-center mb-2'>
-                  <Avatar size='small' color='blue' className='mr-2'>
-                    <IconUserAdd size={16} />
-                  </Avatar>
+            <div className='p-4 space-y-4'>
+              <div
+                className='rounded-[var(--radius-lg)]'
+                style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-subtle)',
+                }}
+              >
+                <div
+                  className='flex items-center gap-2.5 px-5 py-3'
+                  style={{ borderBottom: '1px solid var(--border-subtle)' }}
+                >
+                  <span
+                    className='w-7 h-7 flex items-center justify-center flex-shrink-0'
+                    style={{
+                      borderRadius: 'var(--radius-sm)',
+                      background: 'rgba(0, 122, 255, 0.12)',
+                      color: 'var(--accent)',
+                    }}
+                  >
+                    <IconUserAdd size={15} />
+                  </span>
                   <div>
-                    <Text className='text-lg font-medium'>{t('用户信息')}</Text>
-                    <div className='text-xs text-mv-text-secondary'>
+                    <h4
+                      className='text-sm font-semibold m-0'
+                      style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+                    >
+                      {t('用户信息')}
+                    </h4>
+                    <p className='text-xs m-0' style={{ color: 'var(--text-muted)' }}>
                       {t('创建新用户账户')}
-                    </div>
+                    </p>
                   </div>
                 </div>
-
-                <Row gutter={12}>
-                  <Col span={24}>
-                    <Form.Input
-                      field='username'
-                      label={t('用户名')}
-                      placeholder={t('请输入用户名')}
-                      rules={[{ required: true, message: t('请输入用户名') }]}
-                      showClear
-                    />
-                  </Col>
-                  <Col span={24}>
-                    <Form.Input
-                      field='display_name'
-                      label={t('显示名称')}
-                      placeholder={t('请输入显示名称')}
-                      showClear
-                    />
-                  </Col>
-                  <Col span={24}>
-                    <Form.Input
-                      field='password'
-                      label={t('密码')}
-                      type='password'
-                      placeholder={t('请输入密码')}
-                      rules={[{ required: true, message: t('请输入密码') }]}
-                      showClear
-                    />
-                  </Col>
-                  <Col span={24}>
-                    <Form.Input
-                      field='remark'
-                      label={t('备注')}
-                      placeholder={t('请输入备注（仅管理员可见）')}
-                      showClear
-                    />
-                  </Col>
-                </Row>
-              </Card>
+                <div className='px-5 py-4'>
+                  <Row gutter={12}>
+                    <Col span={24}>
+                      <Form.Input
+                        field='username'
+                        label={t('用户名')}
+                        placeholder={t('请输入用户名')}
+                        rules={[{ required: true, message: t('请输入用户名') }]}
+                        showClear
+                      />
+                    </Col>
+                    <Col span={24}>
+                      <Form.Input
+                        field='display_name'
+                        label={t('显示名称')}
+                        placeholder={t('请输入显示名称')}
+                        showClear
+                      />
+                    </Col>
+                    <Col span={24}>
+                      <Form.Input
+                        field='password'
+                        label={t('密码')}
+                        type='password'
+                        placeholder={t('请输入密码')}
+                        rules={[{ required: true, message: t('请输入密码') }]}
+                        showClear
+                      />
+                    </Col>
+                    <Col span={24}>
+                      <Form.Input
+                        field='remark'
+                        label={t('备注')}
+                        placeholder={t('请输入备注（仅管理员可见）')}
+                        showClear
+                      />
+                    </Col>
+                  </Row>
+                </div>
+              </div>
             </div>
           </Form>
         </MacSpinner>

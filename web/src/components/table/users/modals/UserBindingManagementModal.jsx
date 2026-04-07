@@ -27,10 +27,7 @@ import {
 } from '../../../../helpers';
 import {
   Modal,
-  Typography,
-  Card,
   Checkbox,
-  Tag,
   Button,
 } from '@douyinfe/semi-ui';
 import {
@@ -41,8 +38,6 @@ import {
 } from '@douyinfe/semi-icons';
 import { SiDiscord, SiTelegram, SiWechat, SiLinux } from 'react-icons/si';
 import MacSpinner from '../../../common/ui/MacSpinner';
-
-const { Text } = Typography;
 
 const UserBindingManagementModal = ({
   visible,
@@ -333,9 +328,16 @@ const UserBindingManagementModal = ({
       footer={null}
       width={isMobile ? '100%' : 760}
       title={
-        <div className='flex items-center'>
-          <IconLink className='mr-2' />
-          {t('账户绑定管理')}
+        <div className='flex items-center gap-2'>
+          <span
+            className='w-6 h-6 flex items-center justify-center'
+            style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(175, 82, 222, 0.12)', color: 'var(--info)' }}
+          >
+            <IconLink size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {t('账户绑定管理')}
+          </span>
         </div>
       }
     >
@@ -348,17 +350,28 @@ const UserBindingManagementModal = ({
             >
               {t('仅显示已绑定')}
             </Checkbox>
-            <Text type='tertiary'>
-              {t('已绑定')} {boundCount} / {allBindingItems.length}
-            </Text>
+            <span
+              className='text-xs px-2 py-0.5'
+              style={{
+                borderRadius: 'var(--radius-sm)',
+                background: 'var(--surface-active)',
+                color: 'var(--text-muted)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              {boundCount} / {allBindingItems.length}
+            </span>
           </div>
 
           {visibleBindingItems.length === 0 ? (
-            <Card className='border-dashed' style={{ borderRadius: 'var(--radius-lg)' }}>
-              <Text type='tertiary'>{t('暂无已绑定项')}</Text>
-            </Card>
+            <div
+              className='rounded-[var(--radius-lg)] p-6 text-center'
+              style={{ border: '1px dashed var(--border-default)', color: 'var(--text-muted)' }}
+            >
+              {t('暂无已绑定项')}
+            </div>
           ) : (
-            <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
               {visibleBindingItems.map((item, index) => {
                 const isBound = Boolean(item.value);
                 const loadingKey =
@@ -375,14 +388,18 @@ const UserBindingManagementModal = ({
                   index === visibleBindingItems.length - 1;
 
                 return (
-                  <Card
+                  <div
                     key={item.key}
-                    className={shouldSpanTwoColsOnDesktop ? 'lg:col-span-2' : ''} style={{ borderRadius: 'var(--radius-lg)' }}
+                    className={`rounded-[var(--radius-lg)] p-4 ${shouldSpanTwoColsOnDesktop ? 'lg:col-span-2' : ''}`}
+                    style={{
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border-subtle)',
+                    }}
                   >
-                    <div className='flex items-center justify-between gap-3 min-h-[92px]'>
-                      <div className='flex items-center flex-1 min-w-0'>
+                    <div className='flex items-center justify-between gap-3 min-h-[52px]'>
+                      <div className='flex items-center gap-3 flex-1 min-w-0'>
                         <div
-                          className='w-10 h-10 flex items-center justify-center mr-3 flex-shrink-0'
+                          className='w-9 h-9 flex items-center justify-center flex-shrink-0'
                           style={{
                             borderRadius: 'var(--radius-md)',
                             background: 'var(--surface-active)',
@@ -391,21 +408,28 @@ const UserBindingManagementModal = ({
                           {item.icon}
                         </div>
                         <div className='min-w-0 flex-1'>
-                          <div className='font-medium flex items-center gap-2' style={{ color: 'var(--text-primary)' }}>
-                            <span>{item.name}</span>
-                            <Tag size='small' color='white'>
-                              {item.type === 'builtin'
-                                ? t('内置')
-                                : t('自定义')}
-                            </Tag>
+                          <div className='flex items-center gap-2' style={{ color: 'var(--text-primary)' }}>
+                            <span className='text-sm font-medium'>{item.name}</span>
+                            <span
+                              className='text-[10px] px-1.5 py-0.5'
+                              style={{
+                                borderRadius: 'var(--radius-sm)',
+                                background: 'var(--surface-active)',
+                                color: 'var(--text-muted)',
+                              }}
+                            >
+                              {item.type === 'builtin' ? t('内置') : t('自定义')}
+                            </span>
                           </div>
-                          <div className='text-sm text-mv-text-muted truncate'>
+                          <div
+                            className='text-xs truncate mt-0.5'
+                            style={{ color: isBound ? 'var(--text-secondary)' : 'var(--text-muted)', fontFamily: isBound ? 'var(--font-mono)' : 'inherit' }}
+                          >
                             {statusText}
                           </div>
                         </div>
                       </div>
                       <Button
-                        type='danger'
                         theme='borderless'
                         icon={<IconDelete />}
                         size='small'
@@ -421,11 +445,15 @@ const UserBindingManagementModal = ({
                             name: item.name,
                           });
                         }}
+                        style={{
+                          color: isBound ? 'var(--error)' : 'var(--text-muted)',
+                          borderRadius: 'var(--radius-sm)',
+                        }}
                       >
                         {t('解绑')}
                       </Button>
                     </div>
-                  </Card>
+                  </div>
                 );
               })}
             </div>

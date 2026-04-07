@@ -148,23 +148,51 @@ const DashboardSetting = () => {
             <SettingsDataDashboard options={inputs} refresh={onRefresh} />
           </div>
 
-          {/* 系统公告管理 */}
-          <div className='mv-settings-section'>
+          {/* 系统公告管理 — sub-panel card */}
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-lg)',
+              overflow: 'hidden',
+            }}
+          >
             <SettingsAnnouncements options={inputs} refresh={onRefresh} />
           </div>
 
-          {/* API信息管理 */}
-          <div className='mv-settings-section'>
+          {/* API信息管理 — sub-panel card */}
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-lg)',
+              overflow: 'hidden',
+            }}
+          >
             <SettingsAPIInfo options={inputs} refresh={onRefresh} />
           </div>
 
-          {/* 常见问答管理 */}
-          <div className='mv-settings-section'>
+          {/* 常见问答管理 — sub-panel card */}
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-lg)',
+              overflow: 'hidden',
+            }}
+          >
             <SettingsFAQ options={inputs} refresh={onRefresh} />
           </div>
 
-          {/* Uptime Kuma 监控设置 */}
-          <div className='mv-settings-section'>
+          {/* Uptime Kuma 监控设置 — sub-panel card */}
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-lg)',
+              overflow: 'hidden',
+            }}
+          >
             <SettingsUptimeKuma options={inputs} refresh={onRefresh} />
           </div>
         </div>

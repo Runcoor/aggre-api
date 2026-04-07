@@ -20,12 +20,9 @@ For commercial licensing, please contact support@quantumnous.com
 import React, { useEffect, useState } from 'react';
 import {
   Button,
-  Space,
   Table,
   Form,
-  Typography,
   Empty,
-  Divider,
   Modal,
   Switch,
   Tooltip,
@@ -37,8 +34,6 @@ import {
 import { Plus, Edit, Trash2, Save, HelpCircle } from 'lucide-react';
 import { API, showError, showSuccess } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
-
-const { Text } = Typography;
 
 const SettingsFAQ = ({ options, refresh }) => {
   const { t } = useTranslation();
@@ -75,7 +70,8 @@ const SettingsFAQ = ({ options, refresh }) => {
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              fontWeight: 'bold',
+              fontWeight: 600,
+              color: 'var(--text-primary)',
             }}
           >
             {text}
@@ -109,7 +105,7 @@ const SettingsFAQ = ({ options, refresh }) => {
       fixed: 'right',
       width: 150,
       render: (text, record) => (
-        <Space>
+        <div className='flex items-center gap-1'>
           <Button
             icon={<Edit size={14} />}
             theme='light'
@@ -128,7 +124,7 @@ const SettingsFAQ = ({ options, refresh }) => {
           >
             {t('删除')}
           </Button>
-        </Space>
+        </div>
       ),
     },
   ];
@@ -189,7 +185,7 @@ const SettingsFAQ = ({ options, refresh }) => {
       const newList = faqList.filter((item) => item.id !== deletingFaq.id);
       setFaqList(newList);
       setHasChanges(true);
-      showSuccess('问答已删除，请及时点击“保存设置”进行保存');
+      showSuccess('问答已删除，请及时点击"保存设置"进行保存');
     }
     setShowDeleteModal(false);
     setDeletingFaq(null);
@@ -223,8 +219,8 @@ const SettingsFAQ = ({ options, refresh }) => {
       setShowFaqModal(false);
       showSuccess(
         editingFaq
-          ? '问答已更新，请及时点击“保存设置”进行保存'
-          : '问答已添加，请及时点击“保存设置”进行保存',
+          ? '问答已更新，请及时点击"保存设置"进行保存'
+          : '问答已添加，请及时点击"保存设置"进行保存',
       );
     } catch (error) {
       showError('操作失败: ' + error.message);
@@ -301,67 +297,9 @@ const SettingsFAQ = ({ options, refresh }) => {
     setSelectedRowKeys([]);
     setHasChanges(true);
     showSuccess(
-      `已删除 ${selectedRowKeys.length} 个常见问答，请及时点击“保存设置”进行保存`,
+      `已删除 ${selectedRowKeys.length} 个常见问答，请及时点击"保存设置"进行保存`,
     );
   };
-
-  const renderHeader = () => (
-    <div className='flex flex-col w-full'>
-      <div className='mb-2'>
-        <div className='flex items-center' style={{ color: 'var(--accent)' }}>
-          <HelpCircle size={16} className='mr-2' />
-          <Text>
-            {t(
-              '常见问答管理，为用户提供常见问题的答案（最多50个，前端显示最新20条）',
-            )}
-          </Text>
-        </div>
-      </div>
-
-      <Divider margin='12px' />
-
-      <div className='flex flex-col md:flex-row justify-between items-center gap-4 w-full'>
-        <div className='flex gap-2 w-full md:w-auto order-2 md:order-1'>
-          <Button
-            theme='light'
-            type='primary'
-            icon={<Plus size={14} />}
-            className='w-full md:w-auto'
-            onClick={handleAddFaq}
-          >
-            {t('添加问答')}
-          </Button>
-          <Button
-            icon={<Trash2 size={14} />}
-            type='danger'
-            theme='light'
-            onClick={handleBatchDelete}
-            disabled={selectedRowKeys.length === 0}
-            className='w-full md:w-auto'
-          >
-            {t('批量删除')}{' '}
-            {selectedRowKeys.length > 0 && `(${selectedRowKeys.length})`}
-          </Button>
-          <Button
-            icon={<Save size={14} />}
-            onClick={submitFAQ}
-            loading={loading}
-            disabled={!hasChanges}
-            type='secondary'
-            className='w-full md:w-auto'
-          >
-            {t('保存设置')}
-          </Button>
-        </div>
-
-        {/* 启用开关 */}
-        <div className='order-1 md:order-2 flex items-center gap-2'>
-          <Switch checked={panelEnabled} onChange={handleToggleEnabled} />
-          <Text>{panelEnabled ? t('已启用') : t('已禁用')}</Text>
-        </div>
-      </div>
-    </div>
-  );
 
   // 计算当前页显示的数据
   const getCurrentPageData = () => {
@@ -389,7 +327,93 @@ const SettingsFAQ = ({ options, refresh }) => {
 
   return (
     <>
-      <Form.Section text={renderHeader()}>
+      {/* Section Header — macOS panel style */}
+      <div
+        className='px-4 py-3 flex items-center justify-between'
+        style={{ borderBottom: '1px solid var(--border-subtle)' }}
+      >
+        <div className='flex items-center gap-2.5'>
+          <div
+            className='flex items-center justify-center'
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(52, 199, 89, 0.12)',
+              color: 'var(--success)',
+            }}
+          >
+            <HelpCircle size={16} />
+          </div>
+          <div>
+            <h3
+              className='text-sm font-semibold'
+              style={{
+                fontFamily: 'var(--font-serif)',
+                color: 'var(--text-primary)',
+                margin: 0,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {t('常见问答管理')}
+            </h3>
+            <p
+              className='text-xs mt-0.5'
+              style={{ color: 'var(--text-muted)', margin: 0 }}
+            >
+              {t('常见问答管理，为用户提供常见问题的答案（最多50个，前端显示最新20条）')}
+            </p>
+          </div>
+        </div>
+        <div className='flex items-center gap-2'>
+          <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
+            {panelEnabled ? t('已启用') : t('已禁用')}
+          </span>
+          <Switch checked={panelEnabled} onChange={handleToggleEnabled} size='small' />
+        </div>
+      </div>
+
+      {/* Toolbar */}
+      <div className='px-4 py-2.5 flex flex-col md:flex-row items-center gap-2'>
+        <div className='flex gap-1.5 w-full md:w-auto'>
+          <Button
+            theme='light'
+            type='primary'
+            icon={<Plus size={14} />}
+            size='small'
+            className='w-full md:w-auto'
+            onClick={handleAddFaq}
+          >
+            {t('添加问答')}
+          </Button>
+          <Button
+            icon={<Trash2 size={14} />}
+            type='danger'
+            theme='light'
+            size='small'
+            onClick={handleBatchDelete}
+            disabled={selectedRowKeys.length === 0}
+            className='w-full md:w-auto'
+          >
+            {t('批量删除')}{' '}
+            {selectedRowKeys.length > 0 && `(${selectedRowKeys.length})`}
+          </Button>
+          <Button
+            icon={<Save size={14} />}
+            onClick={submitFAQ}
+            loading={loading}
+            disabled={!hasChanges}
+            type='secondary'
+            size='small'
+            className='w-full md:w-auto'
+          >
+            {t('保存设置')}
+          </Button>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className='px-4 pb-4'>
         <Table
           columns={columns}
           dataSource={getCurrentPageData()}
@@ -428,7 +452,7 @@ const SettingsFAQ = ({ options, refresh }) => {
           }
           className='overflow-hidden'
         />
-      </Form.Section>
+      </div>
 
       <Modal
         title={editingFaq ? t('编辑问答') : t('添加问答')}
@@ -481,7 +505,7 @@ const SettingsFAQ = ({ options, refresh }) => {
           theme: 'solid',
         }}
       >
-        <Text>{t('确定要删除此问答吗？')}</Text>
+        <span style={{ color: 'var(--text-primary)' }}>{t('确定要删除此问答吗？')}</span>
       </Modal>
     </>
   );

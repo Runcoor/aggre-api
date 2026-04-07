@@ -20,15 +20,10 @@ For commercial licensing, please contact support@quantumnous.com
 import React, { useEffect, useState } from 'react';
 import {
   Button,
-  Space,
   Table,
   Form,
-  Typography,
   Empty,
-  Divider,
-  Avatar,
   Modal,
-  Tag,
   Switch,
 } from '@douyinfe/semi-ui';
 import {
@@ -39,7 +34,25 @@ import { Plus, Edit, Trash2, Save, Settings } from 'lucide-react';
 import { API, showError, showSuccess } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
 
-const { Text } = Typography;
+/* Color mapping: Semi Avatar colors → CSS hex values for native dots */
+const COLOR_MAP = {
+  blue: '#007AFF',
+  green: '#34C759',
+  cyan: '#32ADE6',
+  purple: '#AF52DE',
+  pink: '#FF2D55',
+  red: '#FF3B30',
+  orange: '#FF9500',
+  amber: '#FFCC00',
+  yellow: '#FFCC00',
+  lime: '#30D158',
+  'light-green': '#34C759',
+  teal: '#5AC8FA',
+  'light-blue': '#5AC8FA',
+  indigo: '#5856D6',
+  violet: '#AF52DE',
+  grey: '#8E8E93',
+};
 
 const SettingsAPIInfo = ({ options, refresh }) => {
   const { t } = useTranslation();
@@ -144,7 +157,7 @@ const SettingsAPIInfo = ({ options, refresh }) => {
       const newList = apiInfoList.filter((api) => api.id !== deletingApi.id);
       setApiInfoList(newList);
       setHasChanges(true);
-      showSuccess('API信息已删除，请及时点击“保存设置”进行保存');
+      showSuccess('API信息已删除，请及时点击"保存设置"进行保存');
     }
     setShowDeleteModal(false);
     setDeletingApi(null);
@@ -178,8 +191,8 @@ const SettingsAPIInfo = ({ options, refresh }) => {
       setShowApiModal(false);
       showSuccess(
         editingApi
-          ? 'API信息已更新，请及时点击“保存设置”进行保存'
-          : 'API信息已添加，请及时点击“保存设置”进行保存',
+          ? 'API信息已更新，请及时点击"保存设置"进行保存'
+          : 'API信息已添加，请及时点击"保存设置"进行保存',
       );
     } catch (error) {
       showError('操作失败: ' + error.message);
@@ -242,38 +255,118 @@ const SettingsAPIInfo = ({ options, refresh }) => {
     {
       title: 'ID',
       dataIndex: 'id',
+      width: 60,
+      render: (id) => (
+        <span
+          className='text-xs'
+          style={{
+            fontFamily: 'var(--font-mono)',
+            color: 'var(--text-muted)',
+          }}
+        >
+          {id}
+        </span>
+      ),
     },
     {
       title: t('API地址'),
       dataIndex: 'url',
-      render: (text, record) => (
-        <Tag color={record.color} shape='circle' style={{ maxWidth: '280px' }}>
-          {text}
-        </Tag>
-      ),
+      render: (text, record) => {
+        const hex = COLOR_MAP[record.color] || COLOR_MAP.blue;
+        return (
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '2px 8px',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '12px',
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 500,
+              color: hex,
+              background: hex + '1A', /* ~10% opacity */
+              maxWidth: '280px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {text}
+          </span>
+        );
+      },
     },
     {
       title: t('线路描述'),
       dataIndex: 'route',
-      render: (text, record) => <Tag shape='circle'>{text}</Tag>,
+      render: (text) => (
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '1px 8px',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '12px',
+            fontWeight: 500,
+            color: 'var(--text-secondary)',
+            background: 'var(--surface-active)',
+            lineHeight: '20px',
+          }}
+        >
+          {text}
+        </span>
+      ),
     },
     {
       title: t('说明'),
       dataIndex: 'description',
-      ellipsis: true,
-      render: (text, record) => <Tag shape='circle'>{text || '-'}</Tag>,
+      render: (text) => (
+        <span
+          style={{
+            fontSize: '13px',
+            color: 'var(--text-secondary)',
+            maxWidth: '200px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            display: 'inline-block',
+          }}
+        >
+          {text || '-'}
+        </span>
+      ),
     },
     {
       title: t('颜色'),
       dataIndex: 'color',
-      render: (color) => <Avatar size='extra-extra-small' color={color} />,
+      width: 80,
+      render: (color) => {
+        const hex = COLOR_MAP[color] || COLOR_MAP.blue;
+        return (
+          <div className='flex items-center gap-1.5'>
+            <span
+              style={{
+                display: 'inline-block',
+                width: 12,
+                height: 12,
+                borderRadius: 'var(--radius-sm)',
+                background: hex,
+              }}
+            />
+            <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
+              {color}
+            </span>
+          </div>
+        );
+      },
     },
     {
       title: t('操作'),
       fixed: 'right',
       width: 150,
       render: (_, record) => (
-        <Space>
+        <div className='flex items-center gap-1'>
           <Button
             icon={<Edit size={14} />}
             theme='light'
@@ -292,7 +385,7 @@ const SettingsAPIInfo = ({ options, refresh }) => {
           >
             {t('删除')}
           </Button>
-        </Space>
+        </div>
       ),
     },
   ];
@@ -310,67 +403,9 @@ const SettingsAPIInfo = ({ options, refresh }) => {
     setSelectedRowKeys([]);
     setHasChanges(true);
     showSuccess(
-      `已删除 ${selectedRowKeys.length} 个API信息，请及时点击“保存设置”进行保存`,
+      `已删除 ${selectedRowKeys.length} 个API信息，请及时点击"保存设置"进行保存`,
     );
   };
-
-  const renderHeader = () => (
-    <div className='flex flex-col w-full'>
-      <div className='mb-2'>
-        <div className='flex items-center' style={{ color: 'var(--accent)' }}>
-          <Settings size={16} className='mr-2' />
-          <Text>
-            {t(
-              'API信息管理，可以配置多个API地址用于状态展示和负载均衡（最多50个）',
-            )}
-          </Text>
-        </div>
-      </div>
-
-      <Divider margin='12px' />
-
-      <div className='flex flex-col md:flex-row justify-between items-center gap-4 w-full'>
-        <div className='flex gap-2 w-full md:w-auto order-2 md:order-1'>
-          <Button
-            theme='light'
-            type='primary'
-            icon={<Plus size={14} />}
-            className='w-full md:w-auto'
-            onClick={handleAddApi}
-          >
-            {t('添加API')}
-          </Button>
-          <Button
-            icon={<Trash2 size={14} />}
-            type='danger'
-            theme='light'
-            onClick={handleBatchDelete}
-            disabled={selectedRowKeys.length === 0}
-            className='w-full md:w-auto'
-          >
-            {t('批量删除')}{' '}
-            {selectedRowKeys.length > 0 && `(${selectedRowKeys.length})`}
-          </Button>
-          <Button
-            icon={<Save size={14} />}
-            onClick={submitApiInfo}
-            loading={loading}
-            disabled={!hasChanges}
-            type='secondary'
-            className='w-full md:w-auto'
-          >
-            {t('保存设置')}
-          </Button>
-        </div>
-
-        {/* 启用开关 */}
-        <div className='order-1 md:order-2 flex items-center gap-2'>
-          <Switch checked={panelEnabled} onChange={handleToggleEnabled} />
-          <Text>{panelEnabled ? t('已启用') : t('已禁用')}</Text>
-        </div>
-      </div>
-    </div>
-  );
 
   // 计算当前页显示的数据
   const getCurrentPageData = () => {
@@ -398,7 +433,93 @@ const SettingsAPIInfo = ({ options, refresh }) => {
 
   return (
     <>
-      <Form.Section text={renderHeader()}>
+      {/* Section Header — macOS panel style */}
+      <div
+        className='px-4 py-3 flex items-center justify-between'
+        style={{ borderBottom: '1px solid var(--border-subtle)' }}
+      >
+        <div className='flex items-center gap-2.5'>
+          <div
+            className='flex items-center justify-center'
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(88, 86, 214, 0.12)',
+              color: '#5856D6',
+            }}
+          >
+            <Settings size={16} />
+          </div>
+          <div>
+            <h3
+              className='text-sm font-semibold'
+              style={{
+                fontFamily: 'var(--font-serif)',
+                color: 'var(--text-primary)',
+                margin: 0,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {t('API 信息管理')}
+            </h3>
+            <p
+              className='text-xs mt-0.5'
+              style={{ color: 'var(--text-muted)', margin: 0 }}
+            >
+              {t('API信息管理，可以配置多个API地址用于状态展示和负载均衡（最多50个）')}
+            </p>
+          </div>
+        </div>
+        <div className='flex items-center gap-2'>
+          <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
+            {panelEnabled ? t('已启用') : t('已禁用')}
+          </span>
+          <Switch checked={panelEnabled} onChange={handleToggleEnabled} size='small' />
+        </div>
+      </div>
+
+      {/* Toolbar */}
+      <div className='px-4 py-2.5 flex flex-col md:flex-row items-center gap-2'>
+        <div className='flex gap-1.5 w-full md:w-auto'>
+          <Button
+            theme='light'
+            type='primary'
+            icon={<Plus size={14} />}
+            size='small'
+            className='w-full md:w-auto'
+            onClick={handleAddApi}
+          >
+            {t('添加API')}
+          </Button>
+          <Button
+            icon={<Trash2 size={14} />}
+            type='danger'
+            theme='light'
+            size='small'
+            onClick={handleBatchDelete}
+            disabled={selectedRowKeys.length === 0}
+            className='w-full md:w-auto'
+          >
+            {t('批量删除')}{' '}
+            {selectedRowKeys.length > 0 && `(${selectedRowKeys.length})`}
+          </Button>
+          <Button
+            icon={<Save size={14} />}
+            onClick={submitApiInfo}
+            loading={loading}
+            disabled={!hasChanges}
+            type='secondary'
+            size='small'
+            className='w-full md:w-auto'
+          >
+            {t('保存设置')}
+          </Button>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className='px-4 pb-4'>
         <Table
           columns={columns}
           dataSource={getCurrentPageData()}
@@ -437,7 +558,7 @@ const SettingsAPIInfo = ({ options, refresh }) => {
           }
           className='overflow-hidden'
         />
-      </Form.Section>
+      </div>
 
       <Modal
         title={editingApi ? t('编辑API') : t('添加API')}
@@ -479,12 +600,69 @@ const SettingsAPIInfo = ({ options, refresh }) => {
             label={t('标识颜色')}
             optionList={colorOptions}
             onChange={(value) => setApiForm({ ...apiForm, color: value })}
-            render={(option) => (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Avatar size='extra-extra-small' color={option.value} />
-                {option.label}
-              </div>
-            )}
+            renderSelectedItem={(optionNode) => {
+              const hex = COLOR_MAP[optionNode.value] || COLOR_MAP.blue;
+              return (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: 12,
+                      height: 12,
+                      borderRadius: 'var(--radius-sm)',
+                      background: hex,
+                    }}
+                  />
+                  {optionNode.label}
+                </div>
+              );
+            }}
+            renderOptionItem={(renderProps) => {
+              const {
+                disabled,
+                selected,
+                label,
+                value,
+                focused,
+                className,
+                style,
+                onMouseEnter,
+                onClick,
+              } = renderProps;
+              const hex = COLOR_MAP[value] || COLOR_MAP.blue;
+              return (
+                <div
+                  className={className}
+                  style={{
+                    ...style,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '6px 12px',
+                    cursor: disabled ? 'not-allowed' : 'pointer',
+                  }}
+                  onClick={onClick}
+                  onMouseEnter={onMouseEnter}
+                >
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: 12,
+                      height: 12,
+                      borderRadius: 'var(--radius-sm)',
+                      background: hex,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{label}</span>
+                  {selected && (
+                    <span style={{ marginLeft: 'auto', color: 'var(--accent)', fontSize: '12px' }}>
+                      ✓
+                    </span>
+                  )}
+                </div>
+              );
+            }}
           />
         </Form>
       </Modal>
@@ -505,7 +683,7 @@ const SettingsAPIInfo = ({ options, refresh }) => {
           theme: 'solid',
         }}
       >
-        <Text>{t('确定要删除此API信息吗？')}</Text>
+        <span style={{ color: 'var(--text-primary)' }}>{t('确定要删除此API信息吗？')}</span>
       </Modal>
     </>
   );

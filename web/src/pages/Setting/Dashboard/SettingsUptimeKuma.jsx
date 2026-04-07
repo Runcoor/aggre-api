@@ -20,12 +20,9 @@ For commercial licensing, please contact support@quantumnous.com
 import React, { useEffect, useState } from 'react';
 import {
   Button,
-  Space,
   Table,
   Form,
-  Typography,
   Empty,
-  Divider,
   Modal,
   Switch,
 } from '@douyinfe/semi-ui';
@@ -36,8 +33,6 @@ import {
 import { Plus, Edit, Trash2, Save, Activity } from 'lucide-react';
 import { API, showError, showSuccess } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
-
-const { Text } = Typography;
 
 const SettingsUptimeKuma = ({ options, refresh }) => {
   const { t } = useTranslation();
@@ -68,7 +63,7 @@ const SettingsUptimeKuma = ({ options, refresh }) => {
       render: (text) => (
         <div
           style={{
-            fontWeight: 'bold',
+            fontWeight: 600,
             color: 'var(--text-primary)',
           }}
         >
@@ -85,7 +80,8 @@ const SettingsUptimeKuma = ({ options, refresh }) => {
           style={{
             maxWidth: '300px',
             wordBreak: 'break-all',
-            fontFamily: 'monospace',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '12px',
             color: 'var(--accent)',
           }}
         >
@@ -98,14 +94,18 @@ const SettingsUptimeKuma = ({ options, refresh }) => {
       dataIndex: 'slug',
       key: 'slug',
       render: (text) => (
-        <div
+        <span
           style={{
-            fontFamily: 'monospace',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '12px',
             color: 'var(--text-secondary)',
+            padding: '1px 6px',
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--surface-active)',
           }}
         >
           {text}
-        </div>
+        </span>
       ),
     },
     {
@@ -114,7 +114,7 @@ const SettingsUptimeKuma = ({ options, refresh }) => {
       fixed: 'right',
       width: 150,
       render: (text, record) => (
-        <Space>
+        <div className='flex items-center gap-1'>
           <Button
             icon={<Edit size={14} />}
             theme='light'
@@ -133,7 +133,7 @@ const SettingsUptimeKuma = ({ options, refresh }) => {
           >
             {t('删除')}
           </Button>
-        </Space>
+        </div>
       ),
     },
   ];
@@ -198,7 +198,7 @@ const SettingsUptimeKuma = ({ options, refresh }) => {
       );
       setUptimeGroupsList(newList);
       setHasChanges(true);
-      showSuccess('分类已删除，请及时点击“保存设置”进行保存');
+      showSuccess('分类已删除，请及时点击"保存设置"进行保存');
     }
     setShowDeleteModal(false);
     setDeletingGroup(null);
@@ -245,8 +245,8 @@ const SettingsUptimeKuma = ({ options, refresh }) => {
       setShowUptimeModal(false);
       showSuccess(
         editingGroup
-          ? '分类已更新，请及时点击“保存设置”进行保存'
-          : '分类已添加，请及时点击“保存设置”进行保存',
+          ? '分类已更新，请及时点击"保存设置"进行保存'
+          : '分类已添加，请及时点击"保存设置"进行保存',
       );
     } catch (error) {
       showError('操作失败: ' + error.message);
@@ -323,67 +323,9 @@ const SettingsUptimeKuma = ({ options, refresh }) => {
     setSelectedRowKeys([]);
     setHasChanges(true);
     showSuccess(
-      `已删除 ${selectedRowKeys.length} 个分类，请及时点击“保存设置”进行保存`,
+      `已删除 ${selectedRowKeys.length} 个分类，请及时点击"保存设置"进行保存`,
     );
   };
-
-  const renderHeader = () => (
-    <div className='flex flex-col w-full'>
-      <div className='mb-2'>
-        <div className='flex items-center' style={{ color: 'var(--accent)' }}>
-          <Activity size={16} className='mr-2' />
-          <Text>
-            {t(
-              'Uptime Kuma监控分类管理，可以配置多个监控分类用于服务状态展示（最多20个）',
-            )}
-          </Text>
-        </div>
-      </div>
-
-      <Divider margin='12px' />
-
-      <div className='flex flex-col md:flex-row justify-between items-center gap-4 w-full'>
-        <div className='flex gap-2 w-full md:w-auto order-2 md:order-1'>
-          <Button
-            theme='light'
-            type='primary'
-            icon={<Plus size={14} />}
-            className='w-full md:w-auto'
-            onClick={handleAddGroup}
-          >
-            {t('添加分类')}
-          </Button>
-          <Button
-            icon={<Trash2 size={14} />}
-            type='danger'
-            theme='light'
-            onClick={handleBatchDelete}
-            disabled={selectedRowKeys.length === 0}
-            className='w-full md:w-auto'
-          >
-            {t('批量删除')}{' '}
-            {selectedRowKeys.length > 0 && `(${selectedRowKeys.length})`}
-          </Button>
-          <Button
-            icon={<Save size={14} />}
-            onClick={submitUptimeGroups}
-            loading={loading}
-            disabled={!hasChanges}
-            type='secondary'
-            className='w-full md:w-auto'
-          >
-            {t('保存设置')}
-          </Button>
-        </div>
-
-        {/* 启用开关 */}
-        <div className='order-1 md:order-2 flex items-center gap-2'>
-          <Switch checked={panelEnabled} onChange={handleToggleEnabled} />
-          <Text>{panelEnabled ? t('已启用') : t('已禁用')}</Text>
-        </div>
-      </div>
-    </div>
-  );
 
   const getCurrentPageData = () => {
     const startIndex = (currentPage - 1) * pageSize;
@@ -410,7 +352,93 @@ const SettingsUptimeKuma = ({ options, refresh }) => {
 
   return (
     <>
-      <Form.Section text={renderHeader()}>
+      {/* Section Header — macOS panel style */}
+      <div
+        className='px-4 py-3 flex items-center justify-between'
+        style={{ borderBottom: '1px solid var(--border-subtle)' }}
+      >
+        <div className='flex items-center gap-2.5'>
+          <div
+            className='flex items-center justify-center'
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(10, 132, 255, 0.12)',
+              color: 'var(--accent)',
+            }}
+          >
+            <Activity size={16} />
+          </div>
+          <div>
+            <h3
+              className='text-sm font-semibold'
+              style={{
+                fontFamily: 'var(--font-serif)',
+                color: 'var(--text-primary)',
+                margin: 0,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {t('Uptime Kuma 监控管理')}
+            </h3>
+            <p
+              className='text-xs mt-0.5'
+              style={{ color: 'var(--text-muted)', margin: 0 }}
+            >
+              {t('Uptime Kuma监控分类管理，可以配置多个监控分类用于服务状态展示（最多20个）')}
+            </p>
+          </div>
+        </div>
+        <div className='flex items-center gap-2'>
+          <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
+            {panelEnabled ? t('已启用') : t('已禁用')}
+          </span>
+          <Switch checked={panelEnabled} onChange={handleToggleEnabled} size='small' />
+        </div>
+      </div>
+
+      {/* Toolbar */}
+      <div className='px-4 py-2.5 flex flex-col md:flex-row items-center gap-2'>
+        <div className='flex gap-1.5 w-full md:w-auto'>
+          <Button
+            theme='light'
+            type='primary'
+            icon={<Plus size={14} />}
+            size='small'
+            className='w-full md:w-auto'
+            onClick={handleAddGroup}
+          >
+            {t('添加分类')}
+          </Button>
+          <Button
+            icon={<Trash2 size={14} />}
+            type='danger'
+            theme='light'
+            size='small'
+            onClick={handleBatchDelete}
+            disabled={selectedRowKeys.length === 0}
+            className='w-full md:w-auto'
+          >
+            {t('批量删除')}{' '}
+            {selectedRowKeys.length > 0 && `(${selectedRowKeys.length})`}
+          </Button>
+          <Button
+            icon={<Save size={14} />}
+            onClick={submitUptimeGroups}
+            loading={loading}
+            disabled={!hasChanges}
+            type='secondary'
+            size='small'
+            className='w-full md:w-auto'
+          >
+            {t('保存设置')}
+          </Button>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className='px-4 pb-4'>
         <Table
           columns={columns}
           dataSource={getCurrentPageData()}
@@ -449,7 +477,7 @@ const SettingsUptimeKuma = ({ options, refresh }) => {
           }
           className='overflow-hidden'
         />
-      </Form.Section>
+      </div>
 
       <Modal
         title={editingGroup ? t('编辑分类') : t('添加分类')}
@@ -513,7 +541,7 @@ const SettingsUptimeKuma = ({ options, refresh }) => {
           theme: 'solid',
         }}
       >
-        <Text>{t('确定要删除此分类吗？')}</Text>
+        <span style={{ color: 'var(--text-primary)' }}>{t('确定要删除此分类吗？')}</span>
       </Modal>
     </>
   );

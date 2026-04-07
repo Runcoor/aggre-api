@@ -258,9 +258,9 @@ function renderModelName(record, copyText, t) {
               <div style={{ padding: 10 }}>
                 <Space vertical align={'start'}>
                   <div className='flex items-center'>
-                    <Typography.Text strong style={{ marginRight: 8 }}>
+                    <span style={{ fontWeight: 600, marginRight: 8, color: 'var(--text-primary)' }}>
                       {t('请求并计费模型')}:
-                    </Typography.Text>
+                    </span>
                     {renderModelTag(record.model_name, {
                       onClick: (event) => {
                         copyText(event, record.model_name).then((r) => {});
@@ -268,9 +268,9 @@ function renderModelName(record, copyText, t) {
                     })}
                   </div>
                   <div className='flex items-center'>
-                    <Typography.Text strong style={{ marginRight: 8 }}>
+                    <span style={{ fontWeight: 600, marginRight: 8, color: 'var(--text-primary)' }}>
                       {t('实际模型')}:
-                    </Typography.Text>
+                    </span>
                     {renderModelTag(other.upstream_model_name, {
                       onClick: (event) => {
                         copyText(event, other.upstream_model_name).then(
@@ -371,10 +371,8 @@ function renderCompactDetailSummary(summarySegments) {
       }}
     >
       {segments.map((segment, index) => (
-        <Typography.Text
+        <span
           key={`${segment.text}-${index}`}
-          type={segment.tone === 'secondary' ? 'tertiary' : undefined}
-          size={segment.tone === 'secondary' ? 'small' : undefined}
           style={{
             display: 'block',
             maxWidth: '100%',
@@ -383,10 +381,11 @@ function renderCompactDetailSummary(summarySegments) {
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
+            color: segment.tone === 'secondary' ? 'var(--text-muted)' : 'var(--text-primary)',
           }}
         >
           {segment.text}
-        </Typography.Text>
+        </span>
       ))}
     </div>
   );

@@ -28,6 +28,7 @@ import {
   Tag,
   Typography,
   Steps,
+  // Note: Typography kept for Text code copyable feature
   Space,
   Badge,
 } from '@douyinfe/semi-ui';
@@ -41,7 +42,7 @@ import React, { useEffect, useState } from 'react';
 
 import { QRCodeSVG } from 'qrcode.react';
 
-const { Text, Paragraph } = Typography;
+const { Text } = Typography;
 
 const TwoFASetting = ({ t }) => {
   const [loading, setLoading] = useState(false);
@@ -377,9 +378,9 @@ const TwoFASetting = ({ t }) => {
             </div>
             <div className='flex-1'>
               <div className='flex items-center gap-2 mb-1'>
-                <Typography.Title heading={6} className='mb-0'>
+                <h6 className='mb-0 text-sm' style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
                   {t('两步验证设置')}
-                </Typography.Title>
+                </h6>
                 {status.enabled ? (
                   <Tag color='green' shape='circle' size='small'>
                     {t('已启用')}
@@ -395,11 +396,11 @@ const TwoFASetting = ({ t }) => {
                   </Tag>
                 )}
               </div>
-              <Typography.Text type='tertiary' className='text-sm'>
+              <span className='text-sm' style={{ color: 'var(--text-muted)' }}>
                 {t(
                   '两步验证（2FA）为您的账户提供额外的安全保护。启用后，登录时需要输入密码和验证器应用生成的验证码。',
                 )}
-              </Typography.Text>
+              </span>
               {status.enabled && (
                 <div className='mt-2'>
                   <Text size='small' type='secondary'>

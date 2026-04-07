@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import i18next from 'i18next';
-import { Modal, Tag, Typography, Avatar } from '@douyinfe/semi-ui';
+import { Modal, Tag, Avatar } from '@douyinfe/semi-ui';
 import { copy, showSuccess } from './utils';
 import { MOBILE_BREAKPOINT } from '../hooks/common/useIsMobile';
 import { visit } from 'unist-util-visit';
@@ -1000,12 +1000,12 @@ export const renderGroupOption = (item) => {
       onMouseEnter={handleMouseEnter}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <Typography.Text strong type={disabled ? 'tertiary' : undefined}>
+        <span style={{ fontWeight: 600, color: disabled ? 'var(--text-muted)' : 'var(--text-primary)' }}>
           {value}
-        </Typography.Text>
-        <Typography.Text type='secondary' size='small'>
+        </span>
+        <span style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
           {label}
-        </Typography.Text>
+        </span>
       </div>
       {item.ratio && renderRatio(item.ratio)}
     </div>

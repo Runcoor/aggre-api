@@ -20,7 +20,7 @@ For commercial licensing, please contact support@quantumnous.com
 import React, { useRef, useEffect, useState, useContext } from 'react';
 import {
   Button,
-  Typography,
+
   Card,
   Avatar,
   Form,
@@ -816,9 +816,7 @@ const NotificationSettings = ({
               >
                 <div className='py-4'>
                   <div className='mb-4'>
-                    <Typography.Text
-                      type='secondary'
-                      size='small'
+                    <span
                       style={{
                         fontSize: '12px',
                         lineHeight: '1.5',
@@ -826,7 +824,7 @@ const NotificationSettings = ({
                       }}
                     >
                       {t('您可以个性化设置侧边栏的要显示功能')}
-                    </Typography.Text>
+                    </span>
                   </div>
                   {/* 边栏设置功能区域容器 */}
                   <div
@@ -852,9 +850,7 @@ const NotificationSettings = ({
                             <div className='font-semibold text-base mb-1' style={{ color: 'var(--text-primary)' }}>
                               {section.title}
                             </div>
-                            <Typography.Text
-                              type='secondary'
-                              size='small'
+                            <span
                               style={{
                                 fontSize: '12px',
                                 lineHeight: '1.5',
@@ -862,7 +858,7 @@ const NotificationSettings = ({
                               }}
                             >
                               {section.description}
-                            </Typography.Text>
+                            </span>
                           </div>
                           <Switch
                             checked={
@@ -904,9 +900,7 @@ const NotificationSettings = ({
                                       <div className='font-semibold text-sm mb-1' style={{ color: 'var(--text-primary)' }}>
                                         {module.title}
                                       </div>
-                                      <Typography.Text
-                                        type='secondary'
-                                        size='small'
+                                      <span
                                         className='block'
                                         style={{
                                           fontSize: '12px',
@@ -916,7 +910,7 @@ const NotificationSettings = ({
                                         }}
                                       >
                                         {module.description}
-                                      </Typography.Text>
+                                      </span>
                                     </div>
                                     <div className='ml-4'>
                                       <Switch

@@ -19,7 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, Button, Typography, Tag } from '@douyinfe/semi-ui';
+import { Card, Button, Tag } from '@douyinfe/semi-ui';
 import { copy, showSuccess } from '../../../helpers';
 
 /**
@@ -115,27 +115,25 @@ const ChannelKeyDisplay = ({
               clipRule='evenodd'
             />
           </svg>
-          <Typography.Text strong style={{ color: 'var(--success)' }}>
+          <span style={{ fontWeight: 600, color: 'var(--success)' }}>
             {successText || t('验证成功')}
-          </Typography.Text>
+          </span>
         </div>
       )}
 
       {/* 密钥内容 */}
       <div className='space-y-3'>
         <div className='flex items-center justify-between'>
-          <Typography.Text strong style={{ color: 'var(--text-primary)' }}>
+          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
             {isMultipleKeys ? t('渠道密钥列表') : t('渠道密钥')}
-          </Typography.Text>
+          </span>
           {isMultipleKeys && (
             <div className='flex items-center gap-2'>
-              <Typography.Text
-                type='tertiary'
-                size='small'
-                style={{ color: 'var(--text-muted)' }}
+              <span
+                style={{ color: 'var(--text-muted)', fontSize: '12px' }}
               >
                 {t('共 {{count}} 个密钥', { count: parsedKeys.length })}
-              </Typography.Text>
+              </span>
               <Button
                 size='small'
                 type='primary'
@@ -164,13 +162,11 @@ const ChannelKeyDisplay = ({
             >
               <div className='space-y-2'>
                 <div className='flex items-center justify-between'>
-                  <Typography.Text
-                    strong
-                    size='small'
-                    style={{ color: 'var(--text-secondary)' }}
+                  <span
+                    style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '12px' }}
                   >
                     {keyItem.label}
-                  </Typography.Text>
+                  </span>
                   <div className='flex items-center gap-2'>
                     {keyItem.type === 'json' && (
                       <Tag
@@ -218,30 +214,30 @@ const ChannelKeyDisplay = ({
                     border: '1px solid var(--border-subtle)',
                   }}
                 >
-                  <Typography.Text
-                    code
+                  <code
                     style={{
                       fontSize: '12px',
                       fontFamily: 'var(--font-mono)',
                       wordBreak: 'break-all',
                       whiteSpace: 'pre-wrap',
                       color: 'var(--text-primary)',
+                      background: 'transparent',
                     }}
                   >
                     {keyItem.content}
-                  </Typography.Text>
+                  </code>
                 </div>
 
                 {keyItem.type === 'json' && (
-                  <Typography.Text
-                    size='small'
+                  <span
                     style={{
                       display: 'block',
                       color: 'var(--text-muted)',
+                      fontSize: '12px',
                     }}
                   >
                     {t('JSON格式密钥，请确保格式正确')}
-                  </Typography.Text>
+                  </span>
                 )}
               </div>
             </Card>
@@ -257,9 +253,8 @@ const ChannelKeyDisplay = ({
               border: '1px solid var(--border-subtle)',
             }}
           >
-            <Typography.Text
-              size='small'
-              style={{ color: 'var(--accent)' }}
+            <span
+              style={{ color: 'var(--accent)', fontSize: '12px' }}
             >
               <svg
                 style={{
@@ -281,7 +276,7 @@ const ChannelKeyDisplay = ({
               {t(
                 '检测到多个密钥，您可以单独复制每个密钥，或点击复制全部获取完整内容。',
               )}
-            </Typography.Text>
+            </span>
           </div>
         )}
       </div>
@@ -316,13 +311,12 @@ const ChannelKeyDisplay = ({
               />
             </svg>
             <div>
-              <Typography.Text
-                strong
-                style={{ color: 'var(--text-primary)' }}
+              <span
+                style={{ fontWeight: 600, color: 'var(--text-primary)' }}
               >
                 {t('安全提醒')}
-              </Typography.Text>
-              <Typography.Text
+              </span>
+              <span
                 style={{
                   display: 'block',
                   color: 'var(--text-secondary)',
@@ -334,7 +328,7 @@ const ChannelKeyDisplay = ({
                   t(
                     '请妥善保管密钥信息，不要泄露给他人。如有安全疑虑，请及时更换密钥。',
                   )}
-              </Typography.Text>
+              </span>
             </div>
           </div>
         </div>

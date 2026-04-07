@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Input, Modal, Typography } from '@douyinfe/semi-ui';
+import { Input, Modal } from '@douyinfe/semi-ui';
 import { IconLock } from '@douyinfe/semi-icons';
 import Turnstile from 'react-turnstile';
 
@@ -50,9 +50,9 @@ const ChangePasswordModal = ({
     >
       <div className='space-y-4 py-4'>
         <div>
-          <Typography.Text strong className='block mb-2'>
+          <span className='block mb-2' style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
             {t('原密码')}
-          </Typography.Text>
+          </span>
           <Input
             name='original_password'
             placeholder={t('请输入原密码')}
@@ -66,9 +66,9 @@ const ChangePasswordModal = ({
         </div>
 
         <div>
-          <Typography.Text strong className='block mb-2'>
+          <span className='block mb-2' style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
             {t('新密码')}
-          </Typography.Text>
+          </span>
           <Input
             name='set_new_password'
             placeholder={t('请输入新密码')}
@@ -82,9 +82,9 @@ const ChangePasswordModal = ({
         </div>
 
         <div>
-          <Typography.Text strong className='block mb-2'>
+          <span className='block mb-2' style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
             {t('确认新密码')}
-          </Typography.Text>
+          </span>
           <Input
             name='set_new_password_confirmation'
             placeholder={t('请再次输入新密码')}

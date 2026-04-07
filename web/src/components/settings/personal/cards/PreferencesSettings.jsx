@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useState, useEffect, useContext } from "react";
-import { Card, Select, Typography, Avatar } from "@douyinfe/semi-ui";
+import { Card, Select, Avatar } from "@douyinfe/semi-ui";
 import { Languages } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { API, showSuccess, showError } from "../../../../helpers";
@@ -156,12 +156,12 @@ const PreferencesSettings = ({ t }) => {
 							/>
 						</div>
 						<div>
-							<Typography.Title heading={6} className="mb-1">
+							<h6 className="mb-1 text-sm" style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
 								{t("语言偏好")}
-							</Typography.Title>
-							<Typography.Text type="tertiary" className="text-sm">
+							</h6>
+							<span className="text-sm" style={{ color: 'var(--text-muted)' }}>
 								{t("选择您的首选界面语言，设置将自动保存并同步到所有设备")}
-							</Typography.Text>
+							</span>
 						</div>
 					</div>
 					<Select
@@ -179,11 +179,11 @@ const PreferencesSettings = ({ t }) => {
 
 			{/* Additional info */}
 			<div className="mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
-				<Typography.Text type="tertiary">
+				<span style={{ color: 'var(--text-muted)' }}>
 					{t(
 						"提示：语言偏好会同步到您登录的所有设备，并影响API返回的错误消息语言。",
 					)}
-				</Typography.Text>
+				</span>
 			</div>
 			</div>
 		</div>

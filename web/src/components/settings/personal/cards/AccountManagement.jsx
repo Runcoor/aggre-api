@@ -24,7 +24,6 @@ import {
   Input,
   Space,
   Typography,
-  Avatar,
   Tabs,
   TabPane,
   Popover,
@@ -609,12 +608,12 @@ const AccountManagement = ({
                         <IconKey size='large' style={{ color: 'var(--text-secondary)' }} />
                       </div>
                       <div className='flex-1'>
-                        <Typography.Title heading={6} className='mb-1'>
+                        <h6 className='mb-1 text-sm' style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
                           {t('系统访问令牌')}
-                        </Typography.Title>
-                        <Typography.Text type='tertiary' className='text-sm'>
+                        </h6>
+                        <span className='text-sm' style={{ color: 'var(--text-muted)' }}>
                           {t('用于API调用的身份验证令牌，请妥善保管')}
-                        </Typography.Text>
+                        </span>
                         {systemToken && (
                           <div className='mt-3'>
                             <Input
@@ -648,12 +647,12 @@ const AccountManagement = ({
                         <IconLock size='large' style={{ color: 'var(--text-secondary)' }} />
                       </div>
                       <div>
-                        <Typography.Title heading={6} className='mb-1'>
+                        <h6 className='mb-1 text-sm' style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
                           {t('密码管理')}
-                        </Typography.Title>
-                        <Typography.Text type='tertiary' className='text-sm'>
+                        </h6>
+                        <span className='text-sm' style={{ color: 'var(--text-muted)' }}>
                           {t('定期更改密码可以提高账户安全性')}
-                        </Typography.Text>
+                        </span>
                       </div>
                     </div>
                     <Button
@@ -676,14 +675,14 @@ const AccountManagement = ({
                         <IconKey size='large' style={{ color: 'var(--text-secondary)' }} />
                       </div>
                       <div>
-                        <Typography.Title heading={6} className='mb-1'>
+                        <h6 className='mb-1 text-sm' style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
                           {t('Passkey 登录')}
-                        </Typography.Title>
-                        <Typography.Text type='tertiary' className='text-sm'>
+                        </h6>
+                        <span className='text-sm' style={{ color: 'var(--text-muted)' }}>
                           {passkeyEnabled
                             ? t('已启用 Passkey，无需密码即可登录')
                             : t('使用 Passkey 实现免密且更安全的登录体验')}
-                        </Typography.Text>
+                        </span>
                         <div className='mt-2 text-xs space-y-1' style={{ color: 'var(--text-muted)' }}>
                           <div>
                             {t('最后使用时间')}：{lastUsedLabel}
@@ -750,15 +749,12 @@ const AccountManagement = ({
                         <IconDelete size='large' style={{ color: 'var(--text-secondary)' }} />
                       </div>
                       <div>
-                        <Typography.Title
-                          heading={6}
-                          className='mb-1'
-                        >
+                        <h6 className='mb-1 text-sm' style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
                           {t('删除账户')}
-                        </Typography.Title>
-                        <Typography.Text type='tertiary' className='text-sm'>
+                        </h6>
+                        <span className='text-sm' style={{ color: 'var(--text-muted)' }}>
                           {t('此操作不可逆，所有数据将被永久删除')}
-                        </Typography.Text>
+                        </span>
                       </div>
                     </div>
                     <Button

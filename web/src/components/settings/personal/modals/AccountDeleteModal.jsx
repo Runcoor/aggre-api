@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Banner, Input, Modal, Typography } from '@douyinfe/semi-ui';
+import { Banner, Input, Modal } from '@douyinfe/semi-ui';
 import { IconDelete, IconUser } from '@douyinfe/semi-icons';
 import Turnstile from 'react-turnstile';
 
@@ -58,9 +58,9 @@ const AccountDeleteModal = ({
         />
 
         <div>
-          <Typography.Text strong className='block mb-2' style={{ color: 'var(--error)' }}>
+          <span className='block mb-2' style={{ fontWeight: 600, color: 'var(--error)' }}>
             {t('请输入您的用户名以确认删除')}
-          </Typography.Text>
+          </span>
           <Input
             placeholder={t('输入你的账户名{{username}}以确认删除', {
               username: ` ${userState?.user?.username} `,

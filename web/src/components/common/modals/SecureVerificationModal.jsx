@@ -23,10 +23,8 @@ import {
   Modal,
   Button,
   Input,
-  Typography,
   Tabs,
   TabPane,
-  Space,
 } from '@douyinfe/semi-ui';
 
 /**
@@ -105,16 +103,16 @@ const SecureVerificationModal = ({
               />
             </svg>
           </div>
-          <Typography.Title heading={4} className='mb-2'>
+          <h4 className='mb-2 text-lg' style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
             {t('需要安全验证')}
-          </Typography.Title>
-          <Typography.Text type='tertiary'>
+          </h4>
+          <span style={{ color: 'var(--text-muted)' }}>
             {t('您需要先启用两步验证或 Passkey 才能查看敏感信息。')}
-          </Typography.Text>
+          </span>
           <br />
-          <Typography.Text type='tertiary'>
+          <span style={{ color: 'var(--text-muted)' }}>
             {t('请前往个人设置 → 安全设置进行配置。')}
-          </Typography.Text>
+          </span>
         </div>
       </Modal>
     );
@@ -139,16 +137,16 @@ const SecureVerificationModal = ({
       <div style={{ width: '100%' }}>
         {/* 描述信息 */}
         {description && (
-          <Typography.Paragraph
-            type='tertiary'
+          <p
             style={{
               margin: '0 0 20px 0',
               fontSize: '14px',
               lineHeight: '1.6',
+              color: 'var(--text-muted)',
             }}
           >
             {description}
-          </Typography.Paragraph>
+          </p>
         )}
 
         {/* 验证方式选择 */}
@@ -194,18 +192,17 @@ const SecureVerificationModal = ({
                   />
                 </div>
 
-                <Typography.Text
-                  type='tertiary'
-                  size='small'
+                <span
                   style={{
                     display: 'block',
                     marginBottom: '20px',
                     fontSize: '13px',
                     lineHeight: '1.5',
+                    color: 'var(--text-muted)',
                   }}
                 >
                   {t('从认证器应用中获取验证码，或使用备用码')}
-                </Typography.Text>
+                </span>
 
                 <div
                   style={{
@@ -270,23 +267,22 @@ const SecureVerificationModal = ({
                       />
                     </svg>
                   </div>
-                  <Typography.Title
-                    heading={5}
-                    style={{ margin: '0 0 8px', fontSize: '16px' }}
+                  <h5
+                    style={{ margin: '0 0 8px', fontSize: '16px', fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}
                   >
                     {t('使用 Passkey 验证')}
-                  </Typography.Title>
-                  <Typography.Text
-                    type='tertiary'
+                  </h5>
+                  <span
                     style={{
                       display: 'block',
                       margin: 0,
                       fontSize: '13px',
                       lineHeight: '1.5',
+                      color: 'var(--text-muted)',
                     }}
                   >
                     {t('点击验证按钮，使用您的生物特征或安全密钥')}
-                  </Typography.Text>
+                  </span>
                 </div>
 
                 <div

@@ -22,7 +22,7 @@ import {
   Card,
   Calendar,
   Button,
-  Typography,
+
   Avatar,
   Tooltip,
   Collapsible,
@@ -378,13 +378,13 @@ const CheckinCalendar = ({ t, status, turnstileEnabled, turnstileSiteKey }) => {
 
         {/* 签到说明 */}
         <div className='mt-3 p-2.5 rounded-lg' style={{ background: 'var(--surface-hover)' }}>
-          <Typography.Text type='tertiary' className='text-xs'>
+          <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
             <ul className='list-disc list-inside space-y-0.5'>
               <li>{t('每日签到可获得随机额度奖励')}</li>
               <li>{t('签到奖励将直接添加到您的账户余额')}</li>
               <li>{t('每日仅可签到一次，请勿重复签到')}</li>
             </ul>
-          </Typography.Text>
+          </span>
         </div>
         </div>
       </Collapsible>

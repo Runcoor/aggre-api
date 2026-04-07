@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect } from 'react';
-import { Notification, Button, Space, Typography } from '@douyinfe/semi-ui';
+import { Notification, Button, Space } from '@douyinfe/semi-ui';
 
 // 固定通知 ID，保持同一个实例即可避免闪烁
 const NOTICE_ID = 'models-batch-actions';
@@ -44,9 +44,9 @@ const SelectionNotification = ({
       const titleNode = (
         <Space wrap>
           <span>{t('批量操作')}</span>
-          <Typography.Text type='tertiary' size='small'>
+          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
             {t('已选择 {{count}} 个模型', { count: selectedCount })}
-          </Typography.Text>
+          </span>
         </Space>
       );
 

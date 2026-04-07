@@ -244,18 +244,17 @@ const ContainerNameCell = ({ text, record, t }) => {
 
   return (
     <div className='flex flex-col gap-1'>
-      <Typography.Text strong className='text-base'>
+      <span className='text-base' style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
         {text}
-      </Typography.Text>
-      <Typography.Text
-        type='secondary'
-        size='small'
+      </span>
+      <span
         className='text-xs cursor-pointer transition-colors select-all'
         onClick={handleCopyId}
         title={t('点击复制ID')}
+        style={{ color: 'var(--text-secondary)' }}
       >
         ID: {record.id}
-      </Typography.Text>
+      </span>
     </div>
   );
 };
@@ -361,13 +360,12 @@ export const getDeploymentsColumns = ({
             <span>{provider}</span>
           </div>
         ) : (
-          <Typography.Text
-            type='tertiary'
-            size='small'
-            className='text-xs text-mv-text-muted'
+          <span
+            className='text-xs'
+            style={{ color: 'var(--text-muted)' }}
           >
             {t('暂无')}
-          </Typography.Text>
+          </span>
         ),
     },
     {
@@ -415,9 +413,9 @@ export const getDeploymentsColumns = ({
                 className='text-sm'
                 style={{ color: theme.iconColor }}
               />
-              <Typography.Text className='text-sm font-medium text-[var(--text-primary)]'>
+              <span className='text-sm font-medium' style={{ color: 'var(--text-primary)' }}>
                 {timeDisplay}
-              </Typography.Text>
+              </span>
               {showProgress && percentRemaining !== null ? (
                 <InlineBadge mono color={theme.color} bg={theme.bg}>
                   {percentRemaining}%

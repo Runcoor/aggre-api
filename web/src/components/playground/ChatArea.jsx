@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Card, Chat, Typography, Button } from '@douyinfe/semi-ui';
+import { Card, Chat, Button } from '@douyinfe/semi-ui';
 import { MessageSquare, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import CustomInputRender from './CustomInputRender';
@@ -69,12 +69,12 @@ const ChatArea = ({
                 <MessageSquare size={20} style={{ color: 'var(--text-secondary)' }} />
               </div>
               <div>
-                <Typography.Title heading={5} className='mb-0'>
+                <h5 className='mb-0 text-base font-semibold' style={{ color: 'var(--text-primary)' }}>
                   {t('AI 对话')}
-                </Typography.Title>
-                <Typography.Text type='tertiary' className='text-sm hidden sm:inline'>
+                </h5>
+                <span className='text-sm hidden sm:inline' style={{ color: 'var(--text-muted)' }}>
                   {inputs.model || t('选择模型开始对话')}
-                </Typography.Text>
+                </span>
               </div>
             </div>
             <div className='flex items-center gap-2'>

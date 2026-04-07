@@ -251,9 +251,9 @@ export const getTaskLogsColumns = ({
             >
               {displayText.slice(0, 1)}
             </Avatar>
-            <Typography.Text>
+            <span style={{ color: 'var(--text-primary)' }}>
               {displayText}
-            </Typography.Text>
+            </span>
           </Space>
         );
       },

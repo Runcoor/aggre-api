@@ -18,11 +18,35 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Card, Avatar, Typography, Table, Tag } from '@douyinfe/semi-ui';
+import { Card, Avatar, Typography, Table } from '@douyinfe/semi-ui';
 import { IconCoinMoneyStroked } from '@douyinfe/semi-icons';
 import { calculateModelPrice, getModelPriceItems } from '../../../../../helpers';
 
 const { Text } = Typography;
+
+// iOS-style inline badge helper
+const InlineBadge = ({ color, bg, mono, children, style: extraStyle, ...rest }) => (
+  <span
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+      padding: '1px 8px',
+      borderRadius: 'var(--radius-sm)',
+      fontSize: '12px',
+      fontWeight: 500,
+      fontFamily: mono ? 'var(--font-mono)' : undefined,
+      color: color || 'var(--text-secondary)',
+      background: bg || 'var(--surface-active)',
+      lineHeight: '20px',
+      whiteSpace: 'nowrap',
+      ...extraStyle,
+    }}
+    {...rest}
+  >
+    {children}
+  </span>
+);
 
 const ModelPricingTable = ({
   modelData,
@@ -86,10 +110,10 @@ const ModelPricingTable = ({
         title: t('分组'),
         dataIndex: 'group',
         render: (text) => (
-          <Tag color='white' size='small' shape='circle'>
+          <InlineBadge>
             {text}
             {t('分组')}
-          </Tag>
+          </InlineBadge>
         ),
       },
     ];
@@ -100,9 +124,9 @@ const ModelPricingTable = ({
         title: t('倍率'),
         dataIndex: 'ratio',
         render: (text) => (
-          <Tag color='white' size='small' shape='circle'>
+          <InlineBadge mono>
             {text}x
-          </Tag>
+          </InlineBadge>
         ),
       });
     }
@@ -112,13 +136,14 @@ const ModelPricingTable = ({
       title: t('计费类型'),
       dataIndex: 'billingType',
       render: (text) => {
-        let color = 'white';
-        if (text === t('按量计费')) color = 'violet';
-        else if (text === t('按次计费')) color = 'teal';
+        let badgeColor = 'var(--text-secondary)';
+        let badgeBg = 'var(--surface-active)';
+        if (text === t('按量计费')) { badgeColor = '#5856D6'; badgeBg = 'rgba(88, 86, 214, 0.12)'; }
+        else if (text === t('按次计费')) { badgeColor = '#30B0C7'; badgeBg = 'rgba(48, 176, 199, 0.12)'; }
         return (
-          <Tag color={color} size='small' shape='circle'>
+          <InlineBadge color={badgeColor} bg={badgeBg}>
             {text || '-'}
-          </Tag>
+          </InlineBadge>
         );
       },
     });
@@ -171,10 +196,10 @@ const ModelPricingTable = ({
           <span className='text-sm'>→</span>
           {autoChain.map((g, idx) => (
             <React.Fragment key={g}>
-              <Tag color='white' size='small' shape='circle'>
+              <InlineBadge>
                 {g}
                 {t('分组')}
-              </Tag>
+              </InlineBadge>
               {idx < autoChain.length - 1 && <span className='text-sm'>→</span>}
             </React.Fragment>
           ))}

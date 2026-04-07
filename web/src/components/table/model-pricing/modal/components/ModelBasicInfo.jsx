@@ -18,11 +18,34 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Card, Avatar, Typography, Tag, Space } from '@douyinfe/semi-ui';
+import { Card, Avatar, Typography, Space } from '@douyinfe/semi-ui';
 import { IconInfoCircle } from '@douyinfe/semi-icons';
 import { stringToColor } from '../../../../../helpers';
 
 const { Text } = Typography;
+
+// iOS-style inline badge helper
+const InlineBadge = ({ color, bg, children, style: extraStyle, ...rest }) => (
+  <span
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+      padding: '1px 8px',
+      borderRadius: 'var(--radius-sm)',
+      fontSize: '12px',
+      fontWeight: 500,
+      color: color || 'var(--text-secondary)',
+      background: bg || 'var(--surface-active)',
+      lineHeight: '20px',
+      whiteSpace: 'nowrap',
+      ...extraStyle,
+    }}
+    {...rest}
+  >
+    {children}
+  </span>
+);
 
 const ModelBasicInfo = ({ modelData, vendorsMap = {}, t }) => {
   // 获取模型描述（使用后端真实数据）
@@ -75,9 +98,9 @@ const ModelBasicInfo = ({ modelData, vendorsMap = {}, t }) => {
         {getModelTags().length > 0 && (
           <Space wrap>
             {getModelTags().map((tag, index) => (
-              <Tag key={index} color={tag.color} shape='circle' size='small'>
+              <InlineBadge key={index} color={tag.color} bg={`${tag.color}1F`}>
                 {tag.text}
-              </Tag>
+              </InlineBadge>
             ))}
           </Space>
         )}

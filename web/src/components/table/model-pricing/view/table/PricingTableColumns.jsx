@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Tag, Space, Tooltip } from '@douyinfe/semi-ui';
+import { Space, Tooltip } from '@douyinfe/semi-ui';
 import { IconHelpCircle } from '@douyinfe/semi-icons';
 import {
   renderModelTag,
@@ -33,19 +33,42 @@ import {
 } from '../../../../common/ui/RenderUtils';
 import { useIsMobile } from '../../../../../hooks/common/useIsMobile';
 
+// iOS-style inline badge helper
+const InlineBadge = ({ color, bg, children, style: extraStyle, ...rest }) => (
+  <span
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+      padding: '1px 8px',
+      borderRadius: 'var(--radius-sm)',
+      fontSize: '12px',
+      fontWeight: 500,
+      color: color || 'var(--text-secondary)',
+      background: bg || 'var(--surface-active)',
+      lineHeight: '20px',
+      whiteSpace: 'nowrap',
+      ...extraStyle,
+    }}
+    {...rest}
+  >
+    {children}
+  </span>
+);
+
 function renderQuotaType(type, t) {
   switch (type) {
     case 1:
       return (
-        <Tag color='teal' shape='circle'>
+        <InlineBadge color='#30B0C7' bg='rgba(48, 176, 199, 0.12)'>
           {t('按次计费')}
-        </Tag>
+        </InlineBadge>
       );
     case 0:
       return (
-        <Tag color='violet' shape='circle'>
+        <InlineBadge color='#5856D6' bg='rgba(88, 86, 214, 0.12)'>
           {t('按量计费')}
-        </Tag>
+        </InlineBadge>
       );
     default:
       return t('未知');
@@ -56,13 +79,10 @@ function renderQuotaType(type, t) {
 const renderVendor = (vendorName, vendorIcon, t) => {
   if (!vendorName) return '-';
   return (
-    <Tag
-      color='white'
-      shape='circle'
-      prefixIcon={getLobeHubIcon(vendorIcon || 'Layers', 14)}
-    >
+    <InlineBadge>
+      {getLobeHubIcon(vendorIcon || 'Layers', 14)}
       {vendorName}
-    </Tag>
+    </InlineBadge>
   );
 };
 
@@ -73,14 +93,13 @@ const renderTags = (text) => {
   return renderLimitedItems({
     items: tagsArr,
     renderItem: (tag, idx) => (
-      <Tag
+      <InlineBadge
         key={idx}
         color={stringToColor(tag.trim())}
-        shape='circle'
-        size='small'
+        bg={`${stringToColor(tag.trim())}1F`}
       >
         {tag.trim()}
-      </Tag>
+      </InlineBadge>
     ),
     maxDisplay: 3,
   });
@@ -93,9 +112,13 @@ function renderSupportedEndpoints(endpoints) {
   return (
     <Space wrap>
       {endpoints.map((endpoint, idx) => (
-        <Tag key={endpoint} color={stringToColor(endpoint)} shape='circle'>
+        <InlineBadge
+          key={endpoint}
+          color={stringToColor(endpoint)}
+          bg={`${stringToColor(endpoint)}1F`}
+        >
           {endpoint}
-        </Tag>
+        </InlineBadge>
       ))}
     </Space>
   );

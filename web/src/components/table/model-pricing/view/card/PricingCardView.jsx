@@ -20,7 +20,6 @@ For commercial licensing, please contact support@quantumnous.com
 import React from 'react';
 import {
   Card,
-  Tag,
   Tooltip,
   Checkbox,
   Empty,
@@ -44,6 +43,29 @@ import PricingCardSkeleton from './PricingCardSkeleton';
 import { useMinimumLoadingTime } from '../../../../../hooks/common/useMinimumLoadingTime';
 import { renderLimitedItems } from '../../../../common/ui/RenderUtils';
 import { useIsMobile } from '../../../../../hooks/common/useIsMobile';
+
+// iOS-style inline badge helper
+const InlineBadge = ({ color, bg, children, style: extraStyle, ...rest }) => (
+  <span
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+      padding: '1px 8px',
+      borderRadius: 'var(--radius-sm)',
+      fontSize: '12px',
+      fontWeight: 500,
+      color: color || 'var(--text-secondary)',
+      background: bg || 'var(--surface-active)',
+      lineHeight: '20px',
+      whiteSpace: 'nowrap',
+      ...extraStyle,
+    }}
+    {...rest}
+  >
+    {children}
+  </span>
+);
 
 const CARD_STYLES = {
   container:
@@ -155,21 +177,19 @@ const PricingCardView = ({
   const renderTags = (record) => {
     // 计费类型标签（左边）
     let billingTag = (
-      <Tag key='billing' shape='circle' color='white' size='small'>
-        -
-      </Tag>
+      <InlineBadge key='billing'>-</InlineBadge>
     );
     if (record.quota_type === 1) {
       billingTag = (
-        <Tag key='billing' shape='circle' color='teal' size='small'>
+        <InlineBadge key='billing' color='#30B0C7' bg='rgba(48, 176, 199, 0.12)'>
           {t('按次计费')}
-        </Tag>
+        </InlineBadge>
       );
     } else if (record.quota_type === 0) {
       billingTag = (
-        <Tag key='billing' shape='circle' color='violet' size='small'>
+        <InlineBadge key='billing' color='#5856D6' bg='rgba(88, 86, 214, 0.12)'>
           {t('按量计费')}
-        </Tag>
+        </InlineBadge>
       );
     }
 
@@ -179,14 +199,13 @@ const PricingCardView = ({
       const tagArr = record.tags.split(',').filter(Boolean);
       tagArr.forEach((tg, idx) => {
         customTags.push(
-          <Tag
+          <InlineBadge
             key={`custom-${idx}`}
-            shape='circle'
             color={stringToColor(tg)}
-            size='small'
+            bg={`${stringToColor(tg)}1F`}
           >
             {tg}
-          </Tag>,
+          </InlineBadge>,
         );
       });
     }

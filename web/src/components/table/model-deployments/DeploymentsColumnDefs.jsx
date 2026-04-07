@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Button, Dropdown, Tag, Typography } from '@douyinfe/semi-ui';
+import { Button, Dropdown, Typography } from '@douyinfe/semi-ui';
 import { timestamp2string, showSuccess, showError } from '../../../helpers';
 import { IconMore } from '@douyinfe/semi-icons';
 import {
@@ -45,61 +45,96 @@ import {
 const normalizeStatus = (status) =>
   typeof status === 'string' ? status.trim().toLowerCase() : '';
 
+// iOS-style inline badge helper
+const InlineBadge = ({ color, bg, mono, children, style: extraStyle, ...rest }) => (
+  <span
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+      padding: '1px 8px',
+      borderRadius: 'var(--radius-sm)',
+      fontSize: '12px',
+      fontWeight: 500,
+      fontFamily: mono ? 'var(--font-mono)' : undefined,
+      color: color || 'var(--text-secondary)',
+      background: bg || 'var(--surface-active)',
+      lineHeight: '20px',
+      whiteSpace: 'nowrap',
+      ...extraStyle,
+    }}
+    {...rest}
+  >
+    {children}
+  </span>
+);
+
 const STATUS_TAG_CONFIG = {
   running: {
-    color: 'green',
+    color: 'var(--success)',
+    bg: 'rgba(52, 199, 89, 0.12)',
     labelKey: '运行中',
     icon: <FaPlay size={12} style={{ color: 'var(--success)' }} />,
   },
   deploying: {
-    color: 'blue',
+    color: 'var(--accent)',
+    bg: 'rgba(10, 132, 255, 0.12)',
     labelKey: '部署中',
     icon: <FaSpinner size={12} style={{ color: 'var(--accent)' }} />,
   },
   pending: {
-    color: 'orange',
+    color: 'var(--warning)',
+    bg: 'rgba(255, 149, 0, 0.12)',
     labelKey: '待部署',
     icon: <FaClock size={12} style={{ color: 'var(--warning)' }} />,
   },
   stopped: {
-    color: 'grey',
+    color: 'var(--text-muted)',
+    bg: 'var(--surface-active)',
     labelKey: '已停止',
     icon: <FaStop size={12} style={{ color: 'var(--text-muted)' }} />,
   },
   error: {
-    color: 'red',
+    color: 'var(--error)',
+    bg: 'rgba(255, 59, 48, 0.12)',
     labelKey: '错误',
     icon: <FaExclamationCircle size={12} style={{ color: 'var(--error)' }} />,
   },
   failed: {
-    color: 'red',
+    color: 'var(--error)',
+    bg: 'rgba(255, 59, 48, 0.12)',
     labelKey: '失败',
     icon: <FaExclamationCircle size={12} style={{ color: 'var(--error)' }} />,
   },
   destroyed: {
-    color: 'red',
+    color: 'var(--error)',
+    bg: 'rgba(255, 59, 48, 0.12)',
     labelKey: '已销毁',
     icon: <FaBan size={12} style={{ color: 'var(--error)' }} />,
   },
   completed: {
-    color: 'green',
+    color: 'var(--success)',
+    bg: 'rgba(52, 199, 89, 0.12)',
     labelKey: '已完成',
     icon: <FaCheckCircle size={12} style={{ color: 'var(--success)' }} />,
   },
   'deployment requested': {
-    color: 'blue',
+    color: 'var(--accent)',
+    bg: 'rgba(10, 132, 255, 0.12)',
     labelKey: '部署请求中',
     icon: <FaSpinner size={12} style={{ color: 'var(--accent)' }} />,
   },
   'termination requested': {
-    color: 'orange',
+    color: 'var(--warning)',
+    bg: 'rgba(255, 149, 0, 0.12)',
     labelKey: '终止请求中',
     icon: <FaClock size={12} style={{ color: 'var(--warning)' }} />,
   },
 };
 
 const DEFAULT_STATUS_CONFIG = {
-  color: 'grey',
+  color: 'var(--text-muted)',
+  bg: 'var(--surface-active)',
   labelKey: null,
   icon: <FaInfoCircle size={12} style={{ color: 'var(--text-muted)' }} />,
 };
@@ -148,31 +183,35 @@ const getRemainingTheme = (percentRemaining) => {
   if (percentRemaining === null) {
     return {
       iconColor: 'var(--accent)',
-      tagColor: 'blue',
+      color: 'var(--accent)',
+      bg: 'rgba(10, 132, 255, 0.12)',
       textColor: 'var(--text-muted)',
     };
   }
 
   if (percentRemaining <= 10) {
     return {
-      iconColor: '#ff5a5f',
-      tagColor: 'red',
-      textColor: '#ff5a5f',
+      iconColor: 'var(--error)',
+      color: 'var(--error)',
+      bg: 'rgba(255, 59, 48, 0.12)',
+      textColor: 'var(--error)',
     };
   }
 
   if (percentRemaining <= 30) {
     return {
-      iconColor: '#ffb400',
-      tagColor: 'orange',
-      textColor: '#ffb400',
+      iconColor: 'var(--warning)',
+      color: 'var(--warning)',
+      bg: 'rgba(255, 149, 0, 0.12)',
+      textColor: 'var(--warning)',
     };
   }
 
   return {
-    iconColor: '#2ecc71',
-    tagColor: 'green',
-    textColor: '#2ecc71',
+    iconColor: 'var(--success)',
+    color: 'var(--success)',
+    bg: 'rgba(52, 199, 89, 0.12)',
+    textColor: 'var(--success)',
   };
 };
 
@@ -185,14 +224,10 @@ const renderStatus = (status, t) => {
     : statusText || t('未知状态');
 
   return (
-    <Tag
-      color={config.color}
-      shape='circle'
-      size='small'
-      prefixIcon={config.icon}
-    >
+    <InlineBadge color={config.color} bg={config.bg}>
+      {config.icon}
       {labelText}
-    </Tag>
+    </InlineBadge>
   );
 };
 
@@ -258,13 +293,12 @@ const renderResourceConfig = (resource, t) => {
 // Render instance count with status indicator
 const renderInstanceCount = (count, record, t) => {
   const normalizedStatus = normalizeStatus(record?.status);
-  const statusConfig = STATUS_TAG_CONFIG[normalizedStatus];
-  const countColor = statusConfig?.color ?? 'grey';
+  const statusConfig = STATUS_TAG_CONFIG[normalizedStatus] || DEFAULT_STATUS_CONFIG;
 
   return (
-    <Tag color={countColor} size='small' shape='circle'>
+    <InlineBadge mono color={statusConfig.color} bg={statusConfig.bg}>
       {count || 0} {t('个实例')}
-    </Tag>
+    </InlineBadge>
   );
 };
 
@@ -385,13 +419,13 @@ export const getDeploymentsColumns = ({
                 {timeDisplay}
               </Typography.Text>
               {showProgress && percentRemaining !== null ? (
-                <Tag size='small' color={theme.tagColor}>
+                <InlineBadge mono color={theme.color} bg={theme.bg}>
                   {percentRemaining}%
-                </Tag>
+                </InlineBadge>
               ) : statusOverride ? (
-                <Tag size='small' color='grey'>
+                <InlineBadge color='var(--text-muted)' bg='var(--surface-active)'>
                   {statusOverride}
-                </Tag>
+                </InlineBadge>
               ) : null}
             </div>
             {showExtraInfo && (

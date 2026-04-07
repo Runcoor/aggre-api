@@ -24,17 +24,28 @@ import {
   Form,
   Row,
   Col,
-  Typography,
   Table,
   Modal,
   Input,
-  Space,
 } from '@douyinfe/semi-ui';
 import { API, showError, showSuccess } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
 import MacSpinner from '../../../components/common/ui/MacSpinner';
 
-const { Text } = Typography;
+/* ─── Shared styles ─── */
+const sectionLabelStyle = {
+  fontFamily: 'var(--font-serif)',
+  fontWeight: 600,
+  fontSize: '14px',
+  color: 'var(--text-primary)',
+  letterSpacing: '-0.01em',
+};
+
+const hintTextStyle = {
+  fontSize: '12px',
+  color: 'var(--text-muted)',
+  lineHeight: '1.5',
+};
 
 export default function SettingsPaymentGatewayWaffo(props) {
   const { t } = useTranslation();
@@ -281,24 +292,24 @@ export default function SettingsPaymentGatewayWaffo(props) {
             style={{ width: 24, height: 24, objectFit: 'contain' }}
           />
         ) : (
-          <Text type='tertiary'>—</Text>
+          <span style={{ color: 'var(--text-muted)' }}>—</span>
         ),
     },
     {
       title: t('支付方式类型'),
       dataIndex: 'payMethodType',
-      render: (text) => text || <Text type='tertiary'>—</Text>,
+      render: (text) => text || <span style={{ color: 'var(--text-muted)' }}>—</span>,
     },
     {
       title: t('支付方式名称'),
       dataIndex: 'payMethodName',
-      render: (text) => text || <Text type='tertiary'>—</Text>,
+      render: (text) => text || <span style={{ color: 'var(--text-muted)' }}>—</span>,
     },
     {
       title: t('操作'),
       key: 'action',
       render: (_, record, index) => (
-        <Space>
+        <div className='flex items-center gap-1.5'>
           <Button
             size='small'
             onClick={() => openEditPayMethodModal(record, index)}
@@ -312,32 +323,89 @@ export default function SettingsPaymentGatewayWaffo(props) {
           >
             {t('删除')}
           </Button>
-        </Space>
+        </div>
       ),
     },
   ];
 
   return (
     <MacSpinner spinning={loading}>
-      <Form
-        initValues={inputs}
-        onValueChange={handleFormChange}
-        getFormApi={(api) => (formApiRef.current = api)}
+      {/* ═══ macOS Panel Card ═══ */}
+      <div
+        style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-lg)',
+        }}
       >
-        <Form.Section text={t('Waffo 设置')}>
-          <Text>
-            {t('Waffo 是一个支付聚合平台，支持多种支付方式。')}
-            <a href='https://waffo.com' target='_blank' rel='noreferrer'>
-              Waffo Official Site
-            </a>
-            <br />
-          </Text>
+        {/* ── Panel Header ── */}
+        <div
+          style={{
+            padding: '16px 20px',
+            borderBottom: '1px solid var(--border-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <span
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(10, 132, 255, 0.12)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--accent)',
+              fontSize: 16,
+              flexShrink: 0,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+              <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+              <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+            </svg>
+          </span>
+          <div>
+            <h3
+              style={{
+                margin: 0,
+                fontFamily: 'var(--font-serif)',
+                fontSize: 16,
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {t('Waffo 设置')}
+            </h3>
+            <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+              {t('Waffo 是一个支付聚合平台，支持多种支付方式。')}
+              {' '}
+              <a href='https://waffo.com' target='_blank' rel='noreferrer' style={{ color: 'var(--accent)' }}>
+                Waffo Official Site
+              </a>
+            </p>
+          </div>
+        </div>
+
+        {/* ── Panel Body ── */}
+        <div style={{ padding: '16px 20px' }}>
           <Banner
             type='info'
             description={t(
               '请在 Waffo 后台获取 API 密钥、商户 ID 以及 RSA 密钥对，并配置回调地址。',
             )}
+            style={{ marginBottom: 16 }}
           />
+
+          <Form
+            initValues={inputs}
+            onValueChange={handleFormChange}
+            getFormApi={(api) => (formApiRef.current = api)}
+          >
 
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
             <Col xs={24} sm={24} md={8} lg={8} xl={8}>
@@ -478,39 +546,90 @@ export default function SettingsPaymentGatewayWaffo(props) {
             </Col>
           </Row>
 
-          <Button onClick={submitWaffoSetting} style={{ marginTop: 16 }}>
-            {t('更新 Waffo 设置')}
-          </Button>
-        </Form.Section>
-      </Form>
+          <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              theme='solid'
+              style={{
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--accent)',
+                border: 'none',
+              }}
+              onClick={submitWaffoSetting}
+            >
+              {t('更新 Waffo 设置')}
+            </Button>
+          </div>
+          </Form>
 
-      {/* 支付方式配置区块（独立于 Form，使用独立状态管理） */}
-      <div style={{ marginTop: 24 }}>
-        <Typography.Title heading={6} style={{ marginBottom: 8 }}>{t('支付方式')}</Typography.Title>
-        <Text type='secondary'>
-          {t('配置 Waffo 充值时可用的支付方式，保存后在充值页面展示给用户。')}
-        </Text>
-        <div style={{ marginTop: 12, marginBottom: 12 }}>
-          <Button onClick={openAddPayMethodModal}>
-            {t('新增支付方式')}
-          </Button>
+          {/* ═══ Payment Methods Sub-Panel ═══ */}
+          <div
+            style={{
+              marginTop: 20,
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border-subtle)',
+              background: 'var(--bg-subtle)',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                padding: '14px 16px',
+                borderBottom: '1px solid var(--border-subtle)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 8,
+              }}
+            >
+              <div>
+                <h4 style={{ ...sectionLabelStyle, margin: 0, fontSize: 13 }}>
+                  {t('支付方式')}
+                </h4>
+                <p style={{ margin: '2px 0 0', ...hintTextStyle }}>
+                  {t('配置 Waffo 充值时可用的支付方式，保存后在充值页面展示给用户。')}
+                </p>
+              </div>
+              <Button
+                size='small'
+                style={{ borderRadius: 'var(--radius-sm)' }}
+                onClick={openAddPayMethodModal}
+              >
+                {t('新增支付方式')}
+              </Button>
+            </div>
+            <Table
+              columns={payMethodColumns}
+              dataSource={waffoPayMethods}
+              rowKey={(record, index) => index}
+              pagination={false}
+              size='small'
+              empty={<span style={{ color: 'var(--text-muted)' }}>{t('暂无支付方式，点击上方按钮新增')}</span>}
+            />
+            <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end' }}>
+              <Button
+                theme='solid'
+                style={{
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--accent)',
+                  border: 'none',
+                }}
+                onClick={submitWaffoSetting}
+              >
+                {t('更新 Waffo 设置')}
+              </Button>
+            </div>
+          </div>
         </div>
-        <Table
-          columns={payMethodColumns}
-          dataSource={waffoPayMethods}
-          rowKey={(record, index) => index}
-          pagination={false}
-          size='small'
-          empty={<Text type='tertiary'>{t('暂无支付方式，点击上方按钮新增')}</Text>}
-        />
-        <Button onClick={submitWaffoSetting} style={{ marginTop: 16 }}>
-          {t('更新 Waffo 设置')}
-        </Button>
       </div>
 
       {/* 新增/编辑支付方式弹窗 */}
       <Modal
-        title={editingPayMethodIndex === -1 ? t('新增支付方式') : t('编辑支付方式')}
+        title={
+          <span style={sectionLabelStyle}>
+            {editingPayMethodIndex === -1 ? t('新增支付方式') : t('编辑支付方式')}
+          </span>
+        }
         visible={payMethodModalVisible}
         onOk={handlePayMethodModalOk}
         onCancel={() => setPayMethodModalVisible(false)}
@@ -520,7 +639,7 @@ export default function SettingsPaymentGatewayWaffo(props) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
             <div style={{ marginBottom: 4 }}>
-              <Text strong>{t('显示名称')}</Text>
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{t('显示名称')}</span>
               <span style={{ color: 'var(--error)', marginLeft: 4 }}>*</span>
             </div>
             <Input
@@ -528,13 +647,13 @@ export default function SettingsPaymentGatewayWaffo(props) {
               onChange={(val) => setPayMethodForm({ ...payMethodForm, name: val })}
               placeholder={t('例如：Credit Card')}
             />
-            <Text type='tertiary' size='small'>{t('用户在充值页面看到的支付方式名称，例如：Credit Card')}</Text>
+            <span style={hintTextStyle}>{t('用户在充值页面看到的支付方式名称，例如：Credit Card')}</span>
           </div>
           <div>
             <div style={{ marginBottom: 4 }}>
-              <Text strong>{t('图标')}</Text>
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{t('图标')}</span>
             </div>
-            <Space align='center'>
+            <div className='flex items-center gap-2'>
               {payMethodForm.icon && (
                 <img
                   src={payMethodForm.icon}
@@ -544,7 +663,7 @@ export default function SettingsPaymentGatewayWaffo(props) {
                     height: 32,
                     objectFit: 'contain',
                     border: '1px solid var(--border-default)',
-                    borderRadius: 4,
+                    borderRadius: 'var(--radius-sm)',
                   }}
                 />
               )}
@@ -557,6 +676,7 @@ export default function SettingsPaymentGatewayWaffo(props) {
               />
               <Button
                 size='small'
+                style={{ borderRadius: 'var(--radius-sm)' }}
                 onClick={() => iconFileInputRef.current?.click()}
               >
                 {payMethodForm.icon ? t('重新上传') : t('上传图片')}
@@ -565,6 +685,7 @@ export default function SettingsPaymentGatewayWaffo(props) {
                 <Button
                   size='small'
                   type='danger'
+                  style={{ borderRadius: 'var(--radius-sm)' }}
                   onClick={() =>
                     setPayMethodForm((prev) => ({ ...prev, icon: '' }))
                   }
@@ -572,14 +693,14 @@ export default function SettingsPaymentGatewayWaffo(props) {
                   {t('清除')}
                 </Button>
               )}
-            </Space>
-            <div>
-              <Text type='tertiary' size='small'>{t('上传 PNG/JPG/SVG 图片，建议尺寸 ≤ 128×128px')}</Text>
+            </div>
+            <div style={{ marginTop: 4 }}>
+              <span style={hintTextStyle}>{t('上传 PNG/JPG/SVG 图片，建议尺寸 ≤ 128×128px')}</span>
             </div>
           </div>
           <div>
             <div style={{ marginBottom: 4 }}>
-              <Text strong>{t('Pay Method Type')}</Text>
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{t('Pay Method Type')}</span>
             </div>
             <Input
               value={payMethodForm.payMethodType}
@@ -587,11 +708,11 @@ export default function SettingsPaymentGatewayWaffo(props) {
               placeholder='CREDITCARD,DEBITCARD'
               maxLength={64}
             />
-            <Text type='tertiary' size='small'>{t('Waffo API 参数，可空，例如：CREDITCARD,DEBITCARD（最多64位）')}</Text>
+            <span style={hintTextStyle}>{t('Waffo API 参数，可空，例如：CREDITCARD,DEBITCARD（最多64位）')}</span>
           </div>
           <div>
             <div style={{ marginBottom: 4 }}>
-              <Text strong>{t('Pay Method Name')}</Text>
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{t('Pay Method Name')}</span>
             </div>
             <Input
               value={payMethodForm.payMethodName}
@@ -599,7 +720,7 @@ export default function SettingsPaymentGatewayWaffo(props) {
               placeholder={t('可空')}
               maxLength={64}
             />
-            <Text type='tertiary' size='small'>{t('Waffo API 参数，可空（最多64位）')}</Text>
+            <span style={hintTextStyle}>{t('Waffo API 参数，可空（最多64位）')}</span>
           </div>
         </div>
       </Modal>

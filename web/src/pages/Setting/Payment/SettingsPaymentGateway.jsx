@@ -18,8 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Form, Row, Col, Typography } from '@douyinfe/semi-ui';
-const { Text } = Typography;
+import { Button, Form, Row, Col } from '@douyinfe/semi-ui';
 import {
   API,
   removeTrailingSlash,
@@ -212,122 +211,202 @@ export default function SettingsPaymentGateway(props) {
 
   return (
     <MacSpinner spinning={loading}>
-      <Form
-        initValues={inputs}
-        onValueChange={handleFormChange}
-        getFormApi={(api) => (formApiRef.current = api)}
+      {/* ═══ macOS Panel Card ═══ */}
+      <div
+        style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-lg)',
+        }}
       >
-        <Form.Section text={t('支付设置')}>
-          <Text>
-            {t(
-              '（当前仅支持易支付接口，默认使用上方服务器地址作为回调地址！）',
-            )}
-          </Text>
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
-            <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-              <Form.Input
-                field='PayAddress'
-                label={t('支付地址')}
-                placeholder={t('例如：https://yourdomain.com')}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-              <Form.Input
-                field='EpayId'
-                label={t('易支付商户ID')}
-                placeholder={t('例如：0001')}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-              <Form.Input
-                field='EpayKey'
-                label={t('易支付商户密钥')}
-                placeholder={t('敏感信息不会发送到前端显示')}
-                type='password'
-              />
-            </Col>
-          </Row>
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
-            style={{ marginTop: 16 }}
+        {/* ── Panel Header ── */}
+        <div
+          style={{
+            padding: '16px 20px',
+            borderBottom: '1px solid var(--border-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <span
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(52, 199, 89, 0.12)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--success)',
+              fontSize: 16,
+              flexShrink: 0,
+            }}
           >
-            <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-              <Form.Input
-                field='CustomCallbackAddress'
-                label={t('回调地址')}
-                placeholder={t('例如：https://yourdomain.com')}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-              <Form.InputNumber
-                field='Price'
-                precision={2}
-                label={t('充值价格（x元/美金）')}
-                placeholder={t('例如：7，就是7元/美金')}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-              <Form.InputNumber
-                field='MinTopUp'
-                label={t('最低充值美元数量')}
-                placeholder={t('例如：2，就是最低充值2$')}
-              />
-            </Col>
-          </Row>
-          <Form.TextArea
-            field='TopupGroupRatio'
-            label={t('充值分组倍率')}
-            placeholder={t('为一个 JSON 文本，键为组名称，值为倍率')}
-            autosize
-          />
-          <Form.TextArea
-            field='PayMethods'
-            label={t('充值方式设置')}
-            placeholder={t('为一个 JSON 文本')}
-            autosize
-          />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="20" height="14" x="2" y="5" rx="2" />
+              <line x1="2" x2="22" y1="10" y2="10" />
+            </svg>
+          </span>
+          <div>
+            <h3
+              style={{
+                margin: 0,
+                fontFamily: 'var(--font-serif)',
+                fontSize: 16,
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {t('支付设置')}
+            </h3>
+            <p
+              style={{
+                margin: '2px 0 0',
+                fontSize: 12,
+                color: 'var(--text-muted)',
+              }}
+            >
+              {t('（当前仅支持易支付接口，默认使用上方服务器地址作为回调地址！）')}
+            </p>
+          </div>
+        </div>
 
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
-            style={{ marginTop: 16 }}
+        {/* ── Panel Body ── */}
+        <div style={{ padding: '16px 20px' }}>
+          <Form
+            initValues={inputs}
+            onValueChange={handleFormChange}
+            getFormApi={(api) => (formApiRef.current = api)}
           >
-            <Col span={24}>
+            {/* ─ Connection Settings ─ */}
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
+              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                <Form.Input
+                  field='PayAddress'
+                  label={t('支付地址')}
+                  placeholder={t('例如：https://yourdomain.com')}
+                />
+              </Col>
+              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                <Form.Input
+                  field='EpayId'
+                  label={t('易支付商户ID')}
+                  placeholder={t('例如：0001')}
+                />
+              </Col>
+              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                <Form.Input
+                  field='EpayKey'
+                  label={t('易支付商户密钥')}
+                  placeholder={t('敏感信息不会发送到前端显示')}
+                  type='password'
+                />
+              </Col>
+            </Row>
+
+            {/* ─ Pricing Settings ─ */}
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+              style={{ marginTop: 16 }}
+            >
+              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                <Form.Input
+                  field='CustomCallbackAddress'
+                  label={t('回调地址')}
+                  placeholder={t('例如：https://yourdomain.com')}
+                />
+              </Col>
+              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                <Form.InputNumber
+                  field='Price'
+                  precision={2}
+                  label={t('充值价格（x元/美金）')}
+                  placeholder={t('例如：7，就是7元/美金')}
+                />
+              </Col>
+              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                <Form.InputNumber
+                  field='MinTopUp'
+                  label={t('最低充值美元数量')}
+                  placeholder={t('例如：2，就是最低充值2$')}
+                />
+              </Col>
+            </Row>
+
+            {/* ─ Advanced JSON Config ─ */}
+            <div style={{ marginTop: 16 }}>
               <Form.TextArea
-                field='AmountOptions'
-                label={t('自定义充值数量选项')}
-                placeholder={t(
-                  '为一个 JSON 数组，例如：[10, 20, 50, 100, 200, 500]',
-                )}
+                field='TopupGroupRatio'
+                label={t('充值分组倍率')}
+                placeholder={t('为一个 JSON 文本，键为组名称，值为倍率')}
                 autosize
-                extraText={t(
-                  '设置用户可选择的充值数量选项，例如：[10, 20, 50, 100, 200, 500]',
-                )}
               />
-            </Col>
-          </Row>
-
-          <Row
-            gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
-            style={{ marginTop: 16 }}
-          >
-            <Col span={24}>
+            </div>
+            <div style={{ marginTop: 12 }}>
               <Form.TextArea
-                field='AmountDiscount'
-                label={t('充值金额折扣配置')}
-                placeholder={t(
-                  '为一个 JSON 对象，例如：{"100": 0.95, "200": 0.9, "500": 0.85}',
-                )}
+                field='PayMethods'
+                label={t('充值方式设置')}
+                placeholder={t('为一个 JSON 文本')}
                 autosize
-                extraText={t(
-                  '设置不同充值金额对应的折扣，键为充值金额，值为折扣率，例如：{"100": 0.95, "200": 0.9, "500": 0.85}',
-                )}
               />
-            </Col>
-          </Row>
+            </div>
 
-          <Button onClick={submitPayAddress}>{t('更新支付设置')}</Button>
-        </Form.Section>
-      </Form>
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+              style={{ marginTop: 16 }}
+            >
+              <Col span={24}>
+                <Form.TextArea
+                  field='AmountOptions'
+                  label={t('自定义充值数量选项')}
+                  placeholder={t(
+                    '为一个 JSON 数组，例如：[10, 20, 50, 100, 200, 500]',
+                  )}
+                  autosize
+                  extraText={t(
+                    '设置用户可选择的充值数量选项，例如：[10, 20, 50, 100, 200, 500]',
+                  )}
+                />
+              </Col>
+            </Row>
+
+            <Row
+              gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+              style={{ marginTop: 16 }}
+            >
+              <Col span={24}>
+                <Form.TextArea
+                  field='AmountDiscount'
+                  label={t('充值金额折扣配置')}
+                  placeholder={t(
+                    '为一个 JSON 对象，例如：{"100": 0.95, "200": 0.9, "500": 0.85}',
+                  )}
+                  autosize
+                  extraText={t(
+                    '设置不同充值金额对应的折扣，键为充值金额，值为折扣率，例如：{"100": 0.95, "200": 0.9, "500": 0.85}',
+                  )}
+                />
+              </Col>
+            </Row>
+
+            <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
+              <Button
+                theme='solid'
+                style={{
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--accent)',
+                  border: 'none',
+                }}
+                onClick={submitPayAddress}
+              >
+                {t('更新支付设置')}
+              </Button>
+            </div>
+          </Form>
+        </div>
+      </div>
     </MacSpinner>
   );
 }

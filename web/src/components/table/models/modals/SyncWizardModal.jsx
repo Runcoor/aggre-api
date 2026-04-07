@@ -19,6 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React, { useEffect, useState } from 'react';
 import { Modal, RadioGroup, Radio, Steps, Button } from '@douyinfe/semi-ui';
+import { IconRefresh } from '@douyinfe/semi-icons';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
 
 const SyncWizardModal = ({ visible, onClose, onConfirm, loading, t }) => {
@@ -37,7 +38,14 @@ const SyncWizardModal = ({ visible, onClose, onConfirm, loading, t }) => {
 
   return (
     <Modal
-      title={t('同步向导')}
+      title={
+        <div className='flex items-center gap-2'>
+          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}>
+            <IconRefresh size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>{t('同步向导')}</span>
+        </div>
+      }
       visible={visible}
       onCancel={onClose}
       footer={

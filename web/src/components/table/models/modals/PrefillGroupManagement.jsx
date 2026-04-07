@@ -124,13 +124,13 @@ const PrefillGroupManagement = ({ visible, onClose }) => {
       dataIndex: 'name',
       key: 'name',
       render: (text, record) => (
-        <Space>
-          <Text strong>{text}</Text>
-          <Tag color='white' shape='circle' size='small'>
+        <div className='flex items-center gap-2'>
+          <span className='text-sm font-medium' style={{ color: 'var(--text-primary)' }}>{text}</span>
+          <span className='text-[10px] px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--surface-active)', color: 'var(--text-muted)' }}>
             {typeOptions.find((opt) => opt.value === record.type)?.label ||
               record.type}
-          </Tag>
-        </Space>
+          </span>
+        </div>
       ),
     },
     {
@@ -226,14 +226,17 @@ const PrefillGroupManagement = ({ visible, onClose }) => {
       <SideSheet
         placement='left'
         title={
-          <Space>
-            <Tag color='blue' shape='circle'>
-              {t('管理')}
-            </Tag>
-            <Title heading={4} className='m-0'>
+          <div className='flex items-center gap-2.5'>
+            <span
+              className='w-7 h-7 flex items-center justify-center'
+              style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}
+            >
+              <IconLayers size={16} />
+            </span>
+            <span className='text-base font-semibold' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
               {t('预填组管理')}
-            </Title>
-          </Space>
+            </span>
+          </div>
         }
         visible={visible}
         onCancel={onClose}

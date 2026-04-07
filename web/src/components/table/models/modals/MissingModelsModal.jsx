@@ -22,7 +22,6 @@ import {
   Modal,
   Table,
   Button,
-  Typography,
   Empty,
   Input,
 } from '@douyinfe/semi-ui';
@@ -30,7 +29,7 @@ import {
   IllustrationNoResult,
   IllustrationNoResultDark,
 } from '@douyinfe/semi-illustrations';
-import { IconSearch } from '@douyinfe/semi-icons';
+import { IconSearch, IconAlertTriangle } from '@douyinfe/semi-icons';
 import { API, showError } from '../../../../helpers';
 import { MODEL_TABLE_PAGE_SIZE } from '../../../../constants';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
@@ -88,7 +87,7 @@ const MissingModelsModal = ({ visible, onClose, onConfigureModel, t }) => {
       dataIndex: 'model',
       render: (text) => (
         <div className='flex items-center'>
-          <Typography.Text strong>{text}</Typography.Text>
+          <span className='text-sm font-medium' style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{text}</span>
         </div>
       ),
     },
@@ -112,18 +111,16 @@ const MissingModelsModal = ({ visible, onClose, onConfigureModel, t }) => {
   return (
     <Modal
       title={
-        <div className='flex flex-col gap-2 w-full'>
-          <div className='flex items-center gap-2'>
-            <Typography.Text
-              strong
-              className='!text-[var(--text-primary)] !text-base'
-            >
-              {t('未配置的模型列表')}
-            </Typography.Text>
-            <Typography.Text type='tertiary' size='small'>
-              {t('共')} {missingModels.length} {t('个未配置模型')}
-            </Typography.Text>
-          </div>
+        <div className='flex items-center gap-2'>
+          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(255, 149, 0, 0.12)', color: 'var(--warning)' }}>
+            <IconAlertTriangle size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {t('未配置的模型列表')}
+          </span>
+          <span className='text-xs px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--surface-active)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+            {missingModels.length}
+          </span>
         </div>
       }
       visible={visible}

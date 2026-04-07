@@ -32,7 +32,7 @@ import {
   Col,
   Row,
 } from '@douyinfe/semi-ui';
-import { Save, X, FileText } from 'lucide-react';
+import { Save, X, FileText, Layers } from 'lucide-react';
 import { IconAlertTriangle, IconLink } from '@douyinfe/semi-icons';
 import { API, showError, showSuccess } from '../../../../helpers';
 import { useTranslation } from 'react-i18next';
@@ -233,46 +233,46 @@ const EditModelModal = (props) => {
     <SideSheet
       placement={placement}
       title={
-        <Space>
-          {isEdit ? (
-            <Tag color='blue' shape='circle'>
-              {t('更新')}
-            </Tag>
-          ) : (
-            <Tag color='green' shape='circle'>
-              {t('新建')}
-            </Tag>
-          )}
-          <Title heading={4} className='m-0'>
+        <div className='flex items-center gap-2.5'>
+          <span
+            className='w-7 h-7 flex items-center justify-center'
+            style={{ borderRadius: 'var(--radius-sm)', background: isEdit ? 'rgba(0, 122, 255, 0.12)' : 'rgba(52, 199, 89, 0.15)', color: isEdit ? 'var(--accent)' : 'var(--success)' }}
+          >
+            <Layers size={16} />
+          </span>
+          <span
+            className='text-base font-semibold'
+            style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+          >
             {isEdit ? t('更新模型信息') : t('创建新的模型')}
-          </Title>
-        </Space>
+          </span>
+        </div>
       }
       bodyStyle={{ padding: '0' }}
       visible={props.visiable}
       width={isMobile ? '100%' : 600}
       footer={
-        <div className='flex justify-end' style={{ background: 'var(--surface)' }}>
-          <Space>
-            <Button
-              theme='solid'
-              className='!rounded-lg'
-              onClick={() => formApiRef.current?.submitForm()}
-              icon={<Save size={16} />}
-              loading={loading}
-            >
-              {t('提交')}
-            </Button>
-            <Button
-              theme='light'
-              className='!rounded-lg'
-              type='primary'
-              onClick={handleCancel}
-              icon={<X size={16} />}
-            >
-              {t('取消')}
-            </Button>
-          </Space>
+        <div
+          className='flex justify-end gap-2 px-4 py-3'
+          style={{ background: 'var(--surface)', borderTop: '1px solid var(--border-subtle)' }}
+        >
+          <Button
+            theme='light'
+            onClick={handleCancel}
+            icon={<X size={16} />}
+            style={{ borderRadius: 'var(--radius-md)', background: 'var(--surface-active)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }}
+          >
+            {t('取消')}
+          </Button>
+          <Button
+            theme='solid'
+            onClick={() => formApiRef.current?.submitForm()}
+            icon={<Save size={16} />}
+            loading={loading}
+            style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent)', color: '#fff', border: 'none' }}
+          >
+            {t('提交')}
+          </Button>
         </div>
       }
       closeIcon={null}

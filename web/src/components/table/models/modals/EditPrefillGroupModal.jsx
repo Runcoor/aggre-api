@@ -116,47 +116,30 @@ const EditPrefillGroupModal = ({
     <SideSheet
       placement='left'
       title={
-        <Space>
-          {isEdit ? (
-            <Tag color='blue' shape='circle'>
-              {t('更新')}
-            </Tag>
-          ) : (
-            <Tag color='green' shape='circle'>
-              {t('新建')}
-            </Tag>
-          )}
-          <Title heading={4} className='m-0'>
+        <div className='flex items-center gap-2.5'>
+          <span
+            className='w-7 h-7 flex items-center justify-center'
+            style={{ borderRadius: 'var(--radius-sm)', background: isEdit ? 'rgba(0, 122, 255, 0.12)' : 'rgba(52, 199, 89, 0.15)', color: isEdit ? 'var(--accent)' : 'var(--success)' }}
+          >
+            <IconLayers size={16} />
+          </span>
+          <span className='text-base font-semibold' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
             {isEdit ? t('更新预填组') : t('创建新的预填组')}
-          </Title>
-        </Space>
+          </span>
+        </div>
       }
       visible={visible}
       onCancel={onClose}
       width={isMobile ? '100%' : 600}
       bodyStyle={{ padding: '0' }}
       footer={
-        <div className='flex justify-end' style={{ background: 'var(--surface)' }}>
-          <Space>
-            <Button
-              theme='solid'
-              className='!rounded-lg'
-              onClick={() => formRef.current?.submitForm()}
-              icon={<IconSave />}
-              loading={loading}
-            >
-              {t('提交')}
-            </Button>
-            <Button
-              theme='light'
-              className='!rounded-lg'
-              type='primary'
-              onClick={onClose}
-              icon={<IconClose />}
-            >
-              {t('取消')}
-            </Button>
-          </Space>
+        <div className='flex justify-end gap-2 px-4 py-3' style={{ background: 'var(--surface)', borderTop: '1px solid var(--border-subtle)' }}>
+          <Button theme='light' onClick={onClose} icon={<IconClose />} style={{ borderRadius: 'var(--radius-md)', background: 'var(--surface-active)', color: 'var(--text-primary)', border: '1px solid var(--border-default)' }}>
+            {t('取消')}
+          </Button>
+          <Button theme='solid' onClick={() => formRef.current?.submitForm()} icon={<IconSave />} loading={loading} style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent)', color: '#fff', border: 'none' }}>
+            {t('提交')}
+          </Button>
         </div>
       }
       closeIcon={null}

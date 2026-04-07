@@ -21,7 +21,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Modal, Form, Col, Row } from '@douyinfe/semi-ui';
 import { API, showError, showSuccess } from '../../../../helpers';
 import { Typography } from '@douyinfe/semi-ui';
-import { IconLink } from '@douyinfe/semi-icons';
+import { IconLink, IconSetting } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
 
@@ -118,7 +118,14 @@ const EditVendorModal = ({ visible, handleClose, refresh, editingVendor }) => {
 
   return (
     <Modal
-      title={isEdit ? t('编辑供应商') : t('新增供应商')}
+      title={
+        <div className='flex items-center gap-2'>
+          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: isEdit ? 'rgba(0, 122, 255, 0.12)' : 'rgba(52, 199, 89, 0.15)', color: isEdit ? 'var(--accent)' : 'var(--success)' }}>
+            <IconSetting size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>{isEdit ? t('编辑供应商') : t('新增供应商')}</span>
+        </div>
+      }
       visible={visible}
       onOk={() => formApiRef.current?.submitForm()}
       onCancel={handleCancel}
@@ -159,16 +166,16 @@ const EditVendorModal = ({ visible, handleClose, refresh, editingVendor }) => {
                   {t(
                     "图标使用@lobehub/icons库，如：OpenAI、Claude.Color，支持链式参数：OpenAI.Avatar.type={'platform'}、OpenRouter.Avatar.shape={'square'}，查询所有可用图标请 ",
                   )}
-                  <Typography.Text
-                    link={{
-                      href: 'https://icons.lobehub.com/components/lobe-hub',
-                      target: '_blank',
-                    }}
-                    icon={<IconLink />}
-                    underline
+                  <a
+                    href='https://icons.lobehub.com/components/lobe-hub'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='inline-flex items-center gap-1'
+                    style={{ color: 'var(--accent)', textDecoration: 'underline' }}
                   >
+                    <IconLink size={12} />
                     {t('请点击我')}
-                  </Typography.Text>
+                  </a>
                 </span>
               }
               showClear

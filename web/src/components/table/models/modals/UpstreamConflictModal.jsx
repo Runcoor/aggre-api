@@ -22,18 +22,14 @@ import {
   Modal,
   Table,
   Checkbox,
-  Typography,
   Empty,
-  Tag,
   Popover,
   Input,
 } from '@douyinfe/semi-ui';
 import { MousePointerClick } from 'lucide-react';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
 import { MODEL_TABLE_PAGE_SIZE } from '../../../../constants';
-import { IconSearch } from '@douyinfe/semi-icons';
-
-const { Text } = Typography;
+import { IconSearch, IconAlertTriangle } from '@douyinfe/semi-icons';
 
 const FIELD_LABELS = {
   description: '描述',
@@ -159,7 +155,7 @@ const UpstreamConflictModal = ({
         title: t('模型'),
         dataIndex: 'model_name',
         fixed: 'left',
-        render: (text) => <Text strong>{text}</Text>,
+        render: (text) => <span className='text-sm font-semibold' style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{text}</span>,
       },
     ];
 
@@ -181,13 +177,13 @@ const UpstreamConflictModal = ({
               indeterminate={headerIndeterminate}
               onChange={onHeaderChange}
             />
-            <Text>{label}</Text>
+            <span className='text-xs font-medium' style={{ color: 'var(--text-secondary)' }}>{label}</span>
           </div>
         ),
         dataIndex: fieldKey,
         render: (_, record) => {
           const f = (record.fields || []).find((x) => x.field === fieldKey);
-          if (!f) return <Text type='tertiary'>-</Text>;
+          if (!f) return <span style={{ color: 'var(--text-muted)' }}>-</span>;
           const checked = selections[record.model_name]?.has(fieldKey) || false;
           return (
             <Checkbox
@@ -202,31 +198,28 @@ const UpstreamConflictModal = ({
                 content={
                   <div className='p-2 max-w-[520px]'>
                     <div className='mb-2'>
-                      <Text type='tertiary' size='small'>
+                      <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
                         {t('本地')}
-                      </Text>
-                      <pre className='whitespace-pre-wrap m-0'>
+                      </span>
+                      <pre className='whitespace-pre-wrap m-0 text-xs' style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
                         {formatValue(f.local)}
                       </pre>
                     </div>
                     <div>
-                      <Text type='tertiary' size='small'>
+                      <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
                         {t('官方')}
-                      </Text>
-                      <pre className='whitespace-pre-wrap m-0'>
+                      </span>
+                      <pre className='whitespace-pre-wrap m-0 text-xs' style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
                         {formatValue(f.upstream)}
                       </pre>
                     </div>
                   </div>
                 }
               >
-                <Tag
-                  color='white'
-                  size='small'
-                  prefixIcon={<MousePointerClick size={14} />}
-                >
+                <span className='inline-flex items-center gap-1 text-xs px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--surface-active)', color: 'var(--text-secondary)' }}>
+                  <MousePointerClick size={12} />
                   {t('点击查看差异')}
-                </Tag>
+                </span>
               </Popover>
             </Checkbox>
           );
@@ -264,13 +257,27 @@ const UpstreamConflictModal = ({
 
   return (
     <Modal
-      title={t('选择要覆盖的冲突项')}
+      title={
+        <div className='flex items-center gap-2'>
+          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(255, 149, 0, 0.12)', color: 'var(--warning)' }}>
+            <IconAlertTriangle size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {t('选择要覆盖的冲突项')}
+          </span>
+          <span className='text-xs px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--surface-active)', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+            {conflicts.length}
+          </span>
+        </div>
+      }
       visible={visible}
       onCancel={onClose}
       onOk={handleOk}
       confirmLoading={loading}
       okText={t('应用覆盖')}
       cancelText={t('取消')}
+      okButtonProps={{ style: { background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)' } }}
+      cancelButtonProps={{ style: { background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' } }}
       width={isMobile ? '100%' : 1000}
     >
       {dataSource.length === 0 ? (

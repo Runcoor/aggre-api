@@ -23,9 +23,7 @@ import {
   Dropdown,
   InputNumber,
   Modal,
-  Space,
   SplitButtonGroup,
-  Tag,
   Tooltip,
 } from '@douyinfe/semi-ui';
 import {
@@ -77,9 +75,18 @@ const renderType = (type, record = {}, t) => {
   }
 
   const typeTag = (
-    <Tag color={type2label[type]?.color} shape='circle' prefixIcon={icon}>
+    <span
+      className='inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5'
+      style={{
+        borderRadius: 'var(--radius-sm)',
+        background: 'var(--surface-active)',
+        color: 'var(--text-secondary)',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {icon}
       {type2label[type]?.label}
-    </Tag>
+    </span>
   );
 
   let ionetMeta = null;
@@ -108,7 +115,7 @@ const renderType = (type, record = {}, t) => {
   };
 
   return (
-    <Space spacing={6}>
+    <div className='flex items-center gap-1.5'>
       {typeTag}
       <Tooltip
         content={
@@ -142,7 +149,7 @@ const renderType = (type, record = {}, t) => {
           IO.NET
         </span>
       </Tooltip>
-    </Space>
+    </div>
   );
 };
 
@@ -397,7 +404,7 @@ export const getChannelsColumns = ({
         }
 
         return (
-          <Space spacing={6} align='center'>
+          <div className='flex items-center gap-1.5'>
             {nameNode}
             {passThroughEnabled && (
               <Tooltip
@@ -415,7 +422,7 @@ export const getChannelsColumns = ({
               </Tooltip>
             )}
             {showUpstreamUpdateTag && (
-              <Space spacing={4} align='center'>
+              <div className='flex items-center gap-1'>
                 {pendingAddCount > 0 ? (
                   <Tooltip content={t('点击处理新增模型')} position='top'>
                     <span
@@ -476,9 +483,9 @@ export const getChannelsColumns = ({
                     </span>
                   </Tooltip>
                 ) : null}
-              </Space>
+              </div>
             )}
-          </Space>
+          </div>
         );
       },
     },
@@ -488,7 +495,7 @@ export const getChannelsColumns = ({
       dataIndex: 'group',
       render: (text, record, index) => (
         <div>
-          <Space spacing={2}>
+          <div className='flex flex-wrap items-center gap-0.5'>
             {text
               ?.split(',')
               .sort((a, b) => {
@@ -497,7 +504,7 @@ export const getChannelsColumns = ({
                 return a.localeCompare(b);
               })
               .map((item, index) => renderGroup(item))}
-          </Space>
+          </div>
         </div>
       ),
     },
@@ -812,7 +819,7 @@ export const getChannelsColumns = ({
           }
 
           return (
-            <Space wrap>
+            <div className='flex flex-wrap items-center gap-1.5'>
               <SplitButtonGroup
                 className='overflow-hidden'
                 aria-label={t('测试单个渠道操作项目组')}
@@ -905,12 +912,12 @@ export const getChannelsColumns = ({
               >
                 <Button icon={<IconMore />} type='tertiary' size='small' />
               </Dropdown>
-            </Space>
+            </div>
           );
         } else {
           // 标签操作按钮
           return (
-            <Space wrap>
+            <div className='flex flex-wrap items-center gap-1.5'>
               <Button
                 type='tertiary'
                 size='small'
@@ -935,7 +942,7 @@ export const getChannelsColumns = ({
               >
                 {t('编辑')}
               </Button>
-            </Space>
+            </div>
           );
         }
       },

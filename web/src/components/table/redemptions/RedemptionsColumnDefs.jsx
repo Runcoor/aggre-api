@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Button, Space, Popover, Dropdown } from '@douyinfe/semi-ui';
+import { Button, Popover, Dropdown } from '@douyinfe/semi-ui';
 import { IconMore } from '@douyinfe/semi-icons';
 import { renderQuota, timestamp2string } from '../../../helpers';
 import {
@@ -200,7 +200,7 @@ export const getRedemptionsColumns = ({
         }
 
         return (
-          <Space>
+          <div className='flex items-center gap-1.5'>
             <Popover
               content={record.key}
               style={{ padding: 20 }}
@@ -236,7 +236,7 @@ export const getRedemptionsColumns = ({
             >
               <Button type='tertiary' size='small' icon={<IconMore />} />
             </Dropdown>
-          </Space>
+          </div>
         );
       },
     },

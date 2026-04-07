@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Progress, Tooltip, Typography } from '@douyinfe/semi-ui';
+import { Progress, Tooltip, Typography, Avatar } from '@douyinfe/semi-ui';
 import {
   Music,
   FileText,
@@ -43,7 +43,6 @@ import {
 } from '../../../constants/common.constant';
 import { CHANNEL_OPTIONS } from '../../../constants/channel.constants';
 import { stringToColor } from '../../../helpers/render';
-import { Avatar, Space } from '@douyinfe/semi-ui';
 
 // iOS system color palette for channel badges
 const channelColors = [
@@ -244,7 +243,7 @@ export const getTaskLogsColumns = ({
         }
         const displayText = String(record.username || userId || '?');
         return (
-          <Space>
+          <div className='flex items-center gap-2'>
             <Avatar
               size='extra-small'
               color={stringToColor(displayText)}
@@ -254,7 +253,7 @@ export const getTaskLogsColumns = ({
             <span style={{ color: 'var(--text-primary)' }}>
               {displayText}
             </span>
-          </Space>
+          </div>
         );
       },
     },

@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Modal, Button, Space } from '@douyinfe/semi-ui';
+import { Modal, Button } from '@douyinfe/semi-ui';
 
 const CopyTokensModal = ({
   visible,
@@ -45,12 +45,12 @@ const CopyTokensModal = ({
       visible={visible}
       onCancel={onCancel}
       footer={
-        <Space>
+        <div className='flex items-center gap-2'>
           <Button type='tertiary' onClick={handleCopyWithName}>
             {t('名称+密钥')}
           </Button>
           <Button onClick={handleCopyKeyOnly}>{t('仅密钥')}</Button>
-        </Space>
+        </div>
       }
     >
       {t('请选择你的复制方式')}

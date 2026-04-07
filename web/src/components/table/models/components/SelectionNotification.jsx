@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect } from 'react';
-import { Notification, Button, Space } from '@douyinfe/semi-ui';
+import { Notification, Button } from '@douyinfe/semi-ui';
 
 // 固定通知 ID，保持同一个实例即可避免闪烁
 const NOTICE_ID = 'models-batch-actions';
@@ -42,16 +42,16 @@ const SelectionNotification = ({
 
     if (selectedCount > 0) {
       const titleNode = (
-        <Space wrap>
+        <div className='flex items-center flex-wrap gap-2'>
           <span>{t('批量操作')}</span>
           <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
             {t('已选择 {{count}} 个模型', { count: selectedCount })}
           </span>
-        </Space>
+        </div>
       );
 
       const content = (
-        <Space wrap>
+        <div className='flex items-center flex-wrap gap-2'>
           <Button size='small' type='tertiary' theme='solid' onClick={onClear}>
             {t('取消全选')}
           </Button>
@@ -69,7 +69,7 @@ const SelectionNotification = ({
           <Button size='small' type='danger' theme='solid' onClick={onDelete}>
             {t('删除所选')}
           </Button>
-        </Space>
+        </div>
       );
 
       // 使用相同 id 更新通知（若已存在则就地更新，不存在则创建）

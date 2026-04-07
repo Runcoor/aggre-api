@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Space, Tooltip } from '@douyinfe/semi-ui';
+import { Tooltip } from '@douyinfe/semi-ui';
 import { IconHelpCircle } from '@douyinfe/semi-icons';
 import {
   renderModelTag,
@@ -110,7 +110,7 @@ function renderSupportedEndpoints(endpoints) {
     return null;
   }
   return (
-    <Space wrap>
+    <div className='flex items-center flex-wrap gap-1.5'>
       {endpoints.map((endpoint, idx) => (
         <InlineBadge
           key={endpoint}
@@ -120,7 +120,7 @@ function renderSupportedEndpoints(endpoints) {
           {endpoint}
         </InlineBadge>
       ))}
-    </Space>
+    </div>
   );
 }
 

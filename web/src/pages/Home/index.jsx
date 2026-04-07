@@ -20,7 +20,6 @@ For commercial licensing, please contact support@quantumnous.com
 import React, { useContext, useEffect, useState } from 'react';
 import {
   Button,
-  Typography,
   Input,
   ScrollList,
   ScrollItem,
@@ -62,8 +61,6 @@ import {
   Hunyuan,
   Xinference,
 } from '@lobehub/icons';
-
-const { Text } = Typography;
 
 const Home = () => {
   const { t, i18n } = useTranslation();

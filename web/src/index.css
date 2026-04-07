@@ -187,8 +187,8 @@ code {
 .mv-json-keyword { color: #AF52DE; }
 html.dark .mv-json-keyword { color: #BF5AF2; }
 
-/* Serif headings */
-h1, h2, h3, .mv-heading {
+/* Serif headings — ALL levels */
+h1, h2, h3, h4, h5, h6, .mv-heading {
   font-family: var(--font-serif);
   letter-spacing: -0.01em;
 }
@@ -573,6 +573,328 @@ html.dark .semi-notification-notice {
 .semi-banner {
   border-radius: var(--radius-md);
   border: 1px solid var(--border-default);
+}
+
+/* --- Typography Overrides --- */
+.semi-typography {
+  color: var(--text-primary);
+}
+
+.semi-typography-title {
+  font-family: var(--font-serif);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.semi-typography-title-h1,
+.semi-typography-title-h2,
+.semi-typography-title-h3,
+.semi-typography-title-h4,
+.semi-typography-title-h5,
+.semi-typography-title-h6 {
+  font-family: var(--font-serif) !important;
+  color: var(--text-primary);
+}
+
+.semi-typography-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.semi-typography-tertiary {
+  color: var(--text-muted) !important;
+}
+
+.semi-typography-warning {
+  color: var(--warning) !important;
+}
+
+.semi-typography-danger {
+  color: var(--error) !important;
+}
+
+.semi-typography-success {
+  color: var(--success) !important;
+}
+
+.semi-typography-link {
+  color: var(--accent) !important;
+}
+
+.semi-typography-link:hover {
+  color: var(--accent-hover) !important;
+}
+
+/* --- Slider Overrides --- */
+.semi-slider-rail {
+  background-color: var(--bg-muted) !important;
+}
+
+html.dark .semi-slider-rail {
+  background-color: var(--surface-active) !important;
+}
+
+.semi-slider-track {
+  background-color: var(--accent) !important;
+}
+
+.semi-slider-handle {
+  background-color: var(--surface) !important;
+  border: 2px solid var(--accent) !important;
+  box-shadow: var(--shadow-ring) !important;
+}
+
+.semi-slider-handle:hover,
+.semi-slider-handle:focus {
+  border-color: var(--accent-hover) !important;
+}
+
+html.dark .semi-slider-handle {
+  background-color: var(--bg-muted) !important;
+}
+
+/* --- Switch Overrides --- */
+.semi-switch {
+  transition: background-color var(--ease-micro) !important;
+}
+
+.semi-switch-checked {
+  background-color: var(--success) !important;
+}
+
+.semi-switch-checked:hover {
+  background-color: var(--success) !important;
+  opacity: 0.9;
+}
+
+.semi-switch-unchecked {
+  background-color: var(--bg-muted) !important;
+}
+
+html.dark .semi-switch-unchecked {
+  background-color: var(--surface-active) !important;
+}
+
+/* --- Checkbox/Radio Overrides --- */
+.semi-checkbox-inner-checked,
+.semi-checkbox-inner-indeterminate {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+.semi-radio-inner-checked {
+  border-color: var(--accent) !important;
+}
+
+.semi-radio-inner-checked::after {
+  background-color: var(--accent) !important;
+}
+
+.semi-checkbox-inner {
+  border-color: var(--border-default);
+  transition: background-color var(--ease-micro), border-color var(--ease-micro);
+}
+
+html.dark .semi-checkbox-inner {
+  background-color: var(--bg-base);
+}
+
+.semi-radio-inner {
+  border-color: var(--border-default);
+  transition: border-color var(--ease-micro);
+}
+
+html.dark .semi-radio-inner {
+  background-color: var(--bg-base);
+}
+
+/* --- Form Overrides --- */
+.semi-form-field-label-text {
+  color: var(--text-secondary) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+.semi-form-field-extra,
+.semi-form-field-help-text {
+  color: var(--text-muted) !important;
+  font-size: 12px !important;
+}
+
+.semi-form-field-error-message {
+  color: var(--error) !important;
+  font-size: 12px !important;
+}
+
+/* --- Pagination Overrides --- */
+.semi-page {
+  color: var(--text-secondary);
+}
+
+.semi-page-item {
+  color: var(--text-secondary) !important;
+  transition: background-color var(--ease-micro), color var(--ease-micro) !important;
+}
+
+.semi-page-item:hover {
+  background-color: var(--surface-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+.semi-page-item-active {
+  background-color: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+}
+
+.semi-page-item-active:hover {
+  background-color: var(--accent-hover) !important;
+  color: #fff !important;
+}
+
+html.dark .semi-page-item {
+  background-color: transparent;
+}
+
+.semi-page-quickjump-input-number .semi-input-wrapper {
+  border-radius: var(--radius-sm) !important;
+}
+
+/* --- Progress Overrides --- */
+.semi-progress-line-inner {
+  background-color: var(--accent) !important;
+}
+
+.semi-progress-circle-inner-foreground {
+  stroke: var(--accent) !important;
+}
+
+.semi-progress-circle-inner-background {
+  stroke: var(--bg-muted) !important;
+}
+
+html.dark .semi-progress-circle-inner-background {
+  stroke: var(--surface-active) !important;
+}
+
+.semi-progress-line-outer {
+  background-color: var(--bg-muted) !important;
+}
+
+html.dark .semi-progress-line-outer {
+  background-color: var(--surface-active) !important;
+}
+
+/* --- Select Option Overrides --- */
+.semi-select-option-selected {
+  background-color: var(--accent-light) !important;
+  color: var(--accent) !important;
+}
+
+.semi-select-option:hover {
+  background-color: var(--surface-hover) !important;
+}
+
+.semi-select-option-focused {
+  background-color: var(--surface-hover) !important;
+}
+
+/* --- Spin/Loading Override — use accent color --- */
+.semi-spin-wrapper .semi-spin-children-spinner-icon {
+  color: var(--accent) !important;
+}
+
+.semi-spin-dot-item {
+  background-color: var(--accent) !important;
+}
+
+/* --- TimePicker/DatePicker Overrides --- */
+.semi-datepicker-day-selected,
+.semi-datepicker-day-selected-start,
+.semi-datepicker-day-selected-end {
+  background-color: var(--accent) !important;
+}
+
+.semi-datepicker-day-inrange {
+  background-color: var(--accent-light) !important;
+}
+
+.semi-datepicker-day-today {
+  border-color: var(--accent) !important;
+}
+
+/* --- Transfer Overrides --- */
+.semi-transfer {
+  border-color: var(--border-default) !important;
+}
+
+.semi-transfer-left,
+.semi-transfer-right {
+  border-color: var(--border-default) !important;
+}
+
+html.dark .semi-transfer-left,
+html.dark .semi-transfer-right {
+  background-color: var(--bg-base);
+}
+
+/* --- Prose/Markdown Content Overrides (dark mode) --- */
+.prose {
+  color: var(--text-primary);
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  color: var(--text-primary);
+  font-family: var(--font-serif);
+}
+
+.prose a {
+  color: var(--accent);
+}
+
+.prose strong {
+  color: var(--text-primary);
+}
+
+.prose code {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  background: var(--surface-hover);
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+}
+
+.prose pre {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.prose pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.prose blockquote {
+  border-left-color: var(--accent);
+  color: var(--text-secondary);
+}
+
+.prose hr {
+  border-color: var(--border-subtle);
+}
+
+.prose thead th {
+  color: var(--text-secondary);
+  border-bottom-color: var(--border-default);
+}
+
+.prose tbody td {
+  border-bottom-color: var(--border-subtle);
+}
+
+.prose ol > li::marker,
+.prose ul > li::marker {
+  color: var(--text-muted);
 }
 
 /* ==================== Navigation & Sidebar ==================== */

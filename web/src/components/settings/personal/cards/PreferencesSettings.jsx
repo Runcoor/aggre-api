@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useState, useEffect, useContext } from "react";
-import { Card, Select, Avatar } from "@douyinfe/semi-ui";
+import { Select } from "@douyinfe/semi-ui";
 import { Languages } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { API, showSuccess, showError } from "../../../../helpers";

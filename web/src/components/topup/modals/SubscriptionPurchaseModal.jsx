@@ -21,11 +21,8 @@ import React from 'react';
 import {
   Banner,
   Modal,
-  Typography,
-  Card,
   Button,
   Select,
-  Divider,
   Tooltip,
 } from '@douyinfe/semi-ui';
 import { Crown, CalendarClock, Package } from 'lucide-react';
@@ -37,8 +34,6 @@ import {
   formatSubscriptionDuration,
   formatSubscriptionResetPeriod,
 } from '../../../helpers/subscriptionFormat';
-
-const { Text } = Typography;
 
 const SubscriptionPurchaseModal = ({
   t,
@@ -78,9 +73,13 @@ const SubscriptionPurchaseModal = ({
   return (
     <Modal
       title={
-        <div className='flex items-center'>
-          <Crown className='mr-2' size={18} />
-          {t('购买订阅套餐')}
+        <div className='flex items-center gap-2'>
+          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}>
+            <Crown size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {t('购买订阅套餐')}
+          </span>
         </div>
       }
       visible={visible}
@@ -92,83 +91,79 @@ const SubscriptionPurchaseModal = ({
       {plan ? (
         <div className='space-y-4 pb-10'>
           {/* 套餐信息 */}
-          <Card
+          <div
+            className='rounded-[var(--radius-lg)] p-4'
             style={{
-              borderRadius: 'var(--radius-lg)',
               background: 'var(--bg-subtle)',
               border: '1px solid var(--border-subtle)',
             }}
           >
             <div className='space-y-3'>
               <div className='flex justify-between items-center'>
-                <Text strong style={{ color: 'var(--text-secondary)' }}>
-                  {t('套餐名称')}：
-                </Text>
-                <Typography.Text
-                  ellipsis={{ rows: 1, showTooltip: true }}
-                  style={{ color: 'var(--text-primary)', maxWidth: 200 }}
-                >
+                <span className='text-sm font-medium' style={{ color: 'var(--text-secondary)' }}>
+                  {t('套餐名称')}
+                </span>
+                <span className='text-sm truncate max-w-[200px]' style={{ color: 'var(--text-primary)' }}>
                   {plan.title}
-                </Typography.Text>
+                </span>
               </div>
               <div className='flex justify-between items-center'>
-                <Text strong style={{ color: 'var(--text-secondary)' }}>
-                  {t('有效期')}：
-                </Text>
+                <span className='text-sm font-medium' style={{ color: 'var(--text-secondary)' }}>
+                  {t('有效期')}
+                </span>
                 <div className='flex items-center'>
                   <CalendarClock size={14} className='mr-1' style={{ color: 'var(--text-muted)' }} />
-                  <Text style={{ color: 'var(--text-primary)' }}>
+                  <span className='text-sm' style={{ color: 'var(--text-primary)' }}>
                     {formatSubscriptionDuration(plan, t)}
-                  </Text>
+                  </span>
                 </div>
               </div>
               {formatSubscriptionResetPeriod(plan, t) !== t('不重置') && (
                 <div className='flex justify-between items-center'>
-                  <Text strong style={{ color: 'var(--text-secondary)' }}>
-                    {t('重置周期')}：
-                  </Text>
-                  <Text style={{ color: 'var(--text-primary)' }}>
+                  <span className='text-sm font-medium' style={{ color: 'var(--text-secondary)' }}>
+                    {t('重置周期')}
+                  </span>
+                  <span className='text-sm' style={{ color: 'var(--text-primary)' }}>
                     {formatSubscriptionResetPeriod(plan, t)}
-                  </Text>
+                  </span>
                 </div>
               )}
               <div className='flex justify-between items-center'>
-                <Text strong style={{ color: 'var(--text-secondary)' }}>
-                  {t('总额度')}：
-                </Text>
+                <span className='text-sm font-medium' style={{ color: 'var(--text-secondary)' }}>
+                  {t('总额度')}
+                </span>
                 <div className='flex items-center'>
                   <Package size={14} className='mr-1' style={{ color: 'var(--text-muted)' }} />
                   {totalAmount > 0 ? (
                     <Tooltip content={`${t('原生额度')}：${totalAmount}`}>
-                      <Text style={{ color: 'var(--text-primary)' }}>
+                      <span className='text-sm' style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
                         {renderQuota(totalAmount)}
-                      </Text>
+                      </span>
                     </Tooltip>
                   ) : (
-                    <Text style={{ color: 'var(--text-primary)' }}>
+                    <span className='text-sm' style={{ color: 'var(--text-primary)' }}>
                       {t('不限')}
-                    </Text>
+                    </span>
                   )}
                 </div>
               </div>
               {plan?.upgrade_group ? (
                 <div className='flex justify-between items-center'>
-                  <Text strong style={{ color: 'var(--text-secondary)' }}>
-                    {t('升级分组')}：
-                  </Text>
-                  <Text style={{ color: 'var(--text-primary)' }}>
+                  <span className='text-sm font-medium' style={{ color: 'var(--text-secondary)' }}>
+                    {t('升级分组')}
+                  </span>
+                  <span className='text-sm' style={{ color: 'var(--text-primary)' }}>
                     {plan.upgrade_group}
-                  </Text>
+                  </span>
                 </div>
               ) : null}
-              <Divider margin={8} />
+              <div className='my-2' style={{ borderTop: '1px solid var(--border-subtle)' }} />
               <div className='flex justify-between items-center'>
-                <Text strong style={{ color: 'var(--text-secondary)' }}>
-                  {t('应付金额')}：
-                </Text>
-                <Text
-                  strong
-                  className='text-xl'
+                <span className='text-sm font-medium' style={{ color: 'var(--text-secondary)' }}>
+                  {t('应付金额')}
+                </span>
+                <span
+                  className='text-xl font-bold'
                   style={{
                     color: 'var(--accent)',
                     fontFamily: 'var(--font-serif)',
@@ -176,10 +171,10 @@ const SubscriptionPurchaseModal = ({
                 >
                   {symbol}
                   {displayPrice}
-                </Text>
+                </span>
               </div>
             </div>
-          </Card>
+          </div>
 
           {/* 支付方式 */}
           {purchaseLimitReached && (
@@ -193,9 +188,9 @@ const SubscriptionPurchaseModal = ({
 
           {hasAnyPayment ? (
             <div className='space-y-3'>
-              <Text size='small' type='tertiary'>
-                {t('选择支付方式')}：
-              </Text>
+              <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
+                {t('选择支付方式')}
+              </span>
 
               {/* Stripe / Creem */}
               {(hasStripe || hasCreem) && (

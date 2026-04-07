@@ -19,13 +19,10 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Typography,
-  Tag,
   Button,
   Banner,
   Skeleton,
   Form,
-  Space,
   Row,
   Col,
   Tooltip,
@@ -47,8 +44,6 @@ import { useMinimumLoadingTime } from '../../hooks/common/useMinimumLoadingTime'
 import { getCurrencyConfig } from '../../helpers/render';
 import SubscriptionPlansCard from './SubscriptionPlansCard';
 import MacSpinner from '../common/ui/MacSpinner';
-
-const { Text } = Typography;
 
 const RechargeCard = ({
   t,
@@ -246,12 +241,12 @@ const RechargeCard = ({
                           />
                         }
                       >
-                        <Text type='secondary' style={{ color: 'var(--error)' }}>
+                        <span className='text-xs font-medium' style={{ color: 'var(--error)' }}>
                           {t('实付金额：')}
-                          <span style={{ color: 'var(--error)' }}>
+                          <span style={{ color: 'var(--error)', fontFamily: 'var(--font-mono)' }}>
                             {renderAmount()}
                           </span>
-                        </Text>
+                        </span>
                       </Skeleton>
                     }
                     style={{ width: '100%' }}
@@ -260,7 +255,7 @@ const RechargeCard = ({
                 {payMethods && payMethods.filter(m => m.type !== 'waffo').length > 0 && (
                 <Col xs={24} sm={24} md={24} lg={14} xl={14}>
                   <Form.Slot label={t('选择支付方式')}>
-                      <Space wrap>
+                      <div className='flex flex-wrap gap-2'>
                         {payMethods.filter(m => m.type !== 'waffo').map((payMethod) => {
                           const minTopupVal = Number(payMethod.min_topup) || 0;
                           const isStripe = payMethod.type === 'stripe';
@@ -317,7 +312,7 @@ const RechargeCard = ({
                             </React.Fragment>
                           );
                         })}
-                      </Space>
+                      </div>
                   </Form.Slot>
                 </Col>
                 )}
@@ -416,24 +411,24 @@ const RechargeCard = ({
                               {formatLargeNumber(displayValue)} {symbol}
                             </span>
                             {hasDiscount && (
-                              <Tag
-                                size='small'
+                              <span
                                 style={{
                                   marginLeft: 2,
                                   borderRadius: 'var(--radius-sm)',
-                                  background: 'var(--success)',
-                                  color: '#fff',
+                                  background: 'rgba(52, 199, 89, 0.15)',
+                                  color: 'var(--success)',
                                   border: 'none',
                                   fontSize: '10px',
-                                  padding: '0 4px',
-                                  lineHeight: '18px',
+                                  padding: '1px 5px',
+                                  lineHeight: '16px',
+                                  fontWeight: 600,
                                 }}
                               >
                                 {t('折').includes('off')
                                   ? ((1 - parseFloat(discount)) * 100).toFixed(1)
                                   : (discount * 10).toFixed(1)}
                                 {t('折')}
-                              </Tag>
+                              </span>
                             )}
                           </div>
                           <div
@@ -461,7 +456,7 @@ const RechargeCard = ({
               waffoPayMethods &&
               waffoPayMethods.length > 0 && (
                 <Form.Slot label={t('Waffo 充值')}>
-                  <Space wrap>
+                  <div className='flex flex-wrap gap-2'>
                     {waffoPayMethods.map((method, index) => (
                       <Button
                         key={index}
@@ -492,7 +487,7 @@ const RechargeCard = ({
                         {method.name}
                       </Button>
                     ))}
-                  </Space>
+                  </div>
                 </Form.Slot>
               )}
 
@@ -584,17 +579,16 @@ const RechargeCard = ({
               style={{ width: '100%' }}
               extraText={
                 topUpLink && (
-                  <Text type='tertiary'>
+                  <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
                     {t('在找兑换码？')}
-                    <Text
-                      type='secondary'
-                      underline
-                      className='cursor-pointer'
+                    <a
+                      className='cursor-pointer ml-1'
+                      style={{ color: 'var(--accent)', textDecoration: 'underline' }}
                       onClick={openTopUpLink}
                     >
                       {t('购买兑换码')}
-                    </Text>
-                  </Text>
+                    </a>
+                  </span>
                 )
               }
             />

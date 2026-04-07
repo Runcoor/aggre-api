@@ -713,7 +713,7 @@ const TopUp = () => {
   };
 
   return (
-    <div className='w-full max-w-7xl mx-auto relative min-h-screen lg:min-h-0 mt-[60px] px-2'>
+    <div className='w-full max-w-7xl mx-auto relative min-h-screen lg:min-h-0 mt-[60px] px-3 md:px-6'>
       {/* 划转模态框 */}
       <TransferModal
         t={t}
@@ -753,7 +753,16 @@ const TopUp = () => {
 
       {/* Creem 充值确认模态框 */}
       <Modal
-        title={t('确定要充值 $')}
+        title={
+          <div className='flex items-center gap-2'>
+            <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}>
+              <span style={{ fontSize: 14, fontWeight: 700 }}>$</span>
+            </span>
+            <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+              {t('确定要充值 $')}
+            </span>
+          </div>
+        }
         visible={creemOpen}
         onOk={onlineCreemTopUp}
         onCancel={handleCreemCancel}
@@ -761,21 +770,27 @@ const TopUp = () => {
         size='small'
         centered
         confirmLoading={confirmLoading}
+        okButtonProps={{ style: { background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)' } }}
+        cancelButtonProps={{ style: { background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' } }}
       >
         {selectedCreemProduct && (
-          <>
-            <p>
-              {t('产品名称')}：{selectedCreemProduct.name}
-            </p>
-            <p>
-              {t('价格')}：{selectedCreemProduct.currency === 'EUR' ? '€' : '$'}
-              {selectedCreemProduct.price}
-            </p>
-            <p>
-              {t('充值额度')}：{selectedCreemProduct.quota}
-            </p>
-            <p>{t('是否确认充值？')}</p>
-          </>
+          <div className='space-y-2'>
+            <div className='flex justify-between py-1.5' style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+              <span style={{ color: 'var(--text-muted)' }}>{t('产品名称')}</span>
+              <span className='font-medium' style={{ color: 'var(--text-primary)' }}>{selectedCreemProduct.name}</span>
+            </div>
+            <div className='flex justify-between py-1.5' style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+              <span style={{ color: 'var(--text-muted)' }}>{t('价格')}</span>
+              <span className='font-semibold' style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                {selectedCreemProduct.currency === 'EUR' ? '€' : '$'}{selectedCreemProduct.price}
+              </span>
+            </div>
+            <div className='flex justify-between py-1.5' style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+              <span style={{ color: 'var(--text-muted)' }}>{t('充值额度')}</span>
+              <span className='font-semibold' style={{ color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{selectedCreemProduct.quota}</span>
+            </div>
+            <p className='text-sm pt-2' style={{ color: 'var(--text-secondary)' }}>{t('是否确认充值？')}</p>
+          </div>
         )}
       </Modal>
 

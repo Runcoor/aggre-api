@@ -19,16 +19,10 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React, { useMemo, useState } from 'react';
 import {
-  Badge,
   Button,
-  Card,
-  Divider,
   Select,
   Skeleton,
-  Space,
-  Tag,
   Tooltip,
-  Typography,
 } from '@douyinfe/semi-ui';
 import { API, showError, showSuccess, renderQuota } from '../../helpers';
 import { getCurrencyConfig } from '../../helpers/render';
@@ -38,8 +32,6 @@ import {
   formatSubscriptionDuration,
   formatSubscriptionResetPeriod,
 } from '../../helpers/subscriptionFormat';
-
-const { Text } = Typography;
 
 // 过滤易支付方式
 function getEpayMethods(payMethods = []) {
@@ -257,13 +249,12 @@ const SubscriptionPlansCard = ({
       {loading ? (
         <div className='space-y-4'>
           {/* 我的订阅骨架屏 */}
-          <Card
+          <div
+            className='rounded-[var(--radius-lg)] p-3'
             style={{
-              borderRadius: 'var(--radius-lg)',
               background: 'var(--surface)',
               border: '1px solid var(--border-default)',
             }}
-            bodyStyle={{ padding: '12px' }}
           >
             <div className='flex items-center justify-between mb-3'>
               <Skeleton.Title active style={{ width: 100, height: 20 }} />
@@ -272,18 +263,17 @@ const SubscriptionPlansCard = ({
             <div className='space-y-2'>
               <Skeleton.Paragraph active rows={2} />
             </div>
-          </Card>
+          </div>
           {/* 套餐列表骨架屏 */}
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5 w-full px-1'>
             {[1, 2, 3].map((i) => (
-              <Card
+              <div
                 key={i}
+                className='rounded-[var(--radius-lg)] p-4'
                 style={{
-                  borderRadius: 'var(--radius-lg)',
                   background: 'var(--surface)',
                   border: '1px solid var(--border-default)',
                 }}
-                bodyStyle={{ padding: 16 }}
               >
                 <Skeleton.Title
                   active
@@ -306,43 +296,38 @@ const SubscriptionPlansCard = ({
                   block
                   style={{ marginTop: 16, height: 32 }}
                 />
-              </Card>
+              </div>
             ))}
           </div>
         </div>
       ) : (
-        <Space vertical style={{ width: '100%' }} spacing={8}>
+        <div className='space-y-2 w-full'>
           {/* 当前订阅状态 */}
-          <Card
+          <div
+            className='rounded-[var(--radius-lg)] p-3'
             style={{
-              borderRadius: 'var(--radius-lg)',
               background: 'var(--surface)',
               border: '1px solid var(--border-default)',
             }}
-            bodyStyle={{ padding: '12px' }}
           >
             <div className='flex items-center justify-between mb-2 gap-3'>
               <div className='flex items-center gap-2 flex-1 min-w-0'>
-                <Text strong>{t('我的订阅')}</Text>
+                <span className='text-sm font-semibold' style={{ color: 'var(--text-primary)' }}>{t('我的订阅')}</span>
                 {hasActiveSubscription ? (
-                  <Tag
-                    color='white'
-                    size='small'
-                    shape='circle'
-                    prefixIcon={<Badge dot type='success' />}
-                  >
+                  <span className='inline-flex items-center gap-1.5 text-xs px-2 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(52, 199, 89, 0.12)', color: 'var(--success)' }}>
+                    <span className='w-1.5 h-1.5 rounded-full' style={{ background: 'var(--success)' }} />
                     {activeSubscriptions.length} {t('个生效中')}
-                  </Tag>
+                  </span>
                 ) : (
-                  <Tag color='white' size='small' shape='circle'>
+                  <span className='inline-flex items-center text-xs px-2 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--surface-active)', color: 'var(--text-muted)' }}>
                     {t('无生效')}
-                  </Tag>
+                  </span>
                 )}
                 {allSubscriptions.length > activeSubscriptions.length && (
-                  <Tag color='white' size='small' shape='circle'>
+                  <span className='inline-flex items-center text-xs px-2 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--surface-active)', color: 'var(--text-muted)' }}>
                     {allSubscriptions.length - activeSubscriptions.length}{' '}
                     {t('个已过期')}
-                  </Tag>
+                  </span>
                 )}
               </div>
               <div className='flex items-center gap-2'>
@@ -386,16 +371,16 @@ const SubscriptionPlansCard = ({
               </div>
             </div>
             {disableSubscriptionPreference && isSubscriptionPreference && (
-              <Text type='tertiary' size='small'>
+              <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
                 {t('已保存偏好为')}
                 {subscriptionPreferenceLabel}
                 {t('，当前无生效订阅，将自动使用钱包')}
-              </Text>
+              </span>
             )}
 
             {hasAnySubscription ? (
               <>
-                <Divider margin={8} />
+                <div className='my-2' style={{ borderTop: '1px solid var(--border-subtle)' }} />
                 <div className='max-h-64 overflow-y-auto pr-1 semi-table-body'>
                   {allSubscriptions.map((sub, subIndex) => {
                     const isLast = subIndex === allSubscriptions.length - 1;
@@ -427,22 +412,18 @@ const SubscriptionPlansCard = ({
                                 : `${t('订阅')} #${subscription?.id}`}
                             </span>
                             {isActive ? (
-                              <Tag
-                                color='white'
-                                size='small'
-                                shape='circle'
-                                prefixIcon={<Badge dot type='success' />}
-                              >
+                              <span className='inline-flex items-center gap-1 text-xs px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(52, 199, 89, 0.12)', color: 'var(--success)' }}>
+                                <span className='w-1.5 h-1.5 rounded-full' style={{ background: 'var(--success)' }} />
                                 {t('生效')}
-                              </Tag>
+                              </span>
                             ) : isCancelled ? (
-                              <Tag color='white' size='small' shape='circle'>
+                              <span className='inline-flex items-center text-xs px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(255, 59, 48, 0.12)', color: 'var(--error)' }}>
                                 {t('已作废')}
-                              </Tag>
+                              </span>
                             ) : (
-                              <Tag color='white' size='small' shape='circle'>
+                              <span className='inline-flex items-center text-xs px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--surface-active)', color: 'var(--text-muted)' }}>
                                 {t('已过期')}
-                              </Tag>
+                              </span>
                             )}
                           </div>
                           {isActive && (
@@ -482,7 +463,7 @@ const SubscriptionPlansCard = ({
                             </span>
                           )}
                         </div>
-                        {!isLast && <Divider margin={12} />}
+                        {!isLast && <div className='my-3' style={{ borderTop: '1px solid var(--border-subtle)' }} />}
                       </div>
                     );
                   })}
@@ -493,7 +474,7 @@ const SubscriptionPlansCard = ({
                 {t('购买套餐后即可享受模型权益')}
               </div>
             )}
-          </Card>
+          </div>
 
           {/* 可购买套餐 - macOS Vibrancy pricing cards */}
           {plans.length > 0 ? (
@@ -537,60 +518,53 @@ const SubscriptionPlansCard = ({
                 ].filter(Boolean);
 
                 return (
-                  <Card
+                  <div
                     key={plan?.id}
-                    className='w-full h-full transition-colors duration-150'
+                    className='w-full h-full transition-colors duration-150 rounded-[var(--radius-lg)]'
                     style={{
-                      borderRadius: 'var(--radius-lg)',
                       background: 'var(--surface)',
                       border: isPopular
                         ? '1px solid var(--accent)'
                         : '1px solid var(--border-default)',
                     }}
-                    bodyStyle={{ padding: 0 }}
                   >
                     <div className='p-4 h-full flex flex-col'>
                       {/* 推荐标签 */}
                       {isPopular && (
                         <div className='mb-2'>
-                          <Tag
-                            size='small'
-                            shape='circle'
+                          <span
+                            className='inline-flex items-center gap-1 text-xs px-2 py-0.5 font-medium'
                             style={{
-                              background: 'var(--accent-light)',
+                              borderRadius: 'var(--radius-sm)',
+                              background: 'rgba(0, 122, 255, 0.12)',
                               color: 'var(--accent)',
-                              border: 'none',
                             }}
                           >
-                            <Sparkles size={10} className='mr-1' />
+                            <Sparkles size={10} />
                             {t('推荐')}
-                          </Tag>
+                          </span>
                         </div>
                       )}
                       {/* 套餐名称 */}
                       <div className='mb-3'>
-                        <Typography.Title
-                          heading={5}
-                          ellipsis={{ rows: 1, showTooltip: true }}
+                        <h5
+                          className='text-base font-semibold m-0 truncate'
                           style={{
-                            margin: 0,
                             fontFamily: 'var(--font-serif)',
                             color: 'var(--text-primary)',
                           }}
                         >
                           {plan?.title || t('订阅套餐')}
-                        </Typography.Title>
+                        </h5>
                         {plan?.subtitle && (
-                          <Text
-                            size='small'
-                            ellipsis={{ rows: 1, showTooltip: true }}
+                          <span
+                            className='text-xs truncate block mt-0.5'
                             style={{
-                              display: 'block',
                               color: 'var(--text-secondary)',
                             }}
                           >
                             {plan.subtitle}
-                          </Text>
+                          </span>
                         )}
                       </div>
 
@@ -623,7 +597,7 @@ const SubscriptionPlansCard = ({
                               className='flex items-center gap-2 text-xs'
                               style={{ color: 'var(--text-secondary)' }}
                             >
-                              <Badge dot type='tertiary' />
+                              <span className='w-1 h-1 rounded-full flex-shrink-0' style={{ background: 'var(--text-muted)' }} />
                               <span>{item.label}</span>
                             </div>
                           );
@@ -648,7 +622,7 @@ const SubscriptionPlansCard = ({
                       </div>
 
                       <div className='mt-auto'>
-                        <Divider margin={12} />
+                        <div className='my-3' style={{ borderTop: '1px solid var(--border-subtle)' }} />
 
                         {/* 购买按钮 */}
                         {(() => {
@@ -681,7 +655,7 @@ const SubscriptionPlansCard = ({
                         })()}
                       </div>
                     </div>
-                  </Card>
+                  </div>
                 );
               })}
             </div>
@@ -693,7 +667,7 @@ const SubscriptionPlansCard = ({
               {t('暂无可购买套餐')}
             </div>
           )}
-        </Space>
+        </div>
       )}
     </>
   );
@@ -701,15 +675,15 @@ const SubscriptionPlansCard = ({
   return (
     <>
       {withCard ? (
-        <Card
+        <div
+          className='rounded-[var(--radius-lg)] p-5'
           style={{
-            borderRadius: 'var(--radius-lg)',
             background: 'var(--surface)',
             border: '1px solid var(--border-default)',
           }}
         >
           {cardContent}
-        </Card>
+        </div>
       ) : (
         <div className='space-y-3'>{cardContent}</div>
       )}

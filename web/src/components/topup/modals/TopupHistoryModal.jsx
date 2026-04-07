@@ -20,13 +20,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   Modal,
   Table,
-  Badge,
-  Typography,
   Toast,
   Empty,
   Button,
   Input,
-  Tag,
 } from '@douyinfe/semi-ui';
 import {
   IllustrationNoResult,
@@ -37,14 +34,12 @@ import { IconSearch } from '@douyinfe/semi-icons';
 import { API, timestamp2string } from '../../../helpers';
 import { isAdmin } from '../../../helpers/utils';
 import { useIsMobile } from '../../../hooks/common/useIsMobile';
-const { Text } = Typography;
-
 // 状态映射配置
 const STATUS_CONFIG = {
-  success: { type: 'success', key: '成功' },
-  pending: { type: 'warning', key: '待支付' },
-  failed: { type: 'danger', key: '失败' },
-  expired: { type: 'danger', key: '已过期' },
+  success: { color: 'var(--success)', bg: 'rgba(52, 199, 89, 0.12)', key: '成功' },
+  pending: { color: 'var(--warning)', bg: 'rgba(255, 149, 0, 0.12)', key: '待支付' },
+  failed: { color: 'var(--error)', bg: 'rgba(255, 59, 48, 0.12)', key: '失败' },
+  expired: { color: 'var(--error)', bg: 'rgba(255, 59, 48, 0.12)', key: '已过期' },
 };
 
 // 支付方式映射
@@ -136,11 +131,14 @@ const TopupHistoryModal = ({ visible, onCancel, t }) => {
 
   // 渲染状态徽章
   const renderStatusBadge = (status) => {
-    const config = STATUS_CONFIG[status] || { type: 'primary', key: status };
+    const config = STATUS_CONFIG[status] || { color: 'var(--text-muted)', bg: 'var(--surface-active)', key: status };
     return (
-      <span className='flex items-center gap-2'>
-        <Badge dot type={config.type} />
-        <span>{t(config.key)}</span>
+      <span
+        className='inline-flex items-center gap-1.5 text-xs px-2 py-0.5 font-medium'
+        style={{ borderRadius: 'var(--radius-sm)', background: config.bg, color: config.color }}
+      >
+        <span className='w-1.5 h-1.5 rounded-full' style={{ background: config.color }} />
+        {t(config.key)}
       </span>
     );
   };
@@ -148,7 +146,7 @@ const TopupHistoryModal = ({ visible, onCancel, t }) => {
   // 渲染支付方式
   const renderPaymentMethod = (pm) => {
     const displayName = PAYMENT_METHOD_MAP[pm];
-    return <Text>{displayName ? t(displayName) : pm || '-'}</Text>;
+    return <span className='text-sm' style={{ color: 'var(--text-primary)' }}>{displayName ? t(displayName) : pm || '-'}</span>;
   };
 
   const isSubscriptionTopup = (record) => {
@@ -165,7 +163,7 @@ const TopupHistoryModal = ({ visible, onCancel, t }) => {
         title: t('订单号'),
         dataIndex: 'trade_no',
         key: 'trade_no',
-        render: (text) => <Text copyable>{text}</Text>,
+        render: (text) => <span className='text-xs' style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{text}</span>,
       },
       {
         title: t('支付方式'),
@@ -180,15 +178,15 @@ const TopupHistoryModal = ({ visible, onCancel, t }) => {
         render: (amount, record) => {
           if (isSubscriptionTopup(record)) {
             return (
-              <Tag color='purple' shape='circle' size='small'>
+              <span className='inline-flex items-center text-xs px-1.5 py-0.5 font-medium' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(175, 82, 222, 0.12)', color: '#AF52DE' }}>
                 {t('订阅套餐')}
-              </Tag>
+              </span>
             );
           }
           return (
             <span className='flex items-center gap-1'>
-              <Coins size={16} />
-              <Text>{amount}</Text>
+              <Coins size={14} style={{ color: 'var(--text-muted)' }} />
+              <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{amount}</span>
             </span>
           );
         },
@@ -197,7 +195,7 @@ const TopupHistoryModal = ({ visible, onCancel, t }) => {
         title: t('支付金额'),
         dataIndex: 'money',
         key: 'money',
-        render: (money) => <Text type='danger'>¥{money.toFixed(2)}</Text>,
+        render: (money) => <span className='text-sm font-medium' style={{ color: 'var(--error)', fontFamily: 'var(--font-mono)' }}>¥{money.toFixed(2)}</span>,
       },
       {
         title: t('状态'),
@@ -244,7 +242,16 @@ const TopupHistoryModal = ({ visible, onCancel, t }) => {
 
   return (
     <Modal
-      title={t('充值账单')}
+      title={
+        <div className='flex items-center gap-2'>
+          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}>
+            <Coins size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {t('充值账单')}
+          </span>
+        </div>
+      }
       visible={visible}
       onCancel={onCancel}
       footer={null}

@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Modal, Typography, Input, InputNumber } from '@douyinfe/semi-ui';
+import { Modal, Input, InputNumber } from '@douyinfe/semi-ui';
 import { CreditCard } from 'lucide-react';
 
 const TransferModal = ({
@@ -35,9 +35,13 @@ const TransferModal = ({
   return (
     <Modal
       title={
-        <div className='flex items-center'>
-          <CreditCard className='mr-2' size={18} />
-          {t('划转邀请额度')}
+        <div className='flex items-center gap-2'>
+          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}>
+            <CreditCard size={14} />
+          </span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
+            {t('划转邀请额度')}
+          </span>
         </div>
       }
       visible={openTransfer}
@@ -45,12 +49,14 @@ const TransferModal = ({
       onCancel={handleTransferCancel}
       maskClosable={false}
       centered
+      okButtonProps={{ style: { background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)' } }}
+      cancelButtonProps={{ style: { background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' } }}
     >
       <div className='space-y-4'>
         <div>
-          <Typography.Text strong className='block mb-2'>
+          <span className='block mb-2 text-sm font-medium' style={{ color: 'var(--text-primary)' }}>
             {t('可用邀请额度')}
-          </Typography.Text>
+          </span>
           <Input
             value={renderQuota(userState?.user?.aff_quota)}
             disabled
@@ -58,9 +64,9 @@ const TransferModal = ({
           />
         </div>
         <div>
-          <Typography.Text strong className='block mb-2'>
-            {t('划转额度')} · {t('最低') + renderQuota(getQuotaPerUnit())}
-          </Typography.Text>
+          <span className='block mb-2 text-sm font-medium' style={{ color: 'var(--text-primary)' }}>
+            {t('划转额度')} · <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{t('最低') + renderQuota(getQuotaPerUnit())}</span>
+          </span>
           <InputNumber
             min={getQuotaPerUnit()}
             max={userState?.user?.aff_quota || 0}

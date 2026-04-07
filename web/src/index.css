@@ -725,6 +725,29 @@ html.dark .semi-radio-inner {
   font-size: 12px !important;
 }
 
+/* Form.Section headings — serif, primary color, clear hierarchy */
+.semi-form-section-text {
+  font-family: var(--font-serif) !important;
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  letter-spacing: -0.01em;
+}
+
+/* Divider in forms and general usage */
+.semi-form .semi-divider {
+  border-color: var(--border-subtle) !important;
+}
+
+/* --- Divider Overrides --- */
+.semi-divider {
+  border-color: var(--border-subtle) !important;
+}
+
+.semi-divider-horizontal {
+  margin: 16px 0;
+}
+
 /* --- Pagination Overrides --- */
 .semi-page {
   color: var(--text-secondary);

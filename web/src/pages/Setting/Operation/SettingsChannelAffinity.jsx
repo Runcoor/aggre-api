@@ -19,7 +19,6 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Banner,
   Button,
   Col,
   Collapse,
@@ -29,9 +28,7 @@ import {
   Modal,
   Row,
   Select,
-  Space,
   Table,
-  Typography,
 } from '@douyinfe/semi-ui';
 import {
   IconClose,
@@ -190,9 +187,99 @@ const parseOptionalObjectJson = (jsonString, label) => {
   }
 };
 
+/* ─── Shared inline styles ─── */
+const hintTextStyle = {
+  fontSize: '12px',
+  color: 'var(--text-muted)',
+  lineHeight: '1.5',
+};
+
+const sectionLabelStyle = {
+  fontFamily: 'var(--font-serif)',
+  fontWeight: 600,
+  fontSize: '14px',
+  color: 'var(--text-primary)',
+  letterSpacing: '-0.01em',
+};
+
+const inlineBadgeStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: '1px 8px',
+  borderRadius: 'var(--radius-sm)',
+  fontSize: '12px',
+  fontWeight: 500,
+  fontFamily: 'var(--font-mono)',
+  color: 'var(--text-secondary)',
+  background: 'var(--surface-active)',
+  lineHeight: '20px',
+  marginRight: 4,
+};
+
+/* ─── macOS panel card style ─── */
+const panelCardStyle = {
+  background: 'var(--surface)',
+  border: '1px solid var(--border-default)',
+  borderRadius: 'var(--radius-lg)',
+  padding: 0,
+};
+
+const panelHeaderStyle = {
+  padding: '16px 20px',
+  borderBottom: '1px solid var(--border-subtle)',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+};
+
+const panelBodyStyle = {
+  padding: '16px 20px',
+};
+
+/* ─── Icon badge for section headers ─── */
+const IconBadge = ({ color, children }) => (
+  <span
+    style={{
+      width: 32,
+      height: 32,
+      borderRadius: 'var(--radius-md)',
+      background: color ? `${color}1F` : 'var(--accent-light)',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: color || 'var(--accent)',
+      fontSize: 16,
+      flexShrink: 0,
+    }}
+  >
+    {children}
+  </span>
+);
+
+/* ─── Stats mini card ─── */
+const StatItem = ({ label, value, mono }) => (
+  <div style={{
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+    padding: '10px 14px',
+    borderRadius: 'var(--radius-md)',
+    background: 'var(--bg-subtle)',
+    border: '1px solid var(--border-subtle)',
+    minWidth: 100,
+  }}>
+    <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</span>
+    <span style={{
+      fontSize: 16,
+      fontWeight: 600,
+      color: 'var(--text-primary)',
+      fontFamily: mono ? 'var(--font-mono)' : 'var(--font-sans)',
+    }}>{value}</span>
+  </div>
+);
+
 export default function SettingsChannelAffinity(props) {
   const { t } = useTranslation();
-  const { Text } = Typography;
   const [loading, setLoading] = useState(false);
 
   const [cacheLoading, setCacheLoading] = useState(false);
@@ -312,7 +399,9 @@ export default function SettingsChannelAffinity(props) {
       return;
     }
     Modal.info({
-      title: t('参数覆盖模板预览'),
+      title: (
+        <span style={sectionLabelStyle}>{t('参数覆盖模板预览')}</span>
+      ),
       content: (
         <div style={{ marginTop: 6, paddingBottom: 10 }}>
           <pre
@@ -321,13 +410,15 @@ export default function SettingsChannelAffinity(props) {
               maxHeight: 420,
               overflow: 'auto',
               fontSize: 12,
+              fontFamily: 'var(--font-mono)',
               lineHeight: 1.6,
-              padding: 10,
-              borderRadius: 8,
+              padding: 12,
+              borderRadius: 'var(--radius-md)',
               background: 'var(--bg-subtle)',
               border: '1px solid var(--border-default)',
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-all',
+              color: 'var(--text-primary)',
             }}
           >
             {stringifyPretty(raw)}
@@ -357,10 +448,12 @@ export default function SettingsChannelAffinity(props) {
 
   const confirmClearAllCache = () => {
     Modal.confirm({
-      title: t('确认清空全部渠道亲和性缓存'),
+      title: (
+        <span style={sectionLabelStyle}>{t('确认清空全部渠道亲和性缓存')}</span>
+      ),
       content: (
         <div style={{ lineHeight: '1.6' }}>
-          <Text>{t('将删除所有仍在内存中的渠道亲和性缓存条目。')}</Text>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>{t('将删除所有仍在内存中的渠道亲和性缓存条目。')}</span>
         </div>
       ),
       onOk: async () => {
@@ -388,10 +481,13 @@ export default function SettingsChannelAffinity(props) {
       return;
     }
     Modal.confirm({
-      title: t('确认清空该规则缓存'),
+      title: (
+        <span style={sectionLabelStyle}>{t('确认清空该规则缓存')}</span>
+      ),
       content: (
         <div style={{ lineHeight: '1.6' }}>
-          <Text>{t('规则')}：</Text> <Text strong>{name}</Text>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>{t('规则')}：</span>{' '}
+          <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '14px' }}>{name}</span>
         </div>
       ),
       onOk: async () => {
@@ -476,10 +572,12 @@ export default function SettingsChannelAffinity(props) {
     }
 
     Modal.confirm({
-      title: t('填充 Codex CLI / Claude CLI 模版'),
+      title: (
+        <span style={sectionLabelStyle}>{t('填充 Codex CLI / Claude CLI 模版')}</span>
+      ),
       content: (
         <div style={{ lineHeight: '1.6' }}>
-          <Text type='tertiary'>{t('将追加 2 条规则到现有规则列表。')}</Text>
+          <span style={hintTextStyle}>{t('将追加 2 条规则到现有规则列表。')}</span>
         </div>
       ),
       onOk: doAppend,
@@ -490,7 +588,7 @@ export default function SettingsChannelAffinity(props) {
     {
       title: t('名称'),
       dataIndex: 'name',
-      render: (text) => <Text>{text || '-'}</Text>,
+      render: (text) => <span style={{ color: 'var(--text-primary)', fontWeight: 500, fontSize: '13px' }}>{text || '-'}</span>,
     },
     {
       title: t('模型正则'),
@@ -498,12 +596,7 @@ export default function SettingsChannelAffinity(props) {
       render: (list) =>
         (list || []).length > 0
           ? (list || []).slice(0, 3).map((v, idx) => (
-              <span key={`${v}-${idx}`} style={{
-                display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
-                borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
-                fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
-                background: 'var(--surface-active)', lineHeight: '20px', marginRight: 4,
-              }}>{v}</span>
+              <span key={`${v}-${idx}`} style={inlineBadgeStyle}>{v}</span>
             ))
           : '-',
     },
@@ -513,12 +606,7 @@ export default function SettingsChannelAffinity(props) {
       render: (list) =>
         (list || []).length > 0
           ? (list || []).slice(0, 2).map((v, idx) => (
-              <span key={`${v}-${idx}`} style={{
-                display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
-                borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
-                fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
-                background: 'var(--surface-active)', lineHeight: '20px', marginRight: 4,
-              }}>{v}</span>
+              <span key={`${v}-${idx}`} style={inlineBadgeStyle}>{v}</span>
             ))
           : '-',
     },
@@ -532,12 +620,7 @@ export default function SettingsChannelAffinity(props) {
           const s = normalizeKeySource(src);
           const detail = s.type === 'gjson' ? s.path : s.key;
           return (
-            <span key={`${s.type}-${idx}`} style={{
-              display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
-              borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
-              fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
-              background: 'var(--surface-active)', lineHeight: '20px', marginRight: 4,
-            }}>{s.type}:{detail}</span>
+            <span key={`${s.type}-${idx}`} style={inlineBadgeStyle}>{s.type}:{detail}</span>
           );
         });
       },
@@ -545,18 +628,18 @@ export default function SettingsChannelAffinity(props) {
     {
       title: t('TTL（秒）'),
       dataIndex: 'ttl_seconds',
-      render: (v) => <Text>{Number(v || 0) || '-'}</Text>,
+      render: (v) => <span style={{ color: 'var(--text-primary)', fontSize: '13px', fontFamily: 'var(--font-mono)' }}>{Number(v || 0) || '-'}</span>,
     },
     {
       title: t('失败后是否重试'),
       dataIndex: 'skip_retry_on_failure',
       render: (value) => (
         <span style={{
-          display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
-          borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
+          ...inlineBadgeStyle,
+          fontFamily: 'var(--font-sans)',
           color: value ? 'var(--warning)' : 'var(--success)',
-          background: value ? 'rgba(255, 149, 0, 0.12)' : 'rgba(52, 199, 89, 0.12)',
-          lineHeight: '20px',
+          background: value ? 'var(--warning-light)' : 'var(--success-light)',
+          marginRight: 0,
         }}>
           {value ? t('不重试') : t('重试')}
         </span>
@@ -566,13 +649,14 @@ export default function SettingsChannelAffinity(props) {
       title: t('覆盖模板'),
       render: (_, record) => {
         if (!record?.param_override_template) {
-          return <Text type='tertiary'>-</Text>;
+          return <span style={{ color: 'var(--text-muted)' }}>-</span>;
         }
         return (
           <Button
             size='small'
             icon={<IconSearch />}
             type='tertiary'
+            style={{ borderRadius: 'var(--radius-sm)' }}
             onClick={() => openParamTemplatePreview(record)}
           >
             {t('预览模板')}
@@ -585,10 +669,10 @@ export default function SettingsChannelAffinity(props) {
       render: (_, record) => {
         const name = (record?.name || '').trim();
         if (!name || !record?.include_rule_name) {
-          return <Text type='tertiary'>N/A</Text>;
+          return <span style={{ color: 'var(--text-muted)' }}>N/A</span>;
         }
         const n = Number(cacheStats?.by_rule_name?.[name] || 0);
-        return <Text>{n}</Text>;
+        return <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontSize: '13px' }}>{n}</span>;
       },
     },
     {
@@ -599,19 +683,14 @@ export default function SettingsChannelAffinity(props) {
         if (record?.include_rule_name) tags.push('规则');
         if (tags.length === 0) return '-';
         return tags.map((x) => (
-          <span key={x} style={{
-            display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
-            borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
-            color: 'var(--text-secondary)', background: 'var(--surface-active)',
-            lineHeight: '20px', marginRight: 4,
-          }}>{x}</span>
+          <span key={x} style={{ ...inlineBadgeStyle, fontFamily: 'var(--font-sans)' }}>{x}</span>
         ));
       },
     },
     {
       title: t('操作'),
       render: (_, record) => (
-        <Space>
+        <div className='flex items-center gap-1'>
           <Button
             icon={<IconClose />}
             theme='borderless'
@@ -636,7 +715,7 @@ export default function SettingsChannelAffinity(props) {
             aria-label={t('删除规则')}
             onClick={() => handleDeleteRule(record.id)}
           />
-        </Space>
+        </div>
       ),
     },
   ];
@@ -895,175 +974,304 @@ export default function SettingsChannelAffinity(props) {
     }
   }, [inputs[KEY_RULES], editMode]);
 
-  const banner = (
-    <Banner
-      fullMode={false}
-      type='info'
-      description={t(
-        '渠道亲和性会基于从请求上下文或 JSON Body 提取的 Key，优先复用上一次成功的渠道。',
-      )}
-    />
-  );
-
   return (
     <>
       <MacSpinner spinning={loading}>
-        <Form
-          values={inputs}
-          getFormApi={(formAPI) => (refForm.current = formAPI)}
-          style={{ marginBottom: 15 }}
-        >
-          <Form.Section text={t('渠道亲和性')}>
-            {banner}
-            <Divider style={{ marginTop: 12, marginBottom: 12 }} />
-            <Row gutter={16}>
-              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
-                <Form.Switch
-                  field={KEY_ENABLED}
-                  label={t('启用')}
-                  checkedText='|'
-                  uncheckedText='O'
-                  onChange={(value) =>
-                    setInputs({ ...inputs, [KEY_ENABLED]: value })
-                  }
-                />
-                <Text type='tertiary' size='small'>
-                  {t('启用后将优先复用上一次成功的渠道（粘滞选路）。')}
-                </Text>
-              </Col>
-              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
-                <Form.InputNumber
-                  field={KEY_MAX_ENTRIES}
-                  label={t('最大条目数')}
-                  min={0}
-                  placeholder='例如 100000…'
-                  extraText={
-                    <Text type='tertiary' size='small'>
-                      {t(
-                        '内存缓存最大条目数。0 表示使用后端默认容量：100000。',
-                      )}
-                    </Text>
-                  }
-                  onChange={(value) =>
-                    setInputs({
-                      ...inputs,
-                      [KEY_MAX_ENTRIES]: Number(value || 0),
-                    })
-                  }
-                />
-              </Col>
-              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
-                <Form.InputNumber
-                  field={KEY_DEFAULT_TTL}
-                  label={t('默认 TTL（秒）')}
-                  min={0}
-                  placeholder='例如 3600…'
-                  extraText={
-                    <Text type='tertiary' size='small'>
-                      {t(
-                        '规则 ttl_seconds 为 0 时使用。0 表示使用后端默认 TTL：3600 秒。',
-                      )}
-                    </Text>
-                  }
-                  onChange={(value) =>
-                    setInputs({
-                      ...inputs,
-                      [KEY_DEFAULT_TTL]: Number(value || 0),
-                    })
-                  }
-                />
-              </Col>
-            </Row>
+        {/* ═══ Page-level macOS Panel ═══ */}
+        <div style={panelCardStyle}>
 
-            <Row gutter={16} style={{ marginTop: 12 }}>
-              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
-                <Form.Switch
-                  field={KEY_SWITCH_ON_SUCCESS}
-                  label={t('成功后切换亲和')}
-                  checkedText='|'
-                  uncheckedText='O'
-                  onChange={(value) =>
-                    setInputs({ ...inputs, [KEY_SWITCH_ON_SUCCESS]: value })
-                  }
-                />
-                <Text type='tertiary' size='small'>
-                  {t(
-                    '如果亲和到的渠道失败，重试到其他渠道成功后，将亲和更新到成功的渠道。',
-                  )}
-                </Text>
-              </Col>
-            </Row>
+          {/* ── Panel Header ── */}
+          <div style={panelHeaderStyle}>
+            <IconBadge color="var(--accent)">
+              <IconRefresh style={{ fontSize: 16 }} />
+            </IconBadge>
+            <div>
+              <h3 style={{
+                margin: 0,
+                fontFamily: 'var(--font-serif)',
+                fontSize: 16,
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+                letterSpacing: '-0.01em',
+              }}>
+                {t('渠道亲和性')}
+              </h3>
+              <p style={{
+                margin: '2px 0 0',
+                fontSize: 12,
+                color: 'var(--text-muted)',
+              }}>
+                {t('渠道亲和性会基于从请求上下文或 JSON Body 提取的 Key，优先复用上一次成功的渠道。')}
+              </p>
+            </div>
+          </div>
 
-            <Divider style={{ marginTop: 12, marginBottom: 12 }} />
+          {/* ── Panel Body ── */}
+          <div style={panelBodyStyle}>
+            <Form
+              values={inputs}
+              getFormApi={(formAPI) => (refForm.current = formAPI)}
+              style={{ marginBottom: 0 }}
+            >
 
-            <Space style={{ marginBottom: 10 }}>
-              <Button
-                type={editMode === 'visual' ? 'primary' : 'tertiary'}
-                onClick={switchToVisualMode}
-              >
-                {t('可视化')}
-              </Button>
-              <Button
-                type={editMode === 'json' ? 'primary' : 'tertiary'}
-                onClick={switchToJsonMode}
-              >
-                {t('JSON 模式')}
-              </Button>
-              <Button onClick={appendCodexAndClaudeCodeTemplates}>
-                {t('填充 Codex CLI / Claude CLI 模版')}
-              </Button>
-              <Button icon={<IconPlus />} onClick={openAddModal}>
-                {t('新增规则')}
-              </Button>
-              <Button theme='solid' onClick={onSubmit}>
-                {t('保存')}
-              </Button>
-              <Button
-                icon={<IconRefresh />}
-                loading={cacheLoading}
-                onClick={refreshCacheStats}
-              >
-                {t('刷新缓存统计')}
-              </Button>
-              <Button type='danger' onClick={confirmClearAllCache}>
-                {t('清空全部缓存')}
-              </Button>
-            </Space>
+              {/* ─ Settings Grid ─ */}
+              <Row gutter={16}>
+                <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                  <Form.Switch
+                    field={KEY_ENABLED}
+                    label={t('启用')}
+                    checkedText='|'
+                    uncheckedText='O'
+                    onChange={(value) =>
+                      setInputs({ ...inputs, [KEY_ENABLED]: value })
+                    }
+                  />
+                  <span style={hintTextStyle}>
+                    {t('启用后将优先复用上一次成功的渠道（粘滞选路）。')}
+                  </span>
+                </Col>
+                <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                  <Form.InputNumber
+                    field={KEY_MAX_ENTRIES}
+                    label={t('最大条目数')}
+                    min={0}
+                    placeholder='例如 100000…'
+                    extraText={
+                      <span style={hintTextStyle}>
+                        {t(
+                          '内存缓存最大条目数。0 表示使用后端默认容量：100000。',
+                        )}
+                      </span>
+                    }
+                    onChange={(value) =>
+                      setInputs({
+                        ...inputs,
+                        [KEY_MAX_ENTRIES]: Number(value || 0),
+                      })
+                    }
+                  />
+                </Col>
+                <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                  <Form.InputNumber
+                    field={KEY_DEFAULT_TTL}
+                    label={t('默认 TTL（秒）')}
+                    min={0}
+                    placeholder='例如 3600…'
+                    extraText={
+                      <span style={hintTextStyle}>
+                        {t(
+                          '规则 ttl_seconds 为 0 时使用。0 表示使用后端默认 TTL：3600 秒。',
+                        )}
+                      </span>
+                    }
+                    onChange={(value) =>
+                      setInputs({
+                        ...inputs,
+                        [KEY_DEFAULT_TTL]: Number(value || 0),
+                      })
+                    }
+                  />
+                </Col>
+              </Row>
 
-            {editMode === 'visual' ? (
-              <Table
-                columns={ruleColumns}
-                dataSource={rules}
-                rowKey='id'
-                pagination={false}
-                size='small'
-              />
-            ) : (
-              <Form.TextArea
-                field={KEY_RULES}
-                label={t('规则 JSON')}
-                extraText={t(
-                  '规则为 JSON 数组；可视化与 JSON 模式共用同一份数据。',
+              <Row gutter={16} style={{ marginTop: 12 }}>
+                <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                  <Form.Switch
+                    field={KEY_SWITCH_ON_SUCCESS}
+                    label={t('成功后切换亲和')}
+                    checkedText='|'
+                    uncheckedText='O'
+                    onChange={(value) =>
+                      setInputs({ ...inputs, [KEY_SWITCH_ON_SUCCESS]: value })
+                    }
+                  />
+                  <span style={hintTextStyle}>
+                    {t(
+                      '如果亲和到的渠道失败，重试到其他渠道成功后，将亲和更新到成功的渠道。',
+                    )}
+                  </span>
+                </Col>
+              </Row>
+
+              {/* ═══ Cache Stats Card ═══ */}
+              <div style={{
+                marginTop: 20,
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border-subtle)',
+                background: 'var(--bg-subtle)',
+                padding: '14px 16px',
+              }}>
+                <div className='flex items-center justify-between flex-wrap gap-2' style={{ marginBottom: 12 }}>
+                  <span style={{
+                    ...sectionLabelStyle,
+                    fontSize: 13,
+                  }}>
+                    {t('缓存统计')}
+                  </span>
+                  <div className='flex items-center gap-1.5'>
+                    <Button
+                      size='small'
+                      icon={<IconRefresh />}
+                      loading={cacheLoading}
+                      style={{ borderRadius: 'var(--radius-sm)' }}
+                      onClick={refreshCacheStats}
+                    >
+                      {t('刷新')}
+                    </Button>
+                    <Button
+                      size='small'
+                      type='danger'
+                      style={{ borderRadius: 'var(--radius-sm)' }}
+                      onClick={confirmClearAllCache}
+                    >
+                      {t('清空全部缓存')}
+                    </Button>
+                  </div>
+                </div>
+                <div className='flex flex-wrap gap-2'>
+                  <StatItem label={t('状态')} value={cacheStats?.enabled ? t('启用') : t('停用')} />
+                  <StatItem label={t('条目数')} value={cacheStats?.total ?? 0} mono />
+                  <StatItem label={t('未知规则')} value={cacheStats?.unknown ?? 0} mono />
+                  <StatItem label={t('容量')} value={cacheStats?.cache_capacity ?? '-'} mono />
+                  <StatItem label={t('算法')} value={cacheStats?.cache_algo || '-'} />
+                </div>
+                {Object.keys(cacheStats?.by_rule_name || {}).length > 0 && (
+                  <div style={{ marginTop: 10 }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      {t('按规则分布')}
+                    </span>
+                    <div className='flex flex-wrap gap-1.5' style={{ marginTop: 6 }}>
+                      {Object.entries(cacheStats.by_rule_name).map(([name, count]) => (
+                        <span key={name} style={{
+                          ...inlineBadgeStyle,
+                          fontFamily: 'var(--font-sans)',
+                          marginRight: 0,
+                        }}>
+                          {name}: <strong style={{ marginLeft: 4, fontFamily: 'var(--font-mono)' }}>{count}</strong>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 )}
-                placeholder={RULES_JSON_PLACEHOLDER}
-                style={{ width: '100%' }}
-                autosize={{ minRows: 10, maxRows: 28 }}
-                rules={[
-                  {
-                    validator: (rule, value) => verifyJSON(value || '[]'),
-                  },
-                ]}
-                onChange={(value) =>
-                  setInputs({ ...inputs, [KEY_RULES]: value })
-                }
-              />
-            )}
-          </Form.Section>
-        </Form>
+              </div>
+
+              <Divider style={{ marginTop: 20, marginBottom: 16 }} />
+
+              {/* ═══ Rules Section Header ═══ */}
+              <div className='flex items-center gap-2' style={{ marginBottom: 12 }}>
+                <IconBadge color="var(--warning)">
+                  <IconCode style={{ fontSize: 16 }} />
+                </IconBadge>
+                <span style={sectionLabelStyle}>{t('亲和规则')}</span>
+              </div>
+
+              {/* ── Toolbar — macOS segmented control + action buttons ── */}
+              <div className='flex flex-wrap items-center gap-2' style={{ marginBottom: 12 }}>
+                {/* Mode switcher — macOS segmented control */}
+                <div
+                  className='flex items-center rounded-[var(--radius-md)] p-0.5 gap-0.5'
+                  style={{ background: 'var(--surface-hover)' }}
+                >
+                  <button
+                    className='px-3 py-1.5 text-xs font-medium rounded-[var(--radius-sm)] transition-colors duration-150'
+                    style={{
+                      background: editMode === 'visual' ? 'var(--surface)' : 'transparent',
+                      color: editMode === 'visual' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      border: editMode === 'visual' ? '1px solid var(--border-subtle)' : '1px solid transparent',
+                      cursor: 'pointer',
+                    }}
+                    onClick={switchToVisualMode}
+                  >
+                    {t('可视化')}
+                  </button>
+                  <button
+                    className='px-3 py-1.5 text-xs font-medium rounded-[var(--radius-sm)] transition-colors duration-150'
+                    style={{
+                      background: editMode === 'json' ? 'var(--surface)' : 'transparent',
+                      color: editMode === 'json' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      border: editMode === 'json' ? '1px solid var(--border-subtle)' : '1px solid transparent',
+                      cursor: 'pointer',
+                    }}
+                    onClick={switchToJsonMode}
+                  >
+                    {t('JSON 模式')}
+                  </button>
+                </div>
+
+                {/* Separator */}
+                <div style={{ width: 1, height: 20, background: 'var(--border-subtle)' }} />
+
+                <Button
+                  style={{ borderRadius: 'var(--radius-sm)' }}
+                  onClick={appendCodexAndClaudeCodeTemplates}
+                >
+                  {t('填充 Codex CLI / Claude CLI 模版')}
+                </Button>
+                <Button
+                  icon={<IconPlus />}
+                  style={{ borderRadius: 'var(--radius-sm)' }}
+                  onClick={openAddModal}
+                >
+                  {t('新增规则')}
+                </Button>
+
+                {/* Spacer pushes save to right */}
+                <div style={{ flex: 1 }} />
+
+                <Button
+                  theme='solid'
+                  style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent)', border: 'none' }}
+                  onClick={onSubmit}
+                >
+                  {t('保存')}
+                </Button>
+              </div>
+
+              {editMode === 'visual' ? (
+                <div style={{
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-subtle)',
+                  overflow: 'hidden',
+                }}>
+                  <Table
+                    columns={ruleColumns}
+                    dataSource={rules}
+                    rowKey='id'
+                    pagination={false}
+                    size='small'
+                  />
+                </div>
+              ) : (
+                <Form.TextArea
+                  field={KEY_RULES}
+                  label={t('规则 JSON')}
+                  extraText={t(
+                    '规则为 JSON 数组；可视化与 JSON 模式共用同一份数据。',
+                  )}
+                  placeholder={RULES_JSON_PLACEHOLDER}
+                  style={{ width: '100%' }}
+                  autosize={{ minRows: 10, maxRows: 28 }}
+                  rules={[
+                    {
+                      validator: (rule, value) => verifyJSON(value || '[]'),
+                    },
+                  ]}
+                  onChange={(value) =>
+                    setInputs({ ...inputs, [KEY_RULES]: value })
+                  }
+                />
+              )}
+            </Form>
+          </div>
+        </div>
       </MacSpinner>
 
       <Modal
-        title={isEdit ? t('编辑规则') : t('新增规则')}
+        title={
+          <span style={sectionLabelStyle}>
+            {isEdit ? t('编辑规则') : t('新增规则')}
+          </span>
+        }
         visible={modalVisible}
         onCancel={() => {
           setModalVisible(false);
@@ -1128,9 +1336,9 @@ export default function SettingsChannelAffinity(props) {
                 field='skip_retry_on_failure'
                 label={t('失败后不重试')}
               />
-              <Text type='tertiary' size='small'>
+              <span style={hintTextStyle}>
                 {t('开启后，若该规则命中且请求失败，将不会切换渠道重试。')}
-              </Text>
+              </span>
             </Col>
           </Row>
 
@@ -1149,7 +1357,7 @@ export default function SettingsChannelAffinity(props) {
                     field='user_agent_include_text'
                     label={t('User-Agent include（每行一个，可不写）')}
                     extraText={
-                      <Text type='tertiary' size='small'>
+                      <span style={hintTextStyle}>
                         {t(
                           '可选。匹配入口请求的 User-Agent；任意一行作为子串匹配（忽略大小写）即命中。',
                         )}
@@ -1161,7 +1369,7 @@ export default function SettingsChannelAffinity(props) {
                         {t(
                           '为保证匹配准确，请确保客户端直连本站点（避免反向代理/网关改写 User-Agent）。',
                         )}
-                      </Text>
+                      </span>
                     }
                     placeholder={'curl\nPostmanRuntime\nMyApp/…'}
                     autosize={{ minRows: 3, maxRows: 8 }}
@@ -1187,11 +1395,11 @@ export default function SettingsChannelAffinity(props) {
                     placeholder='例如 600…'
                     min={0}
                     extraText={
-                      <Text type='tertiary' size='small'>
+                      <span style={hintTextStyle}>
                         {t('该规则的缓存保留时长；0 表示使用默认 TTL：')}
                         {effectiveDefaultTTLSeconds}
                         {t(' 秒。')}
-                      </Text>
+                      </span>
                     }
                   />
                 </Col>
@@ -1200,18 +1408,18 @@ export default function SettingsChannelAffinity(props) {
               <Row gutter={16}>
                 <Col xs={24}>
                   <div style={{ marginBottom: 8 }}>
-                    <Text strong>{t('参数覆盖模板')}</Text>
+                    <span style={sectionLabelStyle}>{t('参数覆盖模板')}</span>
                   </div>
-                  <Text type='tertiary' size='small'>
+                  <span style={hintTextStyle}>
                     {t(
                       '命中该亲和规则后，会把此模板合并到渠道参数覆盖中（同名键由模板覆盖）。',
                     )}
-                  </Text>
+                  </span>
                   <div
                     style={{
                       marginTop: 8,
-                      borderRadius: 10,
-                      padding: 10,
+                      borderRadius: 'var(--radius-md)',
+                      padding: 12,
                       background: 'var(--bg-subtle)',
                       border: '1px solid var(--border-default)',
                     }}
@@ -1227,34 +1435,36 @@ export default function SettingsChannelAffinity(props) {
                       }}
                     >
                       <span style={{
-                        display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
-                        borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
+                        ...inlineBadgeStyle,
+                        fontFamily: 'var(--font-sans)',
                         color: paramTemplatePreviewMeta.tagStyle.color,
                         background: paramTemplatePreviewMeta.tagStyle.bg,
-                        lineHeight: '20px',
+                        marginRight: 0,
                       }}>
                         {paramTemplatePreviewMeta.tagLabel}
                       </span>
-                      <Space>
+                      <div className='flex items-center gap-1.5'>
                         <Button
                           size='small'
                           type='primary'
                           icon={<IconCode />}
+                          style={{ borderRadius: 'var(--radius-sm)' }}
                           onClick={() => setParamTemplateEditorVisible(true)}
                         >
                           {t('可视化编辑')}
                         </Button>
-                        <Button size='small' onClick={formatParamTemplateDraft}>
+                        <Button size='small' style={{ borderRadius: 'var(--radius-sm)' }} onClick={formatParamTemplateDraft}>
                           {t('格式化')}
                         </Button>
                         <Button
                           size='small'
                           type='tertiary'
+                          style={{ borderRadius: 'var(--radius-sm)' }}
                           onClick={() => updateParamTemplateDraft('')}
                         >
                           {t('清空')}
                         </Button>
-                      </Space>
+                      </div>
                     </div>
                     <pre
                       style={{
@@ -1279,54 +1489,74 @@ export default function SettingsChannelAffinity(props) {
                     field='include_using_group'
                     label={t('作用域：包含分组')}
                   />
-                  <Text type='tertiary' size='small'>
+                  <span style={hintTextStyle}>
                     {t(
                       '开启后，using_group 会参与 cache key（不同分组隔离）。',
                     )}
-                  </Text>
+                  </span>
                 </Col>
                 <Col xs={24} sm={12}>
                   <Form.Switch
                     field='include_rule_name'
                     label={t('作用域：包含规则名称')}
                   />
-                  <Text type='tertiary' size='small'>
+                  <span style={hintTextStyle}>
                     {t('开启后，规则名称会参与 cache key（不同规则隔离）。')}
-                  </Text>
+                  </span>
                 </Col>
               </Row>
             </Collapse.Panel>
           </Collapse>
 
-          <Divider style={{ marginTop: 12, marginBottom: 12 }} />
-          <Space style={{ marginBottom: 10 }}>
-            <Text>{t('Key 来源')}</Text>
-            <Button icon={<IconPlus />} onClick={addKeySource}>
-              {t('新增 Key 来源')}
-            </Button>
-          </Space>
-          <Text type='tertiary' size='small'>
-            {t(
-              'context_int/context_string 从请求上下文读取；gjson 从入口请求的 JSON body 按 gjson path 读取。',
-            )}
-          </Text>
-          <div style={{ marginTop: 8, marginBottom: 8 }}>
-            <Text type='tertiary' size='small'>
-              {t('常用上下文 Key（用于 context_*）')}：
-            </Text>
-            <div style={{ marginTop: 6 }}>
-              {(CONTEXT_KEY_PRESETS || []).map((x) => (
-                <span key={x.key} style={{
-                  display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
-                  borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
-                  color: 'var(--text-secondary)', background: 'var(--surface-active)',
-                  lineHeight: '20px', marginRight: 6, marginBottom: 6,
-                }}>{x.label}</span>
-              ))}
-            </div>
-          </div>
+          <Divider style={{ marginTop: 16, marginBottom: 16 }} />
 
-          <Table
+          {/* ═══ Key Sources Section — macOS sub-panel ═══ */}
+          <div style={{
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border-subtle)',
+            background: 'var(--bg-subtle)',
+            overflow: 'hidden',
+          }}>
+            {/* Key Sources Header */}
+            <div style={{
+              padding: '12px 16px',
+              borderBottom: '1px solid var(--border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 8,
+            }}>
+              <div className='flex items-center gap-2'>
+                <IconBadge color="var(--success)">
+                  <IconSearch style={{ fontSize: 14 }} />
+                </IconBadge>
+                <div>
+                  <span style={{ ...sectionLabelStyle, fontSize: 13 }}>{t('Key 来源')}</span>
+                  <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-muted)' }}>
+                    {t('context_int/context_string 从请求上下文读取；gjson 从入口请求的 JSON body 按 gjson path 读取。')}
+                  </p>
+                </div>
+              </div>
+              <Button size='small' icon={<IconPlus />} style={{ borderRadius: 'var(--radius-sm)' }} onClick={addKeySource}>
+                {t('新增 Key 来源')}
+              </Button>
+            </div>
+
+            {/* Context Key Presets */}
+            <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                {t('常用上下文 Key（用于 context_*）')}
+              </span>
+              <div className='flex flex-wrap gap-1.5' style={{ marginTop: 6 }}>
+                {(CONTEXT_KEY_PRESETS || []).map((x) => (
+                  <span key={x.key} style={inlineBadgeStyle}>{x.label}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Key Sources Table */}
+            <Table
             columns={[
               {
                 title: t('类型'),
@@ -1389,6 +1619,8 @@ export default function SettingsChannelAffinity(props) {
             pagination={false}
             size='small'
           />
+          </div>
+          {/* ═══ End Key Sources Section ═══ */}
         </Form>
       </Modal>
 

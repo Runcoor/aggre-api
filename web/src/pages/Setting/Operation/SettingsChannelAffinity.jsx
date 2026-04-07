@@ -31,7 +31,6 @@ import {
   Select,
   Space,
   Table,
-  Tag,
   Typography,
 } from '@douyinfe/semi-ui';
 import {
@@ -258,27 +257,27 @@ export default function SettingsChannelAffinity(props) {
     if (!raw) {
       return {
         tagLabel: t('未设置'),
-        tagColor: 'grey',
+        tagStyle: { color: 'var(--text-muted)', bg: 'var(--surface-active)' },
         preview: t('当前规则未设置参数覆盖模板'),
       };
     }
     if (!verifyJSON(raw)) {
       return {
         tagLabel: t('JSON 无效'),
-        tagColor: 'red',
+        tagStyle: { color: 'var(--error)', bg: 'rgba(255, 59, 48, 0.12)' },
         preview: raw,
       };
     }
     try {
       return {
         tagLabel: t('已设置'),
-        tagColor: 'orange',
+        tagStyle: { color: 'var(--warning)', bg: 'rgba(255, 149, 0, 0.12)' },
         preview: JSON.stringify(JSON.parse(raw), null, 2),
       };
     } catch (error) {
       return {
         tagLabel: t('JSON 无效'),
-        tagColor: 'red',
+        tagStyle: { color: 'var(--error)', bg: 'rgba(255, 59, 48, 0.12)' },
         preview: raw,
       };
     }
@@ -499,9 +498,12 @@ export default function SettingsChannelAffinity(props) {
       render: (list) =>
         (list || []).length > 0
           ? (list || []).slice(0, 3).map((v, idx) => (
-              <Tag key={`${v}-${idx}`} style={{ marginRight: 4 }}>
-                {v}
-              </Tag>
+              <span key={`${v}-${idx}`} style={{
+                display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
+                borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
+                fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
+                background: 'var(--surface-active)', lineHeight: '20px', marginRight: 4,
+              }}>{v}</span>
             ))
           : '-',
     },
@@ -511,9 +513,12 @@ export default function SettingsChannelAffinity(props) {
       render: (list) =>
         (list || []).length > 0
           ? (list || []).slice(0, 2).map((v, idx) => (
-              <Tag key={`${v}-${idx}`} style={{ marginRight: 4 }}>
-                {v}
-              </Tag>
+              <span key={`${v}-${idx}`} style={{
+                display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
+                borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
+                fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
+                background: 'var(--surface-active)', lineHeight: '20px', marginRight: 4,
+              }}>{v}</span>
             ))
           : '-',
     },
@@ -527,9 +532,12 @@ export default function SettingsChannelAffinity(props) {
           const s = normalizeKeySource(src);
           const detail = s.type === 'gjson' ? s.path : s.key;
           return (
-            <Tag key={`${s.type}-${idx}`} style={{ marginRight: 4 }}>
-              {s.type}:{detail}
-            </Tag>
+            <span key={`${s.type}-${idx}`} style={{
+              display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
+              borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
+              fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
+              background: 'var(--surface-active)', lineHeight: '20px', marginRight: 4,
+            }}>{s.type}:{detail}</span>
           );
         });
       },
@@ -543,9 +551,15 @@ export default function SettingsChannelAffinity(props) {
       title: t('失败后是否重试'),
       dataIndex: 'skip_retry_on_failure',
       render: (value) => (
-        <Tag color={value ? 'orange' : 'green'} style={{ marginRight: 4 }}>
+        <span style={{
+          display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
+          borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
+          color: value ? 'var(--warning)' : 'var(--success)',
+          background: value ? 'rgba(255, 149, 0, 0.12)' : 'rgba(52, 199, 89, 0.12)',
+          lineHeight: '20px',
+        }}>
           {value ? t('不重试') : t('重试')}
-        </Tag>
+        </span>
       ),
     },
     {
@@ -585,9 +599,12 @@ export default function SettingsChannelAffinity(props) {
         if (record?.include_rule_name) tags.push('规则');
         if (tags.length === 0) return '-';
         return tags.map((x) => (
-          <Tag key={x} style={{ marginRight: 4 }}>
-            {x}
-          </Tag>
+          <span key={x} style={{
+            display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
+            borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
+            color: 'var(--text-secondary)', background: 'var(--surface-active)',
+            lineHeight: '20px', marginRight: 4,
+          }}>{x}</span>
         ));
       },
     },
@@ -1209,9 +1226,15 @@ export default function SettingsChannelAffinity(props) {
                         flexWrap: 'wrap',
                       }}
                     >
-                      <Tag color={paramTemplatePreviewMeta.tagColor}>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
+                        borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
+                        color: paramTemplatePreviewMeta.tagStyle.color,
+                        background: paramTemplatePreviewMeta.tagStyle.bg,
+                        lineHeight: '20px',
+                      }}>
                         {paramTemplatePreviewMeta.tagLabel}
-                      </Tag>
+                      </span>
                       <Space>
                         <Button
                           size='small'
@@ -1293,9 +1316,12 @@ export default function SettingsChannelAffinity(props) {
             </Text>
             <div style={{ marginTop: 6 }}>
               {(CONTEXT_KEY_PRESETS || []).map((x) => (
-                <Tag key={x.key} style={{ marginRight: 6, marginBottom: 6 }}>
-                  {x.label}
-                </Tag>
+                <span key={x.key} style={{
+                  display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
+                  borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
+                  color: 'var(--text-secondary)', background: 'var(--surface-active)',
+                  lineHeight: '20px', marginRight: 6, marginBottom: 6,
+                }}>{x.label}</span>
               ))}
             </div>
           </div>

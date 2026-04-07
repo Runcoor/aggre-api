@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Tabs, TabPane, Tag, Button, Dropdown, Modal } from '@douyinfe/semi-ui';
+import { Tabs, TabPane, Button, Dropdown, Modal } from '@douyinfe/semi-ui';
 import { IconEdit, IconDelete } from '@douyinfe/semi-icons';
 import { getLobeHubIcon, showError, showSuccess } from '../../../helpers';
 import { API } from '../../../helpers';
@@ -94,12 +94,15 @@ const ModelsTabs = ({
         tab={
           <span className='flex items-center gap-2'>
             {t('全部')}
-            <Tag
-              color={activeVendorKey === 'all' ? 'red' : 'grey'}
-              shape='circle'
-            >
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
+              borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
+              fontFamily: 'var(--font-mono)', lineHeight: '20px',
+              color: activeVendorKey === 'all' ? 'var(--error)' : 'var(--text-muted)',
+              background: activeVendorKey === 'all' ? 'rgba(255, 59, 48, 0.12)' : 'var(--surface-active)',
+            }}>
               {vendorCounts['all'] || 0}
-            </Tag>
+            </span>
           </span>
         }
       />
@@ -115,12 +118,15 @@ const ModelsTabs = ({
               <span className='flex items-center gap-2'>
                 {getLobeHubIcon(vendor.icon || 'Layers', 14)}
                 {vendor.name}
-                <Tag
-                  color={activeVendorKey === key ? 'red' : 'grey'}
-                  shape='circle'
-                >
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
+                  borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
+                  fontFamily: 'var(--font-mono)', lineHeight: '20px',
+                  color: activeVendorKey === key ? 'var(--error)' : 'var(--text-muted)',
+                  background: activeVendorKey === key ? 'rgba(255, 59, 48, 0.12)' : 'var(--surface-active)',
+                }}>
                   {count}
-                </Tag>
+                </span>
                 <Dropdown
                   trigger='click'
                   position='bottomRight'

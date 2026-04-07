@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Col, Form, Row, Tag } from '@douyinfe/semi-ui';
+import { Button, Col, Form, Row } from '@douyinfe/semi-ui';
 import {
   compareObjects,
   API,
@@ -166,8 +166,20 @@ export default function SettingsDrawing(props) {
                   field={'MjModeClearEnabled'}
                   label={
                     <>
-                      {t('开启之后会清除用户提示词中的')} <Tag>--fast</Tag> 、
-                      <Tag>--relax</Tag> {t('以及')} <Tag>--turbo</Tag>{' '}
+                      {t('开启之后会清除用户提示词中的')} <code style={{
+                        padding: '1px 6px', borderRadius: 'var(--radius-sm)', fontSize: '12px',
+                        fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
+                        background: 'var(--surface-active)',
+                      }}>--fast</code> 、
+                      <code style={{
+                        padding: '1px 6px', borderRadius: 'var(--radius-sm)', fontSize: '12px',
+                        fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
+                        background: 'var(--surface-active)',
+                      }}>--relax</code> {t('以及')} <code style={{
+                        padding: '1px 6px', borderRadius: 'var(--radius-sm)', fontSize: '12px',
+                        fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
+                        background: 'var(--surface-active)',
+                      }}>--turbo</code>{' '}
                       {t('参数')}
                     </>
                   }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
@@ -15,6 +17,45 @@ import (
 	"github.com/bytedance/gopkg/util/gopool"
 	"gorm.io/gorm"
 )
+
+// applyLogKeywordFilter applies a unified OR search across multiple log
+// columns: token_name / username / group / request_id (exact match),
+// model_name (LIKE %keyword%), and channel_id if keyword is numeric.
+// withTablePrefix=true prefixes columns with "logs." for joined queries.
+func applyLogKeywordFilter(tx *gorm.DB, keyword string, withTablePrefix bool) *gorm.DB {
+	keyword = strings.TrimSpace(keyword)
+	if keyword == "" {
+		return tx
+	}
+	prefix := ""
+	if withTablePrefix {
+		prefix = "logs."
+	}
+
+	// Escape LIKE wildcards and ESCAPE char in the pattern
+	escaped := strings.ReplaceAll(keyword, "!", "!!")
+	escaped = strings.ReplaceAll(escaped, "_", "!_")
+	escaped = strings.ReplaceAll(escaped, "%", "!%")
+	likePattern := "%" + escaped + "%"
+
+	conditions := []string{
+		prefix + "token_name = ?",
+		prefix + "model_name LIKE ? ESCAPE '!'",
+		prefix + "username = ?",
+		prefix + logGroupCol + " = ?",
+		prefix + "request_id = ?",
+	}
+	args := []interface{}{keyword, likePattern, keyword, keyword, keyword}
+
+	// Numeric keyword also matches channel_id
+	if chId, err := strconv.Atoi(keyword); err == nil && chId > 0 {
+		conditions = append(conditions, prefix+"channel_id = ?")
+		args = append(args, chId)
+	}
+
+	whereClause := "(" + strings.Join(conditions, " OR ") + ")"
+	return tx.Where(whereClause, args...)
+}
 
 type Log struct {
 	Id               int    `json:"id" gorm:"index:idx_created_at_id,priority:1;index:idx_user_id_id,priority:2"`
@@ -243,13 +284,15 @@ func RecordTaskBillingLog(params RecordTaskBillingLogParams) {
 	}
 }
 
-func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, startIdx int, num int, channel int, group string, requestId string) (logs []*Log, total int64, err error) {
+func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, startIdx int, num int, channel int, group string, requestId string, keyword string) (logs []*Log, total int64, err error) {
 	var tx *gorm.DB
 	if logType == LogTypeUnknown {
 		tx = LOG_DB
 	} else {
 		tx = LOG_DB.Where("logs.type = ?", logType)
 	}
+
+	tx = applyLogKeywordFilter(tx, keyword, true)
 
 	if modelName != "" {
 		tx = tx.Where("logs.model_name like ?", modelName)
@@ -329,13 +372,15 @@ func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName
 
 const logSearchCountLimit = 10000
 
-func GetUserLogs(userId int, logType int, startTimestamp int64, endTimestamp int64, modelName string, tokenName string, startIdx int, num int, group string, requestId string) (logs []*Log, total int64, err error) {
+func GetUserLogs(userId int, logType int, startTimestamp int64, endTimestamp int64, modelName string, tokenName string, startIdx int, num int, group string, requestId string, keyword string) (logs []*Log, total int64, err error) {
 	var tx *gorm.DB
 	if logType == LogTypeUnknown {
 		tx = LOG_DB.Where("logs.user_id = ?", userId)
 	} else {
 		tx = LOG_DB.Where("logs.user_id = ? and logs.type = ?", userId, logType)
 	}
+
+	tx = applyLogKeywordFilter(tx, keyword, true)
 
 	if modelName != "" {
 		modelNamePattern, err := sanitizeLikePattern(modelName)
@@ -380,11 +425,15 @@ type Stat struct {
 	Tpm   int `json:"tpm"`
 }
 
-func SumUsedQuota(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, channel int, group string) (stat Stat, err error) {
+func SumUsedQuota(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, channel int, group string, keyword string) (stat Stat, err error) {
 	tx := LOG_DB.Table("logs").Select("sum(quota) quota")
 
 	// 为rpm和tpm创建单独的查询
 	rpmTpmQuery := LOG_DB.Table("logs").Select("count(*) rpm, sum(prompt_tokens) + sum(completion_tokens) tpm")
+
+	// Unified keyword OR search
+	tx = applyLogKeywordFilter(tx, keyword, false)
+	rpmTpmQuery = applyLogKeywordFilter(rpmTpmQuery, keyword, false)
 
 	if username != "" {
 		tx = tx.Where("username = ?", username)

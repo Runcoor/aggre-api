@@ -1,5 +1,12 @@
 package model
 
+import (
+	"strconv"
+	"strings"
+
+	"gorm.io/gorm"
+)
+
 type Midjourney struct {
 	Id          int    `json:"id"`
 	Code        int    `json:"code"`
@@ -31,6 +38,38 @@ type TaskQueryParams struct {
 	MjID           string
 	StartTimestamp string
 	EndTimestamp   string
+	// Keyword — unified OR search across mj_id, prompt, prompt_en, action,
+	// status and numeric channel_id. Used by the card-layout page.
+	Keyword string
+}
+
+// applyMidjourneyKeyword builds the OR search clause for the unified
+// keyword filter and applies it to the given GORM query.
+func applyMidjourneyKeyword(query *gorm.DB, keyword string) *gorm.DB {
+	keyword = strings.TrimSpace(keyword)
+	if keyword == "" {
+		return query
+	}
+	escaped := strings.ReplaceAll(keyword, "!", "!!")
+	escaped = strings.ReplaceAll(escaped, "_", "!_")
+	escaped = strings.ReplaceAll(escaped, "%", "!%")
+	like := "%" + escaped + "%"
+
+	conditions := []string{
+		"mj_id LIKE ? ESCAPE '!'",
+		"prompt LIKE ? ESCAPE '!'",
+		"prompt_en LIKE ? ESCAPE '!'",
+		"action LIKE ? ESCAPE '!'",
+		"status LIKE ? ESCAPE '!'",
+	}
+	args := []interface{}{like, like, like, like, like}
+
+	if chId, err := strconv.Atoi(keyword); err == nil && chId > 0 {
+		conditions = append(conditions, "channel_id = ?")
+		args = append(args, chId)
+	}
+
+	return query.Where("("+strings.Join(conditions, " OR ")+")", args...)
 }
 
 func GetAllUserTask(userId int, startIdx int, num int, queryParams TaskQueryParams) []*Midjourney {
@@ -50,6 +89,7 @@ func GetAllUserTask(userId int, startIdx int, num int, queryParams TaskQueryPara
 	if queryParams.EndTimestamp != "" {
 		query = query.Where("submit_time <= ?", queryParams.EndTimestamp)
 	}
+	query = applyMidjourneyKeyword(query, queryParams.Keyword)
 
 	// 获取数据
 	err = query.Order("id desc").Limit(num).Offset(startIdx).Find(&tasks).Error
@@ -80,6 +120,7 @@ func GetAllTasks(startIdx int, num int, queryParams TaskQueryParams) []*Midjourn
 	if queryParams.EndTimestamp != "" {
 		query = query.Where("submit_time <= ?", queryParams.EndTimestamp)
 	}
+	query = applyMidjourneyKeyword(query, queryParams.Keyword)
 
 	// 获取数据
 	err = query.Order("id desc").Limit(num).Offset(startIdx).Find(&tasks).Error
@@ -198,6 +239,7 @@ func CountAllTasks(queryParams TaskQueryParams) int64 {
 	if queryParams.EndTimestamp != "" {
 		query = query.Where("submit_time <= ?", queryParams.EndTimestamp)
 	}
+	query = applyMidjourneyKeyword(query, queryParams.Keyword)
 	_ = query.Count(&total).Error
 	return total
 }
@@ -215,6 +257,7 @@ func CountAllUserTask(userId int, queryParams TaskQueryParams) int64 {
 	if queryParams.EndTimestamp != "" {
 		query = query.Where("submit_time <= ?", queryParams.EndTimestamp)
 	}
+	query = applyMidjourneyKeyword(query, queryParams.Keyword)
 	_ = query.Count(&total).Error
 	return total
 }

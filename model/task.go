@@ -4,13 +4,46 @@ import (
 	"bytes"
 	"database/sql/driver"
 	"encoding/json"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/dto"
 	commonRelay "github.com/QuantumNous/new-api/relay/common"
+
+	"gorm.io/gorm"
 )
+
+// applyTaskKeyword builds the OR search clause for the unified keyword
+// filter on the tasks table. Matches task_id / action / status / platform
+// (LIKE), and channel_id / user_id when the keyword is numeric.
+func applyTaskKeyword(query *gorm.DB, keyword string) *gorm.DB {
+	keyword = strings.TrimSpace(keyword)
+	if keyword == "" {
+		return query
+	}
+	escaped := strings.ReplaceAll(keyword, "!", "!!")
+	escaped = strings.ReplaceAll(escaped, "_", "!_")
+	escaped = strings.ReplaceAll(escaped, "%", "!%")
+	like := "%" + escaped + "%"
+
+	conditions := []string{
+		"task_id LIKE ? ESCAPE '!'",
+		"action LIKE ? ESCAPE '!'",
+		"status LIKE ? ESCAPE '!'",
+		"platform LIKE ? ESCAPE '!'",
+	}
+	args := []interface{}{like, like, like, like}
+
+	if num, err := strconv.Atoi(keyword); err == nil && num > 0 {
+		conditions = append(conditions, "channel_id = ?", "user_id = ?")
+		args = append(args, num, num)
+	}
+
+	return query.Where("("+strings.Join(conditions, " OR ")+")", args...)
+}
 
 type TaskStatus string
 
@@ -167,6 +200,8 @@ type SyncTaskQueryParams struct {
 	StartTimestamp int64
 	EndTimestamp   int64
 	UserIDs        []int
+	// Keyword — unified OR search used by the card-layout page.
+	Keyword string
 }
 
 func InitTask(platform constant.TaskPlatform, relayInfo *commonRelay.RelayInfo) *Task {
@@ -234,6 +269,7 @@ func TaskGetAllUserTask(userId int, startIdx int, num int, queryParams SyncTaskQ
 	if queryParams.EndTimestamp != 0 {
 		query = query.Where("submit_time <= ?", queryParams.EndTimestamp)
 	}
+	query = applyTaskKeyword(query, queryParams.Keyword)
 
 	// 获取数据
 	err = query.Omit("channel_id").Order("id desc").Limit(num).Offset(startIdx).Find(&tasks).Error
@@ -279,6 +315,7 @@ func TaskGetAllTasks(startIdx int, num int, queryParams SyncTaskQueryParams) []*
 	if queryParams.EndTimestamp != 0 {
 		query = query.Where("submit_time <= ?", queryParams.EndTimestamp)
 	}
+	query = applyTaskKeyword(query, queryParams.Keyword)
 
 	// 获取数据
 	err = query.Order("id desc").Limit(num).Offset(startIdx).Find(&tasks).Error
@@ -466,6 +503,7 @@ func TaskCountAllTasks(queryParams SyncTaskQueryParams) int64 {
 	if queryParams.EndTimestamp != 0 {
 		query = query.Where("submit_time <= ?", queryParams.EndTimestamp)
 	}
+	query = applyTaskKeyword(query, queryParams.Keyword)
 	_ = query.Count(&total).Error
 	return total
 }
@@ -492,6 +530,7 @@ func TaskCountAllUserTask(userId int, queryParams SyncTaskQueryParams) int64 {
 	if queryParams.EndTimestamp != 0 {
 		query = query.Where("submit_time <= ?", queryParams.EndTimestamp)
 	}
+	query = applyTaskKeyword(query, queryParams.Keyword)
 	_ = query.Count(&total).Error
 	return total
 }

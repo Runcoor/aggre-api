@@ -124,7 +124,20 @@ func sanitizeLikePattern(input string) (string, error) {
 
 const searchHardLimit = 100
 
-func SearchUserTokens(userId int, keyword string, token string, offset int, limit int) (tokens []*Token, total int64, err error) {
+// SearchUserTokens searches a user's tokens. Three mutually-compatible
+// modes are supported:
+//
+//  1. Unified keyword mode (q) — new in the card redesign. When q is
+//     non-empty, an OR match is applied across name (LIKE), key (LIKE),
+//     and group (exact). This replaces the two-field filter on the
+//     frontend.
+//  2. Legacy keyword + token (name LIKE AND key LIKE) — kept for
+//     backward compatibility with any external callers.
+//  3. No filters — returns all tokens for the user.
+//
+// If both q and the legacy params are provided, all conditions are
+// ANDed together (q is an additional narrowing filter).
+func SearchUserTokens(userId int, keyword string, token string, q string, offset int, limit int) (tokens []*Token, total int64, err error) {
 	// model 层强制截断
 	if limit <= 0 || limit > searchHardLimit {
 		limit = searchHardLimit
@@ -136,10 +149,13 @@ func SearchUserTokens(userId int, keyword string, token string, offset int, limi
 	if token != "" {
 		token = strings.TrimPrefix(token, "sk-")
 	}
+	if q != "" {
+		q = strings.TrimPrefix(strings.TrimSpace(q), "sk-")
+	}
 
 	// 超量用户（令牌数超过上限）只允许精确搜索，禁止模糊搜索
 	maxTokens := operation_setting.GetMaxUserTokens()
-	hasFuzzy := strings.Contains(keyword, "%") || strings.Contains(token, "%")
+	hasFuzzy := strings.Contains(keyword, "%") || strings.Contains(token, "%") || strings.Contains(q, "%")
 	if hasFuzzy {
 		count, err := CountUserTokens(userId)
 		if err != nil {
@@ -167,6 +183,19 @@ func SearchUserTokens(userId int, keyword string, token string, offset int, limi
 			return nil, 0, err
 		}
 		baseQuery = baseQuery.Where(commonKeyCol+" LIKE ? ESCAPE '!'", tokenPattern)
+	}
+
+	// Unified keyword mode — OR across name / key / group
+	if q != "" {
+		qPattern := "%" + strings.ReplaceAll(
+			strings.ReplaceAll(
+				strings.ReplaceAll(q, "!", "!!"),
+				"_", "!_"),
+			"%", "!%") + "%"
+		baseQuery = baseQuery.Where(
+			"(name LIKE ? ESCAPE '!' OR "+commonKeyCol+" LIKE ? ESCAPE '!' OR "+commonGroupCol+" = ?)",
+			qPattern, qPattern, q,
+		)
 	}
 
 	// 先查匹配总数（用于分页，受 maxTokens 上限保护，避免全表 COUNT）

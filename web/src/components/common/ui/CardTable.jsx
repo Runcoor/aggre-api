@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Table,
@@ -32,6 +32,23 @@ import { IconChevronDown, IconChevronUp } from '@douyinfe/semi-icons';
 import PropTypes from 'prop-types';
 import { useIsMobile } from '../../../hooks/common/useIsMobile';
 import { useMinimumLoadingTime } from '../../../hooks/common/useMinimumLoadingTime';
+
+// CardTable uses a wider breakpoint than the global mobile one (768px), because
+// data tables are very wide and don't fit comfortably until ~1024px+. Below this
+// width we switch to the stacked-card layout so columns are never clipped.
+const CARDTABLE_BREAKPOINT = 1024;
+const useIsNarrowForTable = () => {
+  const query = `(max-width: ${CARDTABLE_BREAKPOINT - 1}px)`;
+  return useSyncExternalStore(
+    (cb) => {
+      const mql = window.matchMedia(query);
+      mql.addEventListener('change', cb);
+      return () => mql.removeEventListener('change', cb);
+    },
+    () => window.matchMedia(query).matches,
+    () => false,
+  );
+};
 
 /**
  * CardTable 响应式表格组件
@@ -48,6 +65,8 @@ const CardTable = ({
   ...tableProps
 }) => {
   const isMobile = useIsMobile();
+  const isNarrow = useIsNarrowForTable();
+  const useCardLayout = isMobile || isNarrow;
   const { t } = useTranslation();
 
   const showSkeleton = useMinimumLoadingTime(loading);
@@ -57,7 +76,7 @@ const CardTable = ({
     return record[rowKey] !== undefined ? record[rowKey] : index;
   };
 
-  if (!isMobile) {
+  if (!useCardLayout) {
     const finalTableProps = hidePagination
       ? { ...tableProps, pagination: false }
       : tableProps;

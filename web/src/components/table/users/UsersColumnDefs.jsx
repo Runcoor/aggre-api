@@ -54,7 +54,7 @@ const InlineBadge = ({ color, bg, mono, children, style: extraStyle }) => (
 );
 
 const roleStyleMap = {
-  1: { color: 'var(--accent)', bg: 'rgba(10, 132, 255, 0.12)', label: '普通用户' },
+  1: { color: 'var(--accent)', bg: 'var(--accent-light)', label: '普通用户' },
   10: { color: 'var(--warning)', bg: 'rgba(255, 149, 0, 0.12)', label: '管理员' },
   100: { color: 'var(--error)', bg: 'rgba(255, 59, 48, 0.12)', label: '超级管理员' },
 };

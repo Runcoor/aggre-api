@@ -1,5 +1,330 @@
 {
   "translation": {
+    "模型验真": "模型验真",
+    "工具": "工具",
+    "cURL 生成器": "cURL 生成器",
+    "端点延迟测试": "端点延迟测试",
+    "Token 计算器": "Token 计算器",
+    "验证代理是否真的在响应目标模型": "验证代理是否真的在响应目标模型",
+    "可视化构造请求,一键生成可复制代码": "可视化构造请求,一键生成可复制代码",
+    "连续探测,统计 P50 / P95 / 首字延迟": "连续探测,统计 P50 / P95 / 首字延迟",
+    "估算 Token 数量并对比多模型调用成本": "估算 Token 数量并对比多模型调用成本",
+    "价格": "价格",
+    "plans": {
+      "popular": "最受欢迎",
+      "tier": {
+        "free": "免费版",
+        "paid": "按量付费",
+        "enterprise": "用量优惠 / 专属支持"
+      },
+      "hero": {
+        "kicker": "灵活定价 · 按需付费",
+        "title1": "适合每个规模的",
+        "title2": "精准计费",
+        "desc": "无需订阅,无需承诺。注册即可免费试用部分模型,正式使用按实际消耗结算。规模上来后享受用量阶梯优惠和专属技术支持。"
+      },
+      "free": {
+        "title": "免费",
+        "price": "¥0",
+        "desc": "适合个人探索、轻度试用以及评估模型表现。",
+        "f1": "免费使用部分基础模型",
+        "f2": "标准频率限制",
+        "f3": "社区论坛支持",
+        "f4": "无法调用 Pro / 旗舰模型",
+        "f5": "无 SLA 与售后承诺",
+        "cta": "立即免费开始"
+      },
+      "paid": {
+        "title": "按量付费",
+        "price": "按用量",
+        "priceUnit": "/ 实际消耗",
+        "desc": "为正在构建产品的开发者准备,按实际 Token 消耗精确结算,无任何月费。",
+        "f1": "包含免费版全部功能",
+        "f2": "全部主流模型(GPT / Claude / Gemini / Grok)",
+        "f3": "高并发 API 调用",
+        "f4": "邮件优先支持",
+        "f5": "灵活充值,余额永不过期",
+        "cta": "前往充值"
+      },
+      "enterprise": {
+        "title": "用量优惠",
+        "price": "联系我们",
+        "desc": "为团队和企业级用户准备,提供阶梯折扣、专属通道与一对一技术对接。",
+        "f1": "用量阶梯折扣最高 30%+",
+        "f2": "专属客户经理",
+        "f3": "私有化部署可选",
+        "f4": "99.9% SLA 可用性保障",
+        "f5": "定制集成与培训支持",
+        "cta": "联系销售"
+      },
+      "compare": {
+        "title": "深度功能对比",
+        "feature": "功能项",
+        "modelAccess": "可用模型",
+        "modelAccess_free": "部分基础模型",
+        "modelAccess_paid": "全部主流模型",
+        "modelAccess_enterprise": "无限制 + 自定义部署",
+        "requestLimit": "请求频率",
+        "requestLimit_free": "标准限速",
+        "requestLimit_paid": "高并发",
+        "requestLimit_enterprise": "无限并发",
+        "contextWindow": "上下文窗口",
+        "contextWindow_paid": "全量(最高 1M)",
+        "contextWindow_enterprise": "全量 + 缓存优化",
+        "support": "技术支持",
+        "support_free": "社区论坛",
+        "support_paid": "邮件优先",
+        "support_enterprise": "专属客户经理",
+        "discount": "用量折扣",
+        "discount_paid": "充值阶梯优惠",
+        "discount_enterprise": "最高 30%+ 折扣",
+        "sla": "SLA 保障",
+        "sla_paid": "标准服务",
+        "api": "API 访问",
+        "api_free": "标准 API",
+        "api_paid": "完整 API + 流式",
+        "api_enterprise": "完整 API + 私有化"
+      },
+      "cta": {
+        "title": "准备好开始了吗?",
+        "desc": "几秒钟创建账号,免费试用所有基础模型。无需绑定信用卡,无需任何承诺。",
+        "primary": "免费注册",
+        "primaryAuth": "前往控制台",
+        "secondary": "联系我们"
+      }
+    },
+    "tools": {
+      "curl": {
+        "title": "cURL / SDK 生成器",
+        "desc": "可视化构造一个标准的 OpenAI 兼容 Chat Completions 请求,一键生成 cURL、Python、Node.js、Go 四种可复制代码。所有操作在浏览器本地完成,不会上传任何信息。",
+        "field": {
+          "url": "API BASE URL",
+          "apiKey": "API KEY",
+          "model": "模型",
+          "temperature": "Temperature",
+          "maxTokens": "Max Tokens",
+          "stream": "启用流式响应 (stream: true)"
+        },
+        "messagesTitle": "消息列表",
+        "addMessage": "添加消息",
+        "removeMessage": "删除此消息",
+        "messagePlaceholder": "输入消息内容…",
+        "generatedTitle": "生成的代码",
+        "copy": "复制",
+        "copied": "已复制到剪贴板",
+        "copyFailed": "复制失败"
+      },
+      "tokens": {
+        "title": "Token 计算器 & 成本预估",
+        "desc": "粘贴任意文本,即时估算在不同模型下会消耗多少 token,以及对应的调用成本。支持多模型并排对比,帮你在技术选型时一眼看出最优方案。所有计算均在浏览器本地完成,不会上传任何内容。",
+        "cleared": "已清空",
+        "input": {
+          "title": "输入文本",
+          "placeholder": "把你的 prompt、文档、或对话贴进来,实时计算 token 数量…",
+          "sample": "示例",
+          "clear": "清空"
+        },
+        "stat": {
+          "chars": "字符数",
+          "charsNoSpace": "非空字符",
+          "words": "单词数",
+          "lines": "行数"
+        },
+        "config": {
+          "title": "对比配置",
+          "models": "选择要对比的模型",
+          "modelsPlaceholder": "选择模型…",
+          "outputTokens": "预期输出 Token",
+          "multiplier": "调用次数"
+        },
+        "compare": {
+          "title": "成本对比",
+          "model": "模型",
+          "provider": "提供商",
+          "inputTokens": "输入 Token",
+          "inputCost": "输入成本",
+          "outputCost": "输出成本",
+          "totalCost": "总成本",
+          "cheapest": "最便宜",
+          "priciest": "最贵"
+        },
+        "disclaimer": {
+          "title": "关于精度",
+          "body": "Token 数量基于启发式算法估算,与 tiktoken / Claude tokenizer 等官方分词器偏差通常在 10% 以内。价格基于公开资料,实际账单以官方为准。计算结果仅用于选型预估参考。"
+        }
+      },
+      "latency": {
+        "title": "端点延迟测试",
+        "desc": "对指定端点连续发起 N 次流式探针请求,统计延迟分布(P50 / P95 / P99)和首 token 延迟,直观评估代理的真实性能与稳定性。",
+        "field": {
+          "url": "API BASE URL",
+          "apiKey": "API KEY",
+          "model": "测试模型",
+          "count": "请求次数"
+        },
+        "validation": {
+          "urlRequired": "请填写 API BASE URL",
+          "keyRequired": "请填写 API KEY",
+          "modelRequired": "请填写模型名称",
+          "countRange": "次数必须在 1 ~ 100 之间"
+        },
+        "start": "开始测试",
+        "stop": "停止",
+        "done": "完成 {{count}} 次有效探测",
+        "statsTitle": "延迟统计",
+        "chartTitle": "逐次延迟分布",
+        "stat": {
+          "avg": "平均",
+          "min": "最小",
+          "max": "最大"
+        },
+        "firstTokenLabel": "首 Token 延迟",
+        "success": "成功",
+        "errors": "失败",
+        "axisMax": "峰值 {{max}}"
+      }
+    },
+    "verifier": {
+      "nav": {
+        "verify": "验证",
+        "history": "验证记录",
+        "safety": "安全说明"
+      },
+      "heroTitle": "你的 AI 代理",
+      "heroAccent": "是真的吗?",
+      "heroDesc": "防止模型偷换与影子重定向。本工具直接在浏览器内对你提供的端点进行两阶段探针检测,验证你付费调用的端点是否真的在响应。",
+      "feat": {
+        "input": {
+          "title": "API 接入",
+          "desc": "无缝兼容 OpenAI / Anthropic / Google 三种原生协议与各类代理端点。"
+        },
+        "detect": {
+          "title": "自动检测",
+          "desc": "通过符号探针 + 知识截止双重验证,实时指纹识别模型身份。"
+        },
+        "report": {
+          "title": "查看报告",
+          "desc": "完整呈现检测得分、协议合规性、延迟与吞吐等关键指标。"
+        }
+      },
+      "field": {
+        "url": "API BASE URL",
+        "apiKey": "API KEY",
+        "model": "目标模型",
+        "format": "协议格式"
+      },
+      "format": {
+        "auto": "自动识别"
+      },
+      "presets": "快速选择",
+      "fetch": {
+        "button": "拉取可用模型",
+        "fetching": "拉取中…",
+        "needInputs": "请先填写 URL 与 API Key",
+        "done": "成功拉取 {{count}} 个模型",
+        "empty": "代理返回了空模型列表",
+        "failed": "获取模型失败,请手动填写模型名称",
+        "fallbackHint": "获取模型失败,请手动填写模型名称",
+        "available": "可用模型 ({{count}})",
+        "filterPlaceholder": "搜索模型…",
+        "noMatch": "无匹配模型"
+      },
+      "start": "开始验证",
+      "running": "正在验证…",
+      "runningHint": "正在执行两阶段探针,请稍候(通常 10 ~ 30 秒)…",
+      "scoreLabel": "可信度",
+      "verdict": {
+        "authentic": "真实模型",
+        "suspicious": "存疑",
+        "counterfeit": "疑似伪造"
+      },
+      "resultTitle": "检测结果",
+      "reportId": "报告编号",
+      "stat": {
+        "latency": "延迟",
+        "tps": "吞吐 (t/s)",
+        "input": "输入 Token",
+        "output": "输出 Token"
+      },
+      "viewReplies": "查看原始回复",
+      "stage1": "阶段 1 · 符号探针回复",
+      "stage2": "阶段 2 · 知识截止回复",
+      "errorTitle": "验证失败",
+      "toastDone": "检测完成",
+      "toastFailed": "检测失败",
+      "validation": {
+        "urlRequired": "请填写 API BASE URL",
+        "keyRequired": "请填写 API KEY",
+        "modelRequired": "请填写模型名称"
+      },
+      "check": {
+        "identity": "模型身份一致性",
+        "identityPass": "模型按规范输出中文右引号 ”,身份与官方一致。",
+        "identityFail": "未能输出预期的中文右引号 ”,可能被替换为其它模型。",
+        "knowledge": "知识截止诚实性",
+        "knowledgePass": "面对未知事件如实回答 \"不知道\",未出现幻觉。",
+        "knowledgeFail": "对未来事件未坦诚回答 \"不知道\",存在幻觉编造嫌疑。",
+        "protocol": "协议合规性",
+        "protocolPass": "响应字段完整,符合官方协议规范。",
+        "protocolWarn": "部分字段缺失,但核心协议结构可用。",
+        "protocolFail": "响应字段严重缺失,协议结构异常。",
+        "response": "响应结构完整性",
+        "responsePass": "两阶段响应均能正确解析为 JSON。",
+        "responseWarn": "仅完成单阶段探针,结果置信度降低。",
+        "responseFail": "响应无法解析或结构损坏。"
+      },
+      "history": {
+        "title": "验证记录",
+        "desc": "本地保存最近 20 次验证结果,数据仅存储在你的浏览器中。",
+        "empty": "暂无验证记录",
+        "clear": "清空记录",
+        "cleared": "已清空记录"
+      },
+      "safety": {
+        "title": "安全说明",
+        "intro": "我们非常重视你的密钥与隐私。模型验真工具完全运行在你的浏览器中,以下是我们承诺的安全边界。",
+        "localTitle": "完全本地运行",
+        "localBody": "所有探针请求直接由你的浏览器发起,目标地址即为你输入的 API 端点,中间不经过任何第三方服务器,我们也无法看到任何请求内容。",
+        "keyTitle": "API Key 不会上传",
+        "keyBody": "你的 API Key 仅在内存中临时持有,用于直接访问目标端点。我们不存储、不记录、不写入数据库,关闭页面即彻底丢弃。",
+        "historyTitle": "记录仅存浏览器",
+        "historyBody": "验证历史保存在浏览器 localStorage,且不包含 API Key,可随时一键清空。换设备/换浏览器后不会同步。",
+        "algoTitle": "可解释的算法",
+        "algoBody": "采用两阶段探针:符号探针验证字符级一致性,知识截止探针验证模型诚实性。算法完全开源,可在本页源码中查阅。",
+        "reminder": "建议在专用临时密钥上运行检测,验证完成后及时撤销。该工具仅提供启发式参考,请结合实际业务行为综合判断。"
+      },
+      "cta": {
+        "title": "一手模型 · 满血直连",
+        "desc": "全部模型均为官方一手接入，零阉割满血输出。企业级高可用架构保障稳定性，全球节点就近调度实现极致响应速度。",
+        "start": "进入控制台",
+        "models": "浏览模型目录",
+        "docs": "阅读开发文档",
+        "tagOpenai": "官方满血输出",
+        "tagAnthropic": "企业级稳定保障",
+        "tagGemini": "极致响应速度"
+      },
+      "verifierError": {
+        "endpointEmpty": "API 端点为空",
+        "networkFailed": "网络请求失败",
+        "invalidJson": "上游返回非 JSON 内容",
+        "emptyReasoning": "代理返回了 reasoning 结构但 content 为空。可能是代理解析问题或可疑响应。请降低 reasoning_effort 或换一个非思考模型再测。"
+      }
+    },
+    "wallet": {
+      "currentBalance": "当前余额",
+      "accountHealth": "账户健康",
+      "statusMonitor": "实时状态监控",
+      "uptime": "可用率",
+      "rechargeStatus": "在线充值状态",
+      "rechargeStatusDesc": "近期交易正在处理中，充值完成后额度将自动到账。",
+      "viewLogs": "查看账单",
+      "redemptionCenter": "兑换中心",
+      "redemptionDesc": "输入兑换码即可立即为账户充值额度。",
+      "earningsStats": "收益统计",
+      "transferToBalance": "划转到余额",
+      "yourReferralLink": "你的邀请链接",
+      "rewardRules": "奖励规则"
+    },
     " + Web搜索 {{count}}次 / 1K 次 * {{symbol}}{{price}} * {{ratioType}} {{ratio}}_other": " + Web搜索 {{count}}次 / 1K 次 * {{symbol}}{{price}} * {{ratioType}} {{ratio}}",
     " + 图片生成调用 {{symbol}}{{price}} / 1次 * {{ratioType}} {{ratio}}": " + 图片生成调用 {{symbol}}{{price}} / 1次 * {{ratioType}} {{ratio}}",
     " + 文件搜索 {{count}}次 / 1K 次 * {{symbol}}{{price}} * {{ratioType}} {{ratio}}_other": " + 文件搜索 {{count}}次 / 1K 次 * {{symbol}}{{price}} * {{ratioType}} {{ratio}}",
@@ -221,7 +546,7 @@
     "个人中心": "个人中心",
     "个人中心区域": "个人中心区域",
     "个人信息设置": "个人信息设置",
-    "个人设置": "个人设置",
+    "个人设置": "账号设置",
     "个实例": "个实例",
     "个性化设置": "个性化设置",
     "个性化设置左侧边栏的显示内容": "个性化设置左侧边栏的显示内容",
@@ -282,12 +607,11 @@
     "令牌已重置并已复制到剪贴板": "令牌已重置并已复制到剪贴板",
     "令牌更新成功！": "令牌更新成功！",
     "令牌的额度仅用于限制令牌本身的最大额度使用量，实际的使用受到账户的剩余额度限制": "令牌的额度仅用于限制令牌本身的最大额度使用量，实际的使用受到账户的剩余额度限制",
-    "令牌管理": "令牌管理",
+    "令牌管理": "API 秘钥",
     "以下上游数据可能不可信：": "以下上游数据可能不可信：",
     "以下文件解析失败，已忽略：{{list}}": "以下文件解析失败，已忽略：{{list}}",
     "以及": "以及",
     "仪表盘设置": "仪表盘设置",
-    "价格": "价格",
     "价格：{{symbol}}{{price}} * {{ratioType}}：{{ratio}}": "价格：{{symbol}}{{price}} * {{ratioType}}：{{ratio}}",
     "价格：${{price}} * {{ratioType}}：{{ratio}}": "价格：${{price}} * {{ratioType}}：{{ratio}}",
     "价格暂时不可用，请稍后重试": "价格暂时不可用，请稍后重试",
@@ -299,7 +623,7 @@
     "价格重新计算中...": "价格重新计算中...",
     "价格预估": "价格预估",
     "任务 ID": "任务 ID",
-    "任务日志": "任务日志",
+    "任务日志": "任务记录",
     "任务状态": "任务状态",
     "任务记录": "任务记录",
     "企业账户为特殊返回格式，需要特殊处理，如果非企业账户，请勿勾选": "企业账户为特殊返回格式，需要特殊处理，如果非企业账户，请勿勾选",
@@ -322,7 +646,7 @@
     "使用 用户名 注册": "使用 用户名 注册",
     "使用 邮箱或用户名 登录": "使用 邮箱或用户名 登录",
     "使用ID排序": "使用ID排序",
-    "使用日志": "使用日志",
+    "使用日志": "使用记录",
     "使用模式": "使用模式",
     "使用统计": "使用统计",
     "使用认证器应用（如 Google Authenticator、Microsoft Authenticator）扫描下方二维码：": "使用认证器应用（如 Google Authenticator、Microsoft Authenticator）扫描下方二维码：",
@@ -1162,7 +1486,7 @@
     "操作失败，请重试": "操作失败，请重试",
     "操作成功完成！": "操作成功完成！",
     "操作暂时被禁用": "操作暂时被禁用",
-    "操练场": "操练场",
+    "操练场": "模型测试",
     "操练场和聊天功能": "操练场和聊天功能",
     "支付地址": "支付地址",
     "支付宝": "支付宝",
@@ -1198,7 +1522,7 @@
     "数据库类型": "数据库类型",
     "数据库警告": "数据库警告",
     "数据格式错误": "数据格式错误",
-    "数据看板": "数据看板",
+    "数据看板": "仪表盘",
     "数据看板更新间隔": "数据看板更新间隔",
     "数据看板设置": "数据看板设置",
     "数据看板默认时间粒度": "数据看板默认时间粒度",
@@ -1465,7 +1789,7 @@
     "模型固定价格": "模型固定价格",
     "模型图标": "模型图标",
     "模型定价，需要登录访问": "模型定价，需要登录访问",
-    "模型广场": "模型广场",
+    "模型广场": "模型",
     "模型拉取失败: {{error}}": "模型拉取失败: {{error}}",
     "模型支持的接口端点信息": "模型支持的接口端点信息",
     "模型数据分析": "模型数据分析",
@@ -1869,7 +2193,7 @@
     "磁盘 阈值 (%)": "磁盘 阈值 (%)",
     "磁盘使用率超过此值时拒绝请求": "磁盘使用率超过此值时拒绝请求",
     "保存性能设置": "保存性能设置",
-    "系统设置": "系统设置",
+    "系统设置": "设置",
     "系统访问令牌": "系统访问令牌",
     "约": "约",
     "索引": "索引",
@@ -1891,7 +2215,7 @@
     "结果图片": "结果图片",
     "绘图": "绘图",
     "绘图任务记录": "绘图任务记录",
-    "绘图日志": "绘图日志",
+    "绘图日志": "图片视频记录",
     "绘图设置": "绘图设置",
     "统一的": "统一的",
     "统计Tokens": "统计Tokens",
@@ -2575,7 +2899,7 @@
     "不重试": "不重试",
     "失败后是否重试": "失败后是否重试",
     "重试连接": "重试连接",
-    "钱包管理": "钱包管理",
+    "钱包管理": "账户钱包",
     "链接中的{key}将自动替换为sk-xxxx，{address}将自动替换为系统设置的服务器地址，末尾不带/和/v1": "链接中的{key}将自动替换为sk-xxxx，{address}将自动替换为系统设置的服务器地址，末尾不带/和/v1",
     "销毁容器": "销毁容器",
     "销毁容器失败": "销毁容器失败",
@@ -2980,6 +3304,23 @@
     "从剪贴板粘贴配置": "从剪贴板粘贴配置",
     "剪贴板中未检测到连接信息": "剪贴板中未检测到连接信息",
     "连接信息已填入": "连接信息已填入",
-    "无法读取剪贴板": "无法读取剪贴板"
+    "无法读取剪贴板": "无法读取剪贴板",
+
+    "settings.preferencesInterface": "偏好与界面设置",
+    "settings.deliveryChannels": "通知推送",
+    "settings.displayLanguage": "显示与语言",
+    "settings.accountConnections": "账户绑定",
+    "settings.accountsLinked": "已绑定 {{count}} 个账户",
+    "settings.connected": "已绑定",
+    "settings.primary": "主账户",
+    "settings.linkAccount": "绑定账户",
+    "settings.active": "已激活",
+    "settings.notConnected": "未绑定",
+    "settings.securityInfra": "安全设置",
+    "settings.securityInfraDesc": "管理您的身份验证方式、会话密钥和账户安全。建议每 90 天轮换一次密钥。",
+    "settings.deactivate": "注销账户",
+    "settings.checkinActivity": "签到活动",
+    "settings.currentStreak": "连续签到",
+    "settings.attendance": "出勤率"
   }
 }

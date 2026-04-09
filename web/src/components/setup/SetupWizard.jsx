@@ -342,7 +342,7 @@ const SetupWizard = () => {
                             : 'var(--border-default)',
                         transition: 'background-color 150ms ease-out',
                         boxShadow: isActive
-                          ? '0 0 0 3px rgba(0,122,255,0.2)'
+                          ? '0 0 0 3px rgba(0, 114, 255, 0.22)'
                           : 'none',
                       }}
                     />

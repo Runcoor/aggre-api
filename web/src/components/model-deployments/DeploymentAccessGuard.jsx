@@ -142,7 +142,7 @@ const DeploymentAccessGuard = ({
                         width: '5px',
                         height: '5px',
                         borderRadius: '50%',
-                        background: 'var(--accent)',
+                        background: 'var(--accent-gradient)',
                         flexShrink: 0,
                       }}
                     />
@@ -164,7 +164,7 @@ const DeploymentAccessGuard = ({
               onClick={handleGoToSettings}
               className='!rounded-[var(--radius-md)] mb-4'
               style={{
-                background: 'var(--accent)',
+                background: 'var(--accent-gradient)',
                 color: '#fff',
                 border: 'none',
               }}
@@ -272,7 +272,7 @@ const DeploymentAccessGuard = ({
                 onClick={handleGoToSettings}
                 className='!rounded-[var(--radius-md)]'
                 style={{
-                  background: 'var(--accent)',
+                  background: 'var(--accent-gradient)',
                   color: '#fff',
                   border: 'none',
                 }}

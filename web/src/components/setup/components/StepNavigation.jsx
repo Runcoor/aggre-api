@@ -62,7 +62,7 @@ const StepNavigation = ({
           onClick={next}
           className='!rounded-[var(--radius-md)]'
           style={{
-            background: 'var(--accent)',
+            background: 'var(--accent-gradient)',
             color: '#fff',
             border: 'none',
           }}
@@ -80,7 +80,7 @@ const StepNavigation = ({
           className='!rounded-[var(--radius-md)]'
           icon={<CheckCircle size={16} />}
           style={{
-            background: 'var(--accent)',
+            background: 'var(--accent-gradient)',
             color: '#fff',
             border: 'none',
           }}

@@ -119,7 +119,7 @@ const EditVendorModal = ({ visible, handleClose, refresh, editingVendor }) => {
     <Modal
       title={
         <div className='flex items-center gap-2'>
-          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: isEdit ? 'rgba(0, 122, 255, 0.12)' : 'rgba(52, 199, 89, 0.15)', color: isEdit ? 'var(--accent)' : 'var(--success)' }}>
+          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: isEdit ? 'var(--accent-light)' : 'rgba(52, 199, 89, 0.15)', color: isEdit ? 'var(--accent)' : 'var(--success)' }}>
             <IconSetting size={14} />
           </span>
           <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>{isEdit ? t('编辑供应商') : t('新增供应商')}</span>

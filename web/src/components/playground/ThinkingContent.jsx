@@ -82,7 +82,7 @@ const ThinkingContent = ({
         onClick={() => onToggleReasoningExpansion(message.id)}
       >
         <div className='flex items-center gap-2 sm:gap-4 relative'>
-          <div className='w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--accent)' }}>
+          <div className='w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--accent-gradient)' }}>
             <Brain
               style={{ color: '#fff' }}
               size={styleState.isMobile ? 12 : 16}

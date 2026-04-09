@@ -40,7 +40,7 @@ const SyncWizardModal = ({ visible, onClose, onConfirm, loading, t }) => {
     <Modal
       title={
         <div className='flex items-center gap-2'>
-          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}>
+          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--accent-light)', color: 'var(--accent)' }}>
             <IconRefresh size={14} />
           </span>
           <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>{t('同步向导')}</span>

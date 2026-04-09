@@ -206,7 +206,7 @@ const Setting = () => {
         <div
           className='px-5 py-3 flex items-center gap-2.5'
           style={{
-            background: 'var(--bg-subtle)',
+            background: 'transparent',
             borderBottom: '1px solid var(--border-subtle)',
           }}
         >

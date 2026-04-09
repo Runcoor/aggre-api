@@ -164,7 +164,7 @@ const renderTagType = (t) => {
         fontSize: '12px',
         fontWeight: 500,
         color: 'var(--accent)',
-        background: 'rgba(10, 132, 255, 0.12)',
+        background: 'var(--accent-light)',
         lineHeight: '20px',
         whiteSpace: 'nowrap',
       }}
@@ -594,7 +594,7 @@ export const getChannelsColumns = ({
                   style={{
                     ...quotaBadgeStyle,
                     color: record.type === 57 ? 'var(--accent)' : 'var(--text-secondary)',
-                    background: record.type === 57 ? 'rgba(10, 132, 255, 0.12)' : 'var(--surface-active)',
+                    background: record.type === 57 ? 'var(--accent-light)' : 'var(--surface-active)',
                     cursor: record.type === 57 ? 'pointer' : 'default',
                   }}
                   onClick={() => updateChannelBalance(record)}

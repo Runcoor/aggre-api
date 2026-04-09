@@ -40,58 +40,42 @@ const HeaderLogo = ({
   return (
     <Link
       to='/'
-      className='flex items-center gap-2.5'
+      className='flex items-center'
       style={{ textDecoration: 'none' }}
     >
-      <div
-        className='relative flex-shrink-0'
-        style={{ width: '28px', height: '28px' }}
-      >
-        <SkeletonWrapper loading={isLoading || !logoLoaded} type='image' />
-        <img
-          src={logo}
-          alt='logo'
-          className={`absolute inset-0 w-full h-full transition-opacity duration-150 ${!isLoading && logoLoaded ? 'opacity-100' : 'opacity-0'}`}
-          style={{ borderRadius: 'var(--radius-sm)', objectFit: 'contain' }}
-        />
-      </div>
-      <div className='hidden md:flex items-center gap-2'>
-        <SkeletonWrapper
-          loading={isLoading}
-          type='title'
-          width={120}
-          height={24}
+      <SkeletonWrapper loading={isLoading} type='title' width={140} height={32}>
+        <>
+          <img
+            src='/logo-light.png'
+            alt='logo'
+            className='brand-logo brand-logo-light'
+            style={{ height: '32px', width: 'auto', objectFit: 'contain' }}
+          />
+          <img
+            src='/logo-dark.png'
+            alt='logo'
+            className='brand-logo brand-logo-dark'
+            style={{ height: '32px', width: 'auto', objectFit: 'contain' }}
+          />
+        </>
+      </SkeletonWrapper>
+      {(isSelfUseMode || isDemoSiteMode) && !isLoading && (
+        <span
+          className='whitespace-nowrap ml-2 hidden md:inline-flex'
+          style={{
+            alignItems: 'center',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '11px',
+            padding: '0 6px',
+            lineHeight: '20px',
+            fontWeight: 500,
+            color: isSelfUseMode ? '#AF52DE' : 'var(--accent)',
+            background: isSelfUseMode ? 'rgba(175, 82, 222, 0.12)' : 'var(--accent-light)',
+          }}
         >
-          <span
-            className='text-base font-semibold'
-            style={{
-              color: 'var(--text-primary)',
-              fontFamily: 'var(--font-serif)',
-              letterSpacing: '-0.01em',
-            }}
-          >
-            {systemName}
-          </span>
-        </SkeletonWrapper>
-        {(isSelfUseMode || isDemoSiteMode) && !isLoading && (
-          <span
-            className='whitespace-nowrap'
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: '11px',
-              padding: '0 6px',
-              lineHeight: '20px',
-              fontWeight: 500,
-              color: isSelfUseMode ? '#AF52DE' : 'var(--accent)',
-              background: isSelfUseMode ? 'rgba(175, 82, 222, 0.12)' : 'rgba(10, 132, 255, 0.12)',
-            }}
-          >
-            {isSelfUseMode ? t('自用模式') : t('演示站点')}
-          </span>
-        )}
-      </div>
+          {isSelfUseMode ? t('自用模式') : t('演示站点')}
+        </span>
+      )}
     </Link>
   );
 };

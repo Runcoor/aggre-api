@@ -31,7 +31,6 @@ import {
   renderLimitedItems,
   renderDescription,
 } from '../../../../common/ui/RenderUtils';
-import { useIsMobile } from '../../../../../hooks/common/useIsMobile';
 
 // iOS-style inline badge helper
 const InlineBadge = ({ color, bg, children, style: extraStyle, ...rest }) => (
@@ -136,8 +135,8 @@ export const getPricingTableColumns = ({
   tokenUnit,
   displayPrice,
   showRatio,
+  isMobile = false,
 }) => {
-  const isMobile = useIsMobile();
   const priceDataCache = new WeakMap();
 
   const getPriceData = (record) => {

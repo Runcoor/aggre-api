@@ -29,10 +29,6 @@ import {
 import { useTranslation } from 'react-i18next';
 import { API, showError, getRelativeTime } from '../../helpers';
 import { marked } from 'marked';
-import {
-  IllustrationNoContent,
-  IllustrationNoContentDark,
-} from '@douyinfe/semi-illustrations';
 import { StatusContext } from '../../context/Status';
 import { Bell, Megaphone } from 'lucide-react';
 
@@ -130,10 +126,10 @@ const NoticeModal = ({
         <div className='py-12'>
           <Empty
             image={
-              <IllustrationNoContent style={{ width: 150, height: 150 }} />
+              <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
             }
             darkModeImage={
-              <IllustrationNoContentDark style={{ width: 150, height: 150 }} />
+              <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
             }
             description={t('暂无公告')}
           />
@@ -155,10 +151,10 @@ const NoticeModal = ({
         <div className='py-12'>
           <Empty
             image={
-              <IllustrationNoContent style={{ width: 150, height: 150 }} />
+              <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
             }
             darkModeImage={
-              <IllustrationNoContentDark style={{ width: 150, height: 150 }} />
+              <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
             }
             description={t('暂无系统公告')}
           />
@@ -255,7 +251,7 @@ const NoticeModal = ({
             onClick={onClose}
             style={{
               borderRadius: 'var(--radius-md)',
-              background: 'var(--accent)',
+              background: 'var(--accent-gradient)',
               border: 'none',
             }}
           >

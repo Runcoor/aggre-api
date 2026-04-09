@@ -21,10 +21,6 @@ import React, { useEffect, useState } from 'react';
 import { API, showError } from '../../helpers';
 import { marked } from 'marked';
 import { Empty } from '@douyinfe/semi-ui';
-import {
-  IllustrationConstruction,
-  IllustrationConstructionDark,
-} from '@douyinfe/semi-illustrations';
 import { useTranslation } from 'react-i18next';
 
 const linkStyle = {
@@ -167,10 +163,10 @@ const About = () => {
           >
             <Empty
               image={
-                <IllustrationConstruction style={{ width: 120, height: 120 }} />
+                <img src="/NoDataillustration.svg" style={{ width: 120, height: 120 }} />
               }
               darkModeImage={
-                <IllustrationConstructionDark
+                <img src="/NoDataillustration.svg"
                   style={{ width: 120, height: 120 }}
                 />
               }

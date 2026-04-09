@@ -27,10 +27,6 @@ import {
   Modal,
   Radio,
 } from '@douyinfe/semi-ui';
-import {
-  IllustrationNoResult,
-  IllustrationNoResultDark,
-} from '@douyinfe/semi-illustrations';
 import { IconSearch } from '@douyinfe/semi-icons';
 import { getModelCategories } from '../../../../helpers/render';
 
@@ -114,7 +110,7 @@ const SingleModelSelectModal = ({
         <div className='flex items-center gap-2 py-4'>
           <span
             className='w-6 h-6 flex items-center justify-center'
-            style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}
+            style={{ borderRadius: 'var(--radius-sm)', background: 'var(--accent-light)', color: 'var(--accent)' }}
           >
             <IconSearch size={14} />
           </span>
@@ -148,9 +144,9 @@ const SingleModelSelectModal = ({
       <div style={{ maxHeight: 400, overflowY: 'auto', paddingRight: 8 }}>
         {filteredModels.length === 0 ? (
           <Empty
-            image={<IllustrationNoResult style={{ width: 150, height: 150 }} />}
+            image={<img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />}
             darkModeImage={
-              <IllustrationNoResultDark style={{ width: 150, height: 150 }} />
+              <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
             }
             description={t('暂无匹配模型')}
             style={{ padding: 30 }}

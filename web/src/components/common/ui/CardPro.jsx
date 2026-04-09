@@ -87,7 +87,7 @@ const CardPro = ({
         <div
           className='mv-card-pro-header'
           style={{
-            background: 'var(--bg-subtle)',
+            background: 'transparent',
             borderBottom: '1px solid var(--border-subtle)',
           }}
         >
@@ -187,7 +187,7 @@ const CardPro = ({
         <div
           className='mv-card-pro-footer'
           style={{
-            background: 'var(--bg-subtle)',
+            background: 'transparent',
             borderTop: '1px solid var(--border-subtle)',
           }}
         >

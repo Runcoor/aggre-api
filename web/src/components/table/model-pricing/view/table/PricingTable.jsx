@@ -19,11 +19,8 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React, { useMemo } from 'react';
 import { Card, Table, Empty } from '@douyinfe/semi-ui';
-import {
-  IllustrationNoResult,
-  IllustrationNoResultDark,
-} from '@douyinfe/semi-illustrations';
 import { getPricingTableColumns } from './PricingTableColumns';
+import { useIsMobile } from '../../../../../hooks/common/useIsMobile';
 
 const PricingTable = ({
   filteredModels,
@@ -46,6 +43,7 @@ const PricingTable = ({
   openModelDetail,
   t,
 }) => {
+  const isMobile = useIsMobile();
   const columns = useMemo(() => {
     return getPricingTableColumns({
       t,
@@ -59,6 +57,7 @@ const PricingTable = ({
       tokenUnit,
       displayPrice,
       showRatio,
+      isMobile,
     });
   }, [
     t,
@@ -72,6 +71,7 @@ const PricingTable = ({
     tokenUnit,
     displayPrice,
     showRatio,
+    isMobile,
   ]);
 
   // 更新列定义中的 searchValue
@@ -95,27 +95,25 @@ const PricingTable = ({
 
   const ModelTable = useMemo(
     () => (
-      <Card className='overflow-hidden' bordered={false} style={{ borderRadius: 'var(--radius-lg)' }}>
+      <div style={{ padding: '0 8px' }}>
         <Table
+          className='pricing-table-compact'
           columns={processedColumns}
           dataSource={filteredModels}
           loading={loading}
           rowSelection={rowSelection}
           scroll={compactMode ? undefined : { x: 'max-content' }}
+          size='small'
           onRow={(record) => ({
             onClick: () => openModelDetail && openModelDetail(record),
             style: { cursor: 'pointer' },
           })}
           empty={
             <Empty
-              image={
-                <IllustrationNoResult style={{ width: 150, height: 150 }} />
-              }
-              darkModeImage={
-                <IllustrationNoResultDark style={{ width: 150, height: 150 }} />
-              }
+              image={<img src='/NoDataillustration.svg' style={{ width: 120, height: 120 }} />}
+              darkModeImage={<img src='/NoDataillustration.svg' style={{ width: 120, height: 120 }} />}
               description={t('搜索无结果')}
-              style={{ padding: 30 }}
+              style={{ padding: 24 }}
             />
           }
           pagination={{
@@ -126,7 +124,7 @@ const PricingTable = ({
             onPageSizeChange: (size) => setPageSize(size),
           }}
         />
-      </Card>
+      </div>
     ),
     [
       filteredModels,

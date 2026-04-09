@@ -534,7 +534,7 @@ const OllamaModelModal = ({
         <div className='flex items-center gap-2'>
           <span
             className='w-6 h-6 flex items-center justify-center'
-            style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}
+            style={{ borderRadius: 'var(--radius-sm)', background: 'var(--accent-light)', color: 'var(--accent)' }}
           >
             <IconServer size={14} />
           </span>
@@ -551,7 +551,7 @@ const OllamaModelModal = ({
         <Button
           theme='solid'
           onClick={onCancel}
-          style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent)', color: '#fff', border: 'none' }}
+          style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent-gradient)', color: '#fff' }}
         >
           {t('关闭')}
         </Button>
@@ -669,7 +669,7 @@ const OllamaModelModal = ({
                 {t('已有模型')}
               </Title>
               {models.length > 0 ? (
-                <span className='text-xs px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{models.length}</span>
+                <span className='text-xs px-1.5 py-0.5' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--accent-light)', color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{models.length}</span>
               ) : null}
             </div>
             <Space wrap>

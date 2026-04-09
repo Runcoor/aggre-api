@@ -536,7 +536,7 @@ const SubscriptionPlansCard = ({
                             className='inline-flex items-center gap-1 text-xs px-2 py-0.5 font-medium'
                             style={{
                               borderRadius: 'var(--radius-sm)',
-                              background: 'rgba(0, 122, 255, 0.12)',
+                              background: 'var(--accent-light)',
                               color: 'var(--accent)',
                             }}
                           >

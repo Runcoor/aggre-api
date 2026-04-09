@@ -17,7 +17,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
+import { ShieldCheck, Terminal, Gauge, Calculator } from 'lucide-react';
 
 export const useNavigation = (t, docsLink, headerNavModules) => {
   const mainNavLinks = useMemo(() => {
@@ -49,16 +50,50 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
         itemKey: 'pricing',
         to: '/pricing',
       },
-      ...(docsLink
-        ? [
-            {
-              text: t('文档'),
-              itemKey: 'docs',
-              isExternal: true,
-              externalLink: docsLink,
-            },
-          ]
-        : []),
+      {
+        text: t('价格'),
+        itemKey: 'plans',
+        to: '/plans',
+      },
+      {
+        text: t('文档'),
+        itemKey: 'docs',
+        to: '/docs',
+      },
+      {
+        text: t('工具'),
+        itemKey: 'tools',
+        children: [
+          {
+            text: t('模型验真'),
+            itemKey: 'verifier',
+            to: '/verifier',
+            description: t('验证代理是否真的在响应目标模型'),
+            icon: React.createElement(ShieldCheck, { size: 16 }),
+          },
+          {
+            text: t('cURL 生成器'),
+            itemKey: 'curl-gen',
+            to: '/tools/curl',
+            description: t('可视化构造请求,一键生成可复制代码'),
+            icon: React.createElement(Terminal, { size: 16 }),
+          },
+          {
+            text: t('Token 计算器'),
+            itemKey: 'tokens',
+            to: '/tools/tokens',
+            description: t('估算 Token 数量并对比多模型调用成本'),
+            icon: React.createElement(Calculator, { size: 16 }),
+          },
+          {
+            text: t('端点延迟测试'),
+            itemKey: 'latency',
+            to: '/tools/latency',
+            description: t('连续探测,统计 P50 / P95 / 首字延迟'),
+            icon: React.createElement(Gauge, { size: 16 }),
+          },
+        ],
+      },
       {
         text: t('关于'),
         itemKey: 'about',
@@ -69,7 +104,13 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
     // 根据配置过滤导航链接
     return allLinks.filter((link) => {
       if (link.itemKey === 'docs') {
-        return docsLink && modules.docs;
+        return modules.docs !== false;
+      }
+      if (link.itemKey === 'tools') {
+        return true; // always visible
+      }
+      if (link.itemKey === 'plans') {
+        return true; // always visible
       }
       if (link.itemKey === 'pricing') {
         // 支持新的pricing配置格式

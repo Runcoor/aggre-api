@@ -168,11 +168,11 @@ const Playground = () => {
     },
     assistant: {
       name: 'Assistant',
-      avatar: getLogo(),
+      avatar: '/favicon.svg',
     },
     system: {
       name: 'System',
-      avatar: getLogo(),
+      avatar: '/favicon.svg',
     },
   };
 
@@ -455,6 +455,12 @@ const Playground = () => {
     onPasteImage: handlePasteImage,
     imageUrls: inputs.imageUrls || [],
     imageEnabled: inputs.imageEnabled || false,
+    inputs,
+    models,
+    onInputChange: handleInputChange,
+    customRequestMode,
+    onToggleSettings: () => setShowSettings(!showSettings),
+    showSettings,
   };
 
   return (

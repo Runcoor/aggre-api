@@ -27,10 +27,6 @@ import {
   Tabs,
   Typography,
 } from '@douyinfe/semi-ui';
-import {
-  IllustrationNoResult,
-  IllustrationNoResultDark,
-} from '@douyinfe/semi-illustrations';
 import { IconSearch } from '@douyinfe/semi-icons';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
 
@@ -273,10 +269,10 @@ const ChannelUpstreamUpdateModal = ({
           {currentModels.length === 0 ? (
             <Empty
               image={
-                <IllustrationNoResult style={{ width: 150, height: 150 }} />
+                <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
               }
               darkModeImage={
-                <IllustrationNoResultDark style={{ width: 150, height: 150 }} />
+                <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
               }
               description={t('暂无匹配模型')}
               style={{ padding: 24 }}

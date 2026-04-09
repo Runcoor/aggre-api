@@ -28,10 +28,6 @@ import {
   TextArea,
   Tooltip,
 } from '@douyinfe/semi-ui';
-import {
-  IllustrationNoResult,
-  IllustrationNoResultDark,
-} from '@douyinfe/semi-illustrations';
 import { Plus, Edit, Trash2, Save, Bell, Maximize2 } from 'lucide-react';
 import {
   API,
@@ -80,7 +76,7 @@ const SettingsAnnouncements = ({ options, refresh }) => {
   const getTypeStyle = (type) => {
     const styleMap = {
       default: { color: 'var(--text-muted)', bg: 'var(--surface-active)' },
-      ongoing: { color: 'var(--accent)', bg: 'rgba(10, 132, 255, 0.12)' },
+      ongoing: { color: 'var(--accent)', bg: 'var(--accent-light)' },
       success: { color: 'var(--success)', bg: 'rgba(52, 199, 89, 0.12)' },
       warning: { color: 'var(--warning)', bg: 'rgba(255, 149, 0, 0.12)' },
       error: { color: 'var(--error)', bg: 'rgba(255, 59, 48, 0.12)' },
@@ -533,10 +529,10 @@ const SettingsAnnouncements = ({ options, refresh }) => {
           empty={
             <Empty
               image={
-                <IllustrationNoResult style={{ width: 150, height: 150 }} />
+                <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
               }
               darkModeImage={
-                <IllustrationNoResultDark style={{ width: 150, height: 150 }} />
+                <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
               }
               description={t('暂无系统公告')}
               style={{ padding: 30 }}

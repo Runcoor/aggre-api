@@ -257,7 +257,7 @@ const renderOperations = (
 // 名称匹配类型渲染（带匹配数量 Tooltip）— iOS system colors
 const nameRuleStyleMap = {
   0: { color: 'var(--success)', bg: 'rgba(52, 199, 89, 0.12)' },
-  1: { color: 'var(--accent)', bg: 'rgba(10, 132, 255, 0.12)' },
+  1: { color: 'var(--accent)', bg: 'var(--accent-light)' },
   2: { color: 'var(--warning)', bg: 'rgba(255, 149, 0, 0.12)' },
   3: { color: 'var(--info, #5856D6)', bg: 'rgba(88, 86, 214, 0.12)' },
 };

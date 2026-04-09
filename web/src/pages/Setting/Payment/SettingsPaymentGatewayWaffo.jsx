@@ -353,7 +353,7 @@ export default function SettingsPaymentGatewayWaffo(props) {
               width: 32,
               height: 32,
               borderRadius: 'var(--radius-md)',
-              background: 'rgba(10, 132, 255, 0.12)',
+              background: 'var(--accent-light)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -551,7 +551,7 @@ export default function SettingsPaymentGatewayWaffo(props) {
               theme='solid'
               style={{
                 borderRadius: 'var(--radius-md)',
-                background: 'var(--accent)',
+                background: 'var(--accent-gradient)',
                 border: 'none',
               }}
               onClick={submitWaffoSetting}
@@ -611,7 +611,7 @@ export default function SettingsPaymentGatewayWaffo(props) {
                 theme='solid'
                 style={{
                   borderRadius: 'var(--radius-md)',
-                  background: 'var(--accent)',
+                  background: 'var(--accent-gradient)',
                   border: 'none',
                 }}
                 onClick={submitWaffoSetting}

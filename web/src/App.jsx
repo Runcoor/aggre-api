@@ -51,10 +51,33 @@ import Setup from './pages/Setup';
 import SetupCheck from './components/layout/SetupCheck';
 
 const Home = lazy(() => import('./pages/Home'));
+const HomeLanding = lazy(() => import('./pages/Home/HomeLanding'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const About = lazy(() => import('./pages/About'));
+const Docs = lazy(() => import('./pages/Docs'));
 const UserAgreement = lazy(() => import('./pages/UserAgreement'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const Security = lazy(() => import('./pages/Security'));
+const Verifier = lazy(() => import('./pages/Verifier'));
+const CurlGenerator = lazy(() => import('./pages/Tools/CurlGenerator'));
+const LatencyTester = lazy(() => import('./pages/Tools/LatencyTester'));
+const TokenCalculator = lazy(() => import('./pages/Tools/TokenCalculator'));
+const PlansPage = lazy(() => import('./pages/Plans'));
+
+// Shared shell for standalone tool pages — centered column, top padding,
+// auto dark mode. Wraps CurlGenerator and LatencyTester.
+const ToolPageShell = ({ children }) => (
+  <div
+    style={{
+      minHeight: 'calc(100vh - var(--header-height))',
+      background: 'var(--bg-base)',
+      padding: '32px 24px',
+    }}
+  >
+    <div style={{ maxWidth: 1000, margin: '0 auto' }}>{children}</div>
+  </div>
+);
 
 function DynamicOAuth2Callback() {
   const { provider } = useParams();
@@ -93,6 +116,14 @@ function App() {
       <Routes>
         <Route
           path='/'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <HomeLanding />
+            </Suspense>
+          }
+        />
+        <Route
+          path='/home-old'
           element={
             <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <Home />
@@ -336,10 +367,34 @@ function App() {
           }
         />
         <Route
+          path='/plans'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <PlansPage />
+            </Suspense>
+          }
+        />
+        <Route
           path='/about'
           element={
             <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <About />
+            </Suspense>
+          }
+        />
+        <Route
+          path='/docs'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <Docs />
+            </Suspense>
+          }
+        />
+        <Route
+          path='/docs/*'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <Docs />
             </Suspense>
           }
         />
@@ -356,6 +411,60 @@ function App() {
           element={
             <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <PrivacyPolicy />
+            </Suspense>
+          }
+        />
+        <Route
+          path='/terms-of-service'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <TermsOfService />
+            </Suspense>
+          }
+        />
+        <Route
+          path='/verifier'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <Verifier />
+            </Suspense>
+          }
+        />
+        <Route
+          path='/tools/curl'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <ToolPageShell>
+                <CurlGenerator />
+              </ToolPageShell>
+            </Suspense>
+          }
+        />
+        <Route
+          path='/tools/latency'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <ToolPageShell>
+                <LatencyTester />
+              </ToolPageShell>
+            </Suspense>
+          }
+        />
+        <Route
+          path='/tools/tokens'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <ToolPageShell>
+                <TokenCalculator />
+              </ToolPageShell>
+            </Suspense>
+          }
+        />
+        <Route
+          path='/security'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <Security />
             </Suspense>
           }
         />

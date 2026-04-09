@@ -20,10 +20,6 @@ For commercial licensing, please contact support@quantumnous.com
 import React from 'react';
 import { Empty } from '@douyinfe/semi-ui';
 import { Server, Gauge, ExternalLink } from 'lucide-react';
-import {
-  IllustrationConstruction,
-  IllustrationConstructionDark,
-} from '@douyinfe/semi-illustrations';
 import ScrollableContainer from '../common/ui/ScrollableContainer';
 
 const ApiInfoPanel = ({
@@ -148,9 +144,9 @@ const ApiInfoPanel = ({
         ) : (
           <div className='flex justify-center items-center min-h-[20rem] w-full'>
             <Empty
-              image={<IllustrationConstruction style={ILLUSTRATION_SIZE} />}
+              image={<img src="/NoDataillustration.svg" style={ILLUSTRATION_SIZE} />}
               darkModeImage={
-                <IllustrationConstructionDark style={ILLUSTRATION_SIZE} />
+                <img src="/NoDataillustration.svg" style={ILLUSTRATION_SIZE} />
               }
               title={t('暂无API信息')}
               description={t('请联系管理员在系统设置中配置API信息')}

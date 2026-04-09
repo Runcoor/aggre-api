@@ -93,7 +93,7 @@ const Forbidden = () => {
             theme='solid'
             onClick={() => navigate('/')}
             style={{
-              background: 'var(--accent)',
+              background: 'var(--accent-gradient)',
               color: '#fff',
               border: 'none',
               borderRadius: 'var(--radius-md)',

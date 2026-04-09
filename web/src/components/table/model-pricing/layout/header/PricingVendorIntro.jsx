@@ -19,7 +19,6 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import {
-  Card,
   Tag,
   Avatar,
   Typography,
@@ -59,7 +58,7 @@ const COMPONENT_STYLES = {
     'w-16 h-16 flex items-center justify-center',
   avatarContainerStyle: {
     borderRadius: 'var(--radius-lg)',
-    background: 'var(--surface-active)',
+    background: 'var(--semi-color-bg-0, #fff)',
     border: '1px solid var(--border-subtle)',
   },
   titleText: { color: 'var(--text-primary)', fontFamily: 'var(--font-serif)' },
@@ -264,14 +263,6 @@ const PricingVendorIntro = memo(
       [vendorInfo, t],
     );
 
-    const createCoverStyle = useCallback(
-      () => ({
-        background: 'var(--bg-subtle)',
-        borderBottom: '1px solid var(--border-subtle)',
-      }),
-      [],
-    );
-
     const renderSearchActions = useCallback(
       () => (
         <SearchActions
@@ -321,50 +312,43 @@ const PricingVendorIntro = memo(
 
     const renderHeaderCard = useCallback(
       ({ title, count, description, rightContent }) => (
-        <Card
-          style={{ borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-default)', background: 'var(--surface)' }}
-          cover={
-            <div
-              className='relative h-full'
-              style={createCoverStyle()}
-            >
-              <div className='relative z-10 h-full flex items-center justify-between p-4'>
-                <div className='flex-1 min-w-0 mr-4'>
-                  <div className='flex flex-row flex-wrap items-center gap-2 sm:gap-3 mb-2'>
-                    <h2
-                      className='text-lg sm:text-xl font-bold truncate'
-                      style={COMPONENT_STYLES.titleText}
-                    >
-                      {title}
-                    </h2>
-                    <Tag
-                      style={COMPONENT_STYLES.tag}
-                      shape='circle'
-                      size='small'
-                      className='self-center'
-                    >
-                      {t('共 {{count}} 个模型', { count })}
-                    </Tag>
-                  </div>
-                  <Paragraph
-                    className='text-xs sm:text-sm leading-relaxed !mb-0 cursor-pointer'
-                    style={COMPONENT_STYLES.descriptionText}
-                    ellipsis={{ rows: 2 }}
-                    onClick={() => handleOpenDescModal(description)}
+        <div>
+          <div className='flex items-center justify-between' style={{ padding: '12px 16px 10px' }}>
+            <div className='flex items-center gap-3 min-w-0 flex-1'>
+              <div className='flex-shrink-0'>{rightContent}</div>
+              <div className='min-w-0'>
+                <div className='flex items-center gap-2 flex-wrap'>
+                  <h2
+                    className='text-base font-bold truncate'
+                    style={{ ...COMPONENT_STYLES.titleText, margin: 0 }}
                   >
-                    {description}
-                  </Paragraph>
+                    {title}
+                  </h2>
+                  <Tag
+                    style={COMPONENT_STYLES.tag}
+                    shape='circle'
+                    size='small'
+                  >
+                    {t('共 {{count}} 个模型', { count })}
+                  </Tag>
                 </div>
-
-                <div className='flex-shrink-0'>{rightContent}</div>
+                <Paragraph
+                  className='text-xs leading-relaxed !mb-0 cursor-pointer'
+                  style={{ ...COMPONENT_STYLES.descriptionText, marginTop: 2 }}
+                  ellipsis={{ rows: 1 }}
+                  onClick={() => handleOpenDescModal(description)}
+                >
+                  {description}
+                </Paragraph>
               </div>
             </div>
-          }
-        >
-          {renderSearchActions()}
-        </Card>
+          </div>
+          <div style={{ padding: '0 16px 10px' }}>
+            {renderSearchActions()}
+          </div>
+        </div>
       ),
-      [renderSearchActions, createCoverStyle, handleOpenDescModal, t],
+      [renderSearchActions, handleOpenDescModal, t],
     );
 
     const renderAllVendorsAvatar = useCallback(() => {

@@ -19,7 +19,6 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React from 'react';
 import { Skeleton } from '@douyinfe/semi-ui';
-import { VChart } from '@visactor/react-vchart';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -38,18 +37,17 @@ const StatsCards = ({
         {groupedStatsData.map((group, idx) => (
           <div
             key={idx}
-            className='rounded-[var(--radius-lg)] border overflow-hidden'
+            className='rounded-[var(--radius-lg)] overflow-hidden'
             style={{
               background: 'var(--surface)',
-              borderColor: 'var(--border-subtle)',
+              boxShadow: 'var(--shadow-ring)',
             }}
           >
             {/* Panel header — serif title with icon badge */}
             <div
-              className='px-4 py-3 border-b flex items-center gap-2'
+              className='px-4 py-3 flex items-center gap-2'
               style={{
-                borderColor: 'var(--border-subtle)',
-                background: 'var(--surface-hover)',
+                background: 'transparent',
               }}
             >
               <div
@@ -73,6 +71,9 @@ const StatsCards = ({
                 {group.title}
               </span>
             </div>
+
+            {/* Divider */}
+            <div style={{ height: '1px', background: 'var(--border-subtle)', margin: '0 16px' }} />
 
             {/* Stats items */}
             <div className='p-4 space-y-3'>
@@ -145,7 +146,7 @@ const StatsCards = ({
                     <button
                       className='text-xs px-2.5 py-1 rounded-[var(--radius-sm)] transition-colors duration-150 font-medium'
                       style={{
-                        background: 'var(--accent)',
+                        background: 'var(--accent-gradient)',
                         color: '#fff',
                         border: 'none',
                         cursor: 'pointer',
@@ -157,17 +158,7 @@ const StatsCards = ({
                     >
                       {t('充值')}
                     </button>
-                  ) : (
-                    (loading ||
-                      (item.trendData && item.trendData.length > 0)) && (
-                      <div className='w-24 h-10 flex-shrink-0'>
-                        <VChart
-                          spec={getTrendSpec(item.trendData, item.trendColor)}
-                          option={CHART_CONFIG}
-                        />
-                      </div>
-                    )
-                  )}
+                  ) : null}
                 </div>
               ))}
             </div>

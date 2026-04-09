@@ -21,7 +21,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useMinimumLoadingTime } from '../../../hooks/common/useMinimumLoadingTime';
 import { useContainerWidth } from '../../../hooks/common/useContainerWidth';
 import {
-  Divider,
   Button,
   Row,
   Col,
@@ -187,22 +186,18 @@ const SelectableButtonGroup = ({
           return (
             <Col span={getColSpan()} key={item.value}>
               <Button
-                onClick={() => {
-                  /* disabled */
-                }}
+                onClick={() => onChange(item.value)}
                 theme={isActive ? 'light' : 'outline'}
                 type={isActive ? 'primary' : 'tertiary'}
                 className='sbg-button'
-                icon={
+                style={{ width: '100%' }}
+              >
+                <div className='sbg-content'>
                   <Checkbox
                     checked={isActive}
                     onChange={() => onChange(item.value)}
-                    style={{ pointerEvents: 'auto' }}
+                    style={{ pointerEvents: 'none', flexShrink: 0 }}
                   />
-                }
-                style={{ width: '100%', cursor: 'default' }}
-              >
-                <div className='sbg-content'>
                   {item.icon && <span className='sbg-icon'>{item.icon}</span>}
                   <ConditionalTooltipText text={item.label} />
                   {item.tagCount !== undefined && shouldShowTags && (
@@ -247,13 +242,15 @@ const SelectableButtonGroup = ({
       ref={containerRef}
     >
       {title && (
-        <Divider margin='12px' align='left'>
+        <div style={{ padding: '4px 2px 6px', display: 'flex', alignItems: 'center' }}>
           {showSkeleton ? (
-            <Skeleton.Title active style={{ width: 80, height: 14 }} />
+            <Skeleton.Title active style={{ width: 80, height: 12 }} />
           ) : (
-            title
+            <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              {title}
+            </span>
           )}
-        </Divider>
+        </div>
       )}
       {needCollapse && !showSkeleton ? (
         <div style={{ position: 'relative' }}>

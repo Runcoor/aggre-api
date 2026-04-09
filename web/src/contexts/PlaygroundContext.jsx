@@ -37,6 +37,12 @@ export const usePlayground = () => {
       },
       imageUrls: [],
       imageEnabled: false,
+      inputs: {},
+      models: [],
+      onInputChange: () => {},
+      customRequestMode: false,
+      onToggleSettings: () => {},
+      showSettings: false,
     };
   }
   return context;

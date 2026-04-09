@@ -1220,7 +1220,7 @@ export default function SettingsChannelAffinity(props) {
 
                 <Button
                   theme='solid'
-                  style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent)', border: 'none' }}
+                  style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent-gradient)', border: 'none' }}
                   onClick={onSubmit}
                 >
                   {t('保存')}

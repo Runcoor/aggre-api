@@ -91,7 +91,7 @@ const ModelBasicInfo = ({ modelData, vendorsMap = {}, t }) => {
           className='w-8 h-8 flex items-center justify-center mr-2 flex-shrink-0'
           style={{
             borderRadius: 'var(--radius-md)',
-            background: 'rgba(0, 122, 255, 0.12)',
+            background: 'var(--accent-light)',
             color: 'var(--accent)',
           }}
         >

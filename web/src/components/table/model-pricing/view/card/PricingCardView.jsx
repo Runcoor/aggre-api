@@ -18,59 +18,227 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import {
-  Tooltip,
-  Checkbox,
-  Empty,
-  Pagination,
-  Button,
-} from '@douyinfe/semi-ui';
-import { IconHelpCircle } from '@douyinfe/semi-icons';
-import { Copy } from 'lucide-react';
-import {
-  IllustrationNoResult,
-  IllustrationNoResultDark,
-} from '@douyinfe/semi-illustrations';
+import { Checkbox, Empty, Pagination } from '@douyinfe/semi-ui';
 import {
   stringToColor,
   calculateModelPrice,
-  formatPriceInfo,
   getLobeHubIcon,
+  getModelPriceItems,
 } from '../../../../../helpers';
 import PricingCardSkeleton from './PricingCardSkeleton';
 import { useMinimumLoadingTime } from '../../../../../hooks/common/useMinimumLoadingTime';
-import { renderLimitedItems } from '../../../../common/ui/RenderUtils';
 import { useIsMobile } from '../../../../../hooks/common/useIsMobile';
 
-// iOS-style inline badge helper
-const InlineBadge = ({ color, bg, children, style: extraStyle, ...rest }) => (
+
+const ModelIcon = ({ model, size = 48 }) => {
+  const iconKey = model?.icon || model?.vendor_icon;
+  if (iconKey) {
+    return (
+      <span
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          background: 'var(--semi-color-bg-0, #fff)',
+          border: '1px solid var(--border-subtle)',
+          overflow: 'hidden',
+        }}
+      >
+        {getLobeHubIcon(iconKey, size - 16)}
+      </span>
+    );
+  }
+  const text = (model?.model_name || '?').slice(0, 2).toUpperCase();
+  const c = stringToColor(model?.model_name || '');
+  return (
+    <span
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '12px',
+        background: `${c}18`,
+        color: c,
+        fontSize: size * 0.33,
+        fontWeight: 700,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        border: `1px solid ${c}28`,
+      }}
+    >
+      {text}
+    </span>
+  );
+};
+
+const SpecLabel = ({ label, value }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 0 }}>
+    <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.04em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+      {label}
+    </span>
+    <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', whiteSpace: 'nowrap', marginTop: '1px' }}>
+      {value}
+    </span>
+  </div>
+);
+
+const PriceBlock = ({ label, value }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 0 }}>
+    <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.04em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+      {label}
+    </span>
+    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', marginTop: '1px', fontFamily: 'var(--font-mono)' }}>
+      {value}
+    </span>
+  </div>
+);
+
+const TagBadge = ({ children, color, bg }) => (
   <span
     style={{
       display: 'inline-flex',
       alignItems: 'center',
-      gap: '4px',
-      padding: '1px 8px',
-      borderRadius: 'var(--radius-sm)',
-      fontSize: '12px',
-      fontWeight: 500,
+      padding: '1px 7px',
+      borderRadius: '20px',
+      fontSize: '11px',
+      fontWeight: 600,
       color: color || 'var(--text-secondary)',
       background: bg || 'var(--surface-active)',
-      lineHeight: '20px',
       whiteSpace: 'nowrap',
-      ...extraStyle,
+      lineHeight: '18px',
     }}
-    {...rest}
   >
     {children}
   </span>
 );
 
-const CARD_STYLES = {
-  container:
-    'w-12 h-12 flex items-center justify-center relative',
-  icon: 'w-8 h-8 flex items-center justify-center',
-  selected: '',
-  default: '',
+const CACHE_KEYS = new Set(['cache', 'create-cache', 'cache-ratio', 'create-cache-ratio']);
+
+const ModelRow = ({
+  model,
+  isSelected,
+  priceData,
+  rowSelection,
+  copyText,
+  showRatio,
+  openModelDetail,
+  handleCheckboxChange,
+  t,
+}) => {
+  const endpoints = model.supported_endpoint_types || [];
+  const priceItems = priceData ? getModelPriceItems(priceData, t) : [];
+
+  const inputPrice = priceItems.find((i) => i.key === 'input' || i.key === 'prompt');
+  const outputPrice = priceItems.find((i) => i.key === 'output' || i.key === 'completion');
+  const cachePrice = priceItems.find((i) => CACHE_KEYS.has(i.key));
+  const otherSpecs = priceItems.filter(
+    (i) => !['input', 'prompt', 'output', 'completion'].includes(i.key) && !CACHE_KEYS.has(i.key),
+  );
+
+  const tags = model.tags || [];
+
+  return (
+    <div
+      onClick={() => openModelDetail?.(model)}
+      className='pricing-row'
+      style={{
+        borderRadius: 'var(--radius-lg)',
+        background: isSelected ? 'var(--accent-light)' : 'var(--surface)',
+        border: isSelected ? '1px solid var(--accent)' : '1px solid var(--border-default)',
+        padding: '14px 16px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '14px',
+      }}
+    >
+      {/* ── 左侧图标 ── */}
+      <ModelIcon model={model} size={48} />
+
+      {/* ── 中间主体 ── */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* 模型名 + tags */}
+        <div className='flex items-center flex-wrap gap-1.5' style={{ marginBottom: '6px' }}>
+          <span
+            style={{
+              fontSize: '14px',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+              letterSpacing: '-0.01em',
+            }}
+          >
+            {model.model_name}
+          </span>
+          {model.quota_type === 1 && (
+            <TagBadge color='#30B0C7' bg='rgba(48,176,199,0.10)'>{t('按次')}</TagBadge>
+          )}
+          {tags.slice(0, 3).map((tag) => (
+            <TagBadge key={tag}>{tag}</TagBadge>
+          ))}
+        </div>
+
+        {/* 规格标签行 */}
+        <div className='flex items-center flex-wrap gap-3'>
+          {endpoints.slice(0, 4).map((ep) => (
+            <SpecLabel key={ep} label={ep} value={''} />
+          ))}
+          {otherSpecs.slice(0, 3).map((item) => (
+            <SpecLabel key={item.key} label={item.label} value={`${item.value}${item.suffix || ''}`} />
+          ))}
+          {model.description && (
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
+              {model.description}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* ── 右侧价格区 ── */}
+      <div className='flex items-center gap-4 flex-shrink-0'>
+        {inputPrice && (
+          <PriceBlock
+            label={t('输入价格')}
+            value={`${inputPrice.value}${inputPrice.suffix || ''}`}
+          />
+        )}
+        {outputPrice && (
+          <PriceBlock
+            label={t('输出价格')}
+            value={`${outputPrice.value}${outputPrice.suffix || ''}`}
+          />
+        )}
+        {cachePrice && (
+          <PriceBlock
+            label={cachePrice.label}
+            value={`${cachePrice.value}${cachePrice.suffix || ''}`}
+          />
+        )}
+        {showRatio && model.quota_type === 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <span style={{ fontSize: '10px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{t('倍率')}</span>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
+              ×{model.model_ratio}
+            </span>
+          </div>
+        )}
+
+        {rowSelection && (
+          <Checkbox
+            checked={isSelected}
+            onChange={(e) => {
+              e.stopPropagation();
+              handleCheckboxChange(model, e.target.checked);
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
 };
 
 const PricingCardView = ({
@@ -97,160 +265,32 @@ const PricingCardView = ({
   openModelDetail,
 }) => {
   const showSkeleton = useMinimumLoadingTime(loading);
-  const startIndex = (currentPage - 1) * pageSize;
-  const paginatedModels = filteredModels.slice(
-    startIndex,
-    startIndex + pageSize,
-  );
-  const getModelKey = (model) => model.key ?? model.model_name ?? model.id;
   const isMobile = useIsMobile();
+
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedModels = filteredModels.slice(startIndex, startIndex + pageSize);
+  const getModelKey = (m) => m.key ?? m.model_name ?? m.id;
 
   const handleCheckboxChange = (model, checked) => {
     if (!setSelectedRowKeys) return;
-    const modelKey = getModelKey(model);
+    const key = getModelKey(model);
     const newKeys = checked
-      ? Array.from(new Set([...selectedRowKeys, modelKey]))
-      : selectedRowKeys.filter((key) => key !== modelKey);
+      ? Array.from(new Set([...selectedRowKeys, key]))
+      : selectedRowKeys.filter((k) => k !== key);
     setSelectedRowKeys(newKeys);
     rowSelection?.onChange?.(newKeys, null);
   };
 
-  // 获取模型图标
-  const getModelIcon = (model) => {
-    if (!model || !model.model_name) {
-      return (
-        <div className={CARD_STYLES.container}>
-          <div
-            className='w-12 h-12 flex items-center justify-center text-base font-semibold'
-            style={{
-              borderRadius: 'var(--radius-lg)',
-              background: 'var(--surface-active)',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            ?
-          </div>
-        </div>
-      );
-    }
-    // 1) 优先使用模型自定义图标
-    if (model.icon) {
-      return (
-        <div className={CARD_STYLES.container}>
-          <div className={CARD_STYLES.icon}>
-            {getLobeHubIcon(model.icon, 32)}
-          </div>
-        </div>
-      );
-    }
-    // 2) 退化为供应商图标
-    if (model.vendor_icon) {
-      return (
-        <div className={CARD_STYLES.container}>
-          <div className={CARD_STYLES.icon}>
-            {getLobeHubIcon(model.vendor_icon, 32)}
-          </div>
-        </div>
-      );
-    }
-
-    // 如果没有供应商图标，使用模型名称生成头像 — native tinted square
-    const avatarText = model.model_name.slice(0, 2).toUpperCase();
-    const bgColor = stringToColor(model.model_name);
-    return (
-      <div className={CARD_STYLES.container}>
-        <div
-          className='w-12 h-12 flex items-center justify-center text-base font-semibold'
-          style={{
-            borderRadius: 'var(--radius-lg)',
-            background: `${bgColor}1A`,
-            color: bgColor,
-          }}
-        >
-          {avatarText}
-        </div>
-      </div>
-    );
-  };
-
-  // 获取模型描述
-  const getModelDescription = (record) => {
-    return record.description || '';
-  };
-
-  // 渲染标签
-  const renderTags = (record) => {
-    // 计费类型标签（左边）
-    let billingTag = (
-      <InlineBadge key='billing'>-</InlineBadge>
-    );
-    if (record.quota_type === 1) {
-      billingTag = (
-        <InlineBadge key='billing' color='#30B0C7' bg='rgba(48, 176, 199, 0.12)'>
-          {t('按次计费')}
-        </InlineBadge>
-      );
-    } else if (record.quota_type === 0) {
-      billingTag = (
-        <InlineBadge key='billing' color='#5856D6' bg='rgba(88, 86, 214, 0.12)'>
-          {t('按量计费')}
-        </InlineBadge>
-      );
-    }
-
-    // 自定义标签（右边）
-    const customTags = [];
-    if (record.tags) {
-      const tagArr = record.tags.split(',').filter(Boolean);
-      tagArr.forEach((tg, idx) => {
-        customTags.push(
-          <InlineBadge
-            key={`custom-${idx}`}
-            color={stringToColor(tg)}
-            bg={`${stringToColor(tg)}1F`}
-          >
-            {tg}
-          </InlineBadge>,
-        );
-      });
-    }
-
-    return (
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-2'>{billingTag}</div>
-        <div className='flex items-center gap-1'>
-          {customTags.length > 0 &&
-            renderLimitedItems({
-              items: customTags.map((tag, idx) => ({
-                key: `custom-${idx}`,
-                element: tag,
-              })),
-              renderItem: (item, idx) => item.element,
-              maxDisplay: 3,
-            })}
-        </div>
-      </div>
-    );
-  };
-
-  // 显示骨架屏
   if (showSkeleton) {
-    return (
-      <PricingCardSkeleton
-        rowSelection={!!rowSelection}
-        showRatio={showRatio}
-      />
-    );
+    return <PricingCardSkeleton rowSelection={!!rowSelection} showRatio={showRatio} />;
   }
 
   if (!filteredModels || filteredModels.length === 0) {
     return (
-      <div className='flex justify-center items-center py-20'>
+      <div className='flex justify-center items-center py-16'>
         <Empty
-          image={<IllustrationNoResult style={{ width: 150, height: 150 }} />}
-          darkModeImage={
-            <IllustrationNoResultDark style={{ width: 150, height: 150 }} />
-          }
+          image={<img src='/NoDataillustration.svg' style={{ width: 120, height: 120 }} />}
+          darkModeImage={<img src='/NoDataillustration.svg' style={{ width: 120, height: 120 }} />}
           description={t('搜索无结果')}
         />
       </div>
@@ -258,12 +298,11 @@ const PricingCardView = ({
   }
 
   return (
-    <div className='px-2 pt-2'>
-      <div className='grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4'>
+    <div style={{ padding: '8px 16px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {paginatedModels.map((model, index) => {
-          const modelKey = getModelKey(model);
-          const isSelected = selectedRowKeys.includes(modelKey);
-
+          const key = getModelKey(model);
+          const isSelected = selectedRowKeys.includes(key);
           const priceData = calculateModelPrice({
             record: model,
             selectedGroup,
@@ -275,157 +314,35 @@ const PricingCardView = ({
           });
 
           return (
-            <div
-              key={modelKey || index}
-              className='w-full h-full cursor-pointer transition-colors duration-150'
-              style={{
-                borderRadius: 'var(--radius-lg)',
-                background: isSelected ? 'var(--accent-light)' : 'var(--surface)',
-                border: isSelected ? '1px solid var(--accent)' : '1px solid var(--border-default)',
-                padding: '16px',
-              }}
-              onClick={() => openModelDetail && openModelDetail(model)}
-            >
-              <div className='flex flex-col h-full'>
-                {/* 头部：图标 + 模型名称 + 操作按钮 */}
-                <div className='flex items-start justify-between mb-3'>
-                  <div className='flex items-start space-x-3 flex-1 min-w-0'>
-                    {getModelIcon(model)}
-                    <div className='flex-1 min-w-0'>
-                      <h3
-                        className='text-base font-semibold truncate'
-                        style={{
-                          color: 'var(--text-primary)',
-                          fontFamily: 'var(--font-serif)',
-                          letterSpacing: '-0.01em',
-                        }}
-                      >
-                        {model.model_name}
-                      </h3>
-                      <div className='flex flex-col gap-1 text-xs mt-1'>
-                        {formatPriceInfo(priceData, t, siteDisplayType)}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className='flex items-center space-x-2 ml-3'>
-                    {/* 复制按钮 */}
-                    <Button
-                      size='small'
-                      theme='borderless'
-                      type='tertiary'
-                      icon={<Copy size={12} />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        copyText(model.model_name);
-                      }}
-                      style={{
-                        borderRadius: 'var(--radius-sm)',
-                        color: 'var(--text-muted)',
-                      }}
-                    />
-
-                    {/* 选择框 */}
-                    {rowSelection && (
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          handleCheckboxChange(model, e.target.checked);
-                        }}
-                      />
-                    )}
-                  </div>
-                </div>
-
-                {/* 模型描述 - 占据剩余空间 */}
-                <div className='flex-1 mb-4'>
-                  <p
-                    className='text-xs line-clamp-2 leading-relaxed'
-                    style={{ color: 'var(--text-muted)' }}
-                  >
-                    {getModelDescription(model)}
-                  </p>
-                </div>
-
-                {/* 底部区域 */}
-                <div className='mt-auto'>
-                  {/* 标签区域 */}
-                  {renderTags(model)}
-
-                  {/* 倍率信息（可选） */}
-                  {showRatio && (
-                    <div
-                      className='pt-3 mt-3'
-                      style={{ borderTop: '1px solid var(--border-subtle)' }}
-                    >
-                      <div className='flex items-center space-x-1 mb-2'>
-                        <span
-                          className='text-xs font-medium'
-                          style={{
-                            color: 'var(--text-secondary)',
-                            fontFamily: 'var(--font-serif)',
-                          }}
-                        >
-                          {t('倍率信息')}
-                        </span>
-                        <Tooltip
-                          content={t('倍率是为了方便换算不同价格的模型')}
-                        >
-                          <IconHelpCircle
-                            className='cursor-pointer'
-                            style={{ color: 'var(--accent)' }}
-                            size='small'
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setModalImageUrl('/ratio.png');
-                              setIsModalOpenurl(true);
-                            }}
-                          />
-                        </Tooltip>
-                      </div>
-                      <div
-                        className='grid grid-cols-3 gap-2 text-xs'
-                        style={{
-                          color: 'var(--text-secondary)',
-                          fontFamily: 'var(--font-mono)',
-                        }}
-                      >
-                        <div>
-                          <span style={{ fontFamily: 'var(--font-sans)' }}>{t('模型')}: </span>
-                          {model.quota_type === 0 ? model.model_ratio : t('无')}
-                        </div>
-                        <div>
-                          <span style={{ fontFamily: 'var(--font-sans)' }}>{t('补全')}: </span>
-                          {model.quota_type === 0
-                            ? parseFloat(model.completion_ratio.toFixed(3))
-                            : t('无')}
-                        </div>
-                        <div>
-                          <span style={{ fontFamily: 'var(--font-sans)' }}>{t('分组')}: </span>
-                          {priceData?.usedGroupRatio ?? '-'}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <ModelRow
+              key={key || index}
+              model={model}
+              isSelected={isSelected}
+              priceData={priceData}
+              rowSelection={rowSelection}
+              copyText={copyText}
+              showRatio={showRatio}
+              openModelDetail={openModelDetail}
+              handleCheckboxChange={handleCheckboxChange}
+              t={t}
+            />
           );
         })}
       </div>
 
-      {/* 分页 */}
       {filteredModels.length > 0 && (
-        <div className='flex justify-center mt-6 py-4 border-t pricing-pagination-divider'>
+        <div
+          className='flex justify-center py-3'
+          style={{ marginTop: '8px', borderTop: '1px solid var(--border-subtle)' }}
+        >
           <Pagination
             currentPage={currentPage}
             pageSize={pageSize}
             total={filteredModels.length}
-            showSizeChanger={true}
+            showSizeChanger
             pageSizeOptions={[10, 20, 50, 100]}
             size={isMobile ? 'small' : 'default'}
-            showQuickJumper={isMobile}
+            showQuickJumper={!isMobile}
             onPageChange={(page) => setCurrentPage(page)}
             onPageSizeChange={(size) => {
               setPageSize(size);
@@ -437,5 +354,6 @@ const PricingCardView = ({
     </div>
   );
 };
+
 
 export default PricingCardView;

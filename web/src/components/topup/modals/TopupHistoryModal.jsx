@@ -25,10 +25,6 @@ import {
   Button,
   Input,
 } from '@douyinfe/semi-ui';
-import {
-  IllustrationNoResult,
-  IllustrationNoResultDark,
-} from '@douyinfe/semi-illustrations';
 import { Coins } from 'lucide-react';
 import { IconSearch } from '@douyinfe/semi-icons';
 import { API, timestamp2string } from '../../../helpers';
@@ -244,7 +240,7 @@ const TopupHistoryModal = ({ visible, onCancel, t }) => {
     <Modal
       title={
         <div className='flex items-center gap-2'>
-          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}>
+          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--accent-light)', color: 'var(--accent)' }}>
             <Coins size={14} />
           </span>
           <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
@@ -283,9 +279,9 @@ const TopupHistoryModal = ({ visible, onCancel, t }) => {
         size='small'
         empty={
           <Empty
-            image={<IllustrationNoResult style={{ width: 150, height: 150 }} />}
+            image={<img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />}
             darkModeImage={
-              <IllustrationNoResultDark style={{ width: 150, height: 150 }} />
+              <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
             }
             description={t('暂无充值记录')}
             style={{ padding: 30 }}

@@ -78,7 +78,7 @@ const STATUS_TAG_CONFIG = {
   },
   deploying: {
     color: 'var(--accent)',
-    bg: 'rgba(10, 132, 255, 0.12)',
+    bg: 'var(--accent-light)',
     labelKey: '部署中',
     icon: <FaSpinner size={12} style={{ color: 'var(--accent)' }} />,
   },
@@ -120,7 +120,7 @@ const STATUS_TAG_CONFIG = {
   },
   'deployment requested': {
     color: 'var(--accent)',
-    bg: 'rgba(10, 132, 255, 0.12)',
+    bg: 'var(--accent-light)',
     labelKey: '部署请求中',
     icon: <FaSpinner size={12} style={{ color: 'var(--accent)' }} />,
   },
@@ -184,7 +184,7 @@ const getRemainingTheme = (percentRemaining) => {
     return {
       iconColor: 'var(--accent)',
       color: 'var(--accent)',
-      bg: 'rgba(10, 132, 255, 0.12)',
+      bg: 'var(--accent-light)',
       textColor: 'var(--text-muted)',
     };
   }

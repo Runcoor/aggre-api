@@ -2,7 +2,11 @@
 <html lang="zh">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="/logo.png" />
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" id="meta-theme-color" content="#F5F5F7" />
     <meta
@@ -16,7 +20,7 @@
       content="A unified AI model hub for aggregation & distribution. It supports cross-converting various LLMs into OpenAI-compatible, Claude-compatible, or Gemini-compatible formats. A centralized gateway for personal and enterprise model management."
     />
     <meta name="generator" content="new-api" />
-    <title>New API</title>
+    <title>AGGRE TOKEN</title>
     <!-- FOUC prevention: apply theme + initial bg before React/CSS loads -->
     <style>
       html.dark body { background-color: #1c1c1e; color: rgba(255,255,255,0.95); }
@@ -38,9 +42,7 @@
         } catch(e) {}
       })();
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Typography: system-first stack (SF Pro / Segoe UI Variable / PingFang SC / Microsoft YaHei). No web font fetch. -->
     <!--umami-->
     <!--Google Analytics-->
   </head>

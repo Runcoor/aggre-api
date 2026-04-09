@@ -449,63 +449,69 @@ const PersonalSetting = () => {
   };
 
   return (
-    <div>
-      <div className='flex justify-center'>
-        <div className='w-full max-w-7xl mx-auto'>
-          {/* 顶部用户信息区域 */}
-          <UserInfoHeader t={t} userState={userState} />
+    <div className='w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12'>
+      <div className='space-y-16 sm:space-y-20'>
+        {/* Section 1: Hero Profile Header */}
+        <UserInfoHeader t={t} userState={userState} />
 
-          {/* 签到日历 - 仅在启用时显示 */}
-          {status?.checkin_enabled && (
-            <div className='mt-4 md:mt-6'>
-              <CheckinCalendar
-                t={t}
-                status={status}
-                turnstileEnabled={turnstileEnabled}
-                turnstileSiteKey={turnstileSiteKey}
-              />
-            </div>
-          )}
+        {/* Section 2: 签到日历 */}
+        {status?.checkin_enabled && (
+          <CheckinCalendar
+            t={t}
+            status={status}
+            turnstileEnabled={turnstileEnabled}
+            turnstileSiteKey={turnstileSiteKey}
+          />
+        )}
 
-          {/* 账户管理和其他设置 */}
-          <div className='grid grid-cols-1 xl:grid-cols-2 items-start gap-4 md:gap-6 mt-4 md:mt-6'>
-            {/* 左侧：账户管理设置 */}
-            <div className='flex flex-col gap-4 md:gap-6'>
-              <AccountManagement
-                t={t}
-                userState={userState}
-                status={status}
-                systemToken={systemToken}
-                setShowEmailBindModal={setShowEmailBindModal}
-                setShowWeChatBindModal={setShowWeChatBindModal}
-                generateAccessToken={generateAccessToken}
-                handleSystemTokenClick={handleSystemTokenClick}
-                setShowChangePasswordModal={setShowChangePasswordModal}
-                setShowAccountDeleteModal={setShowAccountDeleteModal}
-                passkeyStatus={passkeyStatus}
-                passkeySupported={passkeySupported}
-                passkeyRegisterLoading={passkeyRegisterLoading}
-                passkeyDeleteLoading={passkeyDeleteLoading}
-                onPasskeyRegister={handleRegisterPasskey}
-                onPasskeyDelete={handleRemovePasskey}
-              />
+        {/* Section 3: 账户绑定 + 安全设置 */}
+        <AccountManagement
+          t={t}
+          userState={userState}
+          status={status}
+          systemToken={systemToken}
+          setShowEmailBindModal={setShowEmailBindModal}
+          setShowWeChatBindModal={setShowWeChatBindModal}
+          generateAccessToken={generateAccessToken}
+          handleSystemTokenClick={handleSystemTokenClick}
+          setShowChangePasswordModal={setShowChangePasswordModal}
+          setShowAccountDeleteModal={setShowAccountDeleteModal}
+          passkeyStatus={passkeyStatus}
+          passkeySupported={passkeySupported}
+          passkeyRegisterLoading={passkeyRegisterLoading}
+          passkeyDeleteLoading={passkeyDeleteLoading}
+          onPasskeyRegister={handleRegisterPasskey}
+          onPasskeyDelete={handleRemovePasskey}
+        />
 
-              {/* 偏好设置（语言等） */}
-              <PreferencesSettings t={t} />
-            </div>
-
-            {/* 右侧：其他设置 */}
+        {/* Section 4: 偏好设置 + 通知设置 */}
+        <section
+          style={{
+            background: 'var(--surface)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--border-subtle)',
+            padding: 'clamp(24px, 4vw, 48px)',
+          }}
+        >
+          <h2
+            className='text-2xl sm:text-3xl font-extrabold mb-8 sm:mb-10'
+            style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+          >
+            {t('settings.preferencesInterface')}
+          </h2>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-10 sm:gap-14'>
             <NotificationSettings
               t={t}
               notificationSettings={notificationSettings}
               handleNotificationSettingChange={handleNotificationSettingChange}
               saveNotificationSettings={saveNotificationSettings}
             />
+            <PreferencesSettings t={t} />
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* 模态框组件 */}
+      {/* 模态框 */}
       <EmailBindModal
         t={t}
         showEmailBindModal={showEmailBindModal}
@@ -521,7 +527,6 @@ const PersonalSetting = () => {
         turnstileSiteKey={turnstileSiteKey}
         setTurnstileToken={setTurnstileToken}
       />
-
       <WeChatBindModal
         t={t}
         showWeChatBindModal={showWeChatBindModal}
@@ -531,7 +536,6 @@ const PersonalSetting = () => {
         bindWeChat={bindWeChat}
         status={status}
       />
-
       <AccountDeleteModal
         t={t}
         showAccountDeleteModal={showAccountDeleteModal}
@@ -544,7 +548,6 @@ const PersonalSetting = () => {
         turnstileSiteKey={turnstileSiteKey}
         setTurnstileToken={setTurnstileToken}
       />
-
       <ChangePasswordModal
         t={t}
         showChangePasswordModal={showChangePasswordModal}

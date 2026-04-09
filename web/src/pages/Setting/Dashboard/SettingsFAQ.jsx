@@ -27,10 +27,6 @@ import {
   Switch,
   Tooltip,
 } from '@douyinfe/semi-ui';
-import {
-  IllustrationNoResult,
-  IllustrationNoResultDark,
-} from '@douyinfe/semi-illustrations';
 import { Plus, Edit, Trash2, Save, HelpCircle } from 'lucide-react';
 import { API, showError, showSuccess } from '../../../helpers';
 import { useTranslation } from 'react-i18next';
@@ -441,10 +437,10 @@ const SettingsFAQ = ({ options, refresh }) => {
           empty={
             <Empty
               image={
-                <IllustrationNoResult style={{ width: 150, height: 150 }} />
+                <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
               }
               darkModeImage={
-                <IllustrationNoResultDark style={{ width: 150, height: 150 }} />
+                <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
               }
               description={t('暂无常见问答')}
               style={{ padding: 30 }}

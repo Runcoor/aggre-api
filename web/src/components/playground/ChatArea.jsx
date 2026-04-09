@@ -48,51 +48,65 @@ const ChatArea = ({
 
   return (
     <div
-      className='h-full'
+      className='h-full cy-playground-chat'
       style={{
         padding: 0,
-        height: 'calc(100vh - 66px)',
+        height: 'calc(100vh - var(--header-height))',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        background: 'var(--bg-base)',
+        position: 'relative',
       }}
     >
-      {/* 聊天头部 */}
-      {styleState.isMobile ? (
-        <div className='pt-4'></div>
-      ) : (
-        <div className='px-6 py-4' style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0' }}>
-          <div className='flex items-center justify-between'>
-            <div className='flex items-center gap-3'>
-              <div className='w-10 h-10 flex items-center justify-center' style={{ borderRadius: 'var(--radius-md)', background: 'var(--surface-hover)' }}>
-                <MessageSquare size={20} style={{ color: 'var(--text-secondary)' }} />
-              </div>
-              <div>
-                <h5 className='mb-0 text-base font-semibold' style={{ color: 'var(--text-primary)' }}>
-                  {t('AI 对话')}
-                </h5>
-                <span className='text-sm hidden sm:inline' style={{ color: 'var(--text-muted)' }}>
-                  {inputs.model || t('选择模型开始对话')}
-                </span>
-              </div>
-            </div>
-            <div className='flex items-center gap-2'>
-              <Button
-                icon={showDebugPanel ? <EyeOff size={14} /> : <Eye size={14} />}
-                onClick={onToggleDebugPanel}
-                theme='borderless'
-                type='tertiary'
-                size='small'
-                style={{ borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)' }}
-              >
-                {showDebugPanel ? t('隐藏调试') : t('显示调试')}
-              </Button>
-            </div>
+      {/* Slim header — model name + debug toggle */}
+      <div
+        className='flex items-center justify-between px-4 sm:px-6 py-3 flex-shrink-0'
+        style={{
+          background: 'transparent',
+          borderBottom: '1px solid var(--border-subtle)',
+        }}
+      >
+        <div className='flex items-center gap-2 min-w-0'>
+          <div
+            className='w-7 h-7 flex items-center justify-center flex-shrink-0'
+            style={{
+              borderRadius: 'var(--radius-md)',
+              background:
+                'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)',
+            }}
+          >
+            <MessageSquare size={14} color='#fff' />
           </div>
+          <span
+            className='text-sm font-semibold truncate'
+            style={{ color: 'var(--text-primary)' }}
+          >
+            {t('AI 对话')}
+          </span>
+          <span
+            className='text-xs truncate hidden sm:inline'
+            style={{ color: 'var(--text-muted)' }}
+          >
+            · {inputs?.model || t('选择模型开始对话')}
+          </span>
         </div>
-      )}
+        <Button
+          icon={showDebugPanel ? <EyeOff size={14} /> : <Eye size={14} />}
+          onClick={onToggleDebugPanel}
+          theme='borderless'
+          type='tertiary'
+          size='small'
+          style={{
+            borderRadius: 'var(--radius-md)',
+            color: 'var(--text-secondary)',
+          }}
+        >
+          {showDebugPanel ? t('隐藏调试') : t('显示调试')}
+        </Button>
+      </div>
 
-      {/* 聊天内容区域 */}
+      {/* Chat content */}
       <div className='flex-1 overflow-hidden'>
         <Chat
           ref={chatRef}

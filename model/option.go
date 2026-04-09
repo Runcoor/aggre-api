@@ -178,6 +178,13 @@ func InitOptionMap() {
 func loadOptionsFromDatabase() {
 	options, _ := AllOption()
 	for _, option := range options {
+		// If SystemName was never customized (still the old upstream default),
+		// overwrite it with the current compiled-in default so the brand name
+		// propagates automatically without manual admin intervention.
+		if option.Key == "SystemName" && option.Value == "New API" {
+			_ = UpdateOption("SystemName", common.SystemName)
+			continue
+		}
 		err := updateOptionMap(option.Key, option.Value)
 		if err != nil {
 			common.SysLog("failed to update option map: " + err.Error())

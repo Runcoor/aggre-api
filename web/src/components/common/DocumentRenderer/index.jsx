@@ -20,10 +20,6 @@ For commercial licensing, please contact support@quantumnous.com
 import React, { useEffect, useState } from 'react';
 import { API, showError } from '../../../helpers';
 import { Empty } from '@douyinfe/semi-ui';
-import {
-  IllustrationConstruction,
-  IllustrationConstructionDark,
-} from '@douyinfe/semi-illustrations';
 import { useTranslation } from 'react-i18next';
 import MarkdownRenderer from '../markdown/MarkdownRenderer';
 
@@ -211,10 +207,10 @@ const DocumentRenderer = ({ apiEndpoint, title, cacheKey, emptyMessage }) => {
         <Empty
           title={t('管理员未设置' + title + '内容')}
           image={
-            <IllustrationConstruction style={{ width: 150, height: 150 }} />
+            <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
           }
           darkModeImage={
-            <IllustrationConstructionDark style={{ width: 150, height: 150 }} />
+            <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
           }
           className='p-8'
         />
@@ -271,7 +267,7 @@ const DocumentRenderer = ({ apiEndpoint, title, cacheKey, emptyMessage }) => {
               aria-label={`${t('访问' + title)}: ${content.trim()}`}
               className='inline-block px-6 py-2.5 text-sm font-medium'
               style={{
-                background: 'var(--accent)',
+                background: 'var(--accent-gradient)',
                 color: '#fff',
                 borderRadius: 'var(--radius-md)',
                 textDecoration: 'none',

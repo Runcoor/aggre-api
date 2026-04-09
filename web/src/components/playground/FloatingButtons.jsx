@@ -45,7 +45,7 @@ const FloatingButtons = ({
             height: 36,
             borderRadius: 'var(--radius-md)',
             padding: 0,
-            background: 'var(--accent)',
+            background: 'var(--accent-gradient)',
             color: '#fff',
           }}
           onClick={onToggleSettings}

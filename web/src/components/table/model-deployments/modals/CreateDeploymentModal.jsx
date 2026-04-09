@@ -912,7 +912,7 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
             className='w-6 h-6 flex items-center justify-center flex-shrink-0'
             style={{
               borderRadius: 'var(--radius-sm)',
-              background: 'rgba(10, 132, 255, 0.12)',
+              background: 'var(--accent-light)',
               color: 'var(--accent)',
             }}
           >
@@ -933,7 +933,7 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
       style={{ top: 20 }}
       okButtonProps={{
         style: {
-          background: 'var(--accent)',
+          background: 'var(--accent-gradient)',
           borderColor: 'var(--accent)',
           color: '#fff',
           borderRadius: 'var(--radius-md)',
@@ -986,7 +986,7 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
           <PanelSection
             icon={<Server size={14} />}
             iconColor='var(--accent)'
-            iconBg='rgba(10, 132, 255, 0.12)'
+            iconBg='var(--accent-light)'
             title={t('部署配置')}
           >
             <Form.Input
@@ -1203,7 +1203,7 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
                         {locationLabel && (
                           <InlineBadge
                             color='var(--accent)'
-                            bg='rgba(10, 132, 255, 0.12)'
+                            bg='var(--accent-light)'
                           >
                             {locationLabel}
                           </InlineBadge>
@@ -1601,7 +1601,7 @@ const CreateDeploymentModal = ({ visible, onCancel, onSuccess, t }) => {
                   <Radio value='usdc'>USDC</Radio>
                   <Radio value='iocoin'>IOCOIN</Radio>
                 </RadioGroup>
-                <InlineBadge color='var(--accent)' bg='rgba(10, 132, 255, 0.12)'>
+                <InlineBadge color='var(--accent)' bg='var(--accent-light)'>
                   {currencyLabel}
                 </InlineBadge>
               </div>

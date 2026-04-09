@@ -36,7 +36,7 @@ const TransferModal = ({
     <Modal
       title={
         <div className='flex items-center gap-2'>
-          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}>
+          <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--accent-light)', color: 'var(--accent)' }}>
             <CreditCard size={14} />
           </span>
           <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
@@ -49,7 +49,7 @@ const TransferModal = ({
       onCancel={handleTransferCancel}
       maskClosable={false}
       centered
-      okButtonProps={{ style: { background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)' } }}
+      okButtonProps={{ style: { background: 'var(--accent-gradient)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)' } }}
       cancelButtonProps={{ style: { background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' } }}
     >
       <div className='space-y-4'>

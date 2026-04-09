@@ -265,7 +265,7 @@ const Home = () => {
                       style={{
                         borderRadius: 'var(--radius-md)',
                         padding: '0 24px',
-                        background: 'var(--accent)',
+                        background: 'var(--accent-gradient)',
                         border: 'none',
                       }}
                     >

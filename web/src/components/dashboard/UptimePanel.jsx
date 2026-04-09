@@ -25,10 +25,6 @@ import {
   Empty,
 } from '@douyinfe/semi-ui';
 import { Gauge, RefreshCw } from 'lucide-react';
-import {
-  IllustrationConstruction,
-  IllustrationConstructionDark,
-} from '@douyinfe/semi-illustrations';
 import ScrollableContainer from '../common/ui/ScrollableContainer';
 import MacSpinner from '../common/ui/MacSpinner';
 
@@ -143,9 +139,9 @@ const UptimePanel = ({
           ) : (
             <div className='flex justify-center items-center py-8'>
               <Empty
-                image={<IllustrationConstruction style={ILLUSTRATION_SIZE} />}
+                image={<img src="/NoDataillustration.svg" style={ILLUSTRATION_SIZE} />}
                 darkModeImage={
-                  <IllustrationConstructionDark style={ILLUSTRATION_SIZE} />
+                  <img src="/NoDataillustration.svg" style={ILLUSTRATION_SIZE} />
                 }
                 title={t('暂无监控数据')}
                 description={t('请联系管理员在系统设置中配置Uptime')}

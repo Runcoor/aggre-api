@@ -29,10 +29,6 @@ import {
   Collapse,
   Tooltip,
 } from '@douyinfe/semi-ui';
-import {
-  IllustrationNoResult,
-  IllustrationNoResultDark,
-} from '@douyinfe/semi-illustrations';
 import { IconSearch, IconInfoCircle } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import { getModelCategories } from '../../../../helpers/render';
@@ -314,7 +310,7 @@ const ModelSelectModal = ({
           <div className='flex items-center gap-2'>
             <span
               className='w-6 h-6 flex items-center justify-center'
-              style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}
+              style={{ borderRadius: 'var(--radius-sm)', background: 'var(--accent-light)', color: 'var(--accent)' }}
             >
               <IconSearch size={14} />
             </span>
@@ -359,10 +355,10 @@ const ModelSelectModal = ({
           {filteredModels.length === 0 ? (
             <Empty
               image={
-                <IllustrationNoResult style={{ width: 150, height: 150 }} />
+                <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
               }
               darkModeImage={
-                <IllustrationNoResultDark style={{ width: 150, height: 150 }} />
+                <img src="/NoDataillustration.svg" style={{ width: 150, height: 150 }} />
               }
               description={t('暂无匹配模型')}
               style={{ padding: 30 }}

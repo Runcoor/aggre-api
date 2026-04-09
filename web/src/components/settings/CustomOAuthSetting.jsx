@@ -23,15 +23,12 @@ import {
   Form,
   Row,
   Col,
-  Typography,
   Modal,
   Banner,
-  Card,
   Collapse,
   Switch,
   Table,
   Popconfirm,
-  Space,
 } from '@douyinfe/semi-ui';
 import {
   IconPlus,
@@ -41,8 +38,6 @@ import {
 } from '@douyinfe/semi-icons';
 import { API, showError, showSuccess, getOAuthProviderIcon } from '../../helpers';
 import { useTranslation } from 'react-i18next';
-
-const { Text } = Typography;
 
 // Preset templates for common OAuth providers
 const OAUTH_PRESETS = {
@@ -580,7 +575,7 @@ const CustomOAuthSetting = ({ serverAddress }) => {
       title: t('操作'),
       key: 'actions',
       render: (_, record) => (
-        <Space>
+        <div className='flex items-center gap-2'>
           <Button
             icon={<IconEdit />}
             size="small"
@@ -596,7 +591,7 @@ const CustomOAuthSetting = ({ serverAddress }) => {
               {t('删除')}
             </Button>
           </Popconfirm>
-        </Space>
+        </div>
       ),
     },
   ];
@@ -606,40 +601,52 @@ const CustomOAuthSetting = ({ serverAddress }) => {
     .join(', ');
 
   return (
-    <Card>
-      <Form.Section text={t('自定义 OAuth 提供商')}>
-        <Banner
-          type="info"
-          description={
-            <>
-              {t(
-                '配置自定义 OAuth 提供商，支持 GitHub Enterprise、GitLab、Gitea、Nextcloud、Keycloak、ORY 等兼容 OAuth 2.0 协议的身份提供商'
-              )}
-              <br />
-              {t('回调 URL 格式')}: {serverAddress || t('网站地址')}/oauth/
-              {'{slug}'}
-            </>
-          }
-          style={{ marginBottom: 20 }}
-        />
+    <div className='mv-settings-section'>
+      {/* Section heading — serif, macOS panel style */}
+      <h6
+        className='text-base font-semibold mb-1'
+        style={{
+          fontFamily: 'var(--font-serif)',
+          color: 'var(--text-primary)',
+          letterSpacing: '-0.01em',
+          marginTop: '10px',
+        }}
+      >
+        {t('自定义 OAuth 提供商')}
+      </h6>
+      <p className='text-xs mb-4' style={{ color: 'var(--text-muted)' }}>
+        {t(
+          '配置自定义 OAuth 提供商，支持 GitHub Enterprise、GitLab、Gitea、Nextcloud、Keycloak、ORY 等兼容 OAuth 2.0 协议的身份提供商'
+        )}
+      </p>
 
-        <Button
-          icon={<IconPlus />}
-          theme="solid"
-          onClick={handleAdd}
-          style={{ marginBottom: 16 }}
-        >
-          {t('添加 OAuth 提供商')}
-        </Button>
+      <Banner
+        type="info"
+        description={
+          <>
+            {t('回调 URL 格式')}: <code style={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }}>{serverAddress || t('网站地址')}/oauth/{'{slug}'}</code>
+          </>
+        }
+        style={{ marginBottom: 16 }}
+      />
 
-        <Table
-          columns={columns}
-          dataSource={providers}
-          loading={loading}
-          rowKey="id"
-          pagination={false}
-          empty={t('暂无自定义 OAuth 提供商')}
-        />
+      <Button
+        icon={<IconPlus />}
+        theme="solid"
+        onClick={handleAdd}
+        style={{ marginBottom: 16 }}
+      >
+        {t('添加 OAuth 提供商')}
+      </Button>
+
+      <Table
+        columns={columns}
+        dataSource={providers}
+        loading={loading}
+        rowKey="id"
+        pagination={false}
+        empty={t('暂无自定义 OAuth 提供商')}
+      />
 
         <Modal
           title={editingProvider ? t('编辑 OAuth 提供商') : t('添加 OAuth 提供商')}
@@ -649,17 +656,11 @@ const CustomOAuthSetting = ({ serverAddress }) => {
           centered
           bodyStyle={{ maxHeight: '72vh', overflowY: 'auto', paddingRight: 6 }}
           footer={
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                gap: 12,
-                flexWrap: 'wrap',
-              }}
-            >
-              <Space spacing={8} align='center'>
-                <Text type='secondary'>{t('启用供应商')}</Text>
+            <div className='flex items-center justify-end gap-3 flex-wrap'>
+              <div className='flex items-center gap-2 mr-auto'>
+                <span className='text-xs font-medium' style={{ color: 'var(--text-secondary)' }}>
+                  {t('启用供应商')}
+                </span>
                 <Switch
                   checked={!!formValues.enabled}
                   size='large'
@@ -674,7 +675,7 @@ const CustomOAuthSetting = ({ serverAddress }) => {
                 }}>
                   {formValues.enabled ? t('已启用') : t('已禁用')}
                 </span>
-              </Space>
+              </div>
               <Button onClick={closeModal}>{t('取消')}</Button>
               <Button type='primary' onClick={handleSubmit}>
                 {t('保存')}
@@ -689,12 +690,15 @@ const CustomOAuthSetting = ({ serverAddress }) => {
             }}
             getFormApi={(api) => (formApiRef.current = api)}
           >
-            <Text strong style={{ display: 'block', marginBottom: 8 }}>
+            <h6
+              className='text-sm font-semibold'
+              style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)', letterSpacing: '-0.01em', marginBottom: '4px' }}
+            >
               {t('Configuration')}
-            </Text>
-            <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+            </h6>
+            <p className='text-xs mb-2' style={{ color: 'var(--text-secondary)' }}>
               {t('先填写配置，再自动填充 OAuth 端点，能显著减少手工输入')}
-            </Text>
+            </p>
             {discoveryInfo && (
               <Banner
                 type='success'
@@ -869,9 +873,12 @@ const CustomOAuthSetting = ({ serverAddress }) => {
               </Col>
             </Row>
 
-            <Text strong style={{ display: 'block', margin: '16px 0 8px' }}>
+            <h6
+              className='text-sm font-semibold'
+              style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)', letterSpacing: '-0.01em', margin: '16px 0 8px' }}
+            >
               {t('OAuth 端点')}
-            </Text>
+            </h6>
 
             <Row gutter={16}>
               <Col span={24}>
@@ -936,12 +943,15 @@ const CustomOAuthSetting = ({ serverAddress }) => {
               </Col>
             </Row>
 
-            <Text strong style={{ display: 'block', margin: '16px 0 8px' }}>
+            <h6
+              className='text-sm font-semibold'
+              style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)', letterSpacing: '-0.01em', margin: '16px 0 4px' }}
+            >
               {t('字段映射')}
-            </Text>
-            <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+            </h6>
+            <p className='text-xs mb-2' style={{ color: 'var(--text-secondary)' }}>
               {t('配置如何从用户信息 API 响应中提取用户数据，支持 JSONPath 语法')}
-            </Text>
+            </p>
 
             <Row gutter={16}>
               <Col span={12}>
@@ -1002,12 +1012,15 @@ const CustomOAuthSetting = ({ serverAddress }) => {
                   </Col>
                 </Row>
 
-                <Text strong style={{ display: 'block', margin: '16px 0 8px' }}>
+                <h6
+                  className='text-sm font-semibold'
+                  style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)', letterSpacing: '-0.01em', margin: '16px 0 4px' }}
+                >
                   {t('准入策略')}
-                </Text>
-                <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+                </h6>
+                <p className='text-xs mb-2' style={{ color: 'var(--text-secondary)' }}>
                   {t('可选：基于用户信息 JSON 做组合条件准入，条件不满足时返回自定义提示')}
-                </Text>
+                </p>
                 <Row gutter={16}>
                   <Col span={24}>
                     <Form.TextArea
@@ -1026,14 +1039,14 @@ const CustomOAuthSetting = ({ serverAddress }) => {
                       extraText={t('支持逻辑 and/or 与嵌套 groups；操作符支持 eq/ne/gt/gte/lt/lte/in/not_in/contains/exists')}
                       showClear
                     />
-                    <Space spacing={8} style={{ marginTop: 8 }}>
+                    <div className='flex items-center gap-2 mt-2'>
                       <Button size='small' theme='light' onClick={() => applyAccessPolicyTemplate('level_active')}>
                         {t('填充模板：等级+激活')}
                       </Button>
                       <Button size='small' theme='light' onClick={() => applyAccessPolicyTemplate('org_or_role')}>
                         {t('填充模板：组织或角色')}
                       </Button>
-                    </Space>
+                    </div>
                   </Col>
                 </Row>
                 <Row gutter={16}>
@@ -1047,22 +1060,21 @@ const CustomOAuthSetting = ({ serverAddress }) => {
                       extraText={t('可用变量：{{provider}} {{field}} {{op}} {{required}} {{current}} 以及 {{current.path}}')}
                       showClear
                     />
-                    <Space spacing={8} style={{ marginTop: 8 }}>
+                    <div className='flex items-center gap-2 mt-2'>
                       <Button size='small' theme='light' onClick={() => applyDeniedTemplate('level_hint')}>
                         {t('填充模板：等级提示')}
                       </Button>
                       <Button size='small' theme='light' onClick={() => applyDeniedTemplate('org_hint')}>
                         {t('填充模板：组织提示')}
                       </Button>
-                    </Space>
+                    </div>
                   </Col>
                 </Row>
               </Collapse.Panel>
             </Collapse>
           </Form>
         </Modal>
-      </Form.Section>
-    </Card>
+    </div>
   );
 };
 

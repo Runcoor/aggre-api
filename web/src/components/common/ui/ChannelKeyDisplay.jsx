@@ -179,7 +179,7 @@ const ChannelKeyDisplay = ({
                           fontSize: '12px',
                           fontWeight: 500,
                           fontFamily: 'var(--font-mono)',
-                          background: 'rgba(10, 132, 255, 0.12)',
+                          background: 'var(--accent-light)',
                           color: 'var(--accent)',
                           lineHeight: '20px',
                         }}

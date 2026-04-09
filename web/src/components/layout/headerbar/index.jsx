@@ -17,12 +17,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useHeaderBar } from '../../../hooks/common/useHeaderBar';
 import { useNotifications } from '../../../hooks/common/useNotifications';
 import { useNavigation } from '../../../hooks/common/useNavigation';
 import NoticeModal from '../NoticeModal';
 import MobileMenuButton from './MobileMenuButton';
+import MobileNavDrawer from './MobileNavDrawer';
 import HeaderLogo from './HeaderLogo';
 import Navigation from './Navigation';
 import ActionButtons from './ActionButtons';
@@ -64,9 +65,12 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
 
   const { mainNavLinks } = useNavigation(t, docsLink, headerNavModules);
 
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const showMobileNavDrawer = isMobile && !isConsoleRoute;
+
   return (
     <header
-      className='glass-header sticky top-0 z-50'
+      className='app-header-glass'
       style={{
         height: 'var(--header-height)',
         color: 'var(--text-primary)',
@@ -91,6 +95,18 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
               onToggle={handleMobileMenuToggle}
               t={t}
             />
+
+            {showMobileNavDrawer && (
+              <MobileNavDrawer
+                open={mobileNavOpen}
+                onToggle={() => setMobileNavOpen((o) => !o)}
+                onClose={() => setMobileNavOpen(false)}
+                mainNavLinks={mainNavLinks}
+                userState={userState}
+                pricingRequireAuth={pricingRequireAuth}
+                t={t}
+              />
+            )}
 
             <HeaderLogo
               isMobile={isMobile}

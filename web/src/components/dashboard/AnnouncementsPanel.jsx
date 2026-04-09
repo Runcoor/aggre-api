@@ -21,10 +21,6 @@ import React from 'react';
 import { Timeline, Empty } from '@douyinfe/semi-ui';
 import { Bell } from 'lucide-react';
 import { marked } from 'marked';
-import {
-  IllustrationConstruction,
-  IllustrationConstructionDark,
-} from '@douyinfe/semi-illustrations';
 import ScrollableContainer from '../common/ui/ScrollableContainer';
 
 const AnnouncementsPanel = ({
@@ -140,9 +136,9 @@ const AnnouncementsPanel = ({
         ) : (
           <div className='flex justify-center items-center py-8'>
             <Empty
-              image={<IllustrationConstruction style={ILLUSTRATION_SIZE} />}
+              image={<img src="/NoDataillustration.svg" style={ILLUSTRATION_SIZE} />}
               darkModeImage={
-                <IllustrationConstructionDark style={ILLUSTRATION_SIZE} />
+                <img src="/NoDataillustration.svg" style={ILLUSTRATION_SIZE} />
               }
               title={t('暂无系统公告')}
               description={t('请联系管理员在系统设置中配置公告信息')}

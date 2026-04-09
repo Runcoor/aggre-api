@@ -204,7 +204,7 @@ const AddEditSubscriptionModal = ({
               <span style={{
                 display: 'inline-flex', alignItems: 'center', padding: '1px 8px',
                 borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
-                color: 'var(--accent)', background: 'rgba(10, 132, 255, 0.12)', lineHeight: '20px',
+                color: 'var(--accent)', background: 'var(--accent-light)', lineHeight: '20px',
               }}>{t('更新')}</span>
             ) : (
               <span style={{

@@ -34,6 +34,7 @@ import { useTranslation } from 'react-i18next';
 import { UserContext } from '../../context/User';
 import { StatusContext } from '../../context/Status';
 
+import { Wallet, BarChart2 } from 'lucide-react';
 import RechargeCard from './RechargeCard';
 import InvitationCard from './InvitationCard';
 import TransferModal from './modals/TransferModal';
@@ -713,8 +714,8 @@ const TopUp = () => {
   };
 
   return (
-    <div className='w-full max-w-7xl mx-auto relative min-h-screen lg:min-h-0'>
-      {/* 划转模态框 */}
+    <div className='w-full max-w-5xl mx-auto relative px-4 sm:px-6 py-8 sm:py-12 space-y-8 sm:space-y-10'>
+      {/* 模态框 */}
       <TransferModal
         t={t}
         openTransfer={openTransfer}
@@ -726,8 +727,6 @@ const TopUp = () => {
         transferAmount={transferAmount}
         setTransferAmount={setTransferAmount}
       />
-
-      {/* 充值确认模态框 */}
       <PaymentConfirmModal
         t={t}
         open={open}
@@ -743,19 +742,15 @@ const TopUp = () => {
         amountNumber={amount}
         discountRate={topupInfo?.discount?.[topUpCount] || 1.0}
       />
-
-      {/* 充值账单模态框 */}
       <TopupHistoryModal
         visible={openHistory}
         onCancel={handleHistoryCancel}
         t={t}
       />
-
-      {/* Creem 充值确认模态框 */}
       <Modal
         title={
           <div className='flex items-center gap-2'>
-            <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'rgba(0, 122, 255, 0.12)', color: 'var(--accent)' }}>
+            <span className='w-6 h-6 flex items-center justify-center' style={{ borderRadius: 'var(--radius-sm)', background: 'var(--accent-light)', color: 'var(--accent)' }}>
               <span style={{ fontSize: 14, fontWeight: 700 }}>$</span>
             </span>
             <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-primary)' }}>
@@ -770,7 +765,7 @@ const TopUp = () => {
         size='small'
         centered
         confirmLoading={confirmLoading}
-        okButtonProps={{ style: { background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)' } }}
+        okButtonProps={{ style: { background: 'var(--accent-gradient)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)' } }}
         cancelButtonProps={{ style: { background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' } }}
       >
         {selectedCreemProduct && (
@@ -794,63 +789,137 @@ const TopUp = () => {
         )}
       </Modal>
 
-      {/* 主布局区域 */}
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-        <RechargeCard
-          t={t}
-          enableOnlineTopUp={enableOnlineTopUp}
-          enableStripeTopUp={enableStripeTopUp}
-          enableCreemTopUp={enableCreemTopUp}
-          creemProducts={creemProducts}
-          creemPreTopUp={creemPreTopUp}
-          enableWaffoTopUp={enableWaffoTopUp}
-          waffoTopUp={waffoTopUp}
-          waffoPayMethods={waffoPayMethods}
-          presetAmounts={presetAmounts}
-          selectedPreset={selectedPreset}
-          selectPresetAmount={selectPresetAmount}
-          formatLargeNumber={formatLargeNumber}
-          priceRatio={priceRatio}
-          topUpCount={topUpCount}
-          minTopUp={minTopUp}
-          renderQuotaWithAmount={renderQuotaWithAmount}
-          getAmount={getAmount}
-          setTopUpCount={setTopUpCount}
-          setSelectedPreset={setSelectedPreset}
-          renderAmount={renderAmount}
-          amountLoading={amountLoading}
-          payMethods={payMethods}
-          preTopUp={preTopUp}
-          paymentLoading={paymentLoading}
-          payWay={payWay}
-          redemptionCode={redemptionCode}
-          setRedemptionCode={setRedemptionCode}
-          topUp={topUp}
-          isSubmitting={isSubmitting}
-          topUpLink={topUpLink}
-          openTopUpLink={openTopUpLink}
-          userState={userState}
-          renderQuota={renderQuota}
-          statusLoading={statusLoading}
-          topupInfo={topupInfo}
-          onOpenHistory={handleOpenHistory}
-          subscriptionLoading={subscriptionLoading}
-          subscriptionPlans={subscriptionPlans}
-          billingPreference={billingPreference}
-          onChangeBillingPreference={updateBillingPreference}
-          activeSubscriptions={activeSubscriptions}
-          allSubscriptions={allSubscriptions}
-          reloadSubscriptionSelf={getSubscriptionSelf}
-        />
-        <InvitationCard
-          t={t}
-          userState={userState}
-          renderQuota={renderQuota}
-          setOpenTransfer={setOpenTransfer}
-          affLink={affLink}
-          handleAffLinkClick={handleAffLinkClick}
-        />
-      </div>
+      {/* Section 1: Hero — 余额 + 账户健康 */}
+      <section>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
+          {/* 主余额卡片 — 渐变 */}
+          <div
+            className='md:col-span-2 relative overflow-hidden flex flex-col justify-between'
+            style={{
+              background: 'var(--accent-gradient)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '32px 28px',
+              minHeight: 200,
+              boxShadow: '0 20px 40px rgba(0,114,255,0.12)',
+            }}
+          >
+            <div className='relative z-10'>
+              <div className='flex items-center gap-2 mb-2' style={{ opacity: 0.85 }}>
+                <Wallet size={16} color='#fff' />
+                <span className='text-xs font-semibold tracking-wider uppercase' style={{ color: 'rgba(255,255,255,0.9)' }}>
+                  {t('wallet.currentBalance')}
+                </span>
+              </div>
+              <div className='font-extrabold tracking-tighter' style={{ fontSize: 'clamp(36px, 8vw, 56px)', color: '#fff', fontFamily: 'var(--font-serif)', lineHeight: 1.1 }}>
+                {renderQuota(userState?.user?.quota)}
+              </div>
+            </div>
+            <div className='relative z-10 flex gap-8 sm:gap-10 mt-5'>
+              <div>
+                <p className='text-[10px] uppercase tracking-widest font-semibold mb-1' style={{ color: 'rgba(255,255,255,0.6)' }}>{t('历史消耗')}</p>
+                <p className='text-lg sm:text-xl font-bold' style={{ color: '#fff', fontFamily: 'var(--font-mono)' }}>{renderQuota(userState?.user?.used_quota)}</p>
+              </div>
+              <div>
+                <p className='text-[10px] uppercase tracking-widest font-semibold mb-1' style={{ color: 'rgba(255,255,255,0.6)' }}>{t('请求次数')}</p>
+                <p className='text-lg sm:text-xl font-bold' style={{ color: '#fff', fontFamily: 'var(--font-mono)' }}>{userState?.user?.request_count || 0}</p>
+              </div>
+            </div>
+            {/* 装饰圆 */}
+            <div style={{ position: 'absolute', right: -60, top: -60, width: 240, height: 240, background: 'rgba(255,255,255,0.08)', borderRadius: '50%', filter: 'blur(40px)' }} />
+            <div style={{ position: 'absolute', left: -30, bottom: -30, width: 120, height: 120, background: 'rgba(0,0,0,0.08)', borderRadius: '50%', filter: 'blur(30px)' }} />
+          </div>
+
+          {/* 账户健康卡 */}
+          <div
+            className='flex flex-col justify-center'
+            style={{
+              background: 'var(--surface)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '24px',
+              border: '1px solid var(--border-subtle)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.03)',
+            }}
+          >
+            <div className='mb-5'>
+              <span
+                className='inline-flex items-center justify-center mb-3'
+                style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', background: 'var(--accent-light)' }}
+              >
+                <BarChart2 size={20} style={{ color: 'var(--accent)' }} />
+              </span>
+              <h3 className='text-lg font-bold' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>{t('wallet.accountHealth')}</h3>
+              <p className='text-xs mt-0.5' style={{ color: 'var(--text-muted)' }}>{t('wallet.statusMonitor')}</p>
+            </div>
+            <div className='space-y-3'>
+              <div className='flex justify-between items-center'>
+                <span className='text-sm font-medium' style={{ color: 'var(--text-secondary)' }}>{t('wallet.uptime')}</span>
+                <span className='text-sm font-bold' style={{ color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>99.9%</span>
+              </div>
+              <div style={{ width: '100%', height: 8, borderRadius: 9999, background: 'var(--surface-active)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: '99.9%', background: 'var(--accent-gradient)', borderRadius: 9999 }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 2: 充值区域 */}
+      <RechargeCard
+        t={t}
+        enableOnlineTopUp={enableOnlineTopUp}
+        enableStripeTopUp={enableStripeTopUp}
+        enableCreemTopUp={enableCreemTopUp}
+        creemProducts={creemProducts}
+        creemPreTopUp={creemPreTopUp}
+        enableWaffoTopUp={enableWaffoTopUp}
+        waffoTopUp={waffoTopUp}
+        waffoPayMethods={waffoPayMethods}
+        presetAmounts={presetAmounts}
+        selectedPreset={selectedPreset}
+        selectPresetAmount={selectPresetAmount}
+        formatLargeNumber={formatLargeNumber}
+        priceRatio={priceRatio}
+        topUpCount={topUpCount}
+        minTopUp={minTopUp}
+        renderQuotaWithAmount={renderQuotaWithAmount}
+        getAmount={getAmount}
+        setTopUpCount={setTopUpCount}
+        setSelectedPreset={setSelectedPreset}
+        renderAmount={renderAmount}
+        amountLoading={amountLoading}
+        payMethods={payMethods}
+        preTopUp={preTopUp}
+        paymentLoading={paymentLoading}
+        payWay={payWay}
+        redemptionCode={redemptionCode}
+        setRedemptionCode={setRedemptionCode}
+        topUp={topUp}
+        isSubmitting={isSubmitting}
+        topUpLink={topUpLink}
+        openTopUpLink={openTopUpLink}
+        userState={userState}
+        renderQuota={renderQuota}
+        statusLoading={statusLoading}
+        topupInfo={topupInfo}
+        onOpenHistory={handleOpenHistory}
+        subscriptionLoading={subscriptionLoading}
+        subscriptionPlans={subscriptionPlans}
+        billingPreference={billingPreference}
+        onChangeBillingPreference={updateBillingPreference}
+        activeSubscriptions={activeSubscriptions}
+        allSubscriptions={allSubscriptions}
+        reloadSubscriptionSelf={getSubscriptionSelf}
+      />
+
+      {/* Section 3: 收益统计 & 邀请奖励 */}
+      <InvitationCard
+        t={t}
+        userState={userState}
+        renderQuota={renderQuota}
+        setOpenTransfer={setOpenTransfer}
+        affLink={affLink}
+        handleAffLinkClick={handleAffLinkClick}
+      />
     </div>
   );
 };

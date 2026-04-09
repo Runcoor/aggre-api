@@ -653,7 +653,7 @@ const RegisterForm = () => {
                   loading={emailRegisterLoading}
                   style={{
                     borderRadius: 'var(--radius-md)',
-                    background: 'var(--accent)',
+                    background: 'var(--accent-gradient)',
                     border: 'none',
                     height: '44px',
                     fontSize: '14px',
@@ -806,7 +806,7 @@ const RegisterForm = () => {
                     }
                     style={{
                       borderRadius: 'var(--radius-md)',
-                      background: 'var(--accent)',
+                      background: 'var(--accent-gradient)',
                       border: 'none',
                       height: '40px',
                       fontSize: '14px',

@@ -18,12 +18,11 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Card, Select, Button, Switch } from '@douyinfe/semi-ui';
-import { Sparkles, Users, ToggleLeft, X, Settings } from 'lucide-react';
+import { Card, Select, Button } from '@douyinfe/semi-ui';
+import { Users, X, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { renderGroupOption, selectFilter } from '../../helpers';
 import ParameterControl from './ParameterControl';
-import ImageUrlInput from './ImageUrlInput';
 import ConfigManager from './ConfigManager';
 import CustomRequestEditor from './CustomRequestEditor';
 
@@ -145,50 +144,6 @@ const SettingsPanel = ({
           />
         </div>
 
-        {/* 模型选择 */}
-        <div className={customRequestMode ? 'opacity-50' : ''}>
-          <div className='flex items-center gap-2 mb-2'>
-            <Sparkles size={16} style={{ color: 'var(--text-muted)' }} />
-            <span className='text-sm' style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-              {t('模型')}
-            </span>
-            {customRequestMode && (
-              <span className='text-xs' style={{ color: 'var(--warning)' }}>
-                ({t('已在自定义模式中忽略')})
-              </span>
-            )}
-          </div>
-          <Select
-            placeholder={t('请选择模型')}
-            name='model'
-            required
-            selection
-            filter={selectFilter}
-            autoClearSearchValue={false}
-            onChange={(value) => onInputChange('model', value)}
-            value={inputs.model}
-            autoComplete='new-password'
-            optionList={models}
-            style={{ width: '100%' }}
-            dropdownStyle={{ width: '100%', maxWidth: '100%' }}
-            style={{ borderRadius: 'var(--radius-md)' }}
-            disabled={customRequestMode}
-          />
-        </div>
-
-        {/* 图片URL输入 */}
-        <div className={customRequestMode ? 'opacity-50' : ''}>
-          <ImageUrlInput
-            imageUrls={inputs.imageUrls}
-            imageEnabled={inputs.imageEnabled}
-            onImageUrlsChange={(urls) => onInputChange('imageUrls', urls)}
-            onImageEnabledChange={(enabled) =>
-              onInputChange('imageEnabled', enabled)
-            }
-            disabled={customRequestMode}
-          />
-        </div>
-
         {/* 参数控制组件 */}
         <div className={customRequestMode ? 'opacity-50' : ''}>
           <ParameterControl
@@ -198,31 +153,6 @@ const SettingsPanel = ({
             onParameterToggle={onParameterToggle}
             disabled={customRequestMode}
           />
-        </div>
-
-        {/* 流式输出开关 */}
-        <div className={customRequestMode ? 'opacity-50' : ''}>
-          <div className='flex items-center justify-between'>
-            <div className='flex items-center gap-2'>
-              <ToggleLeft size={16} style={{ color: 'var(--text-muted)' }} />
-              <span className='text-sm' style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                {t('流式输出')}
-              </span>
-              {customRequestMode && (
-                <span className='text-xs' style={{ color: 'var(--warning)' }}>
-                  ({t('已在自定义模式中忽略')})
-                </span>
-              )}
-            </div>
-            <Switch
-              checked={inputs.stream}
-              onChange={(checked) => onInputChange('stream', checked)}
-              checkedText={t('开')}
-              uncheckedText={t('关')}
-              size='small'
-              disabled={customRequestMode}
-            />
-          </div>
         </div>
       </div>
 

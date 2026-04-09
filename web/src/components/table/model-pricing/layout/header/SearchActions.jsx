@@ -84,7 +84,7 @@ const SearchActions = memo(
           icon={<IconCopy />}
           onClick={handleCopyClick}
           disabled={selectedRowKeys.length === 0}
-          style={{ background: 'var(--accent)', color: '#fff', borderRadius: 'var(--radius-md)' }}
+          style={{ background: 'var(--accent-gradient)', color: '#fff', borderRadius: 'var(--radius-md)' }}
         >
           {t('复制')}
         </Button>
@@ -128,6 +128,7 @@ const SearchActions = memo(
               theme={viewMode === 'table' ? 'solid' : 'outline'}
               type={viewMode === 'table' ? 'primary' : 'tertiary'}
               onClick={handleViewModeToggle}
+              style={viewMode === 'table' ? { background: 'var(--accent-gradient)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)' } : { borderRadius: 'var(--radius-md)' }}
             >
               {t('表格视图')}
             </Button>
@@ -137,6 +138,7 @@ const SearchActions = memo(
               theme={tokenUnit === 'K' ? 'solid' : 'outline'}
               type={tokenUnit === 'K' ? 'primary' : 'tertiary'}
               onClick={handleTokenUnitToggle}
+              style={tokenUnit === 'K' ? { background: 'var(--accent-gradient)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)' } : { borderRadius: 'var(--radius-md)' }}
             >
               {tokenUnit}
             </Button>

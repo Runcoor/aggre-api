@@ -34,12 +34,11 @@ import {
   CreditCard,
   Coins,
   Wallet,
-  BarChart2,
-  TrendingUp,
   Receipt,
   Sparkles,
+  AlertCircle,
+  TicketCheck,
 } from 'lucide-react';
-import { IconGift } from '@douyinfe/semi-icons';
 import { useMinimumLoadingTime } from '../../hooks/common/useMinimumLoadingTime';
 import { getCurrencyConfig } from '../../helpers/render';
 import SubscriptionPlansCard from './SubscriptionPlansCard';
@@ -112,83 +111,16 @@ const RechargeCard = ({
     }
   }, [shouldShowSubscription, activeTab]);
 
+  const hasOnlinePay = enableOnlineTopUp || enableStripeTopUp || enableCreemTopUp || enableWaffoTopUp;
+
   const topupContent = (
-    <div className='space-y-4'>
-      {/* Account Stats Panel — macOS elevated surface */}
-      <div
-        className='rounded-[var(--radius-lg)] border border-[var(--border-subtle)] overflow-hidden'
-        style={{ background: 'var(--bg-subtle)' }}
-      >
-        {/* Stats header */}
-        <div
-          className='px-5 py-3 border-b border-[var(--border-subtle)]'
-        >
-          <span
-            className='text-sm font-semibold'
-            style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
-          >
-            {t('账户统计')}
-          </span>
-        </div>
-
-        {/* Stats grid */}
-        <div className='grid grid-cols-3 divide-x divide-[var(--border-subtle)]'>
-          {/* Current balance */}
-          <div className='px-4 py-4 text-center'>
-            <div
-              className='text-base sm:text-xl font-bold mb-1'
-              style={{ color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}
-            >
-              {renderQuota(userState?.user?.quota)}
-            </div>
-            <div className='flex items-center justify-center gap-1'>
-              <Wallet size={12} style={{ color: 'var(--text-muted)' }} />
-              <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
-                {t('当前余额')}
-              </span>
-            </div>
-          </div>
-
-          {/* Usage */}
-          <div className='px-4 py-4 text-center'>
-            <div
-              className='text-base sm:text-xl font-bold mb-1'
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}
-            >
-              {renderQuota(userState?.user?.used_quota)}
-            </div>
-            <div className='flex items-center justify-center gap-1'>
-              <TrendingUp size={12} style={{ color: 'var(--text-muted)' }} />
-              <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
-                {t('历史消耗')}
-              </span>
-            </div>
-          </div>
-
-          {/* Requests */}
-          <div className='px-4 py-4 text-center'>
-            <div
-              className='text-base sm:text-xl font-bold mb-1'
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}
-            >
-              {userState?.user?.request_count || 0}
-            </div>
-            <div className='flex items-center justify-center gap-1'>
-              <BarChart2 size={12} style={{ color: 'var(--text-muted)' }} />
-              <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
-                {t('请求次数')}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Online top-up form */}
+    <div className='space-y-6'>
+      {/* 在线充值表单 */}
       {statusLoading ? (
         <div className='py-8 flex justify-center'>
           <MacSpinner size='large' />
         </div>
-      ) : enableOnlineTopUp || enableStripeTopUp || enableCreemTopUp || enableWaffoTopUp ? (
+      ) : hasOnlinePay ? (
         <Form
           getFormApi={(api) => (onlineFormApiRef.current = api)}
           initValues={{ topUpCount: topUpCount }}
@@ -354,7 +286,6 @@ const RechargeCard = ({
                     const save = originalPrice - discountedPrice;
                     const isSelected = selectedPreset === preset.value;
 
-                    // Currency conversion
                     const { symbol, rate, type } = getCurrencyConfig();
                     const statusStr = localStorage.getItem('status');
                     let usdRate = 7;
@@ -383,10 +314,11 @@ const RechargeCard = ({
                     return (
                       <div
                         key={index}
-                        className='rounded-[var(--radius-md)] cursor-pointer transition-colors duration-150'
+                        className='cursor-pointer transition-all duration-150'
                         style={{
+                          borderRadius: 'var(--radius-md)',
                           border: isSelected
-                            ? '1px solid var(--accent)'
+                            ? '1.5px solid var(--accent)'
                             : '1px solid var(--border-default)',
                           background: isSelected
                             ? 'var(--accent-light)'
@@ -451,7 +383,7 @@ const RechargeCard = ({
               </Form.Slot>
             )}
 
-            {/* Waffo top-up */}
+            {/* Waffo */}
             {enableWaffoTopUp &&
               waffoPayMethods &&
               waffoPayMethods.length > 0 && (
@@ -491,7 +423,7 @@ const RechargeCard = ({
                 </Form.Slot>
               )}
 
-            {/* Creem top-up */}
+            {/* Creem */}
             {enableCreemTopUp && creemProducts.length > 0 && (
               <Form.Slot label={t('Creem 充值')}>
                 <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3'>
@@ -499,8 +431,9 @@ const RechargeCard = ({
                     <div
                       key={index}
                       onClick={() => creemPreTopUp(product)}
-                      className='cursor-pointer rounded-[var(--radius-lg)] transition-colors duration-150'
+                      className='cursor-pointer transition-all duration-150'
                       style={{
+                        borderRadius: 'var(--radius-lg)',
                         border: '1px solid var(--border-default)',
                         background: 'var(--surface)',
                         padding: '16px',
@@ -528,161 +461,239 @@ const RechargeCard = ({
           </div>
         </Form>
       ) : (
-        <Banner
-          type='info'
-          description={t(
-            '管理员未开启在线充值功能，请联系管理员开启或使用兑换码充值。',
-          )}
-          style={{ borderRadius: 'var(--radius-lg)' }}
-          closeIcon={null}
-        />
+        <div
+          className='flex items-center gap-3 px-5 py-4'
+          style={{
+            borderRadius: 'var(--radius-lg)',
+            background: 'var(--accent-light)',
+            borderLeft: '3px solid var(--accent)',
+          }}
+        >
+          <AlertCircle size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+          <p className='text-sm' style={{ color: 'var(--text-secondary)' }}>
+            {t('管理员未开启在线充值功能，请联系管理员开启或使用兑换码充值。')}
+          </p>
+        </div>
       )}
-
-      {/* Redemption code */}
-      <div
-        className='rounded-[var(--radius-lg)] border border-[var(--border-subtle)]'
-        style={{ background: 'var(--surface)' }}
-      >
-        <div className='px-5 py-3 border-b border-[var(--border-subtle)]'>
-          <span
-            className='text-sm font-semibold'
-            style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
-          >
-            {t('兑换码充值')}
-          </span>
-        </div>
-        <div className='p-4'>
-          <Form
-            getFormApi={(api) => (redeemFormApiRef.current = api)}
-            initValues={{ redemptionCode: redemptionCode }}
-          >
-            <Form.Input
-              field='redemptionCode'
-              noLabel={true}
-              placeholder={t('请输入兑换码')}
-              value={redemptionCode}
-              onChange={(value) => setRedemptionCode(value)}
-              prefix={<IconGift />}
-              suffix={
-                <div className='flex items-center gap-2'>
-                  <Button
-                    type='primary'
-                    theme='solid'
-                    onClick={topUp}
-                    loading={isSubmitting}
-                  >
-                    {t('兑换额度')}
-                  </Button>
-                </div>
-              }
-              showClear
-              style={{ width: '100%' }}
-              extraText={
-                topUpLink && (
-                  <span className='text-xs' style={{ color: 'var(--text-muted)' }}>
-                    {t('在找兑换码？')}
-                    <a
-                      className='cursor-pointer ml-1'
-                      style={{ color: 'var(--accent)', textDecoration: 'underline' }}
-                      onClick={openTopUpLink}
-                    >
-                      {t('购买兑换码')}
-                    </a>
-                  </span>
-                )
-              }
-            />
-          </Form>
-        </div>
-      </div>
     </div>
   );
 
   return (
-    <div
-      className='rounded-[var(--radius-lg)] border border-[var(--border-default)]'
-      style={{ background: 'var(--surface)' }}
-    >
-      {/* Card header — macOS panel style */}
-      <div className='px-5 py-4 border-b border-[var(--border-subtle)] flex items-center justify-between'>
-        <div className='flex items-center gap-3'>
-          <div
-            className='w-8 h-8 rounded-[var(--radius-md)] flex items-center justify-center'
-            style={{ background: 'var(--accent-light)' }}
-          >
-            <CreditCard size={16} style={{ color: 'var(--accent)' }} />
-          </div>
-          <div>
-            <h3
-              className='text-base font-semibold leading-tight'
-              style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+    <div className='space-y-6'>
+      {/* 状态横幅 — 在线充值提示 */}
+      {hasOnlinePay && !statusLoading && (
+        <div
+          className='flex items-center justify-between gap-4 px-5 py-4'
+          style={{
+            borderRadius: 'var(--radius-lg)',
+            background: 'var(--accent-light)',
+            borderLeft: '3px solid var(--accent)',
+          }}
+        >
+          <div className='flex items-center gap-3'>
+            <span
+              className='flex items-center justify-center flex-shrink-0'
+              style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(var(--accent-rgb, 0,114,255), 0.1)' }}
             >
-              {t('账户充值')}
-            </h3>
-            <p className='text-xs mt-0.5' style={{ color: 'var(--text-muted)' }}>
-              {t('多种充值方式，安全便捷')}
-            </p>
+              <AlertCircle size={16} style={{ color: 'var(--accent)' }} />
+            </span>
+            <div>
+              <h4 className='text-sm font-bold leading-tight' style={{ color: 'var(--text-primary)' }}>{t('wallet.rechargeStatus')}</h4>
+              <p className='text-xs mt-0.5' style={{ color: 'var(--accent)' }}>{t('wallet.rechargeStatusDesc')}</p>
+            </div>
+          </div>
+          <Button
+            theme='borderless'
+            type='primary'
+            size='small'
+            onClick={onOpenHistory}
+            className='!text-sm !font-bold flex-shrink-0'
+          >
+            {t('wallet.viewLogs')}
+          </Button>
+        </div>
+      )}
+
+      {/* 兑换码区域 — 全宽行 */}
+      <section className='grid grid-cols-1 lg:grid-cols-12 gap-6 items-center'>
+        <div className='lg:col-span-4'>
+          <h2 className='text-xl sm:text-2xl font-extrabold tracking-tight' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>{t('wallet.redemptionCenter')}</h2>
+          <p className='text-sm mt-1' style={{ color: 'var(--text-secondary)' }}>
+            {t('wallet.redemptionDesc')}
+            {topUpLink && (
+              <>
+                {' '}
+                <a
+                  className='cursor-pointer'
+                  style={{ color: 'var(--accent)', textDecoration: 'underline' }}
+                  onClick={openTopUpLink}
+                >
+                  {t('购买兑换码')}
+                </a>
+              </>
+            )}
+          </p>
+        </div>
+        <div className='lg:col-span-8'>
+          <div
+            className='flex items-center transition-all'
+            style={{
+              background: 'var(--surface)',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid var(--border-subtle)',
+              padding: '4px',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
+            }}
+          >
+            <div className='pl-4 flex-shrink-0' style={{ color: 'var(--text-muted)' }}>
+              <TicketCheck size={18} />
+            </div>
+            <input
+              type='text'
+              className='flex-grow bg-transparent border-none focus:outline-none px-3 py-3 text-sm font-medium'
+              style={{ color: 'var(--text-primary)' }}
+              placeholder={t('请输入兑换码')}
+              value={redemptionCode}
+              onChange={(e) => setRedemptionCode(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && topUp()}
+            />
+            <Button
+              type='primary'
+              theme='solid'
+              onClick={topUp}
+              loading={isSubmitting}
+              className='!px-6 !py-3 flex-shrink-0'
+              style={{
+                background: 'var(--accent-gradient)',
+                border: 'none',
+                borderRadius: 'var(--radius-md)',
+                fontWeight: 600,
+              }}
+            >
+              {t('兑换额度')}
+            </Button>
           </div>
         </div>
-        <Button
-          icon={<Receipt size={14} />}
-          theme='outline'
-          type='tertiary'
-          size='small'
-          onClick={onOpenHistory}
-          className='!rounded-[var(--radius-md)]'
-        >
-          {t('账单')}
-        </Button>
-      </div>
+      </section>
 
-      {/* Card body */}
-      <div className='p-5'>
-        {shouldShowSubscription ? (
-          <Tabs type='card' activeKey={activeTab} onChange={setActiveTab}>
-            <TabPane
-              tab={
-                <div className='flex items-center gap-2'>
-                  <Sparkles size={14} />
-                  {t('订阅套餐')}
-                </div>
-              }
-              itemKey='subscription'
+      {/* 充值/订阅内容 */}
+      {shouldShowSubscription ? (
+        <div
+          style={{
+            background: 'var(--surface)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--border-subtle)',
+            overflow: 'hidden',
+          }}
+        >
+          <div className='px-5 py-4 border-b border-[var(--border-subtle)] flex items-center justify-between'>
+            <div className='flex items-center gap-3'>
+              <span
+                className='flex items-center justify-center'
+                style={{ width: 32, height: 32, borderRadius: 'var(--radius-md)', background: 'var(--accent-light)' }}
+              >
+                <CreditCard size={16} style={{ color: 'var(--accent)' }} />
+              </span>
+              <h3 className='text-base font-semibold' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
+                {t('账户充值')}
+              </h3>
+            </div>
+            <Button
+              icon={<Receipt size={14} />}
+              theme='outline'
+              type='tertiary'
+              size='small'
+              onClick={onOpenHistory}
+              className='!rounded-[var(--radius-md)]'
             >
-              <div className='py-2'>
-                <SubscriptionPlansCard
-                  t={t}
-                  loading={subscriptionLoading}
-                  plans={subscriptionPlans}
-                  payMethods={payMethods}
-                  enableOnlineTopUp={enableOnlineTopUp}
-                  enableStripeTopUp={enableStripeTopUp}
-                  enableCreemTopUp={enableCreemTopUp}
-                  billingPreference={billingPreference}
-                  onChangeBillingPreference={onChangeBillingPreference}
-                  activeSubscriptions={activeSubscriptions}
-                  allSubscriptions={allSubscriptions}
-                  reloadSubscriptionSelf={reloadSubscriptionSelf}
-                  withCard={false}
-                />
+              {t('账单')}
+            </Button>
+          </div>
+          <div className='p-5'>
+            <Tabs type='card' activeKey={activeTab} onChange={setActiveTab}>
+              <TabPane
+                tab={
+                  <div className='flex items-center gap-2'>
+                    <Sparkles size={14} />
+                    {t('订阅套餐')}
+                  </div>
+                }
+                itemKey='subscription'
+              >
+                <div className='py-2'>
+                  <SubscriptionPlansCard
+                    t={t}
+                    loading={subscriptionLoading}
+                    plans={subscriptionPlans}
+                    payMethods={payMethods}
+                    enableOnlineTopUp={enableOnlineTopUp}
+                    enableStripeTopUp={enableStripeTopUp}
+                    enableCreemTopUp={enableCreemTopUp}
+                    billingPreference={billingPreference}
+                    onChangeBillingPreference={onChangeBillingPreference}
+                    activeSubscriptions={activeSubscriptions}
+                    allSubscriptions={allSubscriptions}
+                    reloadSubscriptionSelf={reloadSubscriptionSelf}
+                    withCard={false}
+                  />
+                </div>
+              </TabPane>
+              <TabPane
+                tab={
+                  <div className='flex items-center gap-2'>
+                    <Wallet size={14} />
+                    {t('额度充值')}
+                  </div>
+                }
+                itemKey='topup'
+              >
+                <div className='py-2'>{topupContent}</div>
+              </TabPane>
+            </Tabs>
+          </div>
+        </div>
+      ) : (
+        <div
+          style={{
+            background: 'var(--surface)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--border-subtle)',
+            overflow: 'hidden',
+          }}
+        >
+          <div className='px-5 py-4 border-b border-[var(--border-subtle)] flex items-center justify-between'>
+            <div className='flex items-center gap-3'>
+              <span
+                className='flex items-center justify-center'
+                style={{ width: 32, height: 32, borderRadius: 'var(--radius-md)', background: 'var(--accent-light)' }}
+              >
+                <CreditCard size={16} style={{ color: 'var(--accent)' }} />
+              </span>
+              <div>
+                <h3 className='text-base font-semibold leading-tight' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
+                  {t('账户充值')}
+                </h3>
+                <p className='text-xs mt-0.5' style={{ color: 'var(--text-muted)' }}>
+                  {t('多种充值方式，安全便捷')}
+                </p>
               </div>
-            </TabPane>
-            <TabPane
-              tab={
-                <div className='flex items-center gap-2'>
-                  <Wallet size={14} />
-                  {t('额度充值')}
-                </div>
-              }
-              itemKey='topup'
+            </div>
+            <Button
+              icon={<Receipt size={14} />}
+              theme='outline'
+              type='tertiary'
+              size='small'
+              onClick={onOpenHistory}
+              className='!rounded-[var(--radius-md)]'
             >
-              <div className='py-2'>{topupContent}</div>
-            </TabPane>
-          </Tabs>
-        ) : (
-          topupContent
-        )}
-      </div>
+              {t('账单')}
+            </Button>
+          </div>
+          <div className='p-5'>
+            {topupContent}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

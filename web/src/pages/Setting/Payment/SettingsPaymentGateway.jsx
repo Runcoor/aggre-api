@@ -396,7 +396,7 @@ export default function SettingsPaymentGateway(props) {
                 theme='solid'
                 style={{
                   borderRadius: 'var(--radius-md)',
-                  background: 'var(--accent)',
+                  background: 'var(--accent-gradient)',
                   border: 'none',
                 }}
                 onClick={submitPayAddress}

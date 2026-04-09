@@ -276,7 +276,7 @@ const UpstreamConflictModal = ({
       confirmLoading={loading}
       okText={t('应用覆盖')}
       cancelText={t('取消')}
-      okButtonProps={{ style: { background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)' } }}
+      okButtonProps={{ style: { background: 'var(--accent-gradient)', color: '#fff', borderRadius: 'var(--radius-md)' } }}
       cancelButtonProps={{ style: { background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' } }}
       width={isMobile ? '100%' : 1000}
     >

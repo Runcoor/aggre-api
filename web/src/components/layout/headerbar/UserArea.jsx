@@ -112,32 +112,25 @@ const UserArea = ({
           <Button
             theme='borderless'
             type='tertiary'
-            className='flex items-center gap-1.5 !px-2 !py-1'
+            className='!px-2 !py-1'
             style={{
               borderRadius: 'var(--radius-md)',
               background: 'transparent',
               transition: 'background-color 150ms ease-out',
             }}
           >
-            <Avatar
-              size='extra-small'
-              color={stringToColor(userState.user.username)}
-              style={{ flexShrink: 0 }}
-            >
-              {userState.user.username[0].toUpperCase()}
-            </Avatar>
-            <span className='hidden md:inline'>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span
                 className='text-xs font-medium'
                 style={{ color: 'var(--text-primary)' }}
               >
                 {userState.user.username}
               </span>
-            </span>
-            <ChevronDown
-              size={12}
-              style={{ color: 'var(--text-muted)', flexShrink: 0 }}
-            />
+              <ChevronDown
+                size={12}
+                style={{ color: 'var(--text-muted)', flexShrink: 0 }}
+              />
+            </div>
           </Button>
         </Dropdown>
       </div>
@@ -172,7 +165,7 @@ const UserArea = ({
                 size='small'
                 style={{
                   borderRadius: 'var(--radius-md)',
-                  background: 'var(--accent)',
+                  background: 'var(--accent-gradient)',
                   color: '#fff',
                   border: 'none',
                   fontSize: '13px',

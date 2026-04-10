@@ -1,3 +1,21 @@
+/*
+Copyright (C) 2025 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import LegalPage from '../Legal/LegalPage';
@@ -125,6 +143,19 @@ const TermsOfService = () => {
         ),
       ],
     },
+    {
+      id: 'contact',
+      title: t('联系我们'),
+      paragraphs: [
+        t('如对本服务条款有任何疑问，请通过以下方式联系我们：'),
+      ],
+      list: [
+        t('客户支持：support@aggretoken.com'),
+        t('商务合作：hello@aggretoken.com'),
+        t('账单与支付：billing@aggretoken.com'),
+        t('一般联系：contact@aggretoken.com'),
+      ],
+    },
   ];
 
   return (
@@ -133,7 +164,7 @@ const TermsOfService = () => {
       subtitle={t(
         '规范、透明的契约关系是长期合作的基础。请在使用本服务前仔细阅读以下条款。',
       )}
-      lastUpdated={t('最后更新：2026 年 4 月 1 日')}
+      lastUpdated={t('最后更新：2026 年 4 月 10 日')}
       sections={sections}
     />
   );

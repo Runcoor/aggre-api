@@ -243,33 +243,8 @@ const FooterBar = () => {
             </div>
           )}
 
-          <div className='flex flex-col md:flex-row items-center justify-between w-full gap-4'>
-            <span
-              style={{
-                color: 'var(--text-muted)',
-                fontSize: '12px',
-              }}
-            >
-              © {currentYear} {systemName}. {t('版权所有')}
-            </span>
-            <span style={{ fontSize: '12px' }}>
-              <span style={{ color: 'var(--text-muted)' }}>
-                {t('设计与开发由')}{' '}
-              </span>
-              <a
-                href='https://github.com/QuantumNous/new-api'
-                target='_blank'
-                rel='noopener noreferrer'
-                style={{
-                  color: 'var(--accent)',
-                  textDecoration: 'none',
-                  fontWeight: 500,
-                }}
-              >
-                New API
-              </a>
-            </span>
-          </div>
+          {/* Copyright and credits are shown on the public homepage;
+              no need to duplicate them in this layout footer. */}
         </div>
       </footer>
     ),
@@ -296,26 +271,7 @@ const FooterBar = () => {
               style={{ color: 'var(--text-muted)', fontSize: '12px' }}
               dangerouslySetInnerHTML={{ __html: footer }}
             ></div>
-            <span
-              className='flex-shrink-0'
-              style={{ fontSize: '12px' }}
-            >
-              <span style={{ color: 'var(--text-muted)' }}>
-                {t('设计与开发由')}{' '}
-              </span>
-              <a
-                href='https://github.com/QuantumNous/new-api'
-                target='_blank'
-                rel='noopener noreferrer'
-                style={{
-                  color: 'var(--accent)',
-                  textDecoration: 'none',
-                  fontWeight: 500,
-                }}
-              >
-                New API
-              </a>
-            </span>
+            {/* "设计与开发由" credit removed — shown on the public homepage */}
           </div>
         </footer>
       ) : (

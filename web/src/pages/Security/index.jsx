@@ -1,3 +1,21 @@
+/*
+Copyright (C) 2025 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import LegalPage from '../Legal/LegalPage';
@@ -127,9 +145,14 @@ const Security = () => {
       title: t('安全联系方式'),
       paragraphs: [
         t(
-          '如需报告安全漏洞、申请渗透测试授权、获取合规文档或进行安全评估，请通过安全团队邮箱联系我们。我们的首席信息安全官（CISO）将亲自对接关键客户的安全需求。',
+          '如需报告安全漏洞、申请渗透测试授权、获取合规文档或进行安全评估，请通过以下方式联系我们的安全团队：',
         ),
       ],
+      list: [
+        t('安全漏洞报告与紧急响应：support@aggretoken.com'),
+        t('商务安全评估与合规：contact@aggretoken.com'),
+      ],
+      note: t('我们承诺 24 小时内确认收到安全报告，并依据严重程度启动对应响应流程。'),
     },
   ];
 
@@ -139,7 +162,7 @@ const Security = () => {
       subtitle={t(
         '企业级安全承诺。从基础设施、加密、访问控制到事件响应，全栈纵深防御。',
       )}
-      lastUpdated={t('最后更新：2026 年 4 月 1 日')}
+      lastUpdated={t('最后更新：2026 年 4 月 10 日')}
       sections={sections}
     />
   );

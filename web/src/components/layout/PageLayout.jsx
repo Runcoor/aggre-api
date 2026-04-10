@@ -61,12 +61,13 @@ const PageLayout = () => {
     '/pricing',
   ];
 
-  // Hide footer on ALL console routes — not just the old cardProPages list.
-  // The footer (关于我们/文档/相关项目/友情链接) only belongs on the public
-  // homepage; it's noise inside the dashboard.
+  // Hide footer on ALL console routes AND the homepage (which has its own
+  // built-in footer). The FooterBar component is only useful for misc
+  // public pages like /about that don't render their own footer.
   const shouldHideFooter =
     cardProPages.includes(location.pathname) ||
-    location.pathname.startsWith('/console');
+    location.pathname.startsWith('/console') ||
+    location.pathname === '/';
 
   const shouldInnerPadding =
     location.pathname.includes('/console') &&

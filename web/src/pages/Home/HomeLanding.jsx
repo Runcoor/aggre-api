@@ -889,10 +889,11 @@ const HomeLanding = () => {
 
           {/* ===== Footer ===== */}
           <footer
-            className='py-10 px-5'
+            className='py-8 px-5'
             style={{
               background: 'var(--surface)',
               borderTop: '1px solid var(--border-subtle)',
+              marginBottom: 0,
             }}
           >
             <div className='flex flex-col md:flex-row justify-between items-center gap-6 max-w-screen-xl mx-auto'>

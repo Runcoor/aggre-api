@@ -707,20 +707,51 @@ html.dark .semi-dropdown-menu {
 }
 
 /* --- Toast/Notification Overrides --- */
-.semi-toast-wrapper,
+/* Outer toast container — must not block pointer events */
+.semi-toast {
+  pointer-events: none !important;
+}
+.semi-toast-wrapper {
+  pointer-events: auto !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04) !important;
+}
 .semi-notification-notice {
   background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow-float);
+  border-radius: 14px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
 }
 
-html.dark .semi-toast-wrapper,
-html.dark .semi-notification-notice {
-  background: rgba(44,44,46,0.92);
+html.dark .semi-toast-wrapper {
+  background: rgba(30,30,32,0.95) !important;
+  border-color: rgba(255,255,255,0.06) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important;
 }
+html.dark .semi-notification-notice {
+  background: rgba(30,30,32,0.95);
+  border-color: rgba(255,255,255,0.06);
+}
+
+/* Hide default Semi toast icon — we use custom ones */
+.semi-toast-wrapper .semi-toast-icon {
+  display: none !important;
+}
+.semi-toast-wrapper .semi-toast-content-text {
+  margin-left: 0 !important;
+}
+
+/* Accent left bars by type */
+.semi-toast-wrapper-success { border-left: 3px solid #10b981 !important; }
+.semi-toast-wrapper-error { border-left: 3px solid #ef4444 !important; }
+.semi-toast-wrapper-warning { border-left: 3px solid #f59e0b !important; }
+.semi-toast-wrapper-info { border-left: 3px solid #3b82f6 !important; }
 
 /* --- Banner Overrides --- */
 .semi-banner {

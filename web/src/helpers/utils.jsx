@@ -119,54 +119,84 @@ if (isMobileScreen) {
   // showNoticeOptions.transition = 'flip';
 }
 
+// ── Custom Toast Rendering ──
+const toastColors = {
+  success: { accent: '#10b981', bg: 'rgba(16,185,129,0.08)', icon: '✓', label: 'Success' },
+  error:   { accent: '#ef4444', bg: 'rgba(239,68,68,0.08)', icon: '✕', label: 'Error' },
+  warning: { accent: '#f59e0b', bg: 'rgba(245,158,11,0.08)', icon: '!', label: 'Warning' },
+  info:    { accent: '#3b82f6', bg: 'rgba(59,130,246,0.08)', icon: 'i', label: 'Info' },
+};
+
+function styledToast(type, message) {
+  const c = toastColors[type] || toastColors.info;
+  Toast[type]({
+    content: (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{
+          width: 22, height: 22, borderRadius: '50%',
+          background: c.bg, color: c.accent,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 12, fontWeight: 800, flexShrink: 0,
+          border: `1.5px solid ${c.accent}20`,
+        }}>
+          {c.icon}
+        </div>
+        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.4 }}>
+          {message}
+        </span>
+      </div>
+    ),
+    duration: type === 'error' ? 5 : 3,
+    showClose: true,
+  });
+}
+
 export function showError(error) {
   console.error(error);
   if (error.message) {
     if (error.name === 'AxiosError') {
       switch (error.response.status) {
         case 401:
-          // 清除用户状态
           localStorage.removeItem('user');
-          // toast.error('错误：未登录或登录已过期，请重新登录！', showErrorOptions);
           window.location.href = '/login?expired=true';
           break;
         case 429:
-          Toast.error('错误：请求次数过多，请稍后再试！');
+          styledToast('error', '请求次数过多，请稍后再试！');
           break;
         case 500:
-          Toast.error('错误：服务器内部错误，请联系管理员！');
+          styledToast('error', '服务器内部错误，请联系管理员！');
           break;
         case 405:
-          Toast.info('本站仅作演示之用，无服务端！');
+          styledToast('info', '本站仅作演示之用，无服务端！');
           break;
         default:
-          Toast.error('错误：' + error.message);
+          styledToast('error', error.message);
       }
       return;
     }
-    Toast.error('错误：' + error.message);
+    styledToast('error', error.message);
   } else {
-    Toast.error('错误：' + error);
+    styledToast('error', String(error));
   }
 }
 
 export function showWarning(message) {
-  Toast.warning(message);
+  styledToast('warning', message);
 }
 
 export function showSuccess(message) {
-  Toast.success(message);
+  styledToast('success', message);
 }
 
 export function showInfo(message) {
-  Toast.info(message);
+  styledToast('info', message);
 }
 
 export function showNotice(message, isHTML = false) {
   if (isHTML) {
     toast(<HTMLToastContent htmlContent={message} />, showNoticeOptions);
   } else {
-    Toast.info(message);
+    styledToast('info', message);
   }
 }
 

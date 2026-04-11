@@ -445,6 +445,340 @@ const StatItem = ({ value, label }) => (
   </div>
 );
 
+// ── FAQ Accordion ─────────────────────────────────────────────────────────
+const FAQItem = ({ question, answer, isOpen, onToggle, index }) => {
+  const contentRef = useRef(null);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      setHeight(isOpen ? contentRef.current.scrollHeight : 0);
+    }
+  }, [isOpen]);
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        borderRadius: 'var(--radius-lg)',
+        overflow: 'hidden',
+        background: isOpen ? 'var(--surface)' : 'transparent',
+        transition: 'background 250ms ease',
+      }}
+    >
+      {/* Border — gradient when open, solid when closed */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          borderRadius: 'var(--radius-lg)',
+          padding: 1,
+          background: isOpen ? 'var(--accent-gradient)' : 'var(--border-default)',
+          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+          WebkitMaskComposite: 'xor',
+          maskComposite: 'exclude',
+          pointerEvents: 'none',
+          transition: 'background 250ms ease',
+        }}
+      />
+      <button
+        onClick={onToggle}
+        style={{
+          width: '100%',
+          padding: '18px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          border: 'none',
+          background: 'transparent',
+          cursor: 'pointer',
+          textAlign: 'left',
+        }}
+      >
+        <span style={{
+          fontSize: 15,
+          fontWeight: 600,
+          color: 'var(--text-primary)',
+          lineHeight: 1.5,
+        }}>
+          {question}
+        </span>
+        <span
+          style={{
+            flexShrink: 0,
+            width: 24,
+            height: 24,
+            borderRadius: 'var(--radius-sm)',
+            background: isOpen ? 'var(--accent-gradient)' : 'var(--surface-hover, rgba(128,128,128,0.1))',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
+            color: isOpen ? '#fff' : 'var(--text-muted)',
+          }}
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 1V11M1 6H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </span>
+      </button>
+      <div
+        style={{
+          height,
+          overflow: 'hidden',
+          transition: 'height 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
+        <div
+          ref={contentRef}
+          style={{
+            padding: '0 20px 18px',
+            fontSize: 14,
+            lineHeight: 1.8,
+            color: 'var(--text-secondary)',
+          }}
+        >
+          {answer}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Comparison Table ──────────────────────────────────────────────────────
+const HomeComparison = ({ t }) => {
+  const features = [
+    { label: t('Claude 全系列模型'), us: true, openrouter: true, oneapi: false, api2gpt: true },
+    { label: t('OpenAI / GPT 全系列'), us: true, openrouter: true, oneapi: true, api2gpt: true },
+    { label: t('Gemini / DeepSeek / Grok'), us: true, openrouter: true, oneapi: false, api2gpt: false },
+    { label: t('Claude Messages 原生格式'), us: true, openrouter: false, oneapi: false, api2gpt: false },
+    { label: t('Gemini 原生格式'), us: true, openrouter: false, oneapi: false, api2gpt: false },
+    { label: t('智能渠道路由 & 故障转移'), us: true, openrouter: true, oneapi: true, api2gpt: false },
+    { label: t('Prompt Caching 支持'), us: true, openrouter: true, oneapi: false, api2gpt: false },
+    { label: t('国内直连免翻墙'), us: true, openrouter: false, oneapi: '-', api2gpt: false },
+    { label: t('可视化控制台 & 用量分析'), us: true, openrouter: true, oneapi: true, api2gpt: false },
+    { label: t('开发者工具集'), us: true, openrouter: false, oneapi: false, api2gpt: false },
+    { label: t('按量计费 · 余额不过期'), us: true, openrouter: true, oneapi: '-', api2gpt: true },
+    { label: t('开源可自部署'), us: true, openrouter: false, oneapi: true, api2gpt: false },
+  ];
+
+  const Cell = ({ value }) => {
+    if (value === true) return <span style={{ color: '#10b981', fontSize: 16 }}>&#10003;</span>;
+    if (value === false) return <span style={{ color: 'var(--text-muted)', fontSize: 14, opacity: 0.4 }}>—</span>;
+    return <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{value}</span>;
+  };
+
+  const columns = [
+    { key: 'us', label: 'AGGRE', highlight: true },
+    { key: 'openrouter', label: 'OpenRouter' },
+    { key: 'oneapi', label: 'One API' },
+    { key: 'api2gpt', label: 'API2GPT' },
+  ];
+
+  return (
+    <section className='py-20 md:py-32' style={{ background: 'var(--bg-base)', borderTop: '1px solid var(--border-subtle)' }}>
+      <div className='max-w-4xl mx-auto px-5'>
+        <div className='text-center mb-12 md:mb-16'>
+          <div
+            className='inline-flex items-center gap-2 px-3 py-1 mb-6 text-xs font-semibold uppercase tracking-widest'
+            style={{
+              borderRadius: 'var(--radius-full, 9999px)',
+              background: 'var(--surface)',
+              border: '1px solid var(--border-default)',
+              color: 'var(--text-muted)',
+            }}
+          >
+            {t('对比')}
+          </div>
+          <h2
+            className='text-3xl md:text-4xl lg:text-5xl font-bold mb-4'
+            style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+          >
+            {t('为什么选择我们')}
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem' }}>
+            {t('与同类产品的功能对比')}
+          </p>
+        </div>
+
+        {/* Desktop table */}
+        <div
+          className='hidden md:block'
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border-default)',
+            borderRadius: 'var(--radius-lg)',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Header */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '2fr repeat(4, 1fr)',
+              borderBottom: '1px solid var(--border-subtle)',
+            }}
+          >
+            <div style={{ padding: '14px 16px', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+              {t('功能')}
+            </div>
+            {columns.map((col) => (
+              <div
+                key={col.key}
+                style={{
+                  padding: '14px 12px',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: col.highlight ? 'var(--accent)' : 'var(--text-secondary)',
+                  textAlign: 'center',
+                  background: col.highlight ? 'rgba(var(--accent-rgb, 0,114,255), 0.04)' : 'transparent',
+                }}
+              >
+                {col.label}
+              </div>
+            ))}
+          </div>
+          {/* Rows */}
+          {features.map((f, i) => (
+            <div
+              key={i}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '2fr repeat(4, 1fr)',
+                borderBottom: i < features.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+              }}
+            >
+              <div style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-secondary)' }}>
+                {f.label}
+              </div>
+              {columns.map((col) => (
+                <div
+                  key={col.key}
+                  style={{
+                    padding: '12px',
+                    textAlign: 'center',
+                    background: col.highlight ? 'rgba(var(--accent-rgb, 0,114,255), 0.04)' : 'transparent',
+                  }}
+                >
+                  <Cell value={f[col.key]} />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile cards */}
+        <div className='md:hidden flex flex-col gap-2'>
+          {features.map((f, i) => (
+            <div
+              key={i}
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-md)',
+                padding: '12px 14px',
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8 }}>
+                {f.label}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, textAlign: 'center' }}>
+                {columns.map((col) => (
+                  <div key={col.key} style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                    <Cell value={f[col.key]} />
+                    <div style={{ marginTop: 2, fontSize: 9, color: col.highlight ? 'var(--accent)' : 'var(--text-muted)', fontWeight: col.highlight ? 600 : 400 }}>
+                      {col.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const HomeFAQ = ({ t }) => {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  const faqs = [
+    {
+      q: t('支持哪些模型？'),
+      a: t('支持 40+ 主流 AI 模型，包括 Claude 全系列（Opus、Sonnet、Haiku）、GPT-4o/GPT-5、Gemini、DeepSeek、Grok、Qwen、Moonshot 等。模型持续更新，第一时间同步上游最新版本。'),
+    },
+    {
+      q: t('支持哪些工具和 IDE？'),
+      a: t('兼容所有支持 OpenAI API 格式的工具：Claude Code、Codex CLI、Cursor、VS Code (Continue/Cline)、JetBrains AI、Cherry Studio、ChatBox 等。同时原生支持 Claude Messages 和 Gemini 格式。'),
+    },
+    {
+      q: t('实际扣费怎么计算？'),
+      a: t('按实际 Token 用量计费，充值余额永不过期。每次 API 调用会实时显示消耗的 Token 数和费用，在控制台可以随时查看详细的用量记录和账单。'),
+    },
+    {
+      q: t('国内能直接用吗？'),
+      a: t('可以直接使用，无需额外网络工具。我们提供国内可直连的 API 端点，针对国内网络环境做了专项优化，确保低延迟、高可用。'),
+    },
+    {
+      q: t('服务稳定性怎么保障？'),
+      a: t('企业级 SLA 保障，多节点负载均衡和自动故障转移。内置智能渠道路由，单一渠道异常时自动切换，确保请求成功率。控制台提供实时的服务状态监控。'),
+    },
+    {
+      q: t('可以创建多个 API Key 吗？'),
+      a: t('可以。每个账户支持创建多个 API Key，并可为每个 Key 单独设置额度上限、模型权限和有效期。适合按项目或团队成员分别管理。'),
+    },
+    {
+      q: t('支持企业用户吗？'),
+      a: <>{t('支持。我们提供企业专属方案，包括独立部署、专属渠道、优先技术支持、自定义 SLA 以及批量折扣。请联系')} <a href='mailto:hello@aggretoken.com' style={{ color: 'var(--accent)', textDecoration: 'underline' }}>hello@aggretoken.com</a> {t('获取定制方案。')}</>,
+    },
+  ];
+
+  return (
+    <section className='py-20 md:py-32' style={{ background: 'var(--bg-base)' }}>
+      <div className='max-w-3xl mx-auto px-5'>
+        <div className='text-center mb-12 md:mb-16'>
+          <div
+            className='inline-flex items-center gap-2 px-3 py-1 mb-6 text-xs font-semibold uppercase tracking-widest'
+            style={{
+              borderRadius: 'var(--radius-full, 9999px)',
+              background: 'var(--surface)',
+              border: '1px solid var(--border-default)',
+              color: 'var(--text-muted)',
+            }}
+          >
+            FAQ
+          </div>
+          <h2
+            className='text-3xl md:text-4xl lg:text-5xl font-bold mb-4'
+            style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+          >
+            {t('常见问题')}
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem' }}>
+            {t('关于服务的一切，你想知道的都在这里')}
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {faqs.map((faq, idx) => (
+            <FAQItem
+              key={idx}
+              index={idx}
+              question={faq.q}
+              answer={faq.a}
+              isOpen={openIndex === idx}
+              onToggle={() => setOpenIndex(openIndex === idx ? null : idx)}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const HomeLanding = () => {
   const { t, i18n } = useTranslation();
   const [statusState] = useContext(StatusContext);
@@ -599,9 +933,10 @@ const HomeLanding = () => {
               >
                 <span
                   className='inline-block w-2 h-2 rounded-full'
-                  style={{ background: 'var(--accent)' }}
+                  style={{ background: '#10b981' }}
                 />
-                {t('企业级 API 基础设施')}
+                {t('注册即可免费体验')}{' '}
+                <span style={{ color: 'var(--accent)', fontWeight: 700 }}>→</span>
               </div>
 
               {/* Heading */}
@@ -745,6 +1080,33 @@ const HomeLanding = () => {
                   </Link>
                 )}
               </div>
+              {/* Stats bar — complementary to feature cards below, avoid overlap */}
+              <div
+                className='flex flex-wrap justify-center gap-6 md:gap-12 mt-12'
+                style={{ color: 'var(--text-muted)', fontSize: 13 }}
+              >
+                {[
+                  { value: '40+', label: t('AI 模型') },
+                  { value: '10+', label: t('供应商') },
+                  { value: '6', label: t('API 格式') },
+                  { value: '∞', label: t('并发无限制') },
+                ].map((stat) => (
+                  <div key={stat.label} className='flex flex-col items-center gap-1'>
+                    <span
+                      style={{
+                        fontSize: 22,
+                        fontWeight: 700,
+                        fontFamily: 'var(--font-mono)',
+                        color: 'var(--text-primary)',
+                        letterSpacing: '-0.02em',
+                      }}
+                    >
+                      {stat.value}
+                    </span>
+                    <span style={{ fontSize: 11, letterSpacing: '0.04em' }}>{stat.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Tutorial Tabs Panel */}
@@ -782,7 +1144,7 @@ const HomeLanding = () => {
                     {t('核心优势：为性能而生')}
                   </h2>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
-                    {t('为什么选择我们？')}
+                    {t('企业级架构，为每一次调用保驾护航')}
                   </p>
                 </div>
                 <div
@@ -820,6 +1182,12 @@ const HomeLanding = () => {
               </div>
             </div>
           </section>
+
+          {/* ===== Comparison Table ===== */}
+          <HomeComparison t={t} />
+
+          {/* ===== FAQ Section ===== */}
+          <HomeFAQ t={t} />
 
           {/* ===== CTA Section ===== */}
           <section
@@ -936,6 +1304,8 @@ const HomeLanding = () => {
                   { label: t('隐私政策'), to: '/privacy-policy' },
                   { label: t('服务条款'), to: '/terms-of-service' },
                   { label: t('安全'), to: '/security' },
+                  { label: t('状态'), to: '/status' },
+                  { label: t('更新日志'), to: '/changelog' },
                   { label: t('关于'), to: '/about' },
                 ].map((item) => (
                   <Link

@@ -110,8 +110,8 @@ const SiderBar = ({ onNavigate = () => {} }) => {
       key: 'admin',
       items: isAdmin()
         ? [
-            { text: t('渠道管理'), itemKey: 'channel' },
             { text: t('财务报表'), itemKey: 'finance' },
+            { text: t('渠道管理'), itemKey: 'channel' },
             { text: t('订阅管理'), itemKey: 'subscription' },
             { text: t('模型管理'), itemKey: 'models' },
             { text: t('模型部署'), itemKey: 'deployment' },

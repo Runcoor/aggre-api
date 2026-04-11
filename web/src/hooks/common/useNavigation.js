@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useMemo } from 'react';
-import { ShieldCheck, Terminal, Gauge, Calculator } from 'lucide-react';
+import { ShieldCheck, Terminal, Gauge, Calculator, Wallet, Zap } from 'lucide-react';
 
 export const useNavigation = (t, docsLink, headerNavModules) => {
   const mainNavLinks = useMemo(() => {
@@ -91,6 +91,20 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
             to: '/tools/latency',
             description: t('连续探测,统计 P50 / P95 / 首字延迟'),
             icon: React.createElement(Gauge, { size: 16 }),
+          },
+          {
+            text: t('缓存节省计算器'),
+            itemKey: 'cache-calc',
+            to: '/tools/cache',
+            description: t('计算 Prompt Caching 能节省多少成本'),
+            icon: React.createElement(Zap, { size: 16 }),
+          },
+          {
+            text: t('余额查询'),
+            itemKey: 'balance',
+            to: '/tools/balance',
+            description: t('查询 API Key 在各平台的剩余额度'),
+            icon: React.createElement(Wallet, { size: 16 }),
           },
         ],
       },

@@ -76,6 +76,7 @@ import {
   Server,
   CalendarClock,
   DollarSign,
+  ChartPie,
 } from 'lucide-react';
 import {
   SiAtlassian,
@@ -136,7 +137,7 @@ export function getLucideIcon(key, selected = false) {
     case 'channel':
       return <Layers {...commonProps} color={iconColor} />;
     case 'finance':
-      return <DollarSign {...commonProps} color={iconColor} />;
+      return <ChartPie {...commonProps} color={iconColor} />;
     case 'redemption':
       return <Gift {...commonProps} color={iconColor} />;
     case 'user':

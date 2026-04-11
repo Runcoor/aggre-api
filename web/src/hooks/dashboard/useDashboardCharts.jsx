@@ -126,11 +126,19 @@ export const useDashboardCharts = (
       text: t('模型消耗分布'),
       subtext: `${t('总计')}：${renderQuota(0, 2)}`,
     },
+    axes: [
+      { orient: 'bottom', domainLine: { visible: false }, tick: { visible: false }, label: { style: { fontSize: 10 } } },
+      { orient: 'left', domainLine: { visible: false }, tick: { visible: false }, grid: { style: { lineDash: [3, 3], stroke: 'rgba(128,128,128,0.15)' } }, label: { style: { fontSize: 10 } } },
+    ],
     bar: {
+      style: {
+        cornerRadius: [8, 8, 0, 0],
+      },
       state: {
         hover: {
           stroke: 'rgba(128,128,128,0.2)',
           lineWidth: 1,
+          fillOpacity: 0.8,
         },
       },
     },
@@ -181,7 +189,7 @@ export const useDashboardCharts = (
 
   // 模型消耗趋势折线图
   const [spec_model_line, setSpecModelLine] = useState({
-    type: 'line',
+    type: 'area',
     data: [
       {
         id: 'lineData',
@@ -191,6 +199,22 @@ export const useDashboardCharts = (
     xField: 'Time',
     yField: 'Count',
     seriesField: 'Model',
+    line: {
+      style: { lineWidth: 2, curveType: 'monotone' },
+    },
+    area: {
+      style: { fillOpacity: 0.08, curveType: 'monotone' },
+    },
+    point: {
+      style: { size: 4, stroke: '#fff', lineWidth: 2 },
+    },
+    axes: [
+      { orient: 'bottom', domainLine: { visible: false }, tick: { visible: false }, label: { style: { fontSize: 10 } } },
+      { orient: 'left', domainLine: { visible: false }, tick: { visible: false }, grid: { style: { lineDash: [3, 3], stroke: 'rgba(128,128,128,0.15)' } }, label: { style: { fontSize: 10 } } },
+    ],
+    crosshair: {
+      xField: { visible: true, line: { style: { stroke: 'rgba(128,128,128,0.3)', lineDash: [3, 3] } } },
+    },
     legends: {
       visible: true,
       selectMode: 'single',
@@ -236,11 +260,19 @@ export const useDashboardCharts = (
       text: t('模型调用次数排行'),
       subtext: '',
     },
+    axes: [
+      { orient: 'bottom', domainLine: { visible: false }, tick: { visible: false }, label: { style: { fontSize: 10 }, autoRotate: true } },
+      { orient: 'left', domainLine: { visible: false }, tick: { visible: false }, grid: { style: { lineDash: [3, 3], stroke: 'rgba(128,128,128,0.15)' } }, label: { style: { fontSize: 10 } } },
+    ],
     bar: {
+      style: {
+        cornerRadius: [8, 8, 0, 0],
+      },
       state: {
         hover: {
           stroke: 'rgba(128,128,128,0.2)',
           lineWidth: 1,
+          fillOpacity: 0.8,
         },
       },
     },
@@ -273,6 +305,9 @@ export const useDashboardCharts = (
 
   const updateChartData = useCallback(
     (data) => {
+      // Skip update if no real data — preserve mock preview
+      if (!data || data.length === 0) return;
+
       const processedData = processRawData(
         data,
         dataExportDefaultTime,

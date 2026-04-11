@@ -19,9 +19,11 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React from 'react';
 import Dashboard from '../../components/dashboard';
+import WelcomeGuide from '../../components/dashboard/WelcomeGuide';
 
 const Detail = () => (
   <div>
+    <WelcomeGuide />
     <Dashboard />
   </div>
 );

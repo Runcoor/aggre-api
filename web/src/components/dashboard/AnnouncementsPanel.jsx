@@ -29,56 +29,58 @@ const AnnouncementsPanel = ({
   CARD_PROPS,
   ILLUSTRATION_SIZE,
   t,
+  fullWidth,
 }) => {
   return (
     <div
-      className='lg:col-span-2 rounded-[var(--radius-lg)] border overflow-hidden'
+      className={fullWidth ? 'rounded-[var(--radius-lg)] border overflow-hidden' : 'lg:col-span-2 rounded-[var(--radius-lg)] border overflow-hidden'}
       style={{
         background: 'var(--surface)',
         borderColor: 'var(--border-subtle)',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      {/* Panel header */}
+      {/* Panel header — compact vertical layout for narrow width */}
       <div
-        className='px-5 py-3 border-b flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2'
+        className='px-4 py-3 border-b'
         style={{ borderColor: 'var(--border-subtle)' }}
       >
-        <div className='flex items-center gap-2'>
-          <div
-            className='w-6 h-6 rounded-[var(--radius-sm)] flex items-center justify-center'
-            style={{
-              background: 'var(--warning-light)',
-              color: 'var(--warning)',
-            }}
-          >
-            <Bell size={14} />
+        <div className='flex items-center justify-between mb-2'>
+          <div className='flex items-center gap-2'>
+            <Bell size={14} style={{ color: 'var(--warning)' }} />
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                fontFamily: 'var(--font-serif)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              {t('系统公告')}
+            </span>
           </div>
           <span
-            className='text-sm font-semibold'
             style={{
-              fontFamily: 'var(--font-serif)',
-              color: 'var(--text-primary)',
-            }}
-          >
-            {t('系统公告')}
-          </span>
-          <span
-            className='text-xs px-2 py-0.5 rounded-[var(--radius-sm)]'
-            style={{
+              fontSize: 10,
+              padding: '2px 6px',
+              borderRadius: 'var(--radius-sm)',
               background: 'var(--surface-active)',
               color: 'var(--text-muted)',
             }}
           >
-            {t('显示最新20条')}
+            {t('最新20条')}
           </span>
         </div>
-        {/* Legend */}
-        <div className='flex flex-wrap gap-3 text-xs'>
+        <div className='flex flex-wrap gap-2' style={{ fontSize: 10 }}>
           {announcementLegendData.map((legend, index) => (
             <div key={index} className='flex items-center gap-1'>
               <div
-                className='w-2 h-2 rounded-full'
                 style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
                   backgroundColor:
                     legend.color === 'grey'
                       ? 'var(--text-muted)'
@@ -100,7 +102,7 @@ const AnnouncementsPanel = ({
       </div>
 
       {/* Body */}
-      <ScrollableContainer maxHeight='24rem'>
+      <ScrollableContainer maxHeight='100%' className='flex-1'>
         {announcementData.length > 0 ? (
           <div className='p-4'>
             <Timeline mode='left'>

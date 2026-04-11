@@ -44,12 +44,6 @@ const ActionButtons = ({
     <div className='flex items-center gap-1'>
       <NewYearButton isNewYear={isNewYear} />
 
-      <NotificationButton
-        unreadCount={unreadCount}
-        onNoticeOpen={onNoticeOpen}
-        t={t}
-      />
-
       <ThemeToggle theme={theme} onThemeToggle={onThemeToggle} t={t} />
 
       <LanguageSelector

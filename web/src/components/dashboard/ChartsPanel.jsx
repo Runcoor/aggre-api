@@ -1,25 +1,6 @@
-/*
-Copyright (C) 2025 QuantumNous
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-For commercial licensing, please contact support@quantumnous.com
-*/
-
 import React from 'react';
-import { PieChart } from 'lucide-react';
 import { VChart } from '@visactor/react-vchart';
+import { RefreshCw, Search } from 'lucide-react';
 
 const ChartsPanel = ({
   activeChartTab,
@@ -33,6 +14,9 @@ const ChartsPanel = ({
   FLEX_CENTER_GAP2,
   hasApiInfoPanel,
   t,
+  onRefresh,
+  onFilter,
+  loading,
 }) => {
   const tabs = [
     { key: '1', label: t('消耗分布') },
@@ -43,75 +27,143 @@ const ChartsPanel = ({
 
   return (
     <div
-      className={`rounded-[var(--radius-lg)] border overflow-hidden ${hasApiInfoPanel ? 'lg:col-span-3' : ''}`}
+      className={hasApiInfoPanel ? 'lg:col-span-3' : ''}
       style={{
         background: 'var(--surface)',
-        borderColor: 'var(--border-subtle)',
+        border: '1px solid var(--border-default)',
+        borderRadius: 'var(--radius-lg)',
+        overflow: 'hidden',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      {/* Panel header */}
+      {/* Compact header: title left, tabs + buttons right, single row */}
       <div
-        className='px-5 py-3 border-b flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3'
-        style={{ borderColor: 'var(--border-subtle)' }}
+        style={{
+          padding: '16px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          flexWrap: 'wrap',
+        }}
       >
-        <div className='flex items-center gap-2'>
-          <div
-            className='w-6 h-6 rounded-[var(--radius-sm)] flex items-center justify-center'
+        {/* Left: title */}
+        <div>
+          <h3
             style={{
-              background: 'var(--info-light)',
-              color: 'var(--info)',
-            }}
-          >
-            <PieChart size={14} />
-          </div>
-          <span
-            className='text-sm font-semibold'
-            style={{
-              fontFamily: 'var(--font-serif)',
+              fontSize: 18,
+              fontWeight: 800,
               color: 'var(--text-primary)',
+              fontFamily: 'var(--font-serif)',
+              margin: 0,
+              letterSpacing: '-0.01em',
             }}
           >
-            {t('模型数据分析')}
-          </span>
+            {t('模型消耗分析')}
+          </h3>
         </div>
 
-        {/* macOS segmented control tabs */}
-        <div
-          className='flex items-center rounded-[var(--radius-md)] p-0.5 gap-0.5'
-          style={{ background: 'var(--surface-hover)' }}
-        >
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              className='px-3 py-1.5 text-xs font-medium rounded-[var(--radius-sm)] transition-colors duration-150 whitespace-nowrap'
-              style={{
-                background: activeChartTab === tab.key ? 'var(--surface)' : 'transparent',
-                color: activeChartTab === tab.key ? 'var(--text-primary)' : 'var(--text-secondary)',
-                border: activeChartTab === tab.key ? '1px solid var(--border-subtle)' : '1px solid transparent',
-                cursor: 'pointer',
-              }}
-              onClick={() => setActiveChartTab(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Right: tab pills + action buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Tab pills */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              padding: 2,
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--bg-base)',
+            }}
+          >
+            {tabs.map((tab) => {
+              const isActive = activeChartTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveChartTab(tab.key)}
+                  style={{
+                    padding: '5px 12px',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: 11,
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+                    background: isActive ? 'var(--surface)' : 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 150ms ease',
+                    whiteSpace: 'nowrap',
+                    boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Action buttons */}
+          {(onRefresh || onFilter) && (
+            <div style={{ display: 'flex', gap: 4 }}>
+              {onRefresh && (
+                <button
+                  onClick={onRefresh}
+                  disabled={loading}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '5px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    background: 'var(--bg-base)',
+                    color: 'var(--text-secondary)',
+                    border: '1px solid var(--border-default)',
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  <RefreshCw
+                    size={10}
+                    style={loading ? { animation: 'spin 1s linear infinite' } : undefined}
+                  />
+                  {t('刷新')}
+                </button>
+              )}
+              {onFilter && (
+                <button
+                  onClick={onFilter}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '5px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    background: 'var(--bg-base)',
+                    color: 'var(--text-secondary)',
+                    border: '1px solid var(--border-default)',
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Search size={10} />
+                  {t('筛选')}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Chart body */}
-      <div className='h-96 p-3'>
-        {activeChartTab === '1' && (
-          <VChart spec={spec_line} option={CHART_CONFIG} />
-        )}
-        {activeChartTab === '2' && (
-          <VChart spec={spec_model_line} option={CHART_CONFIG} />
-        )}
-        {activeChartTab === '3' && (
-          <VChart spec={spec_pie} option={CHART_CONFIG} />
-        )}
-        {activeChartTab === '4' && (
-          <VChart spec={spec_rank_bar} option={CHART_CONFIG} />
-        )}
+      {/* Chart body — fills remaining space */}
+      <div style={{ flex: 1, minHeight: 280, padding: '0 16px 16px' }}>
+        {activeChartTab === '1' && <VChart spec={spec_line} option={CHART_CONFIG} />}
+        {activeChartTab === '2' && <VChart spec={spec_model_line} option={CHART_CONFIG} />}
+        {activeChartTab === '3' && <VChart spec={spec_pie} option={CHART_CONFIG} />}
+        {activeChartTab === '4' && <VChart spec={spec_rank_bar} option={CHART_CONFIG} />}
       </div>
     </div>
   );

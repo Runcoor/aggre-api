@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/middleware"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/middleware"
 
 	"github.com/gin-gonic/gin"
 )

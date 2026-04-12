@@ -1,7 +1,7 @@
 package ratio_setting
 
 import (
-	"github.com/QuantumNous/aggre-api/types"
+	"github.com/runcoor/aggre-api/types"
 )
 
 var defaultCacheRatio = map[string]float64{

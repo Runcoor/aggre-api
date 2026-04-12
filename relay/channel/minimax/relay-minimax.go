@@ -3,10 +3,10 @@ package minimax
 import (
 	"fmt"
 
-	channelconstant "github.com/QuantumNous/aggre-api/constant"
-	relaycommon "github.com/QuantumNous/aggre-api/relay/common"
-	"github.com/QuantumNous/aggre-api/relay/constant"
-	"github.com/QuantumNous/aggre-api/types"
+	channelconstant "github.com/runcoor/aggre-api/constant"
+	relaycommon "github.com/runcoor/aggre-api/relay/common"
+	"github.com/runcoor/aggre-api/relay/constant"
+	"github.com/runcoor/aggre-api/types"
 )
 
 func GetRequestURL(info *relaycommon.RelayInfo) (string, error) {

@@ -3,7 +3,7 @@ package common
 import (
 	"testing"
 
-	"github.com/QuantumNous/aggre-api/types"
+	"github.com/runcoor/aggre-api/types"
 	"github.com/stretchr/testify/require"
 )
 

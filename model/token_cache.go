@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/constant"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/constant"
 )
 
 func cacheSetToken(token Token) error {

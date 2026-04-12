@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/constant"
-	"github.com/QuantumNous/aggre-api/dto"
-	"github.com/QuantumNous/aggre-api/relay/channel/openrouter"
-	relaycommon "github.com/QuantumNous/aggre-api/relay/common"
-	"github.com/QuantumNous/aggre-api/relay/reasonmap"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/constant"
+	"github.com/runcoor/aggre-api/dto"
+	"github.com/runcoor/aggre-api/relay/channel/openrouter"
+	relaycommon "github.com/runcoor/aggre-api/relay/common"
+	"github.com/runcoor/aggre-api/relay/reasonmap"
 	"github.com/samber/lo"
 )
 

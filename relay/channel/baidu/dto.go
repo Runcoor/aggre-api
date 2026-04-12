@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/dto"
+	"github.com/runcoor/aggre-api/dto"
 )
 
 type BaiduMessage struct {

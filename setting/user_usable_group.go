@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/QuantumNous/aggre-api/common"
+	"github.com/runcoor/aggre-api/common"
 )
 
 var userUsableGroups = map[string]string{

@@ -3,8 +3,8 @@ package dto
 import (
 	"encoding/json"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/types"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/types"
 )
 
 //type OpenAIError struct {

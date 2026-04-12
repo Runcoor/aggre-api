@@ -7,9 +7,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/logger"
-	"github.com/QuantumNous/aggre-api/model"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/logger"
+	"github.com/runcoor/aggre-api/model"
 
 	"github.com/bytedance/gopkg/util/gopool"
 )

@@ -3,7 +3,7 @@ package dto
 import (
 	"testing"
 
-	"github.com/QuantumNous/aggre-api/common"
+	"github.com/runcoor/aggre-api/common"
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
 )

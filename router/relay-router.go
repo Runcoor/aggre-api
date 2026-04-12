@@ -1,11 +1,11 @@
 package router
 
 import (
-	"github.com/QuantumNous/aggre-api/constant"
-	"github.com/QuantumNous/aggre-api/controller"
-	"github.com/QuantumNous/aggre-api/middleware"
-	"github.com/QuantumNous/aggre-api/relay"
-	"github.com/QuantumNous/aggre-api/types"
+	"github.com/runcoor/aggre-api/constant"
+	"github.com/runcoor/aggre-api/controller"
+	"github.com/runcoor/aggre-api/middleware"
+	"github.com/runcoor/aggre-api/relay"
+	"github.com/runcoor/aggre-api/types"
 
 	"github.com/gin-gonic/gin"
 )

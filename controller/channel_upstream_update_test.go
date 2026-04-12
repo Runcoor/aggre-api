@@ -3,8 +3,8 @@ package controller
 import (
 	"testing"
 
-	"github.com/QuantumNous/aggre-api/dto"
-	"github.com/QuantumNous/aggre-api/model"
+	"github.com/runcoor/aggre-api/dto"
+	"github.com/runcoor/aggre-api/model"
 	"github.com/stretchr/testify/require"
 )
 

@@ -4,7 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 
-	"github.com/QuantumNous/aggre-api/common"
+	"github.com/runcoor/aggre-api/common"
 
 	"gorm.io/gorm"
 )

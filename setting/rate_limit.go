@@ -6,7 +6,7 @@ import (
 	"math"
 	"sync"
 
-	"github.com/QuantumNous/aggre-api/common"
+	"github.com/runcoor/aggre-api/common"
 )
 
 var ModelRequestRateLimitEnabled = false

@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/constant"
-	"github.com/QuantumNous/aggre-api/model"
-	"github.com/QuantumNous/aggre-api/relay"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/constant"
+	"github.com/runcoor/aggre-api/model"
+	"github.com/runcoor/aggre-api/relay"
 )
 
 func getGeminiVideoURL(channel *model.Channel, task *model.Task, apiKey string) (string, error) {

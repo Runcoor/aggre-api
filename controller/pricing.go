@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"github.com/QuantumNous/aggre-api/model"
-	"github.com/QuantumNous/aggre-api/service"
-	"github.com/QuantumNous/aggre-api/setting/ratio_setting"
+	"github.com/runcoor/aggre-api/model"
+	"github.com/runcoor/aggre-api/service"
+	"github.com/runcoor/aggre-api/setting/ratio_setting"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,8 +1,8 @@
 package performance_setting
 
 import (
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/setting/config"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/setting/config"
 )
 
 // PerformanceSetting 性能设置配置

@@ -11,10 +11,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/dto"
-	"github.com/QuantumNous/aggre-api/logger"
-	"github.com/QuantumNous/aggre-api/types"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/dto"
+	"github.com/runcoor/aggre-api/logger"
+	"github.com/runcoor/aggre-api/types"
 )
 
 func MidjourneyErrorWrapper(code int, desc string) *dto.MidjourneyResponse {

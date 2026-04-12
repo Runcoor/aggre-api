@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/constant"
-	"github.com/QuantumNous/aggre-api/model"
-	"github.com/QuantumNous/aggre-api/relay/channel/codex"
-	"github.com/QuantumNous/aggre-api/service"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/constant"
+	"github.com/runcoor/aggre-api/model"
+	"github.com/runcoor/aggre-api/relay/channel/codex"
+	"github.com/runcoor/aggre-api/service"
 
 	"github.com/gin-gonic/gin"
 )

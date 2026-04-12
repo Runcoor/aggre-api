@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/constant"
+	"github.com/runcoor/aggre-api/constant"
 	"github.com/pkg/errors"
 
 	"github.com/gin-gonic/gin"

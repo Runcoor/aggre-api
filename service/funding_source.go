@@ -3,7 +3,7 @@ package service
 import (
 	"time"
 
-	"github.com/QuantumNous/aggre-api/model"
+	"github.com/runcoor/aggre-api/model"
 )
 
 // ---------------------------------------------------------------------------

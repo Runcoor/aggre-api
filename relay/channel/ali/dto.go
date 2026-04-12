@@ -3,9 +3,9 @@ package ali
 import (
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/dto"
-	"github.com/QuantumNous/aggre-api/logger"
-	"github.com/QuantumNous/aggre-api/service"
+	"github.com/runcoor/aggre-api/dto"
+	"github.com/runcoor/aggre-api/logger"
+	"github.com/runcoor/aggre-api/service"
 	"github.com/gin-gonic/gin"
 )
 

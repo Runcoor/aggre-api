@@ -1,6 +1,6 @@
 package siliconflow
 
-import "github.com/QuantumNous/aggre-api/dto"
+import "github.com/runcoor/aggre-api/dto"
 
 type SFTokens struct {
 	InputTokens  int `json:"input_tokens"`

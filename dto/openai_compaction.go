@@ -3,7 +3,7 @@ package dto
 import (
 	"encoding/json"
 
-	"github.com/QuantumNous/aggre-api/types"
+	"github.com/runcoor/aggre-api/types"
 )
 
 type OpenAIResponsesCompactionResponse struct {

@@ -1,6 +1,6 @@
 package common
 
-import "github.com/QuantumNous/aggre-api/constant"
+import "github.com/runcoor/aggre-api/constant"
 
 func ChannelType2APIType(channelType int) (int, bool) {
 	apiType := -1

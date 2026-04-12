@@ -6,11 +6,11 @@ import (
 	"reflect"
 	"testing"
 
-	common2 "github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/types"
+	common2 "github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/types"
 
-	"github.com/QuantumNous/aggre-api/dto"
-	"github.com/QuantumNous/aggre-api/setting/model_setting"
+	"github.com/runcoor/aggre-api/dto"
+	"github.com/runcoor/aggre-api/setting/model_setting"
 	"github.com/samber/lo"
 )
 

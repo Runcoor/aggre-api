@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/pkg/ionet"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/pkg/ionet"
 	"github.com/gin-gonic/gin"
 )
 

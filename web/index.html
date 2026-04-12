@@ -1,69 +1,73 @@
 <!doctype html>
 <html lang="zh">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="shortcut icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" id="meta-theme-color" content="#F5F5F7" />
-    <meta
-      name="description"
-      lang="zh"
-      content="统一的 AI 模型聚合与分发网关，支持将各类大语言模型跨格式转换为 OpenAI、Claude、Gemini 兼容接口，为个人与企业提供集中式模型管理与网关服务。"
-    />
-    <meta
-      name="description"
-      lang="en"
-      content="A unified AI model hub for aggregation & distribution. It supports cross-converting various LLMs into OpenAI-compatible, Claude-compatible, or Gemini-compatible formats. A centralized gateway for personal and enterprise model management."
-    />
-    <meta name="generator" content="aggre-api" />
 
-    <!-- Open Graph -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="AGGRE TOKEN — AI API Aggregation Platform" />
-    <meta property="og:description" content="Unified AI API gateway. Access 40+ LLM providers through one endpoint. Stable, fast, full-featured." />
-    <meta property="og:image" content="/logo.png" />
-    <meta property="og:site_name" content="AGGRE TOKEN" />
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" id="meta-theme-color" content="#F5F5F7" />
+  <meta name="description" lang="zh"
+    content="统一的 AI 模型聚合与分发网关，支持将各类大语言模型跨格式转换为 OpenAI、Claude、Gemini 兼容接口，为个人与企业提供集中式模型管理与网关服务。" />
+  <meta name="description" lang="en"
+    content="A unified AI model hub for aggregation & distribution. It supports cross-converting various LLMs into OpenAI-compatible, Claude-compatible, or Gemini-compatible formats. A centralized gateway for personal and enterprise model management." />
+  <meta name="generator" content="aggre-api" />
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="AGGRE TOKEN — AI API Aggregation Platform" />
-    <meta name="twitter:description" content="Unified AI API gateway. Access 40+ LLM providers through one endpoint." />
-    <meta name="twitter:image" content="/logo.png" />
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="AGGRE TOKEN — AI API Aggregation Platform" />
+  <meta property="og:description"
+    content="Unified AI API gateway. Access 40+ LLM providers through one endpoint. Stable, fast, full-featured." />
+  <meta property="og:image" content="/favicon.svg" />
+  <meta property="og:site_name" content="AGGRE TOKEN" />
 
-    <title>AGGRE TOKEN</title>
-    <!-- FOUC prevention: apply theme + initial bg before React/CSS loads -->
-    <style>
-      html.dark body { background-color: #1c1c1e; color: rgba(255,255,255,0.95); }
-      html:not(.dark) body { background-color: #F5F5F7; color: rgba(0,0,0,0.85); }
-    </style>
-    <script>
-      (function() {
-        try {
-          var stored = localStorage.getItem('theme-mode') || 'auto';
-          var isDark = stored === 'dark' ||
-            (stored === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-          if (isDark) {
-            document.documentElement.classList.add('dark');
-            document.getElementById('meta-theme-color').setAttribute('content', '#1c1c1e');
-          } else {
-            document.documentElement.classList.remove('dark');
-            document.getElementById('meta-theme-color').setAttribute('content', '#F5F5F7');
-          }
-        } catch(e) {}
-      })();
-    </script>
-    <!-- Typography: system-first stack (SF Pro / Segoe UI Variable / PingFang SC / Microsoft YaHei). No web font fetch. -->
-    <!--umami-->
-    <!--Google Analytics-->
-  </head>
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="AGGRE TOKEN — AI API Aggregation Platform" />
+  <meta name="twitter:description" content="Unified AI API gateway. Access 40+ LLM providers through one endpoint." />
+  <meta name="twitter:image" content="/favicon.svg" />
 
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <script type="module" src="/src/index.jsx"></script>
-  </body>
+  <title>AGGRE TOKEN</title>
+  <!-- FOUC prevention: apply theme + initial bg before React/CSS loads -->
+  <style>
+    html.dark body {
+      background-color: #1c1c1e;
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    html:not(.dark) body {
+      background-color: #F5F5F7;
+      color: rgba(0, 0, 0, 0.85);
+    }
+  </style>
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme-mode') || 'auto';
+        var isDark = stored === 'dark' ||
+          (stored === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+          document.getElementById('meta-theme-color').setAttribute('content', '#1c1c1e');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.getElementById('meta-theme-color').setAttribute('content', '#F5F5F7');
+        }
+      } catch (e) { }
+    })();
+  </script>
+  <!-- Typography: system-first stack (SF Pro / Segoe UI Variable / PingFang SC / Microsoft YaHei). No web font fetch. -->
+  <!--umami-->
+  <!--Google Analytics-->
+</head>
+
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div id="root"></div>
+  <script type="module" src="/src/index.jsx"></script>
+</body>
+
 </html>

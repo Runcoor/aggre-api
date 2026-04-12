@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/constant"
+	"github.com/runcoor/aggre-api/constant"
 )
 
 // ValidateRedirectURL validates that a redirect URL is safe to use.

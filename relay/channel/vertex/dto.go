@@ -3,7 +3,7 @@ package vertex
 import (
 	"encoding/json"
 
-	"github.com/QuantumNous/aggre-api/dto"
+	"github.com/runcoor/aggre-api/dto"
 )
 
 type VertexAIClaudeRequest struct {

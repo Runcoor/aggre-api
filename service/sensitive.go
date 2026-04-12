@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/dto"
-	"github.com/QuantumNous/aggre-api/setting"
+	"github.com/runcoor/aggre-api/dto"
+	"github.com/runcoor/aggre-api/setting"
 )
 
 func CheckSensitiveMessages(messages []dto.Message) ([]string, error) {

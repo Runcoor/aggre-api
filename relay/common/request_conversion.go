@@ -1,8 +1,8 @@
 package common
 
 import (
-	"github.com/QuantumNous/aggre-api/dto"
-	"github.com/QuantumNous/aggre-api/types"
+	"github.com/runcoor/aggre-api/dto"
+	"github.com/runcoor/aggre-api/types"
 )
 
 func GuessRelayFormatFromRequest(req any) (types.RelayFormat, bool) {

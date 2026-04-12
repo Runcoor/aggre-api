@@ -11,19 +11,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/constant"
-	"github.com/QuantumNous/aggre-api/controller"
-	"github.com/QuantumNous/aggre-api/i18n"
-	"github.com/QuantumNous/aggre-api/logger"
-	"github.com/QuantumNous/aggre-api/middleware"
-	"github.com/QuantumNous/aggre-api/model"
-	"github.com/QuantumNous/aggre-api/oauth"
-	"github.com/QuantumNous/aggre-api/relay"
-	"github.com/QuantumNous/aggre-api/router"
-	"github.com/QuantumNous/aggre-api/service"
-	_ "github.com/QuantumNous/aggre-api/setting/performance_setting"
-	"github.com/QuantumNous/aggre-api/setting/ratio_setting"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/constant"
+	"github.com/runcoor/aggre-api/controller"
+	"github.com/runcoor/aggre-api/i18n"
+	"github.com/runcoor/aggre-api/logger"
+	"github.com/runcoor/aggre-api/middleware"
+	"github.com/runcoor/aggre-api/model"
+	"github.com/runcoor/aggre-api/oauth"
+	"github.com/runcoor/aggre-api/relay"
+	"github.com/runcoor/aggre-api/router"
+	"github.com/runcoor/aggre-api/service"
+	_ "github.com/runcoor/aggre-api/setting/performance_setting"
+	"github.com/runcoor/aggre-api/setting/ratio_setting"
 
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-contrib/sessions"
@@ -157,7 +157,7 @@ func main() {
 		common.SysLog(fmt.Sprintf("panic detected: %v", err))
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": gin.H{
-				"message": fmt.Sprintf("Panic detected, error: %v. Please submit a issue here: https://github.com/QuantumNous/aggre-api", err),
+				"message": fmt.Sprintf("Panic detected, error: %v. Please submit a issue here: https://github.com/runcoor/aggre-api", err),
 				"type":    "aggre_api_panic",
 			},
 		})
@@ -212,7 +212,7 @@ func InjectUmamiAnalytics() {
 		analyticsInjectBuilder.WriteString(umamiSiteID)
 		analyticsInjectBuilder.WriteString("\"></script>")
 	}
-	analyticsInjectBuilder.WriteString("<!--Umami QuantumNous-->\n")
+	analyticsInjectBuilder.WriteString("<!--Umami runcoor-->\n")
 	analyticsInject := analyticsInjectBuilder.String()
 	indexPage = bytes.ReplaceAll(indexPage, []byte("<!--umami-->\n"), []byte(analyticsInject))
 }
@@ -234,7 +234,7 @@ func InjectGoogleAnalytics() {
 		analyticsInjectBuilder.WriteString("');")
 		analyticsInjectBuilder.WriteString("</script>")
 	}
-	analyticsInjectBuilder.WriteString("<!--Google Analytics QuantumNous-->\n")
+	analyticsInjectBuilder.WriteString("<!--Google Analytics runcoor-->\n")
 	analyticsInject := analyticsInjectBuilder.String()
 	indexPage = bytes.ReplaceAll(indexPage, []byte("<!--Google Analytics-->\n"), []byte(analyticsInject))
 }

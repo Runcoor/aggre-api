@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/model"
+	"github.com/runcoor/aggre-api/model"
 
 	webauthn "github.com/go-webauthn/webauthn/webauthn"
 )

@@ -3,7 +3,7 @@ package oauth
 import (
 	"context"
 
-	"github.com/QuantumNous/aggre-api/model"
+	"github.com/runcoor/aggre-api/model"
 	"github.com/gin-gonic/gin"
 )
 

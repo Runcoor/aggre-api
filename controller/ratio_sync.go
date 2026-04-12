@@ -16,12 +16,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/logger"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/logger"
 
-	"github.com/QuantumNous/aggre-api/dto"
-	"github.com/QuantumNous/aggre-api/model"
-	"github.com/QuantumNous/aggre-api/setting/ratio_setting"
+	"github.com/runcoor/aggre-api/dto"
+	"github.com/runcoor/aggre-api/model"
+	"github.com/runcoor/aggre-api/setting/ratio_setting"
 
 	"github.com/gin-gonic/gin"
 )

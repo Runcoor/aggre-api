@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/constant"
-	"github.com/QuantumNous/aggre-api/setting/ratio_setting"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/constant"
+	"github.com/runcoor/aggre-api/setting/ratio_setting"
 )
 
 var group2model2channels map[string]map[string][]int // enabled channel

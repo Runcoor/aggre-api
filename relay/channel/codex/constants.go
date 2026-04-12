@@ -1,7 +1,7 @@
 package codex
 
 import (
-	"github.com/QuantumNous/aggre-api/setting/ratio_setting"
+	"github.com/runcoor/aggre-api/setting/ratio_setting"
 	"github.com/samber/lo"
 )
 

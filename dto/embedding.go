@@ -3,7 +3,7 @@ package dto
 import (
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/types"
+	"github.com/runcoor/aggre-api/types"
 
 	"github.com/gin-gonic/gin"
 )

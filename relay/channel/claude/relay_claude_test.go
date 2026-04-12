@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/QuantumNous/aggre-api/dto"
+	"github.com/runcoor/aggre-api/dto"
 	"github.com/stretchr/testify/require"
 )
 

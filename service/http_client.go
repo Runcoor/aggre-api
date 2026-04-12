@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/setting/system_setting"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/setting/system_setting"
 
 	"golang.org/x/net/proxy"
 )

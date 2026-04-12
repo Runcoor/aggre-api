@@ -2,7 +2,7 @@
 
 AI API 聚合管理平台。
 
-基于 [new-api](https://github.com/QuantumNous/new-api) 修改，遵循 AGPL-3.0 协议。
+基于 [new-api](https://github.com/runcoor/new-api) 修改，遵循 AGPL-3.0 协议。
 
 [English](README.md)
 

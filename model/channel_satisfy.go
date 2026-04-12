@@ -1,8 +1,8 @@
 package model
 
 import (
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/setting/ratio_setting"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/setting/ratio_setting"
 )
 
 func IsChannelEnabledForGroupModel(group string, modelName string, channelID int) bool {

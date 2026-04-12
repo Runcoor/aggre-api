@@ -3,7 +3,7 @@ package model_setting
 import (
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/setting/config"
+	"github.com/runcoor/aggre-api/setting/config"
 )
 
 // QwenSettings defines Qwen model configuration. 注意bool要以enabled结尾才可以生效编辑

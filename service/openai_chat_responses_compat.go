@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/QuantumNous/aggre-api/dto"
-	"github.com/QuantumNous/aggre-api/service/openaicompat"
+	"github.com/runcoor/aggre-api/dto"
+	"github.com/runcoor/aggre-api/service/openaicompat"
 )
 
 func ChatCompletionsRequestToResponsesRequest(req *dto.GeneralOpenAIRequest) (*dto.OpenAIResponsesRequest, error) {

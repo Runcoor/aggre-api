@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/dto"
-	"github.com/QuantumNous/aggre-api/relay/common"
-	relayconstant "github.com/QuantumNous/aggre-api/relay/constant"
-	"github.com/QuantumNous/aggre-api/setting/ratio_setting"
+	"github.com/runcoor/aggre-api/dto"
+	"github.com/runcoor/aggre-api/relay/common"
+	relayconstant "github.com/runcoor/aggre-api/relay/constant"
+	"github.com/runcoor/aggre-api/setting/ratio_setting"
 	"github.com/gin-gonic/gin"
 )
 

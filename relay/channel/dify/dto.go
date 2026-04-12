@@ -1,7 +1,7 @@
 package dify
 
 import (
-	"github.com/QuantumNous/aggre-api/dto"
+	"github.com/runcoor/aggre-api/dto"
 )
 
 type DifyChatRequest struct {

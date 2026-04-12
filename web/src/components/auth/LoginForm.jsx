@@ -62,7 +62,7 @@ import WeChatIcon from '../common/logo/WeChatIcon';
 import LinuxDoIcon from '../common/logo/LinuxDoIcon';
 import TwoFAVerification from './TwoFAVerification';
 import { useTranslation } from 'react-i18next';
-import { SiDiscord } from 'react-icons/si';
+import { SiDiscord, SiTelegram } from 'react-icons/si';
 import AuthLayout from './AuthLayout';
 
 /* ─── Shared style constants ─── */
@@ -154,12 +154,12 @@ const LoginForm = () => {
   const hasCustomOAuthProviders = (status.custom_oauth_providers || []).length > 0;
   const hasOAuthLoginOptions = Boolean(
     status.github_oauth ||
-      status.discord_oauth ||
-      status.oidc_enabled ||
-      status.wechat_login ||
-      status.linuxdo_oauth ||
-      status.telegram_oauth ||
-      hasCustomOAuthProviders,
+    status.discord_oauth ||
+    status.oidc_enabled ||
+    status.wechat_login ||
+    status.linuxdo_oauth ||
+    status.telegram_oauth ||
+    hasCustomOAuthProviders,
   );
 
   useEffect(() => {
@@ -457,9 +457,18 @@ const LoginForm = () => {
           </Button>
         ))}
         {status.telegram_oauth && (
-          <div className='flex justify-center my-2'>
-            <TelegramLoginButton dataOnauth={onTelegramLoginClicked} botName={status.telegram_bot_name} />
-          </div>
+          <Button theme='borderless' className='w-full flex items-center justify-center relative' type='tertiary'
+            style={{ ...oauthBtnStyle, padding: 0, overflow: 'hidden' }}>
+            {/* Custom UI underneath */}
+            <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
+              <SiTelegram style={{ color: '#26A5E4', width: 20, height: 20 }} />
+              <span style={oauthBtnTextStyle}>{t('使用 Telegram 继续')}</span>
+            </div>
+            {/* Invisible native telegram button on top to catch clicks */}
+            <div className='absolute inset-0 z-10 flex items-center justify-center' style={{ opacity: 0.001, transform: 'scale(5)' }}>
+              <TelegramLoginButton dataOnauth={onTelegramLoginClicked} botName={status.telegram_bot_name} />
+            </div>
+          </Button>
         )}
         {status.passkey_login && passkeySupported && (
           <Button theme='borderless' className='w-full flex items-center justify-center' type='tertiary'

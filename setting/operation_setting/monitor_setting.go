@@ -4,7 +4,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/QuantumNous/aggre-api/setting/config"
+	"github.com/runcoor/aggre-api/setting/config"
 )
 
 type MonitorSetting struct {

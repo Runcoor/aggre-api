@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/service"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/service"
 	"github.com/gin-gonic/gin"
 )
 

@@ -4,7 +4,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/setting/config"
+	"github.com/runcoor/aggre-api/setting/config"
 )
 
 type ChatCompletionsToResponsesPolicy struct {

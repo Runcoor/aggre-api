@@ -6,11 +6,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/logger"
-	"github.com/QuantumNous/aggre-api/model"
-	relaycommon "github.com/QuantumNous/aggre-api/relay/common"
-	"github.com/QuantumNous/aggre-api/types"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/logger"
+	"github.com/runcoor/aggre-api/model"
+	relaycommon "github.com/runcoor/aggre-api/relay/common"
+	"github.com/runcoor/aggre-api/types"
 
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-gonic/gin"

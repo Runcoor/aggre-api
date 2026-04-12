@@ -3,9 +3,9 @@ package middleware
 import (
 	"fmt"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/logger"
-	"github.com/QuantumNous/aggre-api/types"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/logger"
+	"github.com/runcoor/aggre-api/types"
 	"github.com/gin-gonic/gin"
 )
 

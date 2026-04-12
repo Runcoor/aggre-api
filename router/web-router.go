@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/controller"
-	"github.com/QuantumNous/aggre-api/middleware"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/controller"
+	"github.com/runcoor/aggre-api/middleware"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"

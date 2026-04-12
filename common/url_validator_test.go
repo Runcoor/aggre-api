@@ -3,7 +3,7 @@ package common
 import (
 	"testing"
 
-	"github.com/QuantumNous/aggre-api/constant"
+	"github.com/runcoor/aggre-api/constant"
 )
 
 func TestValidateRedirectURL(t *testing.T) {

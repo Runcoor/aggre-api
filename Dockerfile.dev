@@ -15,7 +15,7 @@ COPY . .
 RUN mkdir -p web/dist \
     && echo '<!doctype html><html><head><title>dev</title></head><body>dev mode — use http://localhost:5173</body></html>' > web/dist/index.html
 
-RUN go build -ldflags "-s -w -X 'github.com/QuantumNous/aggre-api/common.Version=$(cat VERSION)'" -o aggre-api
+RUN go build -ldflags "-s -w -X 'github.com/runcoor/aggre-api/common.Version=$(cat VERSION)'" -o aggre-api
 
 FROM debian:bookworm-slim
 

@@ -1,6 +1,6 @@
 package cloudflare
 
-import "github.com/QuantumNous/aggre-api/dto"
+import "github.com/runcoor/aggre-api/dto"
 
 type CfRequest struct {
 	Messages    []dto.Message `json:"messages,omitempty"`

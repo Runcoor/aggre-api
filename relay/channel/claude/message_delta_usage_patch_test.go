@@ -3,9 +3,9 @@ package claude
 import (
 	"testing"
 
-	"github.com/QuantumNous/aggre-api/dto"
-	relaycommon "github.com/QuantumNous/aggre-api/relay/common"
-	"github.com/QuantumNous/aggre-api/setting/model_setting"
+	"github.com/runcoor/aggre-api/dto"
+	relaycommon "github.com/runcoor/aggre-api/relay/common"
+	"github.com/runcoor/aggre-api/setting/model_setting"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"

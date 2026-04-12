@@ -1,4 +1,4 @@
-module github.com/QuantumNous/aggre-api
+module github.com/runcoor/aggre-api
 
 // +heroku goVersion go1.18
 go 1.25.1

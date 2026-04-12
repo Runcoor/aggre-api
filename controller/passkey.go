@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/model"
-	passkeysvc "github.com/QuantumNous/aggre-api/service/passkey"
-	"github.com/QuantumNous/aggre-api/setting/system_setting"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/model"
+	passkeysvc "github.com/runcoor/aggre-api/service/passkey"
+	"github.com/runcoor/aggre-api/setting/system_setting"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"

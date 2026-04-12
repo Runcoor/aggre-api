@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/QuantumNous/aggre-api/types"
+import "github.com/runcoor/aggre-api/types"
 
 const (
 	RealtimeEventTypeError              = "error"

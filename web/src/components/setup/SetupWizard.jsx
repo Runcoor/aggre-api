@@ -368,7 +368,7 @@ const SetupWizard = () => {
           </div>
 
           {/* Form content area */}
-          <div className='px-6 py-5'>
+          <div className='px-6 py-5 setup-form-area'>
             <Form
               getFormApi={(formApi) => {
                 formRef.current = formApi;
@@ -399,9 +399,71 @@ const SetupWizard = () => {
           className='text-center mt-4 text-xs'
           style={{ color: 'var(--text-muted)' }}
         >
-          {t('系统初始化')} — ChongYa
+          {t('系统初始化')} — Aggre API
         </p>
       </div>
+
+      <style>{`
+        /* Override Semi UI Form.Input to match Auth pages */
+        .setup-form-area .semi-input-wrapper {
+          height: 48px !important;
+          border-radius: 12px !important;
+          border: 1px solid var(--border-default, #e5e7eb) !important;
+          background: #fff !important;
+          padding: 0 16px !important;
+          transition: all 300ms ease !important;
+          box-shadow: none !important;
+        }
+        .dark .setup-form-area .semi-input-wrapper {
+          background: var(--surface, #1e1e1e) !important;
+        }
+        .setup-form-area .semi-input-wrapper:focus-within {
+          border-color: transparent !important;
+          background: #fff !important;
+          background-image: linear-gradient(#fff, #fff), var(--accent-gradient, linear-gradient(135deg, #0072ff, #00c6ff)) !important;
+          background-origin: border-box !important;
+          background-clip: padding-box, border-box !important;
+          border: 1px solid transparent !important;
+        }
+        .dark .setup-form-area .semi-input-wrapper:focus-within {
+          background-image: linear-gradient(var(--surface, #1e1e1e), var(--surface, #1e1e1e)), var(--accent-gradient, linear-gradient(135deg, #0072ff, #00c6ff)) !important;
+        }
+        .setup-form-area .semi-input-wrapper .semi-input-prefix {
+          display: none !important;
+        }
+        .setup-form-area .semi-input-wrapper .semi-input {
+          font-size: 14px !important;
+          height: 100% !important;
+        }
+        .setup-form-area .semi-input-wrapper .semi-input::placeholder {
+          color: var(--text-muted) !important;
+          opacity: 0.5 !important;
+        }
+        .setup-form-area .semi-form-field-label-text {
+          font-size: 11px !important;
+          font-weight: 600 !important;
+          letter-spacing: 0.06em !important;
+          text-transform: uppercase !important;
+          color: var(--text-muted) !important;
+          padding-left: 2px !important;
+        }
+        .setup-form-area .semi-form-field {
+          margin-bottom: 16px !important;
+        }
+        /* 修复因全局或 flex 撑开引起的 checkbox/radio 变长方形的问题 */
+        .setup-form-area .semi-checkbox-inner,
+        .setup-form-area .semi-checkbox-inner-display,
+        .setup-form-area .semi-radio-inner,
+        .setup-form-area .semi-radio-inner-display {
+          width: 16px !important;
+          height: 16px !important;
+          flex-shrink: 0 !important;
+        }
+        .setup-form-area .semi-checkbox-wrapper,
+        .setup-form-area .semi-radio-wrapper {
+          align-items: center !important;
+        }
+      `}</style>
     </div>
   );
 };

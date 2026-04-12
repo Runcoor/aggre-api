@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/dto"
-	relaycommon "github.com/QuantumNous/aggre-api/relay/common"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/dto"
+	relaycommon "github.com/runcoor/aggre-api/relay/common"
 
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"

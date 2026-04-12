@@ -6,11 +6,11 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/QuantumNous/aggre-api/dto"
-	"github.com/QuantumNous/aggre-api/relay/channel"
-	relaycommon "github.com/QuantumNous/aggre-api/relay/common"
-	"github.com/QuantumNous/aggre-api/relay/constant"
-	"github.com/QuantumNous/aggre-api/types"
+	"github.com/runcoor/aggre-api/dto"
+	"github.com/runcoor/aggre-api/relay/channel"
+	relaycommon "github.com/runcoor/aggre-api/relay/common"
+	"github.com/runcoor/aggre-api/relay/constant"
+	"github.com/runcoor/aggre-api/types"
 
 	"github.com/gin-gonic/gin"
 )

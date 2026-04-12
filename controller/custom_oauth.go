@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/model"
-	"github.com/QuantumNous/aggre-api/oauth"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/model"
+	"github.com/runcoor/aggre-api/oauth"
 	"github.com/gin-gonic/gin"
 )
 

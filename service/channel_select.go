@@ -3,11 +3,11 @@ package service
 import (
 	"errors"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/constant"
-	"github.com/QuantumNous/aggre-api/logger"
-	"github.com/QuantumNous/aggre-api/model"
-	"github.com/QuantumNous/aggre-api/setting"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/constant"
+	"github.com/runcoor/aggre-api/logger"
+	"github.com/runcoor/aggre-api/model"
+	"github.com/runcoor/aggre-api/setting"
 	"github.com/gin-gonic/gin"
 )
 

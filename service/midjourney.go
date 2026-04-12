@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/constant"
-	"github.com/QuantumNous/aggre-api/dto"
-	relayconstant "github.com/QuantumNous/aggre-api/relay/constant"
-	"github.com/QuantumNous/aggre-api/setting"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/constant"
+	"github.com/runcoor/aggre-api/dto"
+	relayconstant "github.com/runcoor/aggre-api/relay/constant"
+	"github.com/runcoor/aggre-api/setting"
 
 	"github.com/gin-gonic/gin"
 )

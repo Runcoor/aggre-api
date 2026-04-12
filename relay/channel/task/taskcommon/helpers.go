@@ -4,10 +4,10 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/model"
-	relaycommon "github.com/QuantumNous/aggre-api/relay/common"
-	"github.com/QuantumNous/aggre-api/setting/system_setting"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/model"
+	relaycommon "github.com/runcoor/aggre-api/relay/common"
+	"github.com/runcoor/aggre-api/setting/system_setting"
 	"github.com/gin-gonic/gin"
 )
 

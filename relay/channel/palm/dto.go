@@ -1,6 +1,6 @@
 package palm
 
-import "github.com/QuantumNous/aggre-api/dto"
+import "github.com/runcoor/aggre-api/dto"
 
 type PaLMChatMessage struct {
 	Author  string `json:"author"`

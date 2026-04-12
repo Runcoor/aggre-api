@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/setting/config"
+	"github.com/runcoor/aggre-api/setting/config"
 )
 
 //var claudeHeadersSettings = map[string][]string{}

@@ -3,7 +3,7 @@ package model
 import (
 	"strconv"
 
-	"github.com/QuantumNous/aggre-api/common"
+	"github.com/runcoor/aggre-api/common"
 
 	"gorm.io/gorm"
 )

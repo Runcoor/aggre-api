@@ -54,8 +54,15 @@ check_docker() {
 # ── 生产环境命令 ──────────────────────────────────────────────────────────────
 
 prod_up() {
-  info "启动生产环境 (全部服务)..."
+  info "构建并启动生产环境 (全部服务)..."
   compose_cmd "$PROD_COMPOSE" up -d --build "$@"
+  ok "生产环境已启动"
+  prod_status
+}
+
+prod_start() {
+  info "启动生产环境 (跳过构建, 使用已有镜像)..."
+  compose_cmd "$PROD_COMPOSE" up -d "$@"
   ok "生产环境已启动"
   prod_status
 }
@@ -88,6 +95,14 @@ prod_build() {
   info "构建生产镜像 (不启动)..."
   compose_cmd "$PROD_COMPOSE" build "$@"
   ok "镜像构建完成"
+}
+
+prod_rebuild() {
+  info "清除缓存, 完全重新构建并启动..."
+  compose_cmd "$PROD_COMPOSE" build --no-cache "$@"
+  compose_cmd "$PROD_COMPOSE" up -d "$@"
+  ok "重新构建并启动完成"
+  prod_status
 }
 
 # ── 开发环境命令 ──────────────────────────────────────────────────────────────
@@ -183,6 +198,28 @@ update() {
   prod_up --build
 }
 
+show_version() {
+  local ver=""
+  if [ -f "$PROJECT_DIR/VERSION" ]; then
+    ver=$(cat "$PROJECT_DIR/VERSION")
+  fi
+  if [ -z "$ver" ]; then
+    warn "VERSION 文件为空或不存在"
+  else
+    info "当前版本: $ver"
+  fi
+}
+
+set_version() {
+  local new_ver="$1"
+  if [ -z "$new_ver" ]; then
+    err "请指定版本号, 例如: ./ctl version set v1.3.0"
+    exit 1
+  fi
+  echo -n "$new_ver" > "$PROJECT_DIR/VERSION"
+  ok "版本已设置为: $new_ver"
+}
+
 # ── 帮助 ──────────────────────────────────────────────────────────────────────
 
 usage() {
@@ -193,12 +230,14 @@ ${BOLD}${CYAN}$APP_NAME 部署控制脚本${NC}
 ${BOLD}用法:${NC} ./ctl <命令> [参数...]
 
 ${BOLD}${GREEN}生产环境:${NC}
-  prod up [--build]       启动全部服务 (默认自动构建)
+  prod up                 构建并启动全部服务
+  prod start              直接启动 (跳过构建, 使用已有镜像)
   prod down               停止全部服务
   prod restart [服务名]   重启服务 (不指定则重启全部)
+  prod rebuild            清除缓存, 完全重新构建并启动
   prod status             查看服务状态
   prod logs [服务名]      查看日志 (实时跟踪)
-  prod build              仅构建镜像
+  prod build              仅构建镜像 (不启动)
 
 ${BOLD}${YELLOW}开发环境:${NC}
   dev up                  启动后端 + DB + Redis
@@ -220,15 +259,20 @@ ${BOLD}数据库:${NC}
 ${BOLD}维护:${NC}
   update                  git pull + 重新部署
   cleanup                 清理无用 Docker 资源
+  version                 查看当前版本号
+  version set <版本号>    设置版本号 (如 v1.3.0)
 
 ${BOLD}示例:${NC}
-  ./ctl prod up                    # 一键启动生产环境
+  ./ctl prod up                    # 构建并启动生产环境
+  ./ctl prod start                 # 已有镜像, 直接启动 (快速)
+  ./ctl prod rebuild               # 清除缓存完全重建
   ./ctl dev up                     # 启动开发后端
   ./ctl dev frontend               # 另开终端启动前端
   ./ctl prod logs aggre-api        # 查看生产日志
   ./ctl start prod aggre-redis     # 单独启动 Redis
   ./ctl db backup                  # 备份数据库
   ./ctl prod restart aggre-api     # 只重启应用 (不重启 DB)
+  ./ctl version set v1.3.0         # 设置版本号
 
 EOF
 }
@@ -242,8 +286,10 @@ case "${1:-help}" in
     check_env
     case "${2:-}" in
       up)       shift 2; prod_up "$@" ;;
+      start)    shift 2; prod_start "$@" ;;
       down)     shift 2; prod_down "$@" ;;
       restart)  shift 2; prod_restart "$@" ;;
+      rebuild)  shift 2; prod_rebuild "$@" ;;
       status)   prod_status ;;
       logs)     shift 2; prod_logs "$@" ;;
       build)    shift 2; prod_build "$@" ;;
@@ -280,6 +326,12 @@ case "${1:-help}" in
     ;;
   update)   update ;;
   cleanup)  cleanup ;;
+  version)
+    case "${2:-}" in
+      set)  set_version "${3:-}" ;;
+      *)    show_version ;;
+    esac
+    ;;
   help|--help|-h|"")  usage ;;
   *)        err "未知命令: $1"; usage; exit 1 ;;
 esac

@@ -1,11 +1,11 @@
 package router
 
 import (
-	"github.com/QuantumNous/aggre-api/controller"
-	"github.com/QuantumNous/aggre-api/middleware"
+	"github.com/runcoor/aggre-api/controller"
+	"github.com/runcoor/aggre-api/middleware"
 
 	// Import oauth package to register providers via init()
-	_ "github.com/QuantumNous/aggre-api/oauth"
+	_ "github.com/runcoor/aggre-api/oauth"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"

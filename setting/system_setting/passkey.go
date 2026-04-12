@@ -4,8 +4,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/setting/config"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/setting/config"
 )
 
 type PasskeySettings struct {

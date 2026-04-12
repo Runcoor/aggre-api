@@ -1,6 +1,6 @@
 package xunfei
 
-import "github.com/QuantumNous/aggre-api/dto"
+import "github.com/runcoor/aggre-api/dto"
 
 type XunfeiMessage struct {
 	Role    string `json:"role"`

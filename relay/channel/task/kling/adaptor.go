@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/model"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/model"
 
 	"github.com/samber/lo"
 
@@ -19,12 +19,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
 
-	"github.com/QuantumNous/aggre-api/constant"
-	"github.com/QuantumNous/aggre-api/dto"
-	"github.com/QuantumNous/aggre-api/relay/channel"
-	taskcommon "github.com/QuantumNous/aggre-api/relay/channel/task/taskcommon"
-	relaycommon "github.com/QuantumNous/aggre-api/relay/common"
-	"github.com/QuantumNous/aggre-api/service"
+	"github.com/runcoor/aggre-api/constant"
+	"github.com/runcoor/aggre-api/dto"
+	"github.com/runcoor/aggre-api/relay/channel"
+	taskcommon "github.com/runcoor/aggre-api/relay/channel/task/taskcommon"
+	relaycommon "github.com/runcoor/aggre-api/relay/common"
+	"github.com/runcoor/aggre-api/service"
 )
 
 // ============================

@@ -6,9 +6,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/constant"
-	relayconstant "github.com/QuantumNous/aggre-api/relay/constant"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/constant"
+	relayconstant "github.com/runcoor/aggre-api/relay/constant"
 	"github.com/gin-gonic/gin"
 )
 

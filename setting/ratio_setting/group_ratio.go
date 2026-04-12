@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/setting/config"
-	"github.com/QuantumNous/aggre-api/types"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/setting/config"
+	"github.com/runcoor/aggre-api/types"
 )
 
 var defaultGroupRatio = map[string]float64{

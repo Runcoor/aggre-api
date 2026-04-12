@@ -2,7 +2,7 @@
 
 AI API aggregation management platform.
 
-Based on [new-api](https://github.com/QuantumNous/new-api), licensed under AGPL-3.0.
+Based on [new-api](https://github.com/runcoor/new-api), licensed under AGPL-3.0.
 
 [中文](README.zh_CN.md)
 

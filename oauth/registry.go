@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/model"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/model"
 )
 
 var (

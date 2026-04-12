@@ -10,7 +10,7 @@ assignees: ''
 ## Read This First (Do Not Remove This Section)
 
 - Docs: https://docs.aggreapi.ai/
-- Usage questions first: https://deepwiki.com/QuantumNous/aggre-api
+- Usage questions first: https://deepwiki.com/runcoor/aggre-api
 - Warning: issues with this template removed, section headings deleted, or content cleared may be closed directly. Repeated abusive submissions may result in a block.
 
 **Your current aggreapi version**

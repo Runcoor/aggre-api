@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/QuantumNous/aggre-api/types"
+	"github.com/runcoor/aggre-api/types"
 )
 
 const (

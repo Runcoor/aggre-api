@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"unicode/utf8"
 
-	"github.com/QuantumNous/aggre-api/common"
-	"github.com/QuantumNous/aggre-api/i18n"
-	"github.com/QuantumNous/aggre-api/model"
+	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/i18n"
+	"github.com/runcoor/aggre-api/model"
 
 	"github.com/gin-gonic/gin"
 )

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/QuantumNous/aggre-api/service"
+	"github.com/runcoor/aggre-api/service"
 	"github.com/gin-gonic/gin"
 )
 

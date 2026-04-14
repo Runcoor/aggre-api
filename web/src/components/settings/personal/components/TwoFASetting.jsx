@@ -208,7 +208,7 @@ const TwoFASetting = ({ t }) => {
   // 备用码展示组件
   const BackupCodesDisplay = ({ codes, title, onCopy }) => {
     return (
-      <Card style={{ borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-default)' }} style={{ width: '100%' }}>
+      <Card style={{ borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-default)', width: '100%' }}>
         <div className='space-y-3'>
           <div className='flex items-center justify-between'>
             <Text strong style={{ color: 'var(--text-primary)' }}>

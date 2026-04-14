@@ -1029,7 +1029,7 @@ const HomeLanding = () => {
               </div>
 
               {/* CTAs */}
-              <div className='flex flex-row gap-3 justify-center items-center'>
+              <div className='flex flex-row gap-3 justify-center items-center flex-wrap'>
                 <Link to='/console'>
                   <Button
                     theme='solid'
@@ -1079,34 +1079,176 @@ const HomeLanding = () => {
                     </Button>
                   </Link>
                 )}
-              </div>
-              {/* Stats bar — complementary to feature cards below, avoid overlap */}
-              <div
-                className='flex flex-wrap justify-center gap-6 md:gap-12 mt-12'
-                style={{ color: 'var(--text-muted)', fontSize: 13 }}
-              >
-                {[
-                  { value: '40+', label: t('AI 模型') },
-                  { value: '10+', label: t('供应商') },
-                  { value: '6', label: t('API 格式') },
-                  { value: '∞', label: t('并发无限制') },
-                ].map((stat) => (
-                  <div key={stat.label} className='flex flex-col items-center gap-1'>
+                {/* Beginner guide button — gradient border + gradient text */}
+                <Link to='/guide' className='guide-btn-link'>
+                  <span
+                    className='guide-btn-outer'
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '1px',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'var(--accent-gradient)',
+                      cursor: 'pointer',
+                      transition: 'box-shadow 0.3s',
+                    }}
+                    title={t('guide_tooltip')}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.boxShadow = '0 0 16px color-mix(in srgb, var(--accent) 25%, transparent)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
                     <span
+                      className='guide-btn-inner'
                       style={{
-                        fontSize: 22,
-                        fontWeight: 700,
-                        fontFamily: 'var(--font-mono)',
-                        color: 'var(--text-primary)',
-                        letterSpacing: '-0.02em',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: isMobile ? '7px 14px' : '9px 18px',
+                        borderRadius: 'calc(var(--radius-md) - 1px)',
+                        background: 'var(--bg-base)',
+                        fontSize: isMobile ? 13 : 14,
+                        fontWeight: 600,
+                        backgroundClip: 'padding-box',
+                        transition: 'background 0.25s',
                       }}
                     >
-                      {stat.value}
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="url(#guide-grad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <defs>
+                          <linearGradient id="guide-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="var(--accent)" />
+                            <stop offset="100%" stopColor="color-mix(in srgb, var(--accent) 60%, #a855f7)" />
+                          </linearGradient>
+                        </defs>
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                      </svg>
+                      <span
+                        style={{
+                          background: 'var(--accent-gradient)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text',
+                        }}
+                      >
+                        {t('新手指南')}
+                      </span>
                     </span>
-                    <span style={{ fontSize: 11, letterSpacing: '0.04em' }}>{stat.label}</span>
-                  </div>
-                ))}
+                  </span>
+                </Link>
               </div>
+              {/* Trust Strip — pill badges */}
+              <div className='mt-8 md:mt-10 flex justify-center'>
+                <div
+                  className='inline-flex flex-wrap justify-center gap-x-2 gap-y-2 md:gap-x-3'
+                  style={{ maxWidth: 620 }}
+                >
+                  {[
+                    {
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17 8h1a4 4 0 1 1 0 8h-1" /><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" /><line x1="6" y1="2" x2="6" y2="4" /><line x1="10" y1="2" x2="10" y2="4" /><line x1="14" y1="2" x2="14" y2="4" />
+                        </svg>
+                      ),
+                      text: t('¥1 起体验'),
+                    },
+                    {
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2.5" /><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+                        </svg>
+                      ),
+                      text: t('余额随时可退'),
+                    },
+                    {
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                        </svg>
+                      ),
+                      text: t('99.9% 可用率'),
+                    },
+                    {
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                      ),
+                      text: t('不存储请求数据'),
+                    },
+                    {
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" /><path d="M8 10h8" /><path d="M8 14h4" />
+                        </svg>
+                      ),
+                      text: t('按量计费无绑定'),
+                    },
+                    {
+                      icon: (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm0 0a9 9 0 1 1 18 0m0 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3Z" />
+                        </svg>
+                      ),
+                      text: t('7×24 技术支持'),
+                    },
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '5px 12px',
+                        borderRadius: 'var(--radius-full, 9999px)',
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border-subtle)',
+                        color: 'var(--text-secondary)',
+                        fontSize: 12,
+                        fontWeight: 500,
+                        letterSpacing: '0.01em',
+                        whiteSpace: 'nowrap',
+                        opacity: 0,
+                        animation: `trustFadeUp 0.5s ease-out ${0.08 * i}s forwards`,
+                        transition: 'border-color 0.25s, color 0.25s, background 0.25s, box-shadow 0.25s',
+                        cursor: 'default',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--accent)';
+                        e.currentTarget.style.color = 'var(--accent)';
+                        e.currentTarget.style.background = 'color-mix(in srgb, var(--accent) 6%, var(--surface))';
+                        e.currentTarget.style.boxShadow = '0 0 12px color-mix(in srgb, var(--accent) 15%, transparent)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                        e.currentTarget.style.color = 'var(--text-secondary)';
+                        e.currentTarget.style.background = 'var(--surface)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0, opacity: 0.7 }}>
+                        {item.icon}
+                      </span>
+                      {item.text}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <style>{`
+                @keyframes trustFadeUp {
+                  from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0);
+                  }
+                }
+              `}</style>
             </div>
 
             {/* Tutorial Tabs Panel */}

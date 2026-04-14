@@ -955,10 +955,10 @@ html.dark .semi-switch-unchecked {
 }
 
 /* --- Checkbox/Radio Overrides --- */
-.semi-checkbox-inner-checked,
-.semi-checkbox-inner-indeterminate {
+.semi-checkbox-inner-checked .semi-checkbox-inner-display,
+.semi-checkbox-inner-indeterminate .semi-checkbox-inner-display {
   background-color: var(--accent) !important;
-  border-color: var(--accent) !important;
+  box-shadow: inset 0 0 0 1px var(--accent) !important;
 }
 
 .semi-radio-inner-checked {
@@ -4340,10 +4340,11 @@ html.dark {
   background-image: none !important;
 }
 
-/* Selected row — accent tint */
+/* Selected row — accent tint (use opaque color to avoid backdrop-filter bleed) */
 .semi-table-tbody > .semi-table-row.semi-table-row-selected > .semi-table-row-cell {
-  background-color: var(--accent-light) !important;
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--bg-base)) !important;
   background-image: none !important;
+  backdrop-filter: none !important;
 }
 
 /* Pagination footer */

@@ -70,6 +70,10 @@ const TokenCalculator = lazy(() => import('./pages/Tools/TokenCalculator'));
 const BalanceChecker = lazy(() => import('./pages/Tools/BalanceChecker'));
 const CacheCalculator = lazy(() => import('./pages/Tools/CacheCalculator'));
 const PlansPage = lazy(() => import('./pages/Plans'));
+const GuideIndex = lazy(() => import('./pages/Guide'));
+const GuidePrerequisites = lazy(() => import('./pages/Guide/Prerequisites'));
+const GuideNodejsSetup = lazy(() => import('./pages/Guide/NodejsSetup'));
+const GuideDetail = lazy(() => import('./pages/Guide/GuideDetail'));
 
 // Shared shell for standalone tool pages — centered column, top padding,
 // auto dark mode. Wraps CurlGenerator and LatencyTester.
@@ -399,6 +403,38 @@ function App() {
           element={
             <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <About />
+            </Suspense>
+          }
+        />
+        <Route
+          path='/guide'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <GuideIndex />
+            </Suspense>
+          }
+        />
+        <Route
+          path='/guide/prerequisites'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <GuidePrerequisites />
+            </Suspense>
+          }
+        />
+        <Route
+          path='/guide/nodejs-setup'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <GuideNodejsSetup />
+            </Suspense>
+          }
+        />
+        <Route
+          path='/guide/:categoryId'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <GuideDetail />
             </Suspense>
           }
         />

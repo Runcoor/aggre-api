@@ -176,7 +176,9 @@ const ModelCard = ({
     (i) => i.key === 'output' || i.key === 'completion',
   );
   const cachePrice = priceItems.find((i) => CACHE_KEYS.has(i.key));
-  const tags = model.tags || [];
+  const tags = typeof model.tags === 'string'
+    ? model.tags.split(/[,;|]+/).map((t) => t.trim()).filter(Boolean)
+    : Array.isArray(model.tags) ? model.tags : [];
 
   return (
     <article

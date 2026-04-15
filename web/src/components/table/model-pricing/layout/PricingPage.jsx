@@ -183,7 +183,12 @@ const PricingPage = () => {
   const tagItems = useMemo(() => {
     const allTags = new Set();
     models.forEach((m) => {
-      (m.tags || []).forEach((tag) => allTags.add(tag));
+      if (m.tags) {
+        (typeof m.tags === 'string' ? m.tags.split(/[,;|]+/) : Array.isArray(m.tags) ? m.tags : [])
+          .map((tag) => tag.trim())
+          .filter(Boolean)
+          .forEach((tag) => allTags.add(tag));
+      }
     });
     return [
       { value: 'all', label: t('全部模型') },

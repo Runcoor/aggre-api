@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # aggre-api 自动部署脚本
-# 由 GitHub Webhook 触发
+# 由 GitHub Actions 通过 SSH 触发，也可手动执行
 #
 set -euo pipefail
 

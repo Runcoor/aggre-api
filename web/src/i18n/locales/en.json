@@ -13,7 +13,7 @@
     "plans": {
       "popular": "Most Popular",
       "tier": {
-        "free": "Free",
+        "free": "Starter",
         "paid": "Pay As You Go",
         "enterprise": "Volume / Dedicated"
       },
@@ -21,25 +21,25 @@
         "kicker": "Flexible · Pay only for what you use",
         "title1": "Precision Pricing",
         "title2": "for Every Scale",
-        "desc": "No subscription, no commitment. Sign up to try selected models for free, then pay strictly per actual usage. Scale up to unlock volume discounts and dedicated technical support."
+        "desc": "No subscription, no commitment. Try selected models for just ¥1, then pay strictly per actual usage. Scale up to unlock volume discounts and dedicated technical support."
       },
       "free": {
-        "title": "Free",
-        "price": "$0",
-        "desc": "Perfect for individuals exploring, light testing, and evaluating model performance.",
-        "f1": "Free access to selected base models",
+        "title": "¥1 Trial",
+        "price": "¥1",
+        "desc": "Just ¥1 to get started — explore and evaluate model performance.",
+        "f1": "Try selected base models",
         "f2": "Standard rate limits",
         "f3": "Community forum support",
         "f4": "No access to Pro / flagship models",
         "f5": "No SLA or after-sales guarantee",
-        "cta": "Start Free"
+        "cta": "Try for ¥1"
       },
       "paid": {
         "title": "Pay As You Go",
         "price": "Usage-based",
         "priceUnit": "/ actual consumption",
         "desc": "Built for developers shipping products. Charged per actual token usage with absolutely no monthly fee.",
-        "f1": "Everything in Free",
+        "f1": "Everything in Starter",
         "f2": "All flagship models (GPT / Claude / Gemini / Grok)",
         "f3": "High-concurrency API access",
         "f4": "Priority email support",
@@ -87,8 +87,8 @@
       },
       "cta": {
         "title": "Ready to evolve your workflow?",
-        "desc": "Create your account in seconds and try every base model for free. No credit card required, no commitment.",
-        "primary": "Start Free",
+        "desc": "Create your account in seconds and try every base model for just ¥1. No commitment.",
+        "primary": "Try for ¥1",
         "primaryAuth": "Go to Console",
         "secondary": "Contact Us"
       }
@@ -478,8 +478,8 @@
     "顶级技术团队实时待命，响应迅速。无论是接入调试还是高并发优化，我们都在您身后。": "Top-tier engineers on standby around the clock — from integration debugging to high-concurrency tuning, we have your back.",
     "加入": "Join",
     "真货不缩水，体验极致": "The real deal — no compromise, ultimate experience",
-    "现在注册，开启您的下一代 AI 业务架构。": "Sign up now and launch your next-generation AI infrastructure.",
-    "开始免费试用": "Start Free Trial",
+    "现在注册，1元即可开启您的下一代 AI 业务架构。": "Sign up now — try everything for just ¥1.",
+    "1元试用": "Try for ¥1",
     "企业级 API 基础设施": "Enterprise Grade API Infrastructure",
     "功能架构": "Features Architecture",
     "统一智能。": "Unified Intelligence.",
@@ -3990,7 +3990,7 @@
     "输出": "Output",
     "最小缓存": "Min Cache",
 
-    "注册即可免费体验": "Sign up and try for free",
+    "注册即享1元体验": "Sign up — try for ¥1",
     "AI 模型": "AI Models",
     "供应商": "Providers",
     "API 格式": "API Formats",

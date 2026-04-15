@@ -78,6 +78,9 @@ func GetTopUpInfo(c *gin.Context) {
 		}
 	}
 
+	userId := c.GetInt("id")
+	dynamicMinTopUp := getMinTopupForUser(userId)
+
 	data := gin.H{
 		"enable_online_topup": operation_setting.PayAddress != "" && operation_setting.EpayId != "" && operation_setting.EpayKey != "",
 		"enable_stripe_topup": setting.StripeApiSecret != "" && setting.StripeWebhookSecret != "" && setting.StripePriceId != "",
@@ -91,7 +94,7 @@ func GetTopUpInfo(c *gin.Context) {
 		}(),
 		"creem_products": setting.CreemProducts,
 		"pay_methods":         payMethods,
-		"min_topup":           operation_setting.MinTopUp,
+		"min_topup":           dynamicMinTopUp,
 		"stripe_min_topup":    setting.StripeMinTopUp,
 		"waffo_min_topup":     setting.WaffoMinTopUp,
 		"amount_options":      operation_setting.GetPaymentSetting().AmountOptions,
@@ -163,6 +166,22 @@ func getMinTopup() int64 {
 	return int64(minTopup)
 }
 
+// getMinTopupForUser 根据用户是否首次充值返回不同的最低充值金额
+func getMinTopupForUser(userId int) int64 {
+	var minTopup int
+	if model.HasSuccessTopUp(userId) {
+		minTopup = operation_setting.MinTopUpAfterFirst
+	} else {
+		minTopup = operation_setting.MinTopUpForFirstTime
+	}
+	if operation_setting.GetQuotaDisplayType() == operation_setting.QuotaDisplayTypeTokens {
+		dMinTopup := decimal.NewFromInt(int64(minTopup))
+		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
+		minTopup = int(dMinTopup.Mul(dQuotaPerUnit).IntPart())
+	}
+	return int64(minTopup)
+}
+
 func RequestEpay(c *gin.Context) {
 	var req EpayRequest
 	err := c.ShouldBindJSON(&req)
@@ -170,12 +189,13 @@ func RequestEpay(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "error", "data": "参数错误"})
 		return
 	}
-	if req.Amount < getMinTopup() {
-		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", getMinTopup())})
+	id := c.GetInt("id")
+	minTopup := getMinTopupForUser(id)
+	if req.Amount < minTopup {
+		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", minTopup)})
 		return
 	}
 
-	id := c.GetInt("id")
 	group, err := model.GetUserGroup(id, true)
 	if err != nil {
 		c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})
@@ -373,11 +393,12 @@ func RequestAmount(c *gin.Context) {
 		return
 	}
 
-	if req.Amount < getMinTopup() {
-		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", getMinTopup())})
+	id := c.GetInt("id")
+	minTopup := getMinTopupForUser(id)
+	if req.Amount < minTopup {
+		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", minTopup)})
 		return
 	}
-	id := c.GetInt("id")
 	group, err := model.GetUserGroup(id, true)
 	if err != nil {
 		c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})

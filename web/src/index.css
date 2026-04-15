@@ -4310,16 +4310,14 @@ html.dark {
   transition: background-color var(--ease-micro) !important;
 }
 
-/* Defeat ::before on body fixed cells */
+/* Fixed cells in body rows need a solid background so they don't overlap scrolling content */
 .semi-table-tbody > .semi-table-row > .semi-table-row-cell.semi-table-cell-fixed-left,
 .semi-table-tbody > .semi-table-row > .semi-table-row-cell.semi-table-cell-fixed-right {
-  background-color: transparent !important;
+  background-color: var(--semi-color-bg-2, var(--surface, #fff)) !important;
   background-image: none !important;
 }
 .semi-table-tbody > .semi-table-row > .semi-table-row-cell.semi-table-cell-fixed-left::before,
 .semi-table-tbody > .semi-table-row > .semi-table-row-cell.semi-table-cell-fixed-right::before {
-  background-color: transparent !important;
-  background-image: none !important;
   display: none !important;
 }
 

@@ -23,6 +23,13 @@ type TopUp struct {
 	Status           string  `json:"status"`
 }
 
+// HasSuccessTopUp 检查用户是否有过成功的充值记录
+func HasSuccessTopUp(userId int) bool {
+	var count int64
+	DB.Model(&TopUp{}).Where("user_id = ? AND status = ?", userId, common.TopUpStatusSuccess).Count(&count)
+	return count > 0
+}
+
 func (topUp *TopUp) Insert() error {
 	var err error
 	err = DB.Create(topUp).Error

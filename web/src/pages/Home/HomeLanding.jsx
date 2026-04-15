@@ -935,7 +935,7 @@ const HomeLanding = () => {
                   className='inline-block w-2 h-2 rounded-full'
                   style={{ background: '#10b981' }}
                 />
-                {t('注册即可免费体验')}{' '}
+                {t('注册即享1元体验')}{' '}
                 <span style={{ color: 'var(--accent)', fontWeight: 700 }}>→</span>
               </div>
 
@@ -1380,7 +1380,7 @@ const HomeLanding = () => {
                 className='text-base md:text-xl mb-10 max-w-2xl mx-auto'
                 style={{ color: 'var(--text-secondary)' }}
               >
-                {t('现在注册，开启您的下一代 AI 业务架构。')}
+                {t('现在注册，1元即可开启您的下一代 AI 业务架构。')}
               </p>
               <div className='flex flex-col sm:flex-row gap-4 justify-center'>
                 <Link to='/register'>
@@ -1397,7 +1397,7 @@ const HomeLanding = () => {
                       height: 48,
                     }}
                   >
-                    {t('开始免费试用')}
+                    {t('1元试用')}
                   </Button>
                 </Link>
                 <Link to='/docs'>

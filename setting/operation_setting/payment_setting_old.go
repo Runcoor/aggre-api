@@ -15,6 +15,8 @@ var EpayId = ""
 var EpayKey = ""
 var Price = 7.3
 var MinTopUp = 1
+var MinTopUpForFirstTime = 1  // 首次充值最低金额（默认与 MinTopUp 相同）
+var MinTopUpAfterFirst = 10   // 非首次充值最低金额
 var USDExchangeRate = 7.3
 
 var PayMethods = []map[string]string{

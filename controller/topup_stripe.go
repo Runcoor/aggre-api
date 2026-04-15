@@ -47,11 +47,16 @@ type StripeAdaptor struct {
 }
 
 func (*StripeAdaptor) RequestAmount(c *gin.Context, req *StripePayRequest) {
-	if req.Amount < getStripeMinTopup() {
-		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", getStripeMinTopup())})
+	id := c.GetInt("id")
+	minTopup := getMinTopupForUser(id)
+	stripeMin := getStripeMinTopup()
+	if stripeMin < minTopup {
+		stripeMin = minTopup
+	}
+	if req.Amount < stripeMin {
+		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", stripeMin)})
 		return
 	}
-	id := c.GetInt("id")
 	group, err := model.GetUserGroup(id, true)
 	if err != nil {
 		c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})
@@ -70,8 +75,14 @@ func (*StripeAdaptor) RequestPay(c *gin.Context, req *StripePayRequest) {
 		c.JSON(200, gin.H{"message": "error", "data": "不支持的支付渠道"})
 		return
 	}
-	if req.Amount < getStripeMinTopup() {
-		c.JSON(200, gin.H{"message": fmt.Sprintf("充值数量不能小于 %d", getStripeMinTopup()), "data": 10})
+	id := c.GetInt("id")
+	minTopup := getMinTopupForUser(id)
+	stripeMin := getStripeMinTopup()
+	if stripeMin < minTopup {
+		stripeMin = minTopup
+	}
+	if req.Amount < stripeMin {
+		c.JSON(200, gin.H{"message": fmt.Sprintf("充值数量不能小于 %d", stripeMin), "data": 10})
 		return
 	}
 	if req.Amount > 10000 {
@@ -89,7 +100,6 @@ func (*StripeAdaptor) RequestPay(c *gin.Context, req *StripePayRequest) {
 		return
 	}
 
-	id := c.GetInt("id")
 	user, _ := model.GetUserById(id, false)
 	chargedMoney := GetChargedAmount(float64(req.Amount), *user)
 

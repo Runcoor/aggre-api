@@ -7,6 +7,9 @@ import (
 	"github.com/runcoor/aggre-api/common"
 )
 
+// effectiveTime: complete_time > 0 时用 complete_time，否则 fallback 到 create_time
+const effectiveTimeExpr = "CASE WHEN complete_time > 0 THEN complete_time ELSE create_time END"
+
 type FinanceSummary struct {
 	KPI                 FinanceKPI                `json:"kpi"`
 	RevenueTrend        []RevenueTrendPoint       `json:"revenue_trend"`
@@ -135,7 +138,7 @@ func getFinanceKPI(startTime, now int64) (*FinanceKPI, error) {
 
 	topupQuery := DB.Model(&TopUp{}).Where("status = ?", common.TopUpStatusSuccess)
 	if startTime > 0 {
-		topupQuery = topupQuery.Where("complete_time >= ?", startTime)
+		topupQuery = topupQuery.Where(effectiveTimeExpr+" >= ?", startTime)
 	}
 	if err := topupQuery.Select("COALESCE(SUM(money), 0)").Scan(&kpi.TotalRevenue).Error; err != nil {
 		return nil, err
@@ -222,7 +225,7 @@ func getRevenueTrendSparkline(startTime int64) []float64 {
 		bEnd := bStart + bucketSize
 		var revenue float64
 		DB.Model(&TopUp{}).
-			Where("status = ? AND complete_time >= ? AND complete_time < ?", common.TopUpStatusSuccess, bStart, bEnd).
+			Where("status = ? AND "+effectiveTimeExpr+" >= ? AND "+effectiveTimeExpr+" < ?", common.TopUpStatusSuccess, bStart, bEnd).
 			Select("COALESCE(SUM(money), 0)").Scan(&revenue)
 		trend[i] = revenue
 	}
@@ -234,7 +237,7 @@ func getRevenueTrend(startTime int64) ([]RevenueTrendPoint, error) {
 
 	query := DB.Model(&TopUp{}).Where("status = ?", common.TopUpStatusSuccess)
 	if startTime > 0 {
-		query = query.Where("complete_time >= ?", startTime)
+		query = query.Where(effectiveTimeExpr+" >= ?", startTime)
 	}
 
 	type dayRow struct {
@@ -243,7 +246,7 @@ func getRevenueTrend(startTime int64) ([]RevenueTrendPoint, error) {
 	}
 	var rows []dayRow
 	if err := query.
-		Select("(complete_time / 86400) as day_num, SUM(money) as revenue").
+		Select("("+effectiveTimeExpr+" / 86400) as day_num, SUM(money) as revenue").
 		Group("day_num").
 		Order("day_num").
 		Find(&rows).Error; err != nil {
@@ -265,7 +268,7 @@ func getPaymentDistribution(startTime int64) ([]PaymentDistributionItem, error) 
 
 	query := DB.Model(&TopUp{}).Where("status = ?", common.TopUpStatusSuccess)
 	if startTime > 0 {
-		query = query.Where("complete_time >= ?", startTime)
+		query = query.Where(effectiveTimeExpr+" >= ?", startTime)
 	}
 
 	type distRow struct {
@@ -342,7 +345,7 @@ func getTopUsers(startTime int64) ([]TopUserItem, error) {
 
 	query := DB.Model(&TopUp{}).Where("status = ?", common.TopUpStatusSuccess)
 	if startTime > 0 {
-		query = query.Where("complete_time >= ?", startTime)
+		query = query.Where(effectiveTimeExpr+" >= ?", startTime)
 	}
 
 	type userRow struct {

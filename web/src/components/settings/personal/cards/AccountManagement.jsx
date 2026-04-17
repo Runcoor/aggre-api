@@ -129,14 +129,14 @@ const AccountManagement = ({
     background: 'var(--surface)',
     borderRadius: 'var(--radius-md)',
     border: '1px solid var(--border-subtle)',
-    padding: '20px',
+    padding: '14px',
     transition: 'background 0.15s',
     cursor: 'default',
   };
 
   const iconBoxStyle = (bg) => ({
-    width: 44,
-    height: 44,
+    width: 36,
+    height: 36,
     borderRadius: 'var(--radius-md)',
     background: bg,
     display: 'flex',
@@ -377,7 +377,7 @@ const AccountManagement = ({
             {t('settings.accountsLinked', { count: linkedCount })}
           </span>
         </div>
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'>
+        <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2'>
           {providerCards.map((p) => (
             <div
               key={p.key}

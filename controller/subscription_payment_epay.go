@@ -15,6 +15,7 @@ import (
 	"github.com/runcoor/aggre-api/setting/system_setting"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
+	"github.com/shopspring/decimal"
 )
 
 type SubscriptionEpayPayRequest struct {
@@ -81,10 +82,15 @@ func SubscriptionRequestEpay(c *gin.Context) {
 		return
 	}
 
+	// 将 USD 金额按充值价格（x元/美金）转换为本币支付金额
+	payMoney := decimal.NewFromFloat(plan.PriceAmount).
+		Mul(decimal.NewFromFloat(operation_setting.Price)).
+		InexactFloat64()
+
 	order := &model.SubscriptionOrder{
 		UserId:        userId,
 		PlanId:        plan.Id,
-		Money:         plan.PriceAmount,
+		Money:         payMoney,
 		TradeNo:       tradeNo,
 		PaymentMethod: req.PaymentMethod,
 		CreateTime:    time.Now().Unix(),
@@ -98,7 +104,7 @@ func SubscriptionRequestEpay(c *gin.Context) {
 		Type:           req.PaymentMethod,
 		ServiceTradeNo: tradeNo,
 		Name:           fmt.Sprintf("SUB:%s", plan.Title),
-		Money:          strconv.FormatFloat(plan.PriceAmount, 'f', 2, 64),
+		Money:          strconv.FormatFloat(payMoney, 'f', 2, 64),
 		Device:         epay.PC,
 		NotifyUrl:      notifyUrl,
 		ReturnUrl:      returnUrl,

@@ -10,8 +10,10 @@ import (
 	"github.com/runcoor/aggre-api/common"
 	"github.com/runcoor/aggre-api/model"
 	"github.com/runcoor/aggre-api/setting"
+	"github.com/runcoor/aggre-api/setting/operation_setting"
 	"github.com/runcoor/aggre-api/setting/system_setting"
 	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
 	"github.com/stripe/stripe-go/v81"
 	"github.com/stripe/stripe-go/v81/checkout/session"
 	"github.com/thanhpk/randstr"
@@ -83,10 +85,15 @@ func SubscriptionRequestStripePay(c *gin.Context) {
 		return
 	}
 
+	// 将 USD 金额按充值价格（x元/美金）转换为本币支付金额
+	payMoney := decimal.NewFromFloat(plan.PriceAmount).
+		Mul(decimal.NewFromFloat(operation_setting.Price)).
+		InexactFloat64()
+
 	order := &model.SubscriptionOrder{
 		UserId:        userId,
 		PlanId:        plan.Id,
-		Money:         plan.PriceAmount,
+		Money:         payMoney,
 		TradeNo:       referenceId,
 		PaymentMethod: PaymentMethodStripe,
 		CreateTime:    time.Now().Unix(),

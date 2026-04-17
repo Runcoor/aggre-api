@@ -11,6 +11,7 @@ import (
 	"github.com/runcoor/aggre-api/setting"
 	"github.com/runcoor/aggre-api/setting/operation_setting"
 	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
 	"github.com/thanhpk/randstr"
 )
 
@@ -79,11 +80,16 @@ func SubscriptionRequestCreemPay(c *gin.Context) {
 	reference := "sub-creem-ref-" + randstr.String(6)
 	referenceId := "sub_ref_" + common.Sha1([]byte(reference+time.Now().String()+user.Username))
 
+	// 将 USD 金额按充值价格（x元/美金）转换为本币支付金额
+	payMoney := decimal.NewFromFloat(plan.PriceAmount).
+		Mul(decimal.NewFromFloat(operation_setting.Price)).
+		InexactFloat64()
+
 	// create pending order first
 	order := &model.SubscriptionOrder{
 		UserId:        userId,
 		PlanId:        plan.Id,
-		Money:         plan.PriceAmount,
+		Money:         payMoney,
 		TradeNo:       referenceId,
 		PaymentMethod: PaymentMethodCreem,
 		CreateTime:    time.Now().Unix(),

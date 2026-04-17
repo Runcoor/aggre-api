@@ -437,6 +437,13 @@ func GetUserTopUps(c *gin.Context) {
 	common.ApiSuccess(c, pageInfo)
 }
 
+// topUpWithUser 充值记录 + 用户信息
+type topUpWithUser struct {
+	*model.TopUp
+	Username string `json:"username"`
+	Email    string `json:"email"`
+}
+
 // GetAllTopUps 管理员获取全平台充值记录
 func GetAllTopUps(c *gin.Context) {
 	pageInfo := common.GetPageQuery(c)
@@ -458,8 +465,25 @@ func GetAllTopUps(c *gin.Context) {
 		return
 	}
 
+	// 批量查询用户名和邮箱
+	userIds := make([]int, 0, len(topups))
+	for _, t := range topups {
+		userIds = append(userIds, t.UserId)
+	}
+	userMap := model.GetUsernameAndEmailByIds(userIds)
+
+	items := make([]topUpWithUser, 0, len(topups))
+	for _, t := range topups {
+		info := userMap[t.UserId]
+		items = append(items, topUpWithUser{
+			TopUp:    t,
+			Username: info.Username,
+			Email:    info.Email,
+		})
+	}
+
 	pageInfo.SetTotal(int(total))
-	pageInfo.SetItems(topups)
+	pageInfo.SetItems(items)
 	common.ApiSuccess(c, pageInfo)
 }
 

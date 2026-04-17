@@ -125,9 +125,10 @@ const TopUpRecordsTab = ({ t, formatMoney }) => {
   const columns = [
     { title: 'ID', dataIndex: 'id', width: 60 },
     {
-      title: t('用户ID'),
-      dataIndex: 'user_id',
-      width: 80,
+      title: t('用户'),
+      dataIndex: 'username',
+      width: 120,
+      render: (v, record) => v || record.email || `#${record.user_id}`,
     },
     {
       title: t('金额'),

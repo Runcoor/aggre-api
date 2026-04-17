@@ -424,3 +424,26 @@ func getFinanceUsernameMap(userIds []int) map[int]string {
 	}
 	return result
 }
+
+type UserBasicInfo struct {
+	Username string
+	Email    string
+}
+
+func GetUsernameAndEmailByIds(userIds []int) map[int]UserBasicInfo {
+	result := make(map[int]UserBasicInfo)
+	if len(userIds) == 0 {
+		return result
+	}
+	type row struct {
+		Id       int    `gorm:"column:id"`
+		Username string `gorm:"column:username"`
+		Email    string `gorm:"column:email"`
+	}
+	var rows []row
+	DB.Model(&User{}).Where("id IN ?", userIds).Select("id, username, email").Find(&rows)
+	for _, r := range rows {
+		result[r.Id] = UserBasicInfo{Username: r.Username, Email: r.Email}
+	}
+	return result
+}

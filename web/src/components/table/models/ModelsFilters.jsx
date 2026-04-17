@@ -17,9 +17,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Form, Button } from '@douyinfe/semi-ui';
 import { IconSearch } from '@douyinfe/semi-icons';
+import { API } from '../../../helpers';
 
 const ModelsFilters = ({
   formInitValues,
@@ -29,6 +30,15 @@ const ModelsFilters = ({
   searching,
   t,
 }) => {
+  const [tagOptions, setTagOptions] = useState([]);
+
+  useEffect(() => {
+    API.get('/api/models/tags').then((res) => {
+      if (res.data?.success && Array.isArray(res.data.data)) {
+        setTagOptions(res.data.data.map((tag) => ({ value: tag, label: tag })));
+      }
+    }).catch(() => {});
+  }, []);
   // Handle form reset and immediate search
   const formApiRef = useRef(null);
 
@@ -77,6 +87,19 @@ const ModelsFilters = ({
             size='small'
           />
         </div>
+
+        {tagOptions.length > 0 && (
+          <div className='relative w-full md:w-40'>
+            <Form.Select
+              field='searchTag'
+              placeholder={t('标签筛选')}
+              showClear
+              pure
+              size='small'
+              optionList={tagOptions}
+            />
+          </div>
+        )}
 
         <div className='flex gap-2 w-full md:w-auto'>
           <Button

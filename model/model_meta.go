@@ -1,7 +1,9 @@
 package model
 
 import (
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/runcoor/aggre-api/common"
 
@@ -135,7 +137,7 @@ func GetBoundChannelsByModelsMap(modelNames []string) (map[string][]BoundChannel
 	return result, nil
 }
 
-func SearchModels(keyword string, vendor string, offset int, limit int) ([]*Model, int64, error) {
+func SearchModels(keyword string, vendor string, tag string, offset int, limit int) ([]*Model, int64, error) {
 	var models []*Model
 	db := DB.Model(&Model{})
 	if keyword != "" {
@@ -149,6 +151,10 @@ func SearchModels(keyword string, vendor string, offset int, limit int) ([]*Mode
 			db = db.Joins("JOIN vendors ON vendors.id = models.vendor_id").Where("vendors.name LIKE ?", "%"+vendor+"%")
 		}
 	}
+	if tag != "" {
+		like := "%" + tag + "%"
+		db = db.Where("tags LIKE ?", like)
+	}
 	var total int64
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
@@ -157,4 +163,25 @@ func SearchModels(keyword string, vendor string, offset int, limit int) ([]*Mode
 		return nil, 0, err
 	}
 	return models, total, nil
+}
+
+// GetAllModelTags 获取所有模型使用的 tags（去重）
+func GetAllModelTags() []string {
+	var tagStrings []string
+	DB.Model(&Model{}).Where("tags != '' AND tags IS NOT NULL").Pluck("tags", &tagStrings)
+	tagSet := make(map[string]bool)
+	for _, ts := range tagStrings {
+		for _, t := range strings.Split(ts, ",") {
+			t = strings.TrimSpace(t)
+			if t != "" {
+				tagSet[t] = true
+			}
+		}
+	}
+	result := make([]string, 0, len(tagSet))
+	for t := range tagSet {
+		result = append(result, t)
+	}
+	sort.Strings(result)
+	return result
 }

@@ -46,9 +46,10 @@ func SearchModelsMeta(c *gin.Context) {
 
 	keyword := c.Query("keyword")
 	vendor := c.Query("vendor")
+	tag := c.Query("tag")
 	pageInfo := common.GetPageQuery(c)
 
-	modelsMeta, total, err := model.SearchModels(keyword, vendor, pageInfo.GetStartIdx(), pageInfo.GetPageSize())
+	modelsMeta, total, err := model.SearchModels(keyword, vendor, tag, pageInfo.GetStartIdx(), pageInfo.GetPageSize())
 	if err != nil {
 		common.ApiError(c, err)
 		return
@@ -58,6 +59,12 @@ func SearchModelsMeta(c *gin.Context) {
 	pageInfo.SetTotal(int(total))
 	pageInfo.SetItems(modelsMeta)
 	common.ApiSuccess(c, pageInfo)
+}
+
+// GetAllModelTags 获取所有模型 tags 列表
+func GetAllModelTags(c *gin.Context) {
+	tags := model.GetAllModelTags()
+	common.ApiSuccess(c, tags)
 }
 
 // GetModelMeta 根据 ID 获取单条模型信息

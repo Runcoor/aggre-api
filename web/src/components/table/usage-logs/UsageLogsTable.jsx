@@ -79,6 +79,8 @@ const LogsTable = (logsData) => {
     t,
   } = logsData;
 
+  const [expandedRowKey, setExpandedRowKey] = React.useState(null);
+
   const renderCard = (record) => {
     const meta = getTypeMeta(record);
     const requestLike = isRequestLog(record);
@@ -287,51 +289,58 @@ const LogsTable = (logsData) => {
       ? getUsageLogDetailSummary(record, record.content, billingDisplayMode, t)
       : null;
 
+    const detailContent = (
+      <div style={{ padding: 12, maxWidth: 420 }}>
+        {detailSummary
+          ? renderCompactDetailSummary(detailSummary.segments)
+          : record.content || t('无详情')}
+        {expandData[record.key] && expandData[record.key].length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <Descriptions data={expandData[record.key]} size='small' />
+          </div>
+        )}
+      </div>
+    );
+
     const actions = (
       <Popover
         position='left'
-        trigger='click'
-        content={
-          <div style={{ padding: 12, maxWidth: 420 }}>
-            {detailSummary
-              ? renderCompactDetailSummary(detailSummary.segments)
-              : record.content || t('无详情')}
-            {expandData[record.key] && expandData[record.key].length > 0 && (
-              <div style={{ marginTop: 12 }}>
-                <Descriptions data={expandData[record.key]} size='small' />
-              </div>
-            )}
-          </div>
-        }
+        trigger='custom'
+        visible={expandedRowKey === record.key}
+        onClickOutSide={() => setExpandedRowKey(null)}
+        content={detailContent}
       >
-        <Tooltip content={t('查看详情')} position='top'>
-          <button
-            type='button'
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              background: 'transparent',
-              color: 'var(--text-secondary)',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'background-color var(--ease-micro), color var(--ease-micro)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--surface-hover)';
-              e.currentTarget.style.color = 'var(--accent)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--text-secondary)';
-            }}
-          >
-            <IconEyeOpened size='default' />
-          </button>
-        </Tooltip>
+        <button
+          type='button'
+          title={t('查看详情')}
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpandedRowKey(expandedRowKey === record.key ? null : record.key);
+          }}
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 'var(--radius-md)',
+            border: 'none',
+            background: 'transparent',
+            color: 'var(--text-secondary)',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background-color var(--ease-micro), color var(--ease-micro)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--surface-hover)';
+            e.currentTarget.style.color = 'var(--accent)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = 'var(--text-secondary)';
+          }}
+        >
+          <IconEyeOpened size='default' />
+        </button>
       </Popover>
     );
 

@@ -57,6 +57,7 @@ export const useModelsData = () => {
   const formInitValues = {
     searchKeyword: '',
     searchVendor: '',
+    searchTag: '',
   };
 
   // ---------- helpers ----------
@@ -250,12 +251,12 @@ export const useModelsData = () => {
     }
   };
 
-  // Search models with keyword and vendor
+  // Search models with keyword, vendor and tag
   const searchModels = async () => {
-    const { searchKeyword = '', searchVendor = '' } = getFormValues();
+    const { searchKeyword = '', searchVendor = '', searchTag = '' } = getFormValues();
 
-    if (searchKeyword === '' && searchVendor === '') {
-      // If keyword is blank, load models instead
+    if (searchKeyword === '' && searchVendor === '' && searchTag === '') {
+      // If all filters are blank, load models instead
       await loadModels(1, pageSize);
       return;
     }
@@ -263,7 +264,7 @@ export const useModelsData = () => {
     setSearching(true);
     try {
       const res = await API.get(
-        `/api/models/search?keyword=${searchKeyword}&vendor=${searchVendor}&p=1&page_size=${pageSize}`,
+        `/api/models/search?keyword=${searchKeyword}&vendor=${searchVendor}&tag=${searchTag}&p=1&page_size=${pageSize}`,
       );
       const { success, message, data } = res.data;
       if (success) {

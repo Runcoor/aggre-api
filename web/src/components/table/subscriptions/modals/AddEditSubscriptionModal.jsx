@@ -83,6 +83,7 @@ const AddEditSubscriptionModal = ({
     title: '',
     subtitle: '',
     price_amount: 0,
+    original_price_amount: 0,
     currency: 'USD',
     duration_unit: 'month',
     duration_value: 1,
@@ -93,6 +94,7 @@ const AddEditSubscriptionModal = ({
     sort_order: 0,
     max_purchase_per_user: 0,
     total_amount: 0,
+    quota_description: '',
     upgrade_group: '',
     stripe_price_id: '',
     creem_product_id: '',
@@ -107,6 +109,7 @@ const AddEditSubscriptionModal = ({
       title: p.title || '',
       subtitle: p.subtitle || '',
       price_amount: Number(p.price_amount || 0),
+      original_price_amount: Number(p.original_price_amount || 0),
       currency: 'USD',
       duration_unit: p.duration_unit || 'month',
       duration_value: Number(p.duration_value || 1),
@@ -119,6 +122,7 @@ const AddEditSubscriptionModal = ({
       total_amount: Number(
         quotaToDisplayAmount(p.total_amount || 0).toFixed(2),
       ),
+      quota_description: p.quota_description || '',
       upgrade_group: p.upgrade_group || '',
       stripe_price_id: p.stripe_price_id || '',
       creem_product_id: p.creem_product_id || '',
@@ -151,6 +155,7 @@ const AddEditSubscriptionModal = ({
         plan: {
           ...values,
           price_amount: Number(values.price_amount || 0),
+          original_price_amount: Number(values.original_price_amount || 0),
           currency: 'USD',
           duration_value: Number(values.duration_value || 0),
           custom_seconds: Number(values.custom_seconds || 0),
@@ -162,6 +167,7 @@ const AddEditSubscriptionModal = ({
           sort_order: Number(values.sort_order || 0),
           max_purchase_per_user: Number(values.max_purchase_per_user || 0),
           total_amount: displayAmountToQuota(values.total_amount),
+          quota_description: values.quota_description || '',
           upgrade_group: values.upgrade_group || '',
         },
       };
@@ -312,6 +318,17 @@ const AddEditSubscriptionModal = ({
 
                     <Col span={12}>
                       <Form.InputNumber
+                        field='original_price_amount'
+                        label={t('原价')}
+                        min={0}
+                        precision={2}
+                        extraText={t('0 表示不展示原价')}
+                        style={{ width: '100%' }}
+                      />
+                    </Col>
+
+                    <Col span={12}>
+                      <Form.InputNumber
                         field='total_amount'
                         label={t('总额度')}
                         required
@@ -322,6 +339,16 @@ const AddEditSubscriptionModal = ({
                           values.total_amount,
                         )}`}
                         style={{ width: '100%' }}
+                      />
+                    </Col>
+
+                    <Col span={24}>
+                      <Form.Input
+                        field='quota_description'
+                        label={t('额度说明')}
+                        placeholder={t('例如：每月100万tokens')}
+                        extraText={t('用于前端套餐卡片展示，留空则不展示')}
+                        showClear
                       />
                     </Col>
 

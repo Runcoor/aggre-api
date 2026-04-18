@@ -23,12 +23,10 @@ import {
   Modal,
   Button,
   Select,
-  Tooltip,
 } from '@douyinfe/semi-ui';
 import { Crown, CalendarClock, Package } from 'lucide-react';
 import { SiStripe } from 'react-icons/si';
 import { IconCreditCard } from '@douyinfe/semi-icons';
-import { renderQuota } from '../../../helpers';
 import { getCurrencyConfig } from '../../../helpers/render';
 import {
   formatSubscriptionDuration,
@@ -53,12 +51,17 @@ const SubscriptionPurchaseModal = ({
   onPayEpay,
 }) => {
   const plan = selectedPlan?.plan;
-  const totalAmount = Number(plan?.total_amount || 0);
   const { symbol, rate } = getCurrencyConfig();
   const price = plan ? Number(plan.price_amount || 0) : 0;
   const convertedPrice = price * rate;
   const displayPrice = convertedPrice.toFixed(
     Number.isInteger(convertedPrice) ? 0 : 2,
+  );
+  const originalPrice = plan ? Number(plan.original_price_amount || 0) : 0;
+  const hasOriginalPrice = originalPrice > 0 && originalPrice !== price;
+  const convertedOriginalPrice = originalPrice * rate;
+  const displayOriginalPrice = convertedOriginalPrice.toFixed(
+    Number.isInteger(convertedOriginalPrice) ? 0 : 2,
   );
   // 只有当管理员开启支付网关 AND 套餐配置了对应的支付ID时才显示
   const hasStripe = enableStripeTopUp && !!plan?.stripe_price_id;
@@ -128,25 +131,19 @@ const SubscriptionPurchaseModal = ({
                   </span>
                 </div>
               )}
-              <div className='flex justify-between items-center'>
-                <span className='text-sm font-medium' style={{ color: 'var(--text-secondary)' }}>
-                  {t('总额度')}
-                </span>
-                <div className='flex items-center'>
-                  <Package size={14} className='mr-1' style={{ color: 'var(--text-muted)' }} />
-                  {totalAmount > 0 ? (
-                    <Tooltip content={`${t('原生额度')}：${totalAmount}`}>
-                      <span className='text-sm' style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
-                        {renderQuota(totalAmount)}
-                      </span>
-                    </Tooltip>
-                  ) : (
+              {plan?.quota_description ? (
+                <div className='flex justify-between items-center'>
+                  <span className='text-sm font-medium' style={{ color: 'var(--text-secondary)' }}>
+                    {t('总额度')}
+                  </span>
+                  <div className='flex items-center'>
+                    <Package size={14} className='mr-1' style={{ color: 'var(--text-muted)' }} />
                     <span className='text-sm' style={{ color: 'var(--text-primary)' }}>
-                      {t('不限')}
+                      {plan.quota_description}
                     </span>
-                  )}
+                  </div>
                 </div>
-              </div>
+              ) : null}
               {plan?.upgrade_group ? (
                 <div className='flex justify-between items-center'>
                   <span className='text-sm font-medium' style={{ color: 'var(--text-secondary)' }}>
@@ -162,16 +159,30 @@ const SubscriptionPurchaseModal = ({
                 <span className='text-sm font-medium' style={{ color: 'var(--text-secondary)' }}>
                   {t('应付金额')}
                 </span>
-                <span
-                  className='text-xl font-bold'
-                  style={{
-                    color: 'var(--accent)',
-                    fontFamily: 'var(--font-serif)',
-                  }}
-                >
-                  {symbol}
-                  {displayPrice}
-                </span>
+                <div className='flex items-baseline gap-2'>
+                  {hasOriginalPrice && (
+                    <span
+                      className='text-sm'
+                      style={{
+                        color: 'var(--text-muted)',
+                        textDecoration: 'line-through',
+                        fontFamily: 'var(--font-serif)',
+                      }}
+                    >
+                      {symbol}{displayOriginalPrice}
+                    </span>
+                  )}
+                  <span
+                    className='text-xl font-bold'
+                    style={{
+                      color: 'var(--accent)',
+                      fontFamily: 'var(--font-serif)',
+                    }}
+                  >
+                    {symbol}
+                    {displayPrice}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

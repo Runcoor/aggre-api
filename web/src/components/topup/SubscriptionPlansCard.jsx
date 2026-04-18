@@ -481,20 +481,25 @@ const SubscriptionPlansCard = ({
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5 w-full px-1'>
               {plans.map((p, index) => {
                 const plan = p?.plan;
-                const totalAmount = Number(plan?.total_amount || 0);
                 const { symbol, rate } = getCurrencyConfig();
                 const price = Number(plan?.price_amount || 0);
                 const convertedPrice = price * rate;
                 const displayPrice = convertedPrice.toFixed(
                   Number.isInteger(convertedPrice) ? 0 : 2,
                 );
+                const originalPrice = Number(plan?.original_price_amount || 0);
+                const hasOriginalPrice = originalPrice > 0 && originalPrice !== price;
+                const convertedOriginalPrice = originalPrice * rate;
+                const displayOriginalPrice = convertedOriginalPrice.toFixed(
+                  Number.isInteger(convertedOriginalPrice) ? 0 : 2,
+                );
                 const isPopular = index === 0 && plans.length > 1;
                 const limit = Number(plan?.max_purchase_per_user || 0);
                 const limitLabel = limit > 0 ? `${t('限购')} ${limit}` : null;
-                const totalLabel =
-                  totalAmount > 0
-                    ? `${t('总额度')}: ${renderQuota(totalAmount)}`
-                    : `${t('总额度')}: ${t('不限')}`;
+                const quotaDescription = plan?.quota_description || '';
+                const quotaLabel = quotaDescription
+                  ? `${t('总额度')}: ${quotaDescription}`
+                  : null;
                 const upgradeLabel = plan?.upgrade_group
                   ? `${t('升级分组')}: ${plan.upgrade_group}`
                   : null;
@@ -507,12 +512,7 @@ const SubscriptionPlansCard = ({
                     label: `${t('有效期')}: ${formatSubscriptionDuration(plan, t)}`,
                   },
                   resetLabel ? { label: resetLabel } : null,
-                  totalAmount > 0
-                    ? {
-                        label: totalLabel,
-                        tooltip: `${t('原生额度')}：${totalAmount}`,
-                      }
-                    : { label: totalLabel },
+                  quotaLabel ? { label: quotaLabel } : null,
                   limitLabel ? { label: limitLabel } : null,
                   upgradeLabel ? { label: upgradeLabel } : null,
                 ].filter(Boolean);
@@ -570,6 +570,20 @@ const SubscriptionPlansCard = ({
 
                       {/* 价格区域 — accent color, serif numerals */}
                       <div className='py-2'>
+                        {hasOriginalPrice && (
+                          <div className='flex items-baseline justify-start mb-0.5'>
+                            <span
+                              className='text-sm'
+                              style={{
+                                color: 'var(--text-muted)',
+                                textDecoration: 'line-through',
+                                fontFamily: 'var(--font-serif)',
+                              }}
+                            >
+                              {symbol}{displayOriginalPrice}
+                            </span>
+                          </div>
+                        )}
                         <div className='flex items-baseline justify-start'>
                           <span
                             className='text-xl font-bold'

@@ -79,6 +79,14 @@ const renderPlanTitle = (text, record, t) => {
         <Text strong style={{ color: 'var(--success)' }}>
           {convertUSDToCurrency(Number(plan?.price_amount || 0), 2)}
         </Text>
+        {Number(plan?.original_price_amount || 0) > 0 && (
+          <>
+            <Text type='tertiary'>{t('原价')}</Text>
+            <Text style={{ textDecoration: 'line-through', color: 'var(--text-muted)' }}>
+              {convertUSDToCurrency(Number(plan?.original_price_amount || 0), 2)}
+            </Text>
+          </>
+        )}
         <Text type='tertiary'>{t('总额度')}</Text>
         {plan?.total_amount > 0 ? (
           <Tooltip content={`${t('原生额度')}：${plan.total_amount}`}>

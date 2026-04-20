@@ -70,6 +70,7 @@ const TokenCalculator = lazy(() => import('./pages/Tools/TokenCalculator'));
 const BalanceChecker = lazy(() => import('./pages/Tools/BalanceChecker'));
 const CacheCalculator = lazy(() => import('./pages/Tools/CacheCalculator'));
 const PlansPage = lazy(() => import('./pages/Plans'));
+const QuickStart = lazy(() => import('./pages/QuickStart'));
 const GuideIndex = lazy(() => import('./pages/Guide'));
 const GuidePrerequisites = lazy(() => import('./pages/Guide/Prerequisites'));
 const GuideNodejsSetup = lazy(() => import('./pages/Guide/NodejsSetup'));
@@ -396,6 +397,16 @@ function App() {
             <Suspense fallback={<Loading></Loading>} key={location.pathname}>
               <PlansPage />
             </Suspense>
+          }
+        />
+        <Route
+          path='/quick-start'
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <QuickStart />
+              </Suspense>
+            </PrivateRoute>
           }
         />
         <Route

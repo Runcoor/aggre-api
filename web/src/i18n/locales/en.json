@@ -1858,6 +1858,7 @@
     "必须是有效的 JSON 字符串数组，例如：[\"g1\",\"g2\"]": "Must be a valid JSON string array, for example: [\"g1\",\"g2\"]",
     "忘记密码？": "Forgot password?",
     "快速开始": "Quick Start",
+    "快速充值": "Quick Top Up",
     "快速选择": "Quick Select",
     "思考中...": "Thinking...",
     "思考内容转换": "Thinking content conversion",
@@ -4338,6 +4339,29 @@
     "prereq_network_disclaimer": "This site does not promote or sell any network proxy services. The resources below are provided solely as a reference for beginners who are unfamiliar with such tools, to help you access overseas AI services. Links contain referral codes, which do not affect the price you pay. Please comply with local laws and regulations.",
     "prereq_vps_disclaimer": "This site does not promote or sell any VPS or cloud server services. The resources below are provided as a reference for beginners unfamiliar with servers, to help you choose a suitable overseas server for project deployment. Links contain referral codes, which do not affect the price you pay.",
     "prereq_network_diy_cta": "Want to build your own?",
-    "prereq_network_diy_link": "Self-hosted Guide"
+    "prereq_network_diy_link": "Self-hosted Guide",
+
+    "API Key 创建成功": "API Key created successfully",
+    "API Key 已创建": "API Key Created",
+    "一键生成你的专属密钥": "Generate your personal key in one click",
+    "为你的 Key 取个名字（可选）": "Name your Key (optional)",
+    "例如：my-first-key": "e.g. my-first-key",
+    "充值额度开始使用": "Top up credits to get started",
+    "兑换": "Redeem",
+    "前往充值页面": "Go to Top Up Page",
+    "只需三步，即可开始使用 API 服务": "Just 3 steps to start using the API",
+    "在你喜欢的工具中配置": "Configure in your favorite tools",
+    "将创建一个无限额度、永不过期的 API Key，你可以稍后在令牌页面修改配置。": "This will create an unlimited, non-expiring API Key. You can modify it later on the Tokens page.",
+    "查看完整教程": "View Full Guide",
+    "立即创建": "Create Now",
+    "请先完成第 1 步创建 API Key，代码中的密钥将自动替换。": "Please complete Step 1 first to create an API Key. The key in the code will be auto-replaced.",
+    "请妥善保管，此密钥仅展示一次": "Keep it safe — this key is shown only once",
+    "请输入充值码": "Please enter redemption code",
+    "跳过，稍后充值": "Skip, top up later",
+    "输入充值码": "Enter code",
+    "输入充值码兑换额度": "Enter a redemption code to add credits",
+    "进入控制台": "Go to Console",
+    "选择你使用的工具，将以下配置添加到对应位置即可。": "Select your tool and add the configuration below.",
+    "额度已到账，可以开始使用了": "Credits added, ready to go"
   }
 }

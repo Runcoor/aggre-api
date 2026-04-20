@@ -1030,7 +1030,7 @@ const HomeLanding = () => {
 
               {/* CTAs */}
               <div className='flex flex-row gap-3 justify-center items-center flex-wrap'>
-                <Link to='/console'>
+                <Link to='/quick-start'>
                   <Button
                     theme='solid'
                     type='primary'
@@ -1044,7 +1044,7 @@ const HomeLanding = () => {
                       fontWeight: 600,
                     }}
                   >
-                    {t('立即开始')}
+                    {t('快速开始')}
                   </Button>
                 </Link>
                 {isDemoSiteMode && statusState?.status?.version ? (

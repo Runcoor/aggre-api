@@ -26,6 +26,7 @@ import SettingsLog from '../../pages/Setting/Operation/SettingsLog';
 import SettingsMonitoring from '../../pages/Setting/Operation/SettingsMonitoring';
 import SettingsCreditLimit from '../../pages/Setting/Operation/SettingsCreditLimit';
 import SettingsCheckin from '../../pages/Setting/Operation/SettingsCheckin';
+import SettingsTeam from '../../pages/Setting/Operation/SettingsTeam';
 import { API, showError, toBoolean } from '../../helpers';
 import MacSpinner from '../common/ui/MacSpinner';
 
@@ -81,6 +82,9 @@ const OperationSetting = () => {
 
     /* 令牌设置 */
     'token_setting.max_user_tokens': 1000,
+
+    /* 团队设置 */
+    TeamRequiredPlanId: '0',
   });
 
   let [loading, setLoading] = useState(false);
@@ -153,6 +157,10 @@ const OperationSetting = () => {
         {/* 签到设置 */}
         <div className='mv-settings-section'>
           <SettingsCheckin options={inputs} refresh={onRefresh} />
+        </div>
+        {/* 团队设置 */}
+        <div className='mv-settings-section'>
+          <SettingsTeam options={inputs} refresh={onRefresh} />
         </div>
       </div>
     </MacSpinner>

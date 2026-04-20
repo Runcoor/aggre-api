@@ -103,9 +103,17 @@ const SiderBar = ({ onNavigate = () => {} }) => {
       key: 'personal',
       items: [
         { text: t('钱包管理'), itemKey: 'topup' },
-        { text: t('团队管理'), itemKey: 'team' },
+        {
+          text: t('团队管理'), itemKey: 'team',
+          hidden: (() => {
+            try {
+              const s = JSON.parse(localStorage.getItem('status') || '{}');
+              return !s.team_required_plan_id || s.team_required_plan_id === 0;
+            } catch { return true; }
+          })(),
+        },
         { text: t('个人设置'), itemKey: 'personal' },
-      ].filter((it) => isModuleVisible('personal', it.itemKey)),
+      ].filter((it) => !it.hidden).filter((it) => isModuleVisible('personal', it.itemKey)),
     };
 
     const adminSection = {

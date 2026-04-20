@@ -81,6 +81,7 @@ func InitOptionMap() {
 	common.OptionMap["MinTopUp"] = strconv.Itoa(operation_setting.MinTopUp)
 	common.OptionMap["MinTopUpForFirstTime"] = strconv.Itoa(operation_setting.MinTopUpForFirstTime)
 	common.OptionMap["MinTopUpAfterFirst"] = strconv.Itoa(operation_setting.MinTopUpAfterFirst)
+	common.OptionMap["TeamRequiredPlanId"] = strconv.Itoa(operation_setting.TeamRequiredPlanId)
 	common.OptionMap["StripeMinTopUp"] = strconv.Itoa(setting.StripeMinTopUp)
 	common.OptionMap["StripeApiSecret"] = setting.StripeApiSecret
 	common.OptionMap["StripeWebhookSecret"] = setting.StripeWebhookSecret
@@ -367,6 +368,8 @@ func updateOptionMap(key string, value string) (err error) {
 		operation_setting.MinTopUpForFirstTime, _ = strconv.Atoi(value)
 	case "MinTopUpAfterFirst":
 		operation_setting.MinTopUpAfterFirst, _ = strconv.Atoi(value)
+	case "TeamRequiredPlanId":
+		operation_setting.TeamRequiredPlanId, _ = strconv.Atoi(value)
 	case "StripeApiSecret":
 		setting.StripeApiSecret = value
 	case "StripeWebhookSecret":

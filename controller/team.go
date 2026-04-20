@@ -6,8 +6,35 @@ import (
 
 	"github.com/runcoor/aggre-api/common"
 	"github.com/runcoor/aggre-api/model"
+	"github.com/runcoor/aggre-api/setting/operation_setting"
 	"github.com/gin-gonic/gin"
 )
+
+// checkTeamFeaturePermission verifies if the user has the required subscription to manage teams.
+// Returns true if allowed, false if not (and sends error response).
+func checkTeamFeaturePermission(c *gin.Context) bool {
+	planId := operation_setting.TeamRequiredPlanId
+	if planId == 0 {
+		common.ApiErrorMsg(c, "团队功能未启用")
+		return false
+	}
+	if planId == -1 {
+		// Open to all users
+		return true
+	}
+	userId := c.GetInt("id")
+	// Admin/root users bypass subscription check
+	role := c.GetInt("role")
+	if role >= common.RoleAdminUser {
+		return true
+	}
+	has, err := model.HasActiveSubscriptionForPlan(userId, planId)
+	if err != nil || !has {
+		common.ApiErrorMsg(c, "需要订阅指定套餐才能使用团队功能")
+		return false
+	}
+	return true
+}
 
 // ─── Helpers ───
 
@@ -42,6 +69,9 @@ type CreateTeamRequest struct {
 }
 
 func CreateTeam(c *gin.Context) {
+	if !checkTeamFeaturePermission(c) {
+		return
+	}
 	var req CreateTeamRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.ApiErrorMsg(c, "参数错误")
@@ -74,6 +104,31 @@ func CreateTeam(c *gin.Context) {
 		return
 	}
 	common.ApiSuccess(c, team)
+}
+
+func GetTeamPermission(c *gin.Context) {
+	planId := operation_setting.TeamRequiredPlanId
+	if planId == 0 {
+		common.ApiSuccess(c, gin.H{"enabled": false, "can_create": false, "is_member": false})
+		return
+	}
+	userId := c.GetInt("id")
+	canCreate := false
+	if planId == -1 {
+		canCreate = true
+	} else {
+		role := c.GetInt("role")
+		if role >= common.RoleAdminUser {
+			canCreate = true
+		} else {
+			has, _ := model.HasActiveSubscriptionForPlan(userId, planId)
+			canCreate = has
+		}
+	}
+	// Check if user is a member of any team
+	teams, _ := model.GetUserTeams(userId)
+	isMember := len(teams) > 0
+	common.ApiSuccess(c, gin.H{"enabled": true, "can_create": canCreate, "is_member": isMember})
 }
 
 func GetUserTeams(c *gin.Context) {

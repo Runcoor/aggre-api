@@ -139,6 +139,7 @@ func SetApiRouter(router *gin.Engine) {
 		teamRoute := apiRouter.Group("/team")
 		teamRoute.Use(middleware.UserAuth())
 		{
+			teamRoute.GET("/permission", controller.GetTeamPermission)
 			teamRoute.POST("/", controller.CreateTeam)
 			teamRoute.GET("/", controller.GetUserTeams)
 			teamRoute.POST("/join/:invite_code", controller.JoinTeamByInvite)

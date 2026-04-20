@@ -70,16 +70,33 @@ const VAR = ({ children }) => <span style={{ color: 'var(--qs-syn-var)' }}>{chil
 const FN = ({ children }) => <span style={{ color: 'var(--qs-syn-fn)' }}>{children}</span>;
 const ENV = ({ children }) => <span style={{ color: 'var(--qs-syn-env)' }}>{children}</span>;
 
-const getTutorial = (tab, base, key, t) => {
+const DEFAULT_MODEL = 'gpt-5.4';
+
+const getTutorial = (tab, base, key, t, os) => {
+  const isWin = os === 'windows';
+  const exp = isWin ? 'set' : 'export';
+  const shellFile = isWin ? 'powershell · terminal' : 'shell · ~/.zshrc';
+  const termFile = isWin ? 'powershell · terminal' : 'shell · terminal';
+
   switch (tab) {
     case 'claude':
       return {
-        filename: 'shell · ~/.zshrc',
-        lines: [
+        filename: isWin ? 'powershell · terminal' : 'shell · ~/.zshrc',
+        lines: isWin ? [
+          [<CMT>{`# ${t('Claude Code — 将 API 请求路由到')} ${base}`}</CMT>],
+          [],
+          [<KW>$env</KW>, ':', <ENV>ANTHROPIC_BASE_URL</ENV>, ' = ', <STR>{`"${base}"`}</STR>],
+          [<KW>$env</KW>, ':', <ENV>ANTHROPIC_AUTH_TOKEN</ENV>, ' = ', <STR>{`"${key}"`}</STR>],
+          [<KW>$env</KW>, ':', <ENV>ANTHROPIC_MODEL</ENV>, ' = ', <STR>{`"${DEFAULT_MODEL}"`}</STR>],
+          [],
+          [<CMT>{`# ${t('然后在终端中启动')}`}</CMT>],
+          [<FN>claude</FN>],
+        ] : [
           [<CMT>{`# ${t('Claude Code — 将 API 请求路由到')} ${base}`}</CMT>],
           [],
           [<KW>export</KW>, ' ', <ENV>ANTHROPIC_BASE_URL</ENV>, '=', <STR>{base}</STR>],
           [<KW>export</KW>, ' ', <ENV>ANTHROPIC_AUTH_TOKEN</ENV>, '=', <STR>{key}</STR>],
+          [<KW>export</KW>, ' ', <ENV>ANTHROPIC_MODEL</ENV>, '=', <STR>{DEFAULT_MODEL}</STR>],
           [],
           [<CMT>{`# ${t('然后在终端中启动')}`}</CMT>],
           [<FN>claude</FN>],
@@ -91,19 +108,33 @@ const getTutorial = (tab, base, key, t) => {
         lines: [
           [<CMT>{`# ${t('Cline (VSCode Extension) — 自定义端点')}`}</CMT>],
           [],
+          [<CMT>{`# 1. ${t('打开 VSCode → Cline 扩展面板')}`}</CMT>],
+          [<CMT>{`# 2. ${t('点击右上角设置图标')}`}</CMT>],
+          [<CMT>{`# 3. ${t('API Provider 选择 "OpenAI Compatible"')}`}</CMT>],
+          [],
           [<ENV>Base URL</ENV>, '  ', <STR>{`${base}/v1`}</STR>],
           [<ENV>API Key</ENV>, '   ', <STR>{key}</STR>],
-          [<ENV>Model ID</ENV>, '  ', <STR>claude-sonnet-4-5</STR>],
+          [<ENV>Model ID</ENV>, '  ', <STR>{DEFAULT_MODEL}</STR>],
         ],
       };
     case 'codex':
       return {
-        filename: 'shell · terminal',
-        lines: [
+        filename: termFile,
+        lines: isWin ? [
+          [<CMT>{`# ${t('OpenAI Codex CLI — 指向自定义端点')}`}</CMT>],
+          [],
+          [<KW>$env</KW>, ':', <ENV>OPENAI_BASE_URL</ENV>, ' = ', <STR>{`"${base}/v1"`}</STR>],
+          [<KW>$env</KW>, ':', <ENV>OPENAI_API_KEY</ENV>, ' = ', <STR>{`"${key}"`}</STR>],
+          [<KW>$env</KW>, ':', <ENV>OPENAI_MODEL</ENV>, ' = ', <STR>{`"${DEFAULT_MODEL}"`}</STR>],
+          [],
+          [<CMT>{`# ${t('启动 Codex')}`}</CMT>],
+          [<FN>codex</FN>],
+        ] : [
           [<CMT>{`# ${t('OpenAI Codex CLI — 指向自定义端点')}`}</CMT>],
           [],
           [<KW>export</KW>, ' ', <ENV>OPENAI_BASE_URL</ENV>, '=', <STR>{`${base}/v1`}</STR>],
           [<KW>export</KW>, ' ', <ENV>OPENAI_API_KEY</ENV>, '=', <STR>{key}</STR>],
+          [<KW>export</KW>, ' ', <ENV>OPENAI_MODEL</ENV>, '=', <STR>{DEFAULT_MODEL}</STR>],
           [],
           [<CMT>{`# ${t('启动 Codex')}`}</CMT>],
           [<FN>codex</FN>],
@@ -121,6 +152,7 @@ const getTutorial = (tab, base, key, t) => {
           [<STR>{`${base}/v1`}</STR>],
           [],
           [<ENV>API Key</ENV>, '  ', <STR>{key}</STR>],
+          [<ENV>Model</ENV>, '    ', <STR>{DEFAULT_MODEL}</STR>],
         ],
       };
     case 'code':
@@ -134,24 +166,34 @@ const getTutorial = (tab, base, key, t) => {
           ['  ', <ENV>baseURL</ENV>, ': ', <STR>{`'${base}/v1'`}</STR>, ','],
           ['  ', <ENV>apiKey</ENV>, ': ', <STR>{`'${key}'`}</STR>, ','],
           ['});'],
+          [],
+          [<KW>const</KW>, ' ', <VAR>res</VAR>, ' = ', <KW>await</KW>, ' client.chat.completions.', <FN>create</FN>, '({'],
+          ['  ', <ENV>model</ENV>, ': ', <STR>{`'${DEFAULT_MODEL}'`}</STR>, ','],
+          ['  ', <ENV>messages</ENV>, ': [{ ', <ENV>role</ENV>, ': ', <STR>'user'</STR>, ', ', <ENV>content</ENV>, ': ', <STR>'Hello!'</STR>, ' }],'],
+          ['});'],
         ],
       };
   }
 };
 
-const getTutorialPlainText = (tab, base, key) => {
+const getTutorialPlainText = (tab, base, key, os) => {
+  const isWin = os === 'windows';
   switch (tab) {
     case 'claude':
-      return `export ANTHROPIC_BASE_URL=${base}\nexport ANTHROPIC_AUTH_TOKEN=${key}\n\nclaude`;
+      return isWin
+        ? `# PowerShell\n$env:ANTHROPIC_BASE_URL = "${base}"\n$env:ANTHROPIC_AUTH_TOKEN = "${key}"\n$env:ANTHROPIC_MODEL = "${DEFAULT_MODEL}"\n\nclaude`
+        : `export ANTHROPIC_BASE_URL=${base}\nexport ANTHROPIC_AUTH_TOKEN=${key}\nexport ANTHROPIC_MODEL=${DEFAULT_MODEL}\n\nclaude`;
     case 'cline':
-      return `Base URL:  ${base}/v1\nAPI Key:   ${key}\nModel ID:  claude-sonnet-4-5`;
+      return `Base URL:  ${base}/v1\nAPI Key:   ${key}\nModel ID:  ${DEFAULT_MODEL}`;
     case 'codex':
-      return `export OPENAI_BASE_URL=${base}/v1\nexport OPENAI_API_KEY=${key}\n\ncodex`;
+      return isWin
+        ? `# PowerShell\n$env:OPENAI_BASE_URL = "${base}/v1"\n$env:OPENAI_API_KEY = "${key}"\n$env:OPENAI_MODEL = "${DEFAULT_MODEL}"\n\ncodex`
+        : `export OPENAI_BASE_URL=${base}/v1\nexport OPENAI_API_KEY=${key}\nexport OPENAI_MODEL=${DEFAULT_MODEL}\n\ncodex`;
     case 'cursor':
-      return `Override OpenAI Base URL: ${base}/v1\nAPI Key: ${key}`;
+      return `# Cursor → Settings → Models → OpenAI API Key\nOverride OpenAI Base URL: ${base}/v1\nAPI Key: ${key}\nModel: ${DEFAULT_MODEL}`;
     case 'code':
     default:
-      return `import OpenAI from 'openai';\n\nconst client = new OpenAI({\n  baseURL: '${base}/v1',\n  apiKey: '${key}',\n});`;
+      return `import OpenAI from 'openai';\n\nconst client = new OpenAI({\n  baseURL: '${base}/v1',\n  apiKey: '${key}',\n});\n\nconst res = await client.chat.completions.create({\n  model: '${DEFAULT_MODEL}',\n  messages: [{ role: 'user', content: 'Hello!' }],\n});`;
   }
 };
 
@@ -419,6 +461,7 @@ const QuickStart = () => {
 
   /* ─── Step 3: Tutorial ─── */
   const [tutorialTab, setTutorialTab] = useState('claude');
+  const [tutorialOS, setTutorialOS] = useState('mac');
   const [codeCopied, setCodeCopied] = useState(false);
 
   const base = getServerAddress();
@@ -617,11 +660,11 @@ const QuickStart = () => {
 
   /* ─── Copy helpers ─── */
   const handleCopyKey = () => { copy(displayKey); setKeyCopied(true); showSuccess(t('已复制')); setTimeout(() => setKeyCopied(false), 2000); };
-  const handleCopyCode = () => { copy(getTutorialPlainText(tutorialTab, base, displayKey)); setCodeCopied(true); showSuccess(t('已复制')); setTimeout(() => setCodeCopied(false), 2000); };
+  const handleCopyCode = () => { copy(getTutorialPlainText(tutorialTab, base, displayKey, tutorialOS)); setCodeCopied(true); showSuccess(t('已复制')); setTimeout(() => setCodeCopied(false), 2000); };
 
   const epayMethods = payMethods.filter((m) => m?.type && m.type !== 'stripe' && m.type !== 'creem');
   const hasAnyPayment = enableOnlineTopUp || enableStripeTopUp;
-  const tutorial = getTutorial(tutorialTab, base, displayKey, t);
+  const tutorial = getTutorial(tutorialTab, base, displayKey, t, tutorialOS);
 
   const steps = [
     { step: 1, icon: <Key size={20} />, title: t('创建 API Key'), subtitle: t('一键生成你的专属密钥') },
@@ -963,31 +1006,59 @@ const QuickStart = () => {
                     {t('选择你使用的工具，将以下配置添加到对应位置即可。')}
                   </Text>
 
-                  {/* Tool tabs */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    {[
-                      { key: 'claude', label: 'Claude Code', icon: <Claude size={14} /> },
-                      { key: 'cursor', label: 'Cursor', icon: <Cursor size={14} /> },
-                      { key: 'cline', label: 'Cline', icon: <Cline size={14} /> },
-                      { key: 'codex', label: 'Codex CLI', icon: <OpenAI size={14} /> },
-                      { key: 'code', label: 'Code', icon: <VscVscode size={14} /> },
-                    ].map((item) => (
-                      <button
-                        key={item.key}
-                        onClick={() => setTutorialTab(item.key)}
-                        style={{
-                          display: 'inline-flex', alignItems: 'center', gap: 6,
-                          padding: '6px 12px', borderRadius: 'var(--radius-sm)',
-                          border: tutorialTab === item.key ? '1px solid var(--accent)' : '1px solid var(--border-default)',
-                          background: tutorialTab === item.key ? 'var(--accent-light)' : 'var(--surface)',
-                          color: tutorialTab === item.key ? 'var(--accent)' : 'var(--text-secondary)',
-                          fontSize: 13, fontWeight: 500, cursor: 'pointer', outline: 'none', transition: 'all 0.2s',
-                        }}
-                      >
-                        {item.icon}
-                        {item.label}
-                      </button>
-                    ))}
+                  {/* Tool tabs + OS toggle */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {[
+                        { key: 'claude', label: 'Claude Code', icon: <Claude size={14} /> },
+                        { key: 'cursor', label: 'Cursor', icon: <Cursor size={14} /> },
+                        { key: 'cline', label: 'Cline', icon: <Cline size={14} /> },
+                        { key: 'codex', label: 'Codex CLI', icon: <OpenAI size={14} /> },
+                        { key: 'code', label: 'Code', icon: <VscVscode size={14} /> },
+                      ].map((item) => (
+                        <button
+                          key={item.key}
+                          onClick={() => setTutorialTab(item.key)}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 6,
+                            padding: '6px 12px', borderRadius: 'var(--radius-sm)',
+                            border: tutorialTab === item.key ? '1px solid var(--accent)' : '1px solid var(--border-default)',
+                            background: tutorialTab === item.key ? 'var(--accent-light)' : 'var(--surface)',
+                            color: tutorialTab === item.key ? 'var(--accent)' : 'var(--text-secondary)',
+                            fontSize: 13, fontWeight: 500, cursor: 'pointer', outline: 'none', transition: 'all 0.2s',
+                          }}
+                        >
+                          {item.icon}
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                    {/* OS toggle — only show for tools with shell commands */}
+                    {(tutorialTab === 'claude' || tutorialTab === 'codex') && (
+                      <div style={{
+                        display: 'inline-flex', borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--border-default)', overflow: 'hidden',
+                      }}>
+                        {[
+                          { key: 'mac', label: 'macOS / Linux' },
+                          { key: 'windows', label: 'Windows' },
+                        ].map((os) => (
+                          <button
+                            key={os.key}
+                            onClick={() => setTutorialOS(os.key)}
+                            style={{
+                              padding: '4px 10px', fontSize: 11, fontWeight: 500,
+                              border: 'none', cursor: 'pointer', outline: 'none',
+                              background: tutorialOS === os.key ? 'var(--accent-light)' : 'var(--surface)',
+                              color: tutorialOS === os.key ? 'var(--accent)' : 'var(--text-muted)',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            {os.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Code block */}

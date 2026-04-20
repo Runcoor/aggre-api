@@ -935,7 +935,7 @@ const HomeLanding = () => {
                   className='inline-block w-2 h-2 rounded-full'
                   style={{ background: '#10b981' }}
                 />
-                {t('注册即享1元体验')}{' '}
+                {t('开启下一代 AI 业务架构')}{' '}
                 <span style={{ color: 'var(--accent)', fontWeight: 700 }}>→</span>
               </div>
 
@@ -1146,14 +1146,6 @@ const HomeLanding = () => {
                   style={{ maxWidth: 620 }}
                 >
                   {[
-                    {
-                      icon: (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M17 8h1a4 4 0 1 1 0 8h-1" /><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" /><line x1="6" y1="2" x2="6" y2="4" /><line x1="10" y1="2" x2="10" y2="4" /><line x1="14" y1="2" x2="14" y2="4" />
-                        </svg>
-                      ),
-                      text: t('¥1 起体验'),
-                    },
                     {
                       icon: (
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1380,10 +1372,10 @@ const HomeLanding = () => {
                 className='text-base md:text-xl mb-10 max-w-2xl mx-auto'
                 style={{ color: 'var(--text-secondary)' }}
               >
-                {t('现在注册，1元即可开启您的下一代 AI 业务架构。')}
+                {t('立刻即可开启您的下一代 AI 业务架构。')}
               </p>
               <div className='flex flex-col sm:flex-row gap-4 justify-center'>
-                <Link to='/register'>
+                <Link to='/quick-start'>
                   <Button
                     theme='solid'
                     type='primary'
@@ -1397,7 +1389,7 @@ const HomeLanding = () => {
                       height: 48,
                     }}
                   >
-                    {t('1元试用')}
+                    {t('快速开始')}
                   </Button>
                 </Link>
                 <Link to='/docs'>

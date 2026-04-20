@@ -458,6 +458,9 @@ const QuickStart = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [payWay, setPayWay] = useState('');
+  const [paymentPending, setPaymentPending] = useState(false);
+  const [balanceBefore, setBalanceBefore] = useState(null);
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
 
   /* ─── Step 3: Tutorial ─── */
   const [tutorialTab, setTutorialTab] = useState('claude');
@@ -629,18 +632,20 @@ const QuickStart = () => {
     finally { setIsSubmitting(false); }
   };
 
-  /* ─── Step 2: Online payment ─── */
+  /* ─── Step 2: Online payment — does NOT auto-complete, enters pending state ─── */
   const handleOnlinePay = async (method) => {
     if (topUpCount < minTopUp) { showError(`${t('最低充值')} ${minTopUp}`); return; }
     setPaymentLoading(true);
     setPayWay(method);
+    // Record balance before payment to detect changes
+    setBalanceBefore(userState?.user?.quota ?? null);
     try {
       if (method === 'stripe') {
         const res = await API.post('/api/user/stripe/pay', { amount: Math.floor(topUpCount), payment_method: 'stripe' });
         if (res.data?.message === 'success') {
           window.open(res.data.data?.pay_link, '_blank');
           showSuccess(t('已打开支付页面'));
-          completeStep(2);
+          setPaymentPending(true);
         } else { showError(res.data?.message || t('支付失败')); }
       } else {
         const res = await API.post('/api/user/pay', { amount: Math.floor(topUpCount), payment_method: method });
@@ -651,11 +656,31 @@ const QuickStart = () => {
             window.open(res.data.data.pay_link, '_blank');
           }
           showSuccess(t('已发起支付'));
-          completeStep(2);
+          setPaymentPending(true);
         } else { showError(res.data?.message || t('支付失败')); }
       }
     } catch { showError(t('请求失败')); }
     finally { setPaymentLoading(false); setPayWay(''); }
+  };
+
+  /* ─── Step 2: Verify payment — check if balance actually changed ─── */
+  const handleVerifyPayment = async () => {
+    setVerifyingPayment(true);
+    try {
+      const selfRes = await API.get('/api/user/self');
+      if (selfRes.data?.success) {
+        const newQuota = selfRes.data.data?.quota ?? 0;
+        userDispatch({ type: 'login', payload: selfRes.data.data });
+        if (balanceBefore !== null && newQuota > balanceBefore) {
+          showSuccess(t('充值成功'));
+          setPaymentPending(false);
+          completeStep(2);
+        } else {
+          showError(t('暂未检测到到账，请稍后再试或联系客服'));
+        }
+      }
+    } catch { showError(t('请求失败')); }
+    finally { setVerifyingPayment(false); }
   };
 
   /* ─── Copy helpers ─── */
@@ -856,6 +881,44 @@ const QuickStart = () => {
                     <div>
                       <Text strong style={{ color: 'var(--success)', display: 'block' }}>{t('充值成功')}</Text>
                       <Text style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('额度已到账，可以开始使用了')}</Text>
+                    </div>
+                  </div>
+                ) : paymentPending ? (
+                  <div className='qs-content-enter' style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: 16, borderRadius: 'var(--radius-md)',
+                      background: 'rgba(var(--semi-amber-0), 0.08)', border: '1px solid rgba(var(--semi-amber-5), 0.3)',
+                    }}>
+                      <span style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                        background: 'rgba(var(--semi-amber-5), 0.12)',
+                      }}>
+                        <Wallet size={20} style={{ color: 'var(--warning, #f59e0b)' }} />
+                      </span>
+                      <div>
+                        <Text strong style={{ display: 'block', color: 'var(--text-primary)' }}>{t('支付已发起')}</Text>
+                        <Text style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('请在打开的页面中完成支付，完成后点击下方按钮确认')}</Text>
+                      </div>
+                    </div>
+                    <Button theme='solid' type='primary' loading={verifyingPayment} onClick={handleVerifyPayment}
+                      icon={<Check size={14} />}
+                      style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent-gradient)', border: 'none', fontWeight: 600, height: 40 }} block
+                    >
+                      {t('我已完成支付')}
+                    </Button>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <Button theme='borderless' type='tertiary' onClick={() => setPaymentPending(false)}
+                        style={{ borderRadius: 'var(--radius-md)', flex: 1 }}
+                      >
+                        {t('重新选择')}
+                      </Button>
+                      <Button theme='borderless' type='tertiary' onClick={() => { setPaymentPending(false); completeStep(2); }}
+                        style={{ borderRadius: 'var(--radius-md)', flex: 1 }}
+                      >
+                        {t('跳过，稍后充值')}
+                      </Button>
                     </div>
                   </div>
                 ) : topupLoading ? (

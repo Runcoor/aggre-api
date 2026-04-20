@@ -135,6 +135,33 @@ func SetApiRouter(router *gin.Engine) {
 			}
 		}
 
+		// Team management
+		teamRoute := apiRouter.Group("/team")
+		teamRoute.Use(middleware.UserAuth())
+		{
+			teamRoute.POST("/", controller.CreateTeam)
+			teamRoute.GET("/", controller.GetUserTeams)
+			teamRoute.POST("/join/:invite_code", controller.JoinTeamByInvite)
+
+			teamRoute.GET("/:id", controller.GetTeam)
+			teamRoute.PUT("/:id", controller.UpdateTeam)
+			teamRoute.DELETE("/:id", controller.DeleteTeam)
+
+			teamRoute.GET("/:id/member", controller.GetTeamMembers)
+			teamRoute.POST("/:id/member", controller.AddTeamMember)
+			teamRoute.PUT("/:id/member/:user_id", controller.UpdateTeamMember)
+			teamRoute.DELETE("/:id/member/:user_id", controller.RemoveTeamMember)
+
+			teamRoute.POST("/:id/quota", controller.TopUpTeamQuota)
+
+			teamRoute.GET("/:id/token", controller.GetTeamTokens)
+			teamRoute.POST("/:id/token/:token_id", controller.LinkTokenToTeam)
+			teamRoute.DELETE("/:id/token/:token_id", controller.UnlinkTokenFromTeam)
+
+			teamRoute.GET("/:id/usage", controller.GetTeamUsageStats)
+			teamRoute.POST("/:id/invite", controller.RegenerateInviteCode)
+		}
+
 		// Subscription billing (plans, purchase, admin management)
 		subscriptionRoute := apiRouter.Group("/subscription")
 		subscriptionRoute.Use(middleware.UserAuth())

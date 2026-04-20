@@ -72,6 +72,8 @@ const CacheCalculator = lazy(() => import('./pages/Tools/CacheCalculator'));
 const PlansPage = lazy(() => import('./pages/Plans'));
 const QuickStart = lazy(() => import('./pages/QuickStart'));
 const RechargePage = lazy(() => import('./pages/Recharge'));
+const TeamPage = lazy(() => import('./pages/Team'));
+const TeamDetail = lazy(() => import('./pages/Team/TeamDetail'));
 const GuideIndex = lazy(() => import('./pages/Guide'));
 const GuidePrerequisites = lazy(() => import('./pages/Guide/Prerequisites'));
 const GuideNodejsSetup = lazy(() => import('./pages/Guide/NodejsSetup'));
@@ -341,6 +343,26 @@ function App() {
             <PrivateRoute>
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                 <RechargePage />
+              </Suspense>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path='/console/team'
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <TeamPage />
+              </Suspense>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path='/console/team/:id'
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <TeamDetail />
               </Suspense>
             </PrivateRoute>
           }

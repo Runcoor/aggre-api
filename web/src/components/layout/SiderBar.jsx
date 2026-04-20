@@ -47,6 +47,7 @@ const routerMap = {
   deployment: '/console/deployment',
   playground: '/console/playground',
   personal: '/console/personal',
+  team: '/console/team',
 };
 
 const SiderBar = ({ onNavigate = () => {} }) => {
@@ -102,6 +103,7 @@ const SiderBar = ({ onNavigate = () => {} }) => {
       key: 'personal',
       items: [
         { text: t('钱包管理'), itemKey: 'topup' },
+        { text: t('团队管理'), itemKey: 'team' },
         { text: t('个人设置'), itemKey: 'personal' },
       ].filter((it) => isModuleVisible('personal', it.itemKey)),
     };

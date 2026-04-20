@@ -259,6 +259,38 @@ func NewBillingSession(c *gin.Context, relayInfo *relaycommon.RelayInfo, preCons
 
 	pref := common.NormalizeBillingPreference(relayInfo.UserSetting.BillingPreference)
 
+	// ─── Team billing check ───
+	// If the token is linked to a team, use team pool instead of personal billing.
+	if teamToken, err := model.GetTeamByTokenId(relayInfo.TokenId); err == nil && teamToken != nil {
+		member, memberErr := model.GetTeamMemberByUserAndTeam(relayInfo.UserId, teamToken.TeamId)
+		if memberErr == nil && member != nil && member.Status == model.TeamStatusActive {
+			team, teamErr := model.GetTeamById(teamToken.TeamId)
+			if teamErr == nil && team != nil && team.Status == model.TeamStatusActive {
+				remainQuota := team.Quota - team.UsedQuota
+				if remainQuota <= 0 {
+					return nil, types.NewErrorWithStatusCode(
+						fmt.Errorf("团队额度不足, 团队: %s", team.Name),
+						types.ErrorCodeInsufficientUserQuota, http.StatusForbidden,
+						types.ErrOptionWithSkipRetry(), types.ErrOptionWithNoRecordErrorLog())
+				}
+				session := &BillingSession{
+					relayInfo: relayInfo,
+					funding: &TeamFunding{
+						teamId:      team.Id,
+						userId:      relayInfo.UserId,
+						memberId:    member.Id,
+						memberLimit: member.QuotaLimit,
+					},
+				}
+				if apiErr := session.preConsume(c, preConsumedQuota); apiErr != nil {
+					return nil, apiErr
+				}
+				return session, nil
+			}
+		}
+	}
+	// ─── End team billing check ───
+
 	// 钱包路径需要先检查用户额度
 	tryWallet := func() (*BillingSession, *types.NewAPIError) {
 		userQuota, err := model.GetUserQuota(relayInfo.UserId, false)

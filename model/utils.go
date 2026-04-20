@@ -17,6 +17,11 @@ const (
 	BatchUpdateTypeUsedQuota
 	BatchUpdateTypeChannelUsedQuota
 	BatchUpdateTypeRequestCount
+	BatchUpdateTypeTeamQuota
+	BatchUpdateTypeTeamUsedQuota
+	BatchUpdateTypeTeamRequestCount
+	BatchUpdateTypeMemberUsedQuota
+	BatchUpdateTypeMemberRequestCount
 	BatchUpdateTypeCount // if you add a new type, you need to add a new map and a new lock
 )
 
@@ -91,6 +96,18 @@ func batchUpdate() {
 				updateUserRequestCount(key, value)
 			case BatchUpdateTypeChannelUsedQuota:
 				updateChannelUsedQuota(key, value)
+			case BatchUpdateTypeTeamQuota:
+				if err := increaseTeamQuota(key, value); err != nil {
+					common.SysLog("failed to batch update team quota: " + err.Error())
+				}
+			case BatchUpdateTypeTeamUsedQuota:
+				updateTeamUsedQuotaAndRequestCount(key, value, 0)
+			case BatchUpdateTypeTeamRequestCount:
+				DB.Model(&Team{}).Where("id = ?", key).Update("request_count", gorm.Expr("request_count + ?", value))
+			case BatchUpdateTypeMemberUsedQuota:
+				updateTeamMemberUsedQuotaAndRequestCount(key, value, 0)
+			case BatchUpdateTypeMemberRequestCount:
+				DB.Model(&TeamMember{}).Where("id = ?", key).Update("request_count", gorm.Expr("request_count + ?", value))
 			}
 		}
 	}

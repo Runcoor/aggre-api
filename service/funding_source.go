@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/runcoor/aggre-api/model"
@@ -115,6 +116,60 @@ func (s *SubscriptionFunding) Refund() error {
 	return refundWithRetry(func() error {
 		return model.RefundSubscriptionPreConsume(s.requestId)
 	})
+}
+
+// ---------------------------------------------------------------------------
+// TeamFunding — 团队额度池资金来源实现
+// ---------------------------------------------------------------------------
+
+type TeamFunding struct {
+	teamId      int
+	userId      int
+	memberId    int // TeamMember.Id, for per-member tracking
+	memberLimit int // -1 = unlimited from pool
+	consumed    int
+}
+
+func (t *TeamFunding) Source() string { return BillingSourceTeam }
+
+func (t *TeamFunding) PreConsume(amount int) error {
+	if amount <= 0 {
+		return nil
+	}
+	// Check member quota limit
+	if t.memberLimit > 0 {
+		memberUsed, _ := model.GetTeamMemberUsedQuota(t.memberId)
+		if memberUsed+amount > t.memberLimit {
+			return fmt.Errorf("团队成员额度上限已达, 已用: %d, 需要: %d, 上限: %d", memberUsed, amount, t.memberLimit)
+		}
+	}
+	if err := model.DecreaseTeamQuota(t.teamId, amount); err != nil {
+		return err
+	}
+	t.consumed = amount
+	return nil
+}
+
+func (t *TeamFunding) Settle(delta int) error {
+	if delta == 0 {
+		return nil
+	}
+	// Post-consume: track member + team used quota
+	if delta > 0 {
+		model.UpdateTeamMemberUsedQuotaAndRequestCount(t.memberId, delta)
+		model.UpdateTeamUsedQuotaAndRequestCount(t.teamId, delta)
+		return model.DecreaseTeamQuota(t.teamId, delta)
+	}
+	model.UpdateTeamMemberUsedQuotaAndRequestCount(t.memberId, delta)
+	model.UpdateTeamUsedQuotaAndRequestCount(t.teamId, delta)
+	return model.IncreaseTeamQuota(t.teamId, -delta)
+}
+
+func (t *TeamFunding) Refund() error {
+	if t.consumed <= 0 {
+		return nil
+	}
+	return model.IncreaseTeamQuota(t.teamId, t.consumed)
 }
 
 // refundWithRetry 尝试多次执行退款操作以提高成功率，只能用于基于事务的退款函数！！！！！！

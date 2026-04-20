@@ -824,7 +824,7 @@ const QuickStart = () => {
                           <InputNumber
                             value={topUpCount} onChange={(v) => { setTopUpCount(v || 0); setSelectedPreset(null); }}
                             min={minTopUp} style={{ flex: 1, borderRadius: 'var(--radius-md)' }}
-                            prefix={<CreditCard size={14} style={{ color: 'var(--text-muted)' }} />}
+                            prefix={<CreditCard size={14} style={{ color: 'var(--text-muted)', marginLeft: 4 }} />}
                             placeholder={`${t('最低')} ${minTopUp}`}
                           />
                           <Text style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>

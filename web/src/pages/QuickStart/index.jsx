@@ -23,17 +23,12 @@ import {
   Input,
   Typography,
   Banner,
-  Tabs,
-  TabPane,
-  Form,
-  Tooltip,
   Tag,
 } from '@douyinfe/semi-ui';
 import {
   IconCopy,
   IconTick,
   IconChevronDown,
-  IconChevronUp,
   IconEyeOpened,
   IconEyeClosed,
   IconBookStroked,
@@ -45,7 +40,6 @@ import {
   Check,
   Zap,
   ArrowRight,
-  Sparkles,
   TicketCheck,
 } from 'lucide-react';
 import { Claude, OpenAI, Cline, Cursor } from '@lobehub/icons';
@@ -734,12 +728,12 @@ const QuickStart = () => {
                     display: 'flex', flexWrap: 'wrap', gap: 6,
                   }}>
                     {[
-                      { key: 'claude', label: 'Claude Code', icon: <Claude.Color size={14} /> },
-                      { key: 'cursor', label: 'Cursor', icon: <Cursor.Color size={14} /> },
-                      { key: 'cline', label: 'Cline', icon: <VscVscode size={14} /> },
-                      { key: 'codex', label: 'Codex CLI', icon: <OpenAI.Color size={14} /> },
-                      { key: 'opencode', label: 'OpenCode', icon: <span style={{ fontSize: 12 }}>⌘</span> },
-                      { key: 'code', label: 'Code', icon: <span style={{ fontSize: 12 }}>{'</>'}</span> },
+                      { key: 'claude', label: 'Claude Code', icon: <Claude size={14} /> },
+                      { key: 'cursor', label: 'Cursor', icon: <Cursor size={14} /> },
+                      { key: 'cline', label: 'Cline', icon: <Cline size={14} /> },
+                      { key: 'codex', label: 'Codex CLI', icon: <OpenAI size={14} /> },
+                      { key: 'opencode', label: 'OpenCode', icon: <span style={{ fontSize: 12, fontWeight: 600 }}>◈</span> },
+                      { key: 'code', label: 'Code', icon: <VscVscode size={14} /> },
                     ].map((item) => (
                       <button
                         key={item.key}

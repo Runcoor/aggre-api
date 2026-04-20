@@ -126,6 +126,12 @@ const STYLES = `
 }
 .rc-tab:not(.active):hover { color: var(--text-primary); }
 
+/* Hide Semi InputNumber native stepper buttons */
+.rc-custom-amount .semi-input-number-suffix { display: none !important; }
+.rc-custom-amount input[type=number]::-webkit-inner-spin-button,
+.rc-custom-amount input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.rc-custom-amount input[type=number] { -moz-appearance: textfield; }
+
 .rc-summary {
   border-radius: var(--radius-lg);
   padding: 24px;
@@ -540,7 +546,7 @@ const RechargePage = () => {
                         <h2 style={{ fontSize: 20, fontWeight: 700, fontFamily: 'var(--font-serif)', color: 'var(--text-primary)', marginBottom: 16 }}>
                           {t('自定义金额')}
                         </h2>
-                        <div style={{
+                        <div className='rc-custom-amount' style={{
                           display: 'flex', alignItems: 'center', gap: 16, padding: 24,
                           borderRadius: 'var(--radius-lg)', background: 'var(--surface-active)',
                         }}>
@@ -594,7 +600,7 @@ const RechargePage = () => {
                           {/* Stripe */}
                           {enableStripeTopUp && payMethods.filter((m) => m.type === 'stripe').map((m) => (
                             <button key='stripe' className={`rc-pay-method${selectedPayMethod === 'stripe' ? ' selected' : ''}`}
-                              onClick={() => { setSelectedPayMethod('stripe'); preTopUp('stripe'); }}>
+                              onClick={() => setSelectedPayMethod('stripe')}>
                               <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(99,91,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 14, flexShrink: 0 }}>
                                 <SiStripe size={22} color='#635BFF' />
                               </div>
@@ -612,7 +618,7 @@ const RechargePage = () => {
                           {/* Epay methods */}
                           {enableOnlineTopUp && epayMethods.map((m) => (
                             <button key={m.type} className={`rc-pay-method${selectedPayMethod === m.type ? ' selected' : ''}`}
-                              onClick={() => { setSelectedPayMethod(m.type); preTopUp(m.type); }}>
+                              onClick={() => setSelectedPayMethod(m.type)}>
                               <div style={{ width: 44, height: 44, borderRadius: '50%', background: m.type === 'alipay' ? 'rgba(22,119,255,0.08)' : m.type === 'wxpay' ? 'rgba(7,193,96,0.08)' : 'var(--surface-active)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 14, flexShrink: 0 }}>
                                 {m.type === 'alipay' ? <SiAlipay size={22} color='#1677FF' /> : m.type === 'wxpay' ? <SiWechat size={22} color='#07C160' /> : <CreditCard size={20} style={{ color: 'var(--text-muted)' }} />}
                               </div>
@@ -654,9 +660,9 @@ const RechargePage = () => {
                     </section>
                   </div>
 
-                  {/* ─── Right: Summary panel (sticky) ─── */}
+                  {/* ─── Right: Summary panel (sticky, aligned with preset grid) ─── */}
                   {hasOnlinePay && (
-                    <div style={{ position: 'sticky', top: 80 }}>
+                    <div style={{ position: 'sticky', top: 80, marginTop: 40 }}>
                       <div className='rc-summary'>
                         <div style={{ marginBottom: 16 }}>
                           <h3 style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-serif)', color: 'var(--text-primary)', margin: 0 }}>

@@ -337,6 +337,37 @@ func TopUpTeamQuota(c *gin.Context) {
 	common.ApiSuccess(c, nil)
 }
 
+func SyncSubscriptionQuotaToTeam(c *gin.Context) {
+	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleOwner)
+	if !ok {
+		return
+	}
+	userId := c.GetInt("id")
+	if team.OwnerId != userId {
+		common.ApiErrorMsg(c, "只有团队创建者可以同步订阅额度")
+		return
+	}
+	planId := operation_setting.TeamRequiredPlanId
+	if planId <= 0 {
+		common.ApiErrorMsg(c, "未配置团队所需订阅套餐")
+		return
+	}
+	remaining, err := model.GetActiveSubscriptionRemainingQuota(userId, planId)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	if remaining <= 0 {
+		common.ApiErrorMsg(c, "订阅无剩余额度可同步")
+		return
+	}
+	if err := model.IncreaseTeamQuota(team.Id, int(remaining)); err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, gin.H{"synced_quota": remaining})
+}
+
 // ─── Token linking ───
 
 func GetAvailableTokensForTeam(c *gin.Context) {

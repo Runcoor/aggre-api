@@ -154,6 +154,7 @@ func SetApiRouter(router *gin.Engine) {
 			teamRoute.DELETE("/:id/member/:user_id", controller.RemoveTeamMember)
 
 			teamRoute.POST("/:id/quota", controller.TopUpTeamQuota)
+			teamRoute.POST("/:id/sync-quota", controller.SyncSubscriptionQuotaToTeam)
 
 			teamRoute.GET("/:id/available-tokens", controller.GetAvailableTokensForTeam)
 			teamRoute.GET("/:id/token", controller.GetTeamTokens)

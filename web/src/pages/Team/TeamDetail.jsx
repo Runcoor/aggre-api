@@ -22,7 +22,7 @@ import {
   Select,
 } from '@douyinfe/semi-ui';
 import { IconCopy, IconDelete, IconPlus, IconRefresh } from '@douyinfe/semi-icons';
-import { Users, Crown, Shield, User, ArrowLeft, Zap, Key, Link2, Unlink } from 'lucide-react';
+import { Users, Crown, Shield, User, ArrowLeft, Zap, Key, Link2, Unlink, RefreshCw } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { API, showError, showSuccess, renderQuota } from '../../helpers';
@@ -53,6 +53,7 @@ const TeamDetail = () => {
   const [quotaTopUpVisible, setQuotaTopUpVisible] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState(0);
   const [toppingUp, setToppingUp] = useState(false);
+  const [syncingQuota, setSyncingQuota] = useState(false);
 
   const [editLimitVisible, setEditLimitVisible] = useState(false);
   const [editLimitUserId, setEditLimitUserId] = useState(0);
@@ -140,6 +141,21 @@ const TeamDetail = () => {
       else showError(res.data?.message || t('转入失败'));
     } catch { showError(t('请求失败')); }
     setToppingUp(false);
+  };
+
+  const handleSyncSubscriptionQuota = async () => {
+    setSyncingQuota(true);
+    try {
+      const res = await API.post(`/api/team/${id}/sync-quota`);
+      if (res.data?.success) {
+        const synced = res.data.data?.synced_quota;
+        showSuccess(synced ? `${t('已同步订阅额度')}: ${renderQuota(synced)}` : t('已同步订阅额度'));
+        loadTeam();
+      } else {
+        showError(res.data?.message || t('同步失败'));
+      }
+    } catch { showError(t('请求失败')); }
+    setSyncingQuota(false);
   };
 
   const handleUpdateLimit = async () => {
@@ -284,6 +300,14 @@ const TeamDetail = () => {
           <p className='text-xs mt-2' style={{ color: 'rgba(255,255,255,0.7)' }}>
             {t('已用')} {renderQuota(team.used_quota)} ({usedPercent}%)
           </p>
+          {isOwner && (
+            <Button size='small' loading={syncingQuota} onClick={handleSyncSubscriptionQuota}
+              icon={<RefreshCw size={12} />}
+              style={{ marginTop: 8, borderRadius: 'var(--radius-md)', background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', fontSize: 11 }}
+            >
+              {t('同步订阅额度')}
+            </Button>
+          )}
         </div>
 
         {/* Members card */}
@@ -299,13 +323,13 @@ const TeamDetail = () => {
 
         {/* Invite card */}
         <div className='rounded-[var(--radius-lg)] p-5' style={{ background: 'var(--surface)', border: '1px solid var(--border-default)' }}>
-          <p className='text-[10px] uppercase tracking-widest font-semibold mb-1' style={{ color: 'var(--text-muted)' }}>{t('邀请码')}</p>
+          <p className='text-[10px] uppercase tracking-widest font-semibold mb-1' style={{ color: 'var(--text-muted)' }}>{t('邀请链接')}</p>
           <div className='flex items-center gap-2 mt-1'>
-            <code className='text-lg font-bold' style={{ color: 'var(--accent)', fontFamily: 'var(--font-mono)', letterSpacing: '0.1em' }}>
-              {team.invite_code}
+            <code className='text-xs font-bold truncate' style={{ color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>
+              {`${window.location.origin}/console/team/join/${team.invite_code}`}
             </code>
             <Button size='small' theme='borderless' type='tertiary' icon={<IconCopy />}
-              onClick={() => { copy(team.invite_code); showSuccess(t('已复制')); }}
+              onClick={() => { copy(`${window.location.origin}/console/team/join/${team.invite_code}`); showSuccess(t('已复制邀请链接')); }}
             />
             {isOwner && (
               <Button size='small' theme='borderless' type='tertiary' icon={<IconRefresh />}
@@ -314,7 +338,7 @@ const TeamDetail = () => {
             )}
           </div>
           <p className='text-xs mt-2' style={{ color: 'var(--text-muted)' }}>
-            {t('分享邀请码邀请成员加入')}
+            {t('分享邀请链接邀请成员加入')}
           </p>
         </div>
       </div>

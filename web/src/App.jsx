@@ -74,6 +74,7 @@ const QuickStart = lazy(() => import('./pages/QuickStart'));
 const RechargePage = lazy(() => import('./pages/Recharge'));
 const TeamPage = lazy(() => import('./pages/Team'));
 const TeamDetail = lazy(() => import('./pages/Team/TeamDetail'));
+const JoinTeam = lazy(() => import('./pages/Team/JoinTeam'));
 const GuideIndex = lazy(() => import('./pages/Guide'));
 const GuidePrerequisites = lazy(() => import('./pages/Guide/Prerequisites'));
 const GuideNodejsSetup = lazy(() => import('./pages/Guide/NodejsSetup'));
@@ -353,6 +354,16 @@ function App() {
             <PrivateRoute>
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                 <TeamPage />
+              </Suspense>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path='/console/team/join/:code'
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <JoinTeam />
               </Suspense>
             </PrivateRoute>
           }

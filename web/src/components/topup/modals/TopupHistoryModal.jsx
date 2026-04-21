@@ -162,7 +162,20 @@ const TopupHistoryModal = ({ visible, onCancel, t, userInfo }) => {
         title: t('订单号'),
         dataIndex: 'trade_no',
         key: 'trade_no',
-        render: (text) => <span className='text-xs' style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{text}</span>,
+        render: (text, record) => (
+          <span
+            className='text-xs inline-flex items-center gap-1 cursor-pointer'
+            style={{ color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}
+            onClick={() => {
+              setSelectedRecord(record);
+              setBillVisible(true);
+            }}
+            title={t('bill.detail')}
+          >
+            <FileText size={12} style={{ flexShrink: 0 }} />
+            {text}
+          </span>
+        ),
       },
       {
         title: t('支付方式'),
@@ -236,26 +249,6 @@ const TopupHistoryModal = ({ visible, onCancel, t, userInfo }) => {
       render: (time) => timestamp2string(time),
     });
 
-    baseColumns.push({
-      title: '',
-      key: 'detail',
-      width: 80,
-      render: (_, record) => (
-        <Button
-          size='small'
-          theme='borderless'
-          type='tertiary'
-          icon={<FileText size={14} />}
-          onClick={() => {
-            setSelectedRecord(record);
-            setBillVisible(true);
-          }}
-        >
-          {t('bill.detail')}
-        </Button>
-      ),
-    });
-
     return baseColumns;
   }, [t, userIsAdmin]);
 
@@ -290,6 +283,7 @@ const TopupHistoryModal = ({ visible, onCancel, t, userInfo }) => {
         dataSource={topups}
         loading={loading}
         rowKey='id'
+        scroll={{ x: 'max-content' }}
         pagination={{
           currentPage: page,
           pageSize: pageSize,

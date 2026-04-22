@@ -21,19 +21,14 @@ import React, { useRef, useEffect, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Button,
-
   Card,
-  Avatar,
   Form,
-  Radio,
   Toast,
-  Tabs,
-  TabPane,
   Switch,
   Row,
   Col,
 } from '@douyinfe/semi-ui';
-import { IconMail, IconKey, IconBell, IconLink } from '@douyinfe/semi-icons';
+import { IconMail, IconBell } from '@douyinfe/semi-icons';
 import { ShieldCheck, Bell, DollarSign, Settings, Globe, Check } from 'lucide-react';
 import { normalizeLanguage } from '../../../../i18n/language';
 import {
@@ -120,7 +115,6 @@ const NotificationSettings = ({
 
   // 左侧边栏设置相关状态
   const [sidebarLoading, setSidebarLoading] = useState(false);
-  const [activeTabKey, setActiveTabKey] = useState('notification');
   const [sidebarModulesUser, setSidebarModulesUser] = useState({
     chat: {
       enabled: true,
@@ -409,6 +403,34 @@ const NotificationSettings = ({
     }
   };
 
+  // Card style constants
+  const sectionCardStyle = {
+    borderRadius: 'var(--radius-lg)',
+    border: '1px solid var(--border-default)',
+    backgroundColor: 'var(--surface)',
+    padding: '24px',
+  };
+
+  const toggleItemStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '14px 16px',
+    borderRadius: 'var(--radius-md)',
+    backgroundColor: 'var(--surface-hover)',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
+  };
+
+  const settingRowStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '16px 20px',
+    borderRadius: 'var(--radius-md)',
+    backgroundColor: 'var(--surface-hover)',
+  };
+
   return (
     <div className='space-y-6'>
       {/* Section header */}
@@ -424,327 +446,406 @@ const NotificationSettings = ({
         </h3>
       </div>
 
-      {/* Actions */}
-      <div className='flex justify-end gap-3'>
-        {activeTabKey === 'sidebar' ? (
-          <>
-            <Button
-              type='tertiary'
-              onClick={resetSidebarModules}
-              className='!rounded-[var(--radius-md)]'
-            >
-              {t('重置为默认')}
-            </Button>
-            <Button
-              type='primary'
-              onClick={saveSidebarSettings}
-              loading={sidebarLoading}
-              className='!rounded-[var(--radius-md)]'
-            >
-              {t('保存设置')}
-            </Button>
-          </>
-        ) : (
-          <Button type='primary' onClick={handleSubmit} className='!rounded-[var(--radius-md)]'>
-            {t('保存设置')}
-          </Button>
-        )}
-      </div>
-
       <Form
         getFormApi={(api) => (formApiRef.current = api)}
         initValues={notificationSettings}
         onSubmit={handleSubmit}
       >
         {() => (
-          <Tabs
-            type='card'
-            defaultActiveKey='notification'
-            onChange={(key) => setActiveTabKey(key)}
-          >
-            {/* 通知配置 Tab */}
-            <TabPane
-              tab={
-                <div className='flex items-center'>
-                  <Bell size={16} className='mr-2' />
-                  {t('通知配置')}
-                </div>
-              }
-              itemKey='notification'
-            >
-              <div className='py-4'>
-                <Form.RadioGroup
-                  field='warningType'
-                  label={t('通知方式')}
-                  initValue={notificationSettings.warningType}
-                  onChange={(value) => handleFormChange('warningType', value)}
-                  rules={[{ required: true, message: t('请选择通知方式') }]}
+          <div className='space-y-6'>
+            {/* ====== 通知配置 Card ====== */}
+            <div style={sectionCardStyle}>
+              <div className='flex items-center gap-3 mb-6'>
+                <div
+                  className='flex items-center justify-center'
+                  style={{
+                    width: 40, height: 40,
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--surface-hover)',
+                  }}
                 >
-                  <Radio value='email'>{t('邮件通知')}</Radio>
-                </Form.RadioGroup>
+                  <Bell size={18} style={{ color: 'var(--accent)' }} />
+                </div>
+                <div>
+                  <div className='font-bold text-base' style={{ color: 'var(--text-primary)' }}>
+                    {t('通知配置')}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>
+                    {t('配置通知方式和预警阈值')}
+                  </div>
+                </div>
+              </div>
 
-                <Form.AutoComplete
-                  field='warningThreshold'
-                  label={
-                    <span>
-                      {t('额度预警阈值')}{' '}
-                      {renderQuotaWithPrompt(
-                        notificationSettings.warningThreshold,
-                      )}
+              {/* Notification method toggles */}
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6'>
+                <div style={toggleItemStyle}>
+                  <div className='flex items-center gap-3'>
+                    <IconMail style={{ color: 'var(--text-secondary)' }} />
+                    <span className='font-medium text-sm' style={{ color: 'var(--text-primary)' }}>
+                      {t('邮件通知')}
                     </span>
-                  }
-                  placeholder={t('请输入预警额度')}
-                  data={[
-                    { value: 100000, label: '0.2$' },
-                    { value: 500000, label: '1$' },
-                    { value: 1000000, label: '2$' },
-                    { value: 5000000, label: '10$' },
-                  ]}
-                  onChange={(val) => handleFormChange('warningThreshold', val)}
-                  prefix={<IconBell />}
-                  extraText={t(
-                    '当钱包或订阅剩余额度低于此数值时，系统将通过选择的方式发送通知',
-                  )}
-                  style={{ width: '100%', maxWidth: '300px' }}
-                  rules={[
-                    { required: true, message: t('请输入预警阈值') },
-                    {
-                      validator: (rule, value) => {
-                        const numValue = Number(value);
-                        if (isNaN(numValue) || numValue <= 0) {
-                          return Promise.reject(t('预警阈值必须为正数'));
-                        }
-                        return Promise.resolve();
-                      },
-                    },
-                  ]}
-                />
+                  </div>
+                  <Switch
+                    checked={notificationSettings.warningType === 'email'}
+                    onChange={(checked) => handleFormChange('warningType', checked ? 'email' : '')}
+                    size='default'
+                  />
+                </div>
 
                 {isAdminOrRoot && (
-                  <Form.Switch
-                    field='upstreamModelUpdateNotifyEnabled'
-                    label={t('接收上游模型更新通知')}
-                    checkedText={t('开')}
-                    uncheckedText={t('关')}
-                    onChange={(value) =>
-                      handleFormChange('upstreamModelUpdateNotifyEnabled', value)
-                    }
-                    extraText={t(
-                      '仅管理员可用。开启后，当系统定时检测全部渠道发现上游模型变更或检测异常时，将按你选择的通知方式发送汇总通知；渠道或模型过多时会自动省略部分明细。',
-                    )}
-                  />
-                )}
-
-                {/* 邮件通知设置 */}
-                {notificationSettings.warningType === 'email' && (
-                  <Form.Input
-                    field='notificationEmail'
-                    label={t('通知邮箱')}
-                    placeholder={t('留空则使用账号绑定的邮箱')}
-                    onChange={(val) =>
-                      handleFormChange('notificationEmail', val)
-                    }
-                    prefix={<IconMail />}
-                    extraText={t(
-                      '设置用于接收额度预警的邮箱地址，不填则使用账号绑定的邮箱',
-                    )}
-                    showClear
-                  />
-                )}
-
-              </div>
-            </TabPane>
-
-            {/* 价格设置 Tab */}
-            <TabPane
-              tab={
-                <div className='flex items-center'>
-                  <DollarSign size={16} className='mr-2' />
-                  {t('价格设置')}
-                </div>
-              }
-              itemKey='pricing'
-            >
-              <div className='py-4'>
-                <Form.Switch
-                  field='acceptUnsetModelRatioModel'
-                  label={t('接受未设置价格模型')}
-                  checkedText={t('开')}
-                  uncheckedText={t('关')}
-                  onChange={(value) =>
-                    handleFormChange('acceptUnsetModelRatioModel', value)
-                  }
-                  extraText={t(
-                    '当模型没有设置价格时仍接受调用，仅当您信任该网站时使用，可能会产生高额费用',
-                  )}
-                />
-              </div>
-            </TabPane>
-
-            {/* 隐私设置 Tab */}
-            <TabPane
-              tab={
-                <div className='flex items-center'>
-                  <ShieldCheck size={16} className='mr-2' />
-                  {t('隐私设置')}
-                </div>
-              }
-              itemKey='privacy'
-            >
-              <div className='py-4'>
-                <Form.Switch
-                  field='recordIpLog'
-                  label={t('记录请求与错误日志IP')}
-                  checkedText={t('开')}
-                  uncheckedText={t('关')}
-                  onChange={(value) => handleFormChange('recordIpLog', value)}
-                  extraText={t(
-                    '开启后，仅"消费"和"错误"日志将记录您的客户端IP地址',
-                  )}
-                />
-              </div>
-            </TabPane>
-
-            {/* 左侧边栏设置 Tab - 根据后端权限控制显示 */}
-            {hasSidebarSettingsPermission() && (
-              <TabPane
-                tab={
-                  <div className='flex items-center'>
-                    <Settings size={16} className='mr-2' />
-                    {t('边栏设置')}
+                  <div style={toggleItemStyle}>
+                    <div className='flex items-center gap-3'>
+                      <IconBell style={{ color: 'var(--text-secondary)' }} />
+                      <span className='font-medium text-sm' style={{ color: 'var(--text-primary)' }}>
+                        {t('上游模型更新通知')}
+                      </span>
+                    </div>
+                    <Switch
+                      checked={!!notificationSettings.upstreamModelUpdateNotifyEnabled}
+                      onChange={(value) => handleFormChange('upstreamModelUpdateNotifyEnabled', value)}
+                      size='default'
+                    />
                   </div>
-                }
-                itemKey='sidebar'
+                )}
+              </div>
+
+              {/* Input fields row */}
+              <div
+                className='grid grid-cols-1 sm:grid-cols-2 gap-4 p-5'
+                style={{
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--surface-hover)',
+                }}
               >
-                <div className='py-4'>
-                  <div className='mb-4'>
-                    <span
+                <div>
+                  <Form.AutoComplete
+                    field='warningThreshold'
+                    label={
+                      <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>
+                        {t('额度预警阈值')}{' '}
+                        {renderQuotaWithPrompt(notificationSettings.warningThreshold)}
+                      </span>
+                    }
+                    placeholder={t('请输入预警额度')}
+                    data={[
+                      { value: 100000, label: '0.2$' },
+                      { value: 500000, label: '1$' },
+                      { value: 1000000, label: '2$' },
+                      { value: 5000000, label: '10$' },
+                    ]}
+                    onChange={(val) => handleFormChange('warningThreshold', val)}
+                    prefix={<IconBell />}
+                    style={{ width: '100%' }}
+                    noLabel={false}
+                    rules={[
+                      { required: true, message: t('请输入预警阈值') },
+                      {
+                        validator: (rule, value) => {
+                          const numValue = Number(value);
+                          if (isNaN(numValue) || numValue <= 0) {
+                            return Promise.reject(t('预警阈值必须为正数'));
+                          }
+                          return Promise.resolve();
+                        },
+                      },
+                    ]}
+                  />
+                  <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 4 }}>
+                    {t('当钱包或订阅剩余额度低于此数值时，系统将通过选择的方式发送通知')}
+                  </div>
+                </div>
+
+                {notificationSettings.warningType === 'email' && (
+                  <div>
+                    <Form.Input
+                      field='notificationEmail'
+                      label={
+                        <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>
+                          {t('通知邮箱')}
+                        </span>
+                      }
+                      placeholder={t('留空则使用账号绑定的邮箱')}
+                      onChange={(val) => handleFormChange('notificationEmail', val)}
+                      prefix={<IconMail />}
+                      showClear
+                      style={{ width: '100%' }}
+                    />
+                    <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 4 }}>
+                      {t('设置用于接收额度预警的邮箱地址，不填则使用账号绑定的邮箱')}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ====== 价格设置 Card ====== */}
+            <div style={sectionCardStyle}>
+              <div className='flex items-center gap-3 mb-6'>
+                <div
+                  className='flex items-center justify-center'
+                  style={{
+                    width: 40, height: 40,
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--surface-hover)',
+                  }}
+                >
+                  <DollarSign size={18} style={{ color: 'var(--accent)' }} />
+                </div>
+                <div>
+                  <div className='font-bold text-base' style={{ color: 'var(--text-primary)' }}>
+                    {t('价格设置')}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>
+                    {t('管理模型费用计算的全局偏好')}
+                  </div>
+                </div>
+              </div>
+
+              <div style={settingRowStyle}>
+                <div style={{ flex: 1, paddingRight: 24 }}>
+                  <div className='font-semibold text-sm' style={{ color: 'var(--text-primary)', marginBottom: 4 }}>
+                    {t('接受未设置价格模型')}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    {t('当模型没有设置价格时仍接受调用，仅当您信任该网站时使用，可能会产生高额费用')}
+                  </div>
+                </div>
+                <Switch
+                  checked={!!notificationSettings.acceptUnsetModelRatioModel}
+                  onChange={(value) => handleFormChange('acceptUnsetModelRatioModel', value)}
+                  size='large'
+                />
+              </div>
+            </div>
+
+            {/* ====== 隐私设置 Card ====== */}
+            <div style={sectionCardStyle}>
+              <div className='flex items-center gap-3 mb-6'>
+                <div
+                  className='flex items-center justify-center'
+                  style={{
+                    width: 40, height: 40,
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--surface-hover)',
+                  }}
+                >
+                  <ShieldCheck size={18} style={{ color: 'var(--accent)' }} />
+                </div>
+                <div>
+                  <div className='font-bold text-base' style={{ color: 'var(--text-primary)' }}>
+                    {t('隐私设置')}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>
+                    {t('配置数据采集和留存策略')}
+                  </div>
+                </div>
+              </div>
+
+              <div style={settingRowStyle}>
+                <div style={{ flex: 1, paddingRight: 24 }}>
+                  <div className='font-semibold text-sm' style={{ color: 'var(--text-primary)', marginBottom: 4 }}>
+                    {t('记录请求与错误日志IP')}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    {t('开启后，仅"消费"和"错误"日志将记录您的客户端IP地址')}
+                  </div>
+                </div>
+                <Switch
+                  checked={!!notificationSettings.recordIpLog}
+                  onChange={(value) => handleFormChange('recordIpLog', value)}
+                  size='large'
+                />
+              </div>
+            </div>
+
+            {/* ====== 语言设置 Card ====== */}
+            <div style={sectionCardStyle}>
+              <div className='flex items-center gap-3 mb-6'>
+                <div
+                  className='flex items-center justify-center'
+                  style={{
+                    width: 40, height: 40,
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--surface-hover)',
+                  }}
+                >
+                  <Globe size={18} style={{ color: 'var(--accent)' }} />
+                </div>
+                <div>
+                  <div className='font-bold text-base' style={{ color: 'var(--text-primary)' }}>
+                    {t('语言偏好')}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>
+                    {t('选择界面显示语言')}
+                  </div>
+                </div>
+              </div>
+
+              <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3'>
+                {languageOptions.map((lang) => {
+                  const isActive = currentLanguage === lang.value;
+                  return (
+                    <div
+                      key={lang.value}
+                      onClick={() => !langLoading && handleLanguageChange(lang.value)}
                       style={{
-                        fontSize: '12px',
-                        lineHeight: '1.5',
-                        color: 'var(--text-secondary)',
+                        ...toggleItemStyle,
+                        cursor: langLoading ? 'not-allowed' : 'pointer',
+                        border: isActive ? '2px solid var(--accent)' : '1px solid transparent',
+                        backgroundColor: isActive ? 'var(--accent-light)' : 'var(--surface-hover)',
+                        opacity: langLoading ? 0.6 : 1,
+                        justifyContent: 'center',
+                        gap: 8,
                       }}
                     >
-                      {t('您可以个性化设置侧边栏的要显示功能')}
-                    </span>
-                  </div>
-                  {/* 边栏设置功能区域容器 */}
+                      <span
+                        className='font-bold text-xs'
+                        style={{
+                          color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
+                          width: 20,
+                          textAlign: 'center',
+                        }}
+                      >
+                        {lang.shortCode}
+                      </span>
+                      <span
+                        className='font-medium text-sm'
+                        style={{ color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)' }}
+                      >
+                        {lang.label}
+                      </span>
+                      {isActive && <Check size={14} style={{ color: 'var(--accent)' }} />}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ====== 边栏设置 Card ====== */}
+            {hasSidebarSettingsPermission() && (
+              <div style={sectionCardStyle}>
+                <div className='flex items-center gap-3 mb-6'>
                   <div
-                    className='p-4'
+                    className='flex items-center justify-center'
                     style={{
-                      borderRadius: 'var(--radius-lg)',
-                      border: '1px solid var(--border-default)',
-                      backgroundColor: 'var(--surface)',
+                      width: 40, height: 40,
+                      borderRadius: 'var(--radius-md)',
+                      backgroundColor: 'var(--surface-hover)',
                     }}
                   >
-                    {sectionConfigs.map((section) => (
-                      <div key={section.key} className='mb-6'>
-                        {/* 区域标题和总开关 */}
-                        <div
-                          className='flex justify-between items-center mb-4 p-4'
-                          style={{
-                            borderRadius: 'var(--radius-md)',
-                            backgroundColor: 'var(--surface-hover)',
-                            border: '1px solid var(--border-subtle)',
-                          }}
-                        >
-                          <div>
-                            <div className='font-semibold text-base mb-1' style={{ color: 'var(--text-primary)' }}>
-                              {section.title}
-                            </div>
-                            <span
-                              style={{
-                                fontSize: '12px',
-                                lineHeight: '1.5',
-                                color: 'var(--text-secondary)',
-                              }}
-                            >
-                              {section.description}
-                            </span>
-                          </div>
-                          <Switch
-                            checked={
-                              sidebarModulesUser[section.key]?.enabled !== false
-                            }
-                            onChange={handleSectionChange(section.key)}
-                            size='default'
-                          />
-                        </div>
-
-                        {/* 功能模块网格 */}
-                        <Row gutter={[12, 12]}>
-                          {section.modules
-                            .filter((module) =>
-                              isAllowedByAdmin(section.key, module.key),
-                            )
-                            .map((module) => (
-                              <Col
-                                key={module.key}
-                                xs={24}
-                                sm={24}
-                                md={12}
-                                lg={8}
-                                xl={8}
-                              >
-                                <Card
-                                  className={`${
-                                    sidebarModulesUser[section.key]?.enabled !==
-                                    false
-                                      ? ''
-                                      : 'opacity-50'
-                                  }`}
-                                  bodyStyle={{ padding: '16px' }}
-                                  style={{ borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-default)' }}
-                                  hoverable
-                                >
-                                  <div className='flex justify-between items-center h-full'>
-                                    <div className='flex-1 text-left'>
-                                      <div className='font-semibold text-sm mb-1' style={{ color: 'var(--text-primary)' }}>
-                                        {module.title}
-                                      </div>
-                                      <span
-                                        className='block'
-                                        style={{
-                                          fontSize: '12px',
-                                          lineHeight: '1.5',
-                                          color: 'var(--text-secondary)',
-                                          marginTop: '4px',
-                                        }}
-                                      >
-                                        {module.description}
-                                      </span>
-                                    </div>
-                                    <div className='ml-4'>
-                                      <Switch
-                                        checked={
-                                          sidebarModulesUser[section.key]?.[
-                                            module.key
-                                          ] !== false
-                                        }
-                                        onChange={handleModuleChange(
-                                          section.key,
-                                          module.key,
-                                        )}
-                                        size='default'
-                                        disabled={
-                                          sidebarModulesUser[section.key]
-                                            ?.enabled === false
-                                        }
-                                      />
-                                    </div>
-                                  </div>
-                                </Card>
-                              </Col>
-                            ))}
-                        </Row>
-                      </div>
-                    ))}
-                  </div>{' '}
-                  {/* 关闭边栏设置功能区域容器 */}
+                    <Settings size={18} style={{ color: 'var(--accent)' }} />
+                  </div>
+                  <div>
+                    <div className='font-bold text-base' style={{ color: 'var(--text-primary)' }}>
+                      {t('边栏设置')}
+                    </div>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>
+                      {t('您可以个性化设置侧边栏的要显示功能')}
+                    </div>
+                  </div>
                 </div>
-              </TabPane>
+
+                <div className='space-y-5'>
+                  {sectionConfigs.map((section) => (
+                    <div key={section.key}>
+                      {/* Section header with toggle */}
+                      <div
+                        className='flex justify-between items-center mb-3'
+                        style={{
+                          ...settingRowStyle,
+                          backgroundColor: 'var(--surface-hover)',
+                        }}
+                      >
+                        <div>
+                          <div className='font-semibold text-sm' style={{ color: 'var(--text-primary)' }}>
+                            {section.title}
+                          </div>
+                          <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                            {section.description}
+                          </div>
+                        </div>
+                        <Switch
+                          checked={sidebarModulesUser[section.key]?.enabled !== false}
+                          onChange={handleSectionChange(section.key)}
+                          size='default'
+                        />
+                      </div>
+
+                      {/* Module toggles grid */}
+                      <Row gutter={[12, 12]}>
+                        {section.modules
+                          .filter((module) => isAllowedByAdmin(section.key, module.key))
+                          .map((module) => (
+                            <Col key={module.key} xs={24} sm={24} md={12} lg={8} xl={8}>
+                              <Card
+                                className={sidebarModulesUser[section.key]?.enabled !== false ? '' : 'opacity-50'}
+                                bodyStyle={{ padding: '16px' }}
+                                style={{ borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-default)' }}
+                                hoverable
+                              >
+                                <div className='flex justify-between items-center h-full'>
+                                  <div className='flex-1 text-left'>
+                                    <div className='font-semibold text-sm mb-1' style={{ color: 'var(--text-primary)' }}>
+                                      {module.title}
+                                    </div>
+                                    <span
+                                      className='block'
+                                      style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--text-secondary)', marginTop: '4px' }}
+                                    >
+                                      {module.description}
+                                    </span>
+                                  </div>
+                                  <div className='ml-4'>
+                                    <Switch
+                                      checked={sidebarModulesUser[section.key]?.[module.key] !== false}
+                                      onChange={handleModuleChange(section.key, module.key)}
+                                      size='default'
+                                      disabled={sidebarModulesUser[section.key]?.enabled === false}
+                                    />
+                                  </div>
+                                </div>
+                              </Card>
+                            </Col>
+                          ))}
+                      </Row>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Sidebar action buttons */}
+                <div className='flex justify-end gap-3 mt-6 pt-4' style={{ borderTop: '1px solid var(--border-default)' }}>
+                  <Button
+                    type='tertiary'
+                    onClick={resetSidebarModules}
+                    className='!rounded-[var(--radius-md)]'
+                  >
+                    {t('重置为默认')}
+                  </Button>
+                  <Button
+                    type='primary'
+                    onClick={saveSidebarSettings}
+                    loading={sidebarLoading}
+                    className='!rounded-[var(--radius-md)]'
+                  >
+                    {t('保存边栏设置')}
+                  </Button>
+                </div>
+              </div>
             )}
-          </Tabs>
+
+            {/* ====== Save Button ====== */}
+            <div className='flex justify-end pt-2'>
+              <Button
+                type='primary'
+                size='large'
+                onClick={handleSubmit}
+                className='!rounded-[var(--radius-md)]'
+                style={{ paddingLeft: 32, paddingRight: 32 }}
+              >
+                {t('保存设置')}
+              </Button>
+            </div>
+          </div>
         )}
       </Form>
     </div>

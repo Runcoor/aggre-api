@@ -711,6 +711,28 @@ const RechargePage = () => {
               )}
             </div>
           )}
+          {/* ─── Compliance & Privacy Disclaimer ─── */}
+          <div className='rc-animate' style={{
+            marginTop: 64,
+            padding: isMobile ? '24px 0 0' : '32px 0 0',
+            borderTop: '1px solid var(--border-subtle)',
+          }}>
+            <div style={{ fontSize: 12, lineHeight: 1.8, color: 'var(--text-muted)', maxWidth: 800 }}>
+              <div style={{ fontWeight: 600, marginBottom: 8, color: 'var(--text-tertiary)' }}>
+                {t('行为规范与内容安全红线')}
+              </div>
+              <p style={{ margin: '0 0 8px' }}>
+                {t('用户在调用接口进行数据交互时，必须严格遵守《生成式人工智能服务管理暂行办法》及相关法律法规。严禁利用本接口生成、诱导生成或传播以下违法违规内容：')}
+              </p>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                <li>{t('危害国家安全：煽动颠覆国家政权、推翻社会主义制度、危害国家安全和利益、破坏国家统一的言论。')}</li>
+                <li>{t('破坏社会秩序：宣扬恐怖主义、极端主义，煽动民族仇恨、民族歧视，破坏社会稳定的内容。')}</li>
+                <li>{t('暴力与不良信息：包含暴力、淫秽色情、虚假有害信息，或可能引发公众恐慌及扰乱经济社会秩序的内容。')}</li>
+                <li>{t('侵权与恶意行为：侵犯他人肖像权、名誉权、隐私权或商业秘密；生成用于网络攻击、恶意群发、电信诈骗的代码或文本。')}</li>
+              </ul>
+            </div>
+          </div>
+
         </div>
       </div>
 

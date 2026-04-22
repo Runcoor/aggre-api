@@ -190,6 +190,7 @@ const RegisterForm = () => {
   async function handleSubmit(e) {
     if (password.length < 8) { showInfo('密码长度不得小于 8 位！'); return; }
     if (password !== password2) { showInfo('两次输入的密码不一致'); return; }
+    if (!inputs.email || !inputs.email.includes('@')) { showInfo(t('请输入有效的邮箱地址')); return; }
     if (username && password) {
       if (turnstileEnabled && turnstileToken === '') { showInfo('请稍后几秒重试，Turnstile 正在检查用户环境！'); return; }
       setRegisterLoading(true);
@@ -359,21 +360,20 @@ const RegisterForm = () => {
         <Form.Input field='password2' label={t('确认密码')} placeholder={t('确认密码')}
           name='password2' mode='password' onChange={(value) => handleChange('password2', value)} prefix={<IconLock />} />
 
+        <Form.Input field='email' label={t('邮箱')} placeholder={t('输入邮箱地址')}
+          name='email' type='email' onChange={(value) => handleChange('email', value)} prefix={<IconMail />}
+          rules={[{ required: true, message: t('请输入邮箱地址') }]}
+          suffix={showEmailVerification ? (
+            <Button onClick={sendVerificationCode} loading={verificationCodeLoading}
+              disabled={disableButton || verificationCodeLoading} size='small'
+              style={{ color: 'var(--accent)', fontSize: 13 }}>
+              {disableButton ? `${t('重新发送')} (${countdown})` : t('获取验证码')}
+            </Button>
+          ) : undefined}
+        />
         {showEmailVerification && (
-          <>
-            <Form.Input field='email' label={t('邮箱')} placeholder={t('输入邮箱地址')}
-              name='email' type='email' onChange={(value) => handleChange('email', value)} prefix={<IconMail />}
-              suffix={
-                <Button onClick={sendVerificationCode} loading={verificationCodeLoading}
-                  disabled={disableButton || verificationCodeLoading} size='small'
-                  style={{ color: 'var(--accent)', fontSize: 13 }}>
-                  {disableButton ? `${t('重新发送')} (${countdown})` : t('获取验证码')}
-                </Button>
-              }
-            />
-            <Form.Input field='verification_code' label={t('验证码')} placeholder={t('输入验证码')}
-              name='verification_code' onChange={(value) => handleChange('verification_code', value)} prefix={<IconKey />} />
-          </>
+          <Form.Input field='verification_code' label={t('验证码')} placeholder={t('输入验证码')}
+            name='verification_code' onChange={(value) => handleChange('verification_code', value)} prefix={<IconKey />} />
         )}
 
         {renderTermsCheckbox()}

@@ -3406,6 +3406,7 @@
     "请输入运行时长": "Please enter runtime duration",
     "请输入邮箱！": "Please enter your email!",
     "请输入邮箱地址": "Please enter the email address",
+    "请输入有效的邮箱地址": "Please enter a valid email address",
     "请输入邮箱验证码！": "Please enter the email verification code!",
     "请输入部署名称": "Please enter deployment name",
     "请输入部署名称以完成二次确认": "Enter deployment name to complete secondary confirmation",

@@ -93,6 +93,8 @@ const (
 	MsgUserDefaultTokenFailed        = "user.default_token_failed"
 	MsgUserAffCodeEmpty              = "user.aff_code_empty"
 	MsgUserEmailEmpty                = "user.email_empty"
+	MsgUserEmailRequired             = "user.email_required"
+	MsgUserEmailInvalid              = "user.email_invalid"
 	MsgUserGitHubIdEmpty             = "user.github_id_empty"
 	MsgUserDiscordIdEmpty            = "user.discord_id_empty"
 	MsgUserOidcIdEmpty               = "user.oidc_id_empty"

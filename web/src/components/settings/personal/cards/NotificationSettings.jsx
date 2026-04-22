@@ -83,6 +83,7 @@ const NotificationSettings = ({
       deployment: true,
       subscription: true,
       redemption: true,
+      'login-log': true,
       user: true,
       setting: true,
     },
@@ -167,6 +168,7 @@ const NotificationSettings = ({
         deployment: true,
         subscription: true,
         redemption: true,
+        'login-log': true,
         user: true,
         setting: true,
       },
@@ -303,6 +305,7 @@ const NotificationSettings = ({
           title: t('兑换码管理'),
           description: t('兑换码生成管理'),
         },
+        { key: 'login-log', title: t('登录日志'), description: t('用户登录记录') },
         { key: 'user', title: t('用户管理'), description: t('用户账户管理') },
         {
           key: 'setting',

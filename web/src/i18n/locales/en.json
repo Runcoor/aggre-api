@@ -2684,6 +2684,7 @@
     "用户的基本账户信息": "User basic account information",
     "用户管理": "User Management",
     "登录日志": "Login Logs",
+    "用户登录记录": "User login records",
     "查看所有用户的登录记录，包括登录方式、设备信息和IP地址。": "View all user login records, including login method, device info, and IP address.",
     "登录方式": "Login Method",
     "IP地址": "IP Address",

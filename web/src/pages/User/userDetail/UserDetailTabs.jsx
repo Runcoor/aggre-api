@@ -22,10 +22,11 @@ import { Tabs, TabPane } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 
 import SubscriptionsTab from './SubscriptionsTab';
-
-const Pending = ({ name }) => (
-  <div style={{ padding: 24, color: 'var(--text-muted)' }}>{name} (pending)</div>
-);
+import UsageLogsTab from './UsageLogsTab';
+import TopupsTab from './TopupsTab';
+import LoginLogsTab from './LoginLogsTab';
+import TasksTab from './TasksTab';
+import SecurityTab from './SecurityTab';
 
 const UserDetailTabs = ({ userId, user, security, onAdminAction }) => {
   const { t } = useTranslation();
@@ -42,19 +43,19 @@ const UserDetailTabs = ({ userId, user, security, onAdminAction }) => {
         <SubscriptionsTab userId={userId} user={user} onChanged={onAdminAction} />
       </TabPane>
       <TabPane tab={t('使用记录')} itemKey='logs'>
-        <Pending name={t('使用记录')} />
+        <UsageLogsTab user={user} />
       </TabPane>
       <TabPane tab={t('任务记录')} itemKey='tasks'>
-        <Pending name={t('任务记录')} />
+        <TasksTab userId={userId} />
       </TabPane>
       <TabPane tab={t('充值记录')} itemKey='topups'>
-        <Pending name={t('充值记录')} />
+        <TopupsTab userId={userId} />
       </TabPane>
       <TabPane tab={t('登录日志')} itemKey='login-logs'>
-        <Pending name={t('登录日志')} />
+        <LoginLogsTab userId={userId} />
       </TabPane>
       <TabPane tab={t('安全')} itemKey='security'>
-        <Pending name={t('安全')} />
+        <SecurityTab userId={userId} security={security} onChanged={onAdminAction} />
       </TabPane>
     </Tabs>
   );

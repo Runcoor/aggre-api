@@ -689,7 +689,8 @@ func (t *TaskSubmitReq) HasImage() bool {
 func (t *TaskSubmitReq) UnmarshalJSON(data []byte) error {
 	type Alias TaskSubmitReq
 	aux := &struct {
-		Metadata json.RawMessage `json:"metadata,omitempty"`
+		Metadata       json.RawMessage `json:"metadata,omitempty"`
+		InputReference json.RawMessage `json:"input_reference,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(t),
@@ -697,6 +698,30 @@ func (t *TaskSubmitReq) UnmarshalJSON(data []byte) error {
 
 	if err := common.Unmarshal(data, &aux); err != nil {
 		return err
+	}
+
+	// input_reference 兼容两种格式：
+	//   1. 字符串格式: "input_reference": "https://..." 或 "data:image/..."
+	//   2. 对象格式:   "input_reference": { "image_url": "...", "file_id": "..." }
+	if len(aux.InputReference) > 0 && t.InputReference == "" {
+		var refObj struct {
+			ImageURL string `json:"image_url"`
+			FileID   string `json:"file_id"`
+		}
+		if err := common.Unmarshal(aux.InputReference, &refObj); err == nil {
+			if refObj.ImageURL != "" {
+				t.InputReference = refObj.ImageURL
+			} else if refObj.FileID != "" {
+				t.InputReference = refObj.FileID
+			}
+		}
+		// 若仍为空，尝试直接解析为字符串（冗余保护，通常已由 Alias 处理）
+		if t.InputReference == "" {
+			var refStr string
+			if err := common.Unmarshal(aux.InputReference, &refStr); err == nil {
+				t.InputReference = refStr
+			}
+		}
 	}
 
 	if len(aux.Metadata) > 0 {

@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { useUserDetail } from '../../hooks/users/useUserDetail';
 import IdentityCard from './userDetail/IdentityCard';
 import FinanceCards from './userDetail/FinanceCards';
+import UserDetailTabs from './userDetail/UserDetailTabs';
 
 const UserDetail = () => {
   const { t } = useTranslation();
@@ -83,7 +84,13 @@ const UserDetail = () => {
           subsSummary={overview.subscriptions_summary}
         />
       </div>
-      {/* Tabs region — added in Task 6+ */}
+      {/* Tabs region */}
+      <UserDetailTabs
+        userId={userId}
+        user={overview.user}
+        security={overview.security}
+        onAdminAction={refetch}
+      />
     </div>
   );
 };

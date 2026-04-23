@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Button,
   Space,
@@ -76,15 +77,24 @@ const renderRole = (role, t) => {
  */
 const renderUsername = (text, record) => {
   const remark = record.remark;
+  const link = `/console/user/${record.id}`;
+  const usernameNode = (
+    <Link
+      to={link}
+      style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}
+    >
+      {text}
+    </Link>
+  );
   if (!remark) {
-    return <span>{text}</span>;
+    return usernameNode;
   }
   const maxLen = 10;
   const displayRemark =
     remark.length > maxLen ? remark.slice(0, maxLen) + '…' : remark;
   return (
     <div className='flex items-center gap-1'>
-      <span>{text}</span>
+      {usernameNode}
       <Tooltip content={remark} position='top' showArrow>
         <InlineBadge style={{ fontSize: '11px', padding: '0px 6px' }}>
           <div
@@ -95,6 +105,58 @@ const renderUsername = (text, record) => {
         </InlineBadge>
       </Tooltip>
     </div>
+  );
+};
+
+const UsernameCell = ({ text, record }) => renderUsername(text, record);
+
+const RowMoreMenu = ({
+  record,
+  showUserSubscriptionsModal,
+  showResetPasskeyModal,
+  showResetTwoFAModal,
+  showDeleteModal,
+  t,
+}) => {
+  const navigate = useNavigate();
+  const moreMenu = [
+    {
+      node: 'item',
+      name: t('查看详情'),
+      onClick: () => navigate(`/console/user/${record.id}`),
+    },
+    {
+      node: 'item',
+      name: t('订阅管理'),
+      onClick: () => showUserSubscriptionsModal(record),
+    },
+    {
+      node: 'divider',
+    },
+    {
+      node: 'item',
+      name: t('重置 Passkey'),
+      onClick: () => showResetPasskeyModal(record),
+    },
+    {
+      node: 'item',
+      name: t('重置 2FA'),
+      onClick: () => showResetTwoFAModal(record),
+    },
+    {
+      node: 'divider',
+    },
+    {
+      node: 'item',
+      name: t('注销'),
+      type: 'danger',
+      onClick: () => showDeleteModal(record),
+    },
+  ];
+  return (
+    <Dropdown menu={moreMenu} trigger='click' position='bottomRight'>
+      <Button type='tertiary' size='small' icon={<IconMore />} />
+    </Dropdown>
   );
 };
 
@@ -233,36 +295,6 @@ const renderOperations = (
     return <></>;
   }
 
-  const moreMenu = [
-    {
-      node: 'item',
-      name: t('订阅管理'),
-      onClick: () => showUserSubscriptionsModal(record),
-    },
-    {
-      node: 'divider',
-    },
-    {
-      node: 'item',
-      name: t('重置 Passkey'),
-      onClick: () => showResetPasskeyModal(record),
-    },
-    {
-      node: 'item',
-      name: t('重置 2FA'),
-      onClick: () => showResetTwoFAModal(record),
-    },
-    {
-      node: 'divider',
-    },
-    {
-      node: 'item',
-      name: t('注销'),
-      type: 'danger',
-      onClick: () => showDeleteModal(record),
-    },
-  ];
-
   return (
     <Space>
       {record.status === 1 ? (
@@ -305,9 +337,14 @@ const renderOperations = (
       >
         {t('降级')}
       </Button>
-      <Dropdown menu={moreMenu} trigger='click' position='bottomRight'>
-        <Button type='tertiary' size='small' icon={<IconMore />} />
-      </Dropdown>
+      <RowMoreMenu
+        record={record}
+        showUserSubscriptionsModal={showUserSubscriptionsModal}
+        showResetPasskeyModal={showResetPasskeyModal}
+        showResetTwoFAModal={showResetTwoFAModal}
+        showDeleteModal={showDeleteModal}
+        t={t}
+      />
     </Space>
   );
 };

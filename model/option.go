@@ -108,6 +108,17 @@ func InitOptionMap() {
 	common.OptionMap["WaffoUnitPrice"] = strconv.FormatFloat(setting.WaffoUnitPrice, 'f', -1, 64)
 	common.OptionMap["WaffoMinTopUp"] = strconv.Itoa(setting.WaffoMinTopUp)
 	common.OptionMap["WaffoPayMethods"] = setting.WaffoPayMethods2JsonString()
+	common.OptionMap["CryptomusEnabled"] = strconv.FormatBool(setting.CryptomusEnabled)
+	common.OptionMap["CryptomusMerchantId"] = setting.CryptomusMerchantId
+	common.OptionMap["CryptomusPaymentApiKey"] = setting.CryptomusPaymentApiKey
+	common.OptionMap["CryptomusWebhookApiKey"] = setting.CryptomusWebhookApiKey
+	common.OptionMap["CryptomusNetwork"] = setting.CryptomusNetwork
+	common.OptionMap["CryptomusCurrency"] = setting.CryptomusCurrency
+	common.OptionMap["CryptomusOrderCurrency"] = setting.CryptomusOrderCurrency
+	common.OptionMap["CryptomusNotifyUrl"] = setting.CryptomusNotifyUrl
+	common.OptionMap["CryptomusReturnUrl"] = setting.CryptomusReturnUrl
+	common.OptionMap["CryptomusUnitPrice"] = strconv.FormatFloat(setting.CryptomusUnitPrice, 'f', -1, 64)
+	common.OptionMap["CryptomusMinTopUp"] = strconv.Itoa(setting.CryptomusMinTopUp)
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
 	common.OptionMap["Chats"] = setting.Chats2JsonString()
 	common.OptionMap["AutoGroups"] = setting.AutoGroups2JsonString()
@@ -420,6 +431,28 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.WaffoUnitPrice, _ = strconv.ParseFloat(value, 64)
 	case "WaffoMinTopUp":
 		setting.WaffoMinTopUp, _ = strconv.Atoi(value)
+	case "CryptomusEnabled":
+		setting.CryptomusEnabled = value == "true"
+	case "CryptomusMerchantId":
+		setting.CryptomusMerchantId = value
+	case "CryptomusPaymentApiKey":
+		setting.CryptomusPaymentApiKey = value
+	case "CryptomusWebhookApiKey":
+		setting.CryptomusWebhookApiKey = value
+	case "CryptomusNetwork":
+		setting.CryptomusNetwork = value
+	case "CryptomusCurrency":
+		setting.CryptomusCurrency = value
+	case "CryptomusOrderCurrency":
+		setting.CryptomusOrderCurrency = value
+	case "CryptomusNotifyUrl":
+		setting.CryptomusNotifyUrl = value
+	case "CryptomusReturnUrl":
+		setting.CryptomusReturnUrl = value
+	case "CryptomusUnitPrice":
+		setting.CryptomusUnitPrice, _ = strconv.ParseFloat(value, 64)
+	case "CryptomusMinTopUp":
+		setting.CryptomusMinTopUp, _ = strconv.Atoi(value)
 	case "TopupGroupRatio":
 		err = common.UpdateTopupGroupRatioByJSONString(value)
 	case "GitHubClientId":

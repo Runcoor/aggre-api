@@ -27,6 +27,7 @@ import { API, showError, showSuccess, renderQuota } from '../../helpers';
 import { getCurrencyConfig } from '../../helpers/render';
 import { RefreshCw, Sparkles } from 'lucide-react';
 import SubscriptionPurchaseModal from './modals/SubscriptionPurchaseModal';
+import { useComplianceGate } from '../common/ComplianceAgreementModal';
 import {
   formatSubscriptionDuration,
   formatSubscriptionResetPeriod,
@@ -80,6 +81,7 @@ const SubscriptionPlansCard = ({
   const [paying, setPaying] = useState(false);
   const [selectedEpayMethod, setSelectedEpayMethod] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const { gate: complianceGate, modal: complianceModal } = useComplianceGate(t);
 
   const epayMethods = useMemo(() => getEpayMethods(payMethods), [payMethods]);
 
@@ -566,10 +568,11 @@ const SubscriptionPlansCard = ({
               }
             : null
         }
-        onPayStripe={payStripe}
-        onPayCreem={payCreem}
-        onPayEpay={payEpay}
+        onPayStripe={() => complianceGate(payStripe)}
+        onPayCreem={() => complianceGate(payCreem)}
+        onPayEpay={() => complianceGate(payEpay)}
       />
+      {complianceModal}
     </>
   );
 };

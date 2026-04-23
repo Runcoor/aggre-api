@@ -23,6 +23,7 @@ import SettingsPaymentGateway from '../../pages/Setting/Payment/SettingsPaymentG
 import SettingsPaymentGatewayStripe from '../../pages/Setting/Payment/SettingsPaymentGatewayStripe';
 import SettingsPaymentGatewayCreem from '../../pages/Setting/Payment/SettingsPaymentGatewayCreem';
 import SettingsPaymentGatewayWaffo from '../../pages/Setting/Payment/SettingsPaymentGatewayWaffo';
+import SettingsPaymentGatewayCryptomus from '../../pages/Setting/Payment/SettingsPaymentGatewayCryptomus';
 import { API, showError, toBoolean } from '../../helpers';
 import { useTranslation } from 'react-i18next';
 import MacSpinner from '../common/ui/MacSpinner';
@@ -147,6 +148,12 @@ const PaymentSetting = () => {
           </div>
           <div className='mv-settings-section'>
             <SettingsPaymentGatewayWaffo options={inputs} refresh={onRefresh} />
+          </div>
+          <div className='mv-settings-section'>
+            <SettingsPaymentGatewayCryptomus
+              options={inputs}
+              refresh={onRefresh}
+            />
           </div>
         </div>
       </MacSpinner>

@@ -29,7 +29,7 @@ import {
   copy,
   getQuotaPerUnit,
 } from '../../helpers';
-import { Modal, Toast } from '@douyinfe/semi-ui';
+import { Modal, Toast, Tooltip } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from '../../context/User';
 import { StatusContext } from '../../context/Status';
@@ -864,29 +864,67 @@ const TopUp = () => {
             </div>
             {/* 计费偏好 — pill toggle buttons */}
             <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 12 }}>
-              <p className='text-[11px] font-semibold mb-2.5' style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                {t('计费偏好')}
-              </p>
+              <div className='flex items-center gap-1.5 mb-2.5'>
+                <p className='text-[11px] font-semibold' style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>
+                  {t('计费偏好')}
+                </p>
+                <Tooltip
+                  position='top'
+                  content={
+                    <div style={{ maxWidth: 280, lineHeight: 1.6, fontSize: 12 }}>
+                      {t('选择消费额度时优先使用订阅套餐额度还是钱包余额。未生效的订阅将自动跳过，回落到钱包扣费。')}
+                    </div>
+                  }
+                >
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', cursor: 'help', lineHeight: 1 }}>ⓘ</span>
+                </Tooltip>
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
                 {[
-                  { value: 'subscription_first', label: t('优先订阅') },
-                  { value: 'wallet_first', label: t('优先钱包') },
-                  { value: 'subscription_only', label: t('仅用订阅') },
-                  { value: 'wallet_only', label: t('仅用钱包') },
+                  {
+                    value: 'subscription_first',
+                    label: t('优先订阅'),
+                    desc: t('推荐。优先扣订阅套餐额度；订阅用完或未生效时自动回落到钱包扣费。'),
+                  },
+                  {
+                    value: 'wallet_first',
+                    label: t('优先钱包'),
+                    desc: t('优先扣钱包余额；钱包不足时自动使用订阅额度。适合想先把钱包余额用完再走订阅的用户。'),
+                  },
+                  {
+                    value: 'subscription_only',
+                    label: t('仅用订阅'),
+                    desc: t('只扣订阅额度，不会使用钱包余额。订阅用完或未生效时会直接返回余额不足。'),
+                  },
+                  {
+                    value: 'wallet_only',
+                    label: t('仅用钱包'),
+                    desc: t('只扣钱包余额，不会使用订阅额度。适合暂时不想消耗订阅额度的场景。'),
+                  },
                 ].map((opt) => (
-                  <button key={opt.value}
-                    onClick={() => updateBillingPreference(opt.value)}
-                    style={{
-                      padding: '6px 0', borderRadius: 'var(--radius-md)',
-                      border: billingPreference === opt.value ? '1px solid var(--accent)' : '1px solid var(--border-default)',
-                      background: billingPreference === opt.value ? 'var(--accent-light)' : 'var(--surface)',
-                      color: billingPreference === opt.value ? 'var(--accent)' : 'var(--text-secondary)',
-                      fontSize: 12, fontWeight: 600, cursor: 'pointer', outline: 'none',
-                      transition: 'all 0.2s',
-                    }}
+                  <Tooltip
+                    key={opt.value}
+                    position='top'
+                    content={
+                      <div style={{ maxWidth: 260, lineHeight: 1.6, fontSize: 12 }}>
+                        {opt.desc}
+                      </div>
+                    }
                   >
-                    {opt.label}
-                  </button>
+                    <button
+                      onClick={() => updateBillingPreference(opt.value)}
+                      style={{
+                        padding: '6px 0', borderRadius: 'var(--radius-md)',
+                        border: billingPreference === opt.value ? '1px solid var(--accent)' : '1px solid var(--border-default)',
+                        background: billingPreference === opt.value ? 'var(--accent-light)' : 'var(--surface)',
+                        color: billingPreference === opt.value ? 'var(--accent)' : 'var(--text-secondary)',
+                        fontSize: 12, fontWeight: 600, cursor: 'pointer', outline: 'none',
+                        transition: 'all 0.2s', width: '100%',
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  </Tooltip>
                 ))}
               </div>
             </div>

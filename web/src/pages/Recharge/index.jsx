@@ -45,6 +45,7 @@ import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
 import SubscriptionPlansCard from '../../components/topup/SubscriptionPlansCard';
 import PaymentConfirmModal from '../../components/topup/modals/PaymentConfirmModal';
+import { useComplianceGate } from '../../components/common/ComplianceAgreementModal';
 
 /* ─── Scoped styles ─── */
 const STYLES = `
@@ -181,6 +182,8 @@ const RechargePage = () => {
   const [enableWaffoTopUp, setEnableWaffoTopUp] = useState(false);
   const [waffoPayMethods, setWaffoPayMethods] = useState([]);
   const [waffoMinTopUp, setWaffoMinTopUp] = useState(1);
+  const [enableCryptomusTopUp, setEnableCryptomusTopUp] = useState(false);
+  const [cryptomusMinTopUp, setCryptomusMinTopUp] = useState(1);
   const [priceRatio, setPriceRatio] = useState(statusState?.status?.price || 1);
   const [minTopUp, setMinTopUp] = useState(1);
   const [topUpCount, setTopUpCount] = useState(1);
@@ -194,6 +197,7 @@ const RechargePage = () => {
   const [open, setOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [redemptionCode, setRedemptionCode] = useState('');
+  const { gate: complianceGate, modal: complianceModal } = useComplianceGate(t);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [topUpLink, setTopUpLink] = useState('');
   const [statusLoading, setStatusLoading] = useState(true);
@@ -291,6 +295,8 @@ const RechargePage = () => {
         setEnableWaffoTopUp(!!data.enable_waffo_topup);
         setWaffoPayMethods(data.waffo_pay_methods || []);
         setWaffoMinTopUp(data.waffo_min_topup || 1);
+        setEnableCryptomusTopUp(!!data.enable_cryptomus_topup);
+        setCryptomusMinTopUp(data.cryptomus_min_topup || 1);
         const min = data.enable_online_topup ? data.min_topup : data.enable_stripe_topup ? data.stripe_min_topup : data.enable_waffo_topup ? data.waffo_min_topup : 1;
         setMinTopUp(min);
         setTopUpCount(min);
@@ -378,6 +384,29 @@ const RechargePage = () => {
     finally { setIsSubmitting(false); }
   };
 
+  const cryptomusTopUp = async () => {
+    const min = Math.max(cryptomusMinTopUp || 1, minTopUp || 1);
+    if (topUpCount < min) {
+      showError(t('充值数量不能小于') + min);
+      return;
+    }
+    setPaymentLoading(true);
+    try {
+      const res = await API.post('/api/user/cryptomus/pay', {
+        amount: parseInt(topUpCount),
+      });
+      if (res.data?.message === 'success' && res.data.data?.pay_link) {
+        window.open(res.data.data.pay_link, '_blank');
+      } else {
+        showError(res.data?.data || res.data?.message || t('支付请求失败'));
+      }
+    } catch {
+      showError(t('支付请求失败'));
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
   const waffoTopUp = async (idx) => {
     if (topUpCount < waffoMinTopUp) { showError(t('充值数量不能小于') + waffoMinTopUp); return; }
     setPaymentLoading(true);
@@ -411,8 +440,8 @@ const RechargePage = () => {
   };
 
   /* ─── Derived ─── */
-  const epayMethods = payMethods.filter((m) => m.type !== 'stripe' && m.type !== 'creem' && m.type !== 'waffo');
-  const hasOnlinePay = enableOnlineTopUp || enableStripeTopUp || enableWaffoTopUp;
+  const epayMethods = payMethods.filter((m) => m.type !== 'stripe' && m.type !== 'creem' && m.type !== 'waffo' && m.type !== 'cryptomus');
+  const hasOnlinePay = enableOnlineTopUp || enableStripeTopUp || enableWaffoTopUp || enableCryptomusTopUp;
   const currentDiscount = topupInfo?.discount?.[topUpCount] || 1.0;
   const actualPay = topUpCount * priceRatio * currentDiscount;
   const hasDiscount = currentDiscount < 1.0;
@@ -633,6 +662,24 @@ const RechargePage = () => {
                               )}
                             </button>
                           ))}
+                          {/* Cryptomus */}
+                          {enableCryptomusTopUp && (
+                            <button key='cryptomus' className={`rc-pay-method${selectedPayMethod === 'cryptomus' ? ' selected' : ''}`}
+                              onClick={() => setSelectedPayMethod('cryptomus')}>
+                              <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(247,147,26,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 14, flexShrink: 0, fontSize: 18, fontWeight: 800, color: '#F7931A', fontFamily: 'var(--font-mono)' }}>
+                                ₮
+                              </div>
+                              <div style={{ flex: 1, textAlign: 'left' }}>
+                                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{t('USDT / 加密货币')}</div>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('链上到账，低手续费')}</div>
+                              </div>
+                              {selectedPayMethod === 'cryptomus' && (
+                                <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <Check size={12} color='#fff' />
+                                </div>
+                              )}
+                            </button>
+                          )}
                         </div>
                       </section>
                     )}
@@ -694,7 +741,13 @@ const RechargePage = () => {
                         </div>
                         {selectedPayMethod && (
                           <Button theme='solid' type='primary' block loading={paymentLoading}
-                            onClick={() => preTopUp(selectedPayMethod)}
+                            onClick={() => {
+                              if (selectedPayMethod === 'cryptomus') {
+                                complianceGate(() => cryptomusTopUp());
+                              } else {
+                                preTopUp(selectedPayMethod);
+                              }
+                            }}
                             style={{
                               marginTop: 20, height: 48, borderRadius: 'var(--radius-lg)',
                               background: 'var(--accent-gradient)', border: 'none',
@@ -711,34 +764,13 @@ const RechargePage = () => {
               )}
             </div>
           )}
-          {/* ─── Compliance & Privacy Disclaimer ─── */}
-          <div className='rc-animate' style={{
-            marginTop: 64,
-            padding: isMobile ? '24px 0 0' : '32px 0 0',
-            borderTop: '1px solid var(--border-subtle)',
-          }}>
-            <div style={{ fontSize: 12, lineHeight: 1.8, color: 'var(--text-muted)', maxWidth: 800 }}>
-              <div style={{ fontWeight: 600, marginBottom: 8, color: 'var(--text-tertiary)' }}>
-                {t('行为规范与内容安全红线')}
-              </div>
-              <p style={{ margin: '0 0 8px' }}>
-                {t('用户在调用接口进行数据交互时，必须严格遵守《生成式人工智能服务管理暂行办法》及相关法律法规。严禁利用本接口生成、诱导生成或传播以下违法违规内容：')}
-              </p>
-              <ul style={{ margin: 0, paddingLeft: 18 }}>
-                <li>{t('危害国家安全：煽动颠覆国家政权、推翻社会主义制度、危害国家安全和利益、破坏国家统一的言论。')}</li>
-                <li>{t('破坏社会秩序：宣扬恐怖主义、极端主义，煽动民族仇恨、民族歧视，破坏社会稳定的内容。')}</li>
-                <li>{t('暴力与不良信息：包含暴力、淫秽色情、虚假有害信息，或可能引发公众恐慌及扰乱经济社会秩序的内容。')}</li>
-                <li>{t('侵权与恶意行为：侵犯他人肖像权、名誉权、隐私权或商业秘密；生成用于网络攻击、恶意群发、电信诈骗的代码或文本。')}</li>
-              </ul>
-            </div>
-          </div>
 
         </div>
       </div>
 
       {/* ─── Modals ─── */}
       <PaymentConfirmModal
-        t={t} open={open} onlineTopUp={onlineTopUp} handleCancel={() => setOpen(false)}
+        t={t} open={open} onlineTopUp={() => complianceGate(onlineTopUp)} handleCancel={() => setOpen(false)}
         confirmLoading={confirmLoading} topUpCount={topUpCount}
         renderQuotaWithAmount={renderQuotaWithAmount}
         amountLoading={amountLoading} renderAmount={renderAmount}
@@ -747,7 +779,8 @@ const RechargePage = () => {
       />
       <Modal
         title={t('确定要充值 $')} visible={creemOpen}
-        onOk={onlineCreemTopUp} onCancel={() => { setCreemOpen(false); setSelectedCreemProduct(null); }}
+        onOk={() => complianceGate(onlineCreemTopUp)}
+        onCancel={() => { setCreemOpen(false); setSelectedCreemProduct(null); }}
         maskClosable={false} size='small' centered confirmLoading={confirmLoading}
       >
         {selectedCreemProduct && (
@@ -764,6 +797,7 @@ const RechargePage = () => {
           </div>
         )}
       </Modal>
+      {complianceModal}
     </>
   );
 };

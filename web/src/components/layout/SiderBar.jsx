@@ -49,6 +49,7 @@ const routerMap = {
   playground: '/console/playground',
   personal: '/console/personal',
   team: '/console/team',
+  'ai-news': '/console/ai-news',
 };
 
 const SiderBar = ({ onNavigate = () => {} }) => {
@@ -125,6 +126,7 @@ const SiderBar = ({ onNavigate = () => {} }) => {
             { text: t('兑换码管理'), itemKey: 'redemption' },
             { text: t('登录日志'), itemKey: 'login-log' },
             { text: t('用户管理'), itemKey: 'user' },
+            { text: t('AI 前沿信息'), itemKey: 'ai-news' },
             { text: t('系统设置'), itemKey: 'setting', requireRoot: true },
           ]
             .filter((it) => !it.requireRoot || isRoot())

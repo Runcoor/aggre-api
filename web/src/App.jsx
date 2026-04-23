@@ -47,6 +47,7 @@ import ModelDeploymentPage from './pages/ModelDeployment';
 import Playground from './pages/Playground';
 import Subscription from './pages/Subscription';
 const Finance = lazy(() => import('./pages/Finance'));
+const AiNews = lazy(() => import('./pages/AiNews'));
 import OAuth2Callback from './components/auth/OAuth2Callback';
 import PersonalSetting from './components/settings/PersonalSetting';
 import Setup from './pages/Setup';
@@ -198,6 +199,16 @@ function App() {
             <Suspense fallback={<Loading />}>
               <AdminRoute>
                 <Finance />
+              </AdminRoute>
+            </Suspense>
+          }
+        />
+        <Route
+          path='/console/ai-news'
+          element={
+            <Suspense fallback={<Loading />}>
+              <AdminRoute>
+                <AiNews />
               </AdminRoute>
             </Suspense>
           }

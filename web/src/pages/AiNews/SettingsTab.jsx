@@ -1,0 +1,262 @@
+/*
+Copyright (C) 2025 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
+
+import React, { useEffect, useState } from 'react';
+import {
+  Button,
+  InputNumber,
+  Input,
+  RadioGroup,
+  Radio,
+  Select,
+  Switch,
+  Spin,
+  Banner,
+} from '@douyinfe/semi-ui';
+import { useTranslation } from 'react-i18next';
+import { API, showError, showSuccess } from '../../helpers';
+
+const Field = ({ label, hint, children }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 18 }}>
+    <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+      {label}
+    </label>
+    {children}
+    {hint ? (
+      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{hint}</span>
+    ) : null}
+  </div>
+);
+
+const SettingsTab = () => {
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [settings, setSettings] = useState(null);
+  const [channels, setChannels] = useState([]);
+
+  const loadSettings = async () => {
+    setLoading(true);
+    try {
+      const res = await API.get('/api/ai-news/admin/settings');
+      if (res?.data?.success) {
+        setSettings(res.data.data || {});
+      } else {
+        showError(res?.data?.message || t('加载失败'));
+      }
+    } catch (e) {
+      showError(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadChannels = async () => {
+    try {
+      // Channels endpoint returns paginated; fetch a generous page
+      const res = await API.get('/api/channel/?page=1&page_size=200');
+      if (res?.data?.success) {
+        const items = res.data.data?.items || res.data.data || [];
+        setChannels(items.filter((c) => c.status === 1));
+      }
+    } catch (e) {
+      // non-fatal
+    }
+  };
+
+  useEffect(() => {
+    loadSettings();
+    loadChannels();
+  }, []);
+
+  const onSave = async () => {
+    if (!settings) return;
+    setSaving(true);
+    try {
+      const res = await API.put('/api/ai-news/admin/settings', settings);
+      if (res?.data?.success) {
+        showSuccess(t('已保存'));
+        setSettings(res.data.data || settings);
+      } else {
+        showError(res?.data?.message || t('保存失败'));
+      }
+    } catch (e) {
+      showError(e);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading || !settings) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
+        <Spin />
+      </div>
+    );
+  }
+
+  const update = (patch) => setSettings({ ...settings, ...patch });
+
+  return (
+    <div style={{ maxWidth: 720, padding: 12 }}>
+      <Banner
+        type='info'
+        description={t(
+          'Jina API key 可选(留空走免费 tier)。LLM 可选自定义 OpenAI 兼容端点,或直接选用平台已有渠道',
+        )}
+        style={{ marginBottom: 24 }}
+      />
+
+      <Field label={t('Jina API Key (可选)')} hint={t('用于 r.jina.ai 抓正文 + s.jina.ai 搜索')}>
+        <Input
+          value={settings.jina_api_key || ''}
+          onChange={(v) => update({ jina_api_key: v })}
+          placeholder='jina_xxxxxxxx'
+          mode='password'
+        />
+      </Field>
+
+      <Field label={t('LLM 来源')}>
+        <RadioGroup
+          value={settings.llm_source}
+          onChange={(e) => update({ llm_source: e.target.value })}
+        >
+          <Radio value='channel'>{t('使用平台已有渠道')}</Radio>
+          <Radio value='custom'>{t('自定义 base_url + key')}</Radio>
+        </RadioGroup>
+      </Field>
+
+      {settings.llm_source === 'custom' ? (
+        <>
+          <Field label={t('自定义 LLM Base URL')} hint='e.g. https://api.openai.com'>
+            <Input
+              value={settings.llm_custom_base_url || ''}
+              onChange={(v) => update({ llm_custom_base_url: v })}
+              placeholder='https://...'
+            />
+          </Field>
+          <Field label={t('自定义 LLM API Key')}>
+            <Input
+              value={settings.llm_custom_api_key || ''}
+              onChange={(v) => update({ llm_custom_api_key: v })}
+              placeholder='sk-...'
+              mode='password'
+            />
+          </Field>
+        </>
+      ) : (
+        <Field label={t('选择渠道')} hint={t('使用该渠道的 base_url + key')}>
+          <Select
+            value={settings.llm_channel_id || undefined}
+            onChange={(v) => update({ llm_channel_id: v })}
+            placeholder={t('选择一个已启用的渠道')}
+            style={{ width: '100%' }}
+            optionList={channels.map((c) => ({
+              label: `#${c.id} · ${c.name}`,
+              value: c.id,
+            }))}
+          />
+        </Field>
+      )}
+
+      <Field
+        label={t('深度分析模型')}
+        hint={t('用于生成深度分析,推荐能力强的大模型')}
+      >
+        <Input
+          value={settings.llm_deep_model || ''}
+          onChange={(v) => update({ llm_deep_model: v })}
+          placeholder='claude-opus-4-7'
+        />
+      </Field>
+
+      <Field
+        label={t('简单总结模型')}
+        hint={t('用于生成简短日报,推荐快速模型')}
+      >
+        <Input
+          value={settings.llm_simple_model || ''}
+          onChange={(v) => update({ llm_simple_model: v })}
+          placeholder='claude-haiku-4-5'
+        />
+      </Field>
+
+      <Field
+        label={t('管理员预览邮箱')}
+        hint={t('生成草稿后会发邮件到这些地址,逗号分隔')}
+      >
+        <Input
+          value={(settings.admin_preview_emails || []).join(',')}
+          onChange={(v) =>
+            update({
+              admin_preview_emails: v
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean),
+            })
+          }
+          placeholder='admin@example.com, ops@example.com'
+        />
+      </Field>
+
+      <Field label={t('每日定时')}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <Switch
+            checked={!!settings.cron_enabled}
+            onChange={(v) => update({ cron_enabled: v })}
+          />
+          <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
+            {t('每天')}
+          </span>
+          <InputNumber
+            min={0}
+            max={23}
+            value={settings.cron_hour ?? 9}
+            onChange={(v) => update({ cron_hour: Number(v) || 0 })}
+            style={{ width: 80 }}
+          />
+          <span style={{ fontSize: 13 }}>:</span>
+          <InputNumber
+            min={0}
+            max={59}
+            value={settings.cron_minute ?? 0}
+            onChange={(v) => update({ cron_minute: Number(v) || 0 })}
+            style={{ width: 80 }}
+          />
+          <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
+            {t('(服务器本地时间)')}
+          </span>
+        </div>
+      </Field>
+
+      <div style={{ marginTop: 24 }}>
+        <Button
+          theme='solid'
+          type='primary'
+          loading={saving}
+          onClick={onSave}
+        >
+          {t('保存设置')}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default SettingsTab;

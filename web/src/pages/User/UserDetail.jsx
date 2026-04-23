@@ -23,6 +23,8 @@ import { Button, Spin, Empty } from '@douyinfe/semi-ui';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useUserDetail } from '../../hooks/users/useUserDetail';
+import IdentityCard from './userDetail/IdentityCard';
+import FinanceCards from './userDetail/FinanceCards';
 
 const UserDetail = () => {
   const { t } = useTranslation();
@@ -73,26 +75,13 @@ const UserDetail = () => {
           {t('返回用户列表')}
         </Button>
       </div>
-      {/* Top region (placeholder; real content added in Task 5) */}
-      <div style={{ marginBottom: 16 }}>
-        <div
-          style={{
-            padding: 16,
-            background: 'var(--surface)',
-            borderRadius: 'var(--radius-lg)',
-          }}
-        >
-          <pre
-            style={{
-              margin: 0,
-              fontSize: 12,
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-all',
-            }}
-          >
-            {JSON.stringify(overview, null, 2)}
-          </pre>
-        </div>
+      {/* Top region: identity card + finance metric cards */}
+      <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <IdentityCard user={overview.user} />
+        <FinanceCards
+          finance={overview.finance}
+          subsSummary={overview.subscriptions_summary}
+        />
       </div>
       {/* Tabs region — added in Task 6+ */}
     </div>

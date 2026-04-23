@@ -225,8 +225,10 @@ func SetApiRouter(router *gin.Engine) {
 			aiNewsAdminRoute.GET("/briefings/:id", controller.GetAINewsBriefing)
 			aiNewsAdminRoute.PUT("/briefings/:id", controller.UpdateAINewsBriefing)
 			aiNewsAdminRoute.DELETE("/briefings/:id", controller.DeleteAINewsBriefing)
-			// Phase 2/5 endpoints (trigger run, send to users) wired in
-			// router/api-router.go after their controllers are added.
+
+			// Actions
+			aiNewsAdminRoute.POST("/trigger", controller.TriggerAINewsRun)
+			aiNewsAdminRoute.POST("/briefings/:id/send", controller.SendAINewsBriefing)
 		}
 
 		// Subscription payment callbacks (no auth)

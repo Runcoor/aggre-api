@@ -65,16 +65,16 @@ import AuthLayout from './AuthLayout';
 
 /* ─── Shared style constants ─── */
 const oauthBtnStyle = {
-  borderRadius: 12,
+  borderRadius: 10,
   border: '1px solid var(--border-default)',
   background: 'var(--surface)',
-  height: 48,
+  height: 42,
   transition: 'all 150ms ease-out',
   width: '100%',
 };
 
 const oauthBtnTextStyle = {
-  marginLeft: 10,
+  marginLeft: 8,
   color: 'var(--text-primary)',
   fontSize: 13,
   fontWeight: 500,
@@ -84,6 +84,20 @@ const accentLinkStyle = {
   color: 'var(--accent)',
   textDecoration: 'none',
   fontWeight: 600,
+};
+
+const primaryCtaStyle = {
+  width: '100%',
+  height: 46,
+  background: 'var(--accent-gradient)',
+  color: '#fff',
+  border: 'none',
+  borderRadius: 10,
+  fontSize: 14,
+  fontWeight: 700,
+  cursor: 'pointer',
+  boxShadow: '0 10px 20px -8px rgba(0,114,255,0.3)',
+  transition: 'all 300ms ease',
 };
 
 const RegisterForm = () => {
@@ -169,7 +183,10 @@ const RegisterForm = () => {
 
   // ── All handlers (unchanged) ──
 
-  const onWeChatLoginClicked = () => { setWechatLoading(true); setShowWeChatLoginModal(true); setWechatLoading(false); };
+  const onWeChatLoginClicked = () => {
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
+    setWechatLoading(true); setShowWeChatLoginModal(true); setWechatLoading(false);
+  };
 
   const onSubmitWeChatVerificationCode = async () => {
     if (turnstileEnabled && turnstileToken === '') { showInfo('请稍后几秒重试，Turnstile 正在检查用户环境！'); return; }
@@ -188,6 +205,7 @@ const RegisterForm = () => {
   function handleChange(name, value) { setInputs((inputs) => ({ ...inputs, [name]: value })); }
 
   async function handleSubmit(e) {
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
     if (password.length < 8) { showInfo('密码长度不得小于 8 位！'); return; }
     if (password !== password2) { showInfo('两次输入的密码不一致'); return; }
     if (!inputs.email || !inputs.email.includes('@')) { showInfo(t('请输入有效的邮箱地址')); return; }
@@ -216,6 +234,7 @@ const RegisterForm = () => {
   };
 
   const handleGitHubClick = () => {
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
     if (githubButtonDisabled) return;
     setGithubLoading(true); setGithubButtonDisabled(true); setGithubButtonState('redirecting');
     if (githubTimeoutRef.current) clearTimeout(githubTimeoutRef.current);
@@ -223,14 +242,31 @@ const RegisterForm = () => {
     try { onGitHubOAuthClicked(status.github_client_id, { shouldLogout: true }); } finally { setTimeout(() => setGithubLoading(false), 3000); }
   };
 
-  const handleDiscordClick = () => { setDiscordLoading(true); try { onDiscordOAuthClicked(status.discord_client_id, { shouldLogout: true }); } finally { setTimeout(() => setDiscordLoading(false), 3000); } };
-  const handleOIDCClick = () => { setOidcLoading(true); try { onOIDCClicked(status.oidc_authorization_endpoint, status.oidc_client_id, false, { shouldLogout: true }); } finally { setTimeout(() => setOidcLoading(false), 3000); } };
-  const handleLinuxDOClick = () => { setLinuxdoLoading(true); try { onLinuxDOOAuthClicked(status.linuxdo_client_id, { shouldLogout: true }); } finally { setTimeout(() => setLinuxdoLoading(false), 3000); } };
-  const handleCustomOAuthClick = (provider) => { setCustomOAuthLoading((prev) => ({ ...prev, [provider.slug]: true })); try { onCustomOAuthClicked(provider, { shouldLogout: true }); } finally { setTimeout(() => { setCustomOAuthLoading((prev) => ({ ...prev, [provider.slug]: false })); }, 3000); } };
+  const handleDiscordClick = () => {
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
+    setDiscordLoading(true);
+    try { onDiscordOAuthClicked(status.discord_client_id, { shouldLogout: true }); } finally { setTimeout(() => setDiscordLoading(false), 3000); }
+  };
+  const handleOIDCClick = () => {
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
+    setOidcLoading(true);
+    try { onOIDCClicked(status.oidc_authorization_endpoint, status.oidc_client_id, false, { shouldLogout: true }); } finally { setTimeout(() => setOidcLoading(false), 3000); }
+  };
+  const handleLinuxDOClick = () => {
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
+    setLinuxdoLoading(true);
+    try { onLinuxDOOAuthClicked(status.linuxdo_client_id, { shouldLogout: true }); } finally { setTimeout(() => setLinuxdoLoading(false), 3000); }
+  };
+  const handleCustomOAuthClick = (provider) => {
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
+    setCustomOAuthLoading((prev) => ({ ...prev, [provider.slug]: true }));
+    try { onCustomOAuthClicked(provider, { shouldLogout: true }); } finally { setTimeout(() => { setCustomOAuthLoading((prev) => ({ ...prev, [provider.slug]: false })); }, 3000); }
+  };
   const handleEmailRegisterClick = () => { setEmailRegisterLoading(true); setShowEmailRegister(true); setEmailRegisterLoading(false); };
   const handleOtherRegisterOptionsClick = () => { setOtherRegisterOptionsLoading(true); setShowEmailRegister(false); setOtherRegisterOptionsLoading(false); };
 
   const onTelegramLoginClicked = async (response) => {
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
     const fields = ['id', 'first_name', 'last_name', 'username', 'photo_url', 'auth_date', 'hash', 'lang'];
     const params = {};
     fields.forEach((field) => { if (response[field]) params[field] = response[field]; });
@@ -242,17 +278,16 @@ const RegisterForm = () => {
     } catch (error) { showError('登录失败，请重试'); }
   };
 
-  /* ─── Terms checkbox ─── */
+  /* ─── Terms checkbox (always shown, always required) ─── */
   const renderTermsCheckbox = () => {
-    if (!hasUserAgreement && !hasPrivacyPolicy) return null;
     return (
-      <div style={{ paddingTop: 12 }}>
+      <div style={{ paddingTop: 10 }}>
         <Checkbox checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)}>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
             {t('我已阅读并同意')}
-            {hasUserAgreement && <a href='/user-agreement' target='_blank' rel='noopener noreferrer' style={{ ...accentLinkStyle, margin: '0 4px', fontSize: 12 }}>{t('用户协议')}</a>}
-            {hasUserAgreement && hasPrivacyPolicy && t('和')}
-            {hasPrivacyPolicy && <a href='/privacy-policy' target='_blank' rel='noopener noreferrer' style={{ ...accentLinkStyle, margin: '0 4px', fontSize: 12 }}>{t('隐私政策')}</a>}
+            <a href='/user-agreement' target='_blank' rel='noopener noreferrer' style={{ ...accentLinkStyle, margin: '0 4px', fontSize: 12 }}>{t('用户协议')}</a>
+            {t('和')}
+            <a href='/privacy-policy' target='_blank' rel='noopener noreferrer' style={{ ...accentLinkStyle, margin: '0 4px', fontSize: 12 }}>{t('隐私政策')}</a>
           </span>
         </Checkbox>
       </div>
@@ -261,7 +296,7 @@ const RegisterForm = () => {
 
   /* ─── Login link ─── */
   const renderLoginLink = () => (
-    <div style={{ marginTop: 24, textAlign: 'center', fontSize: 13 }}>
+    <div style={{ marginTop: 14, textAlign: 'center', fontSize: 13 }}>
       <span style={{ color: 'var(--text-muted)' }}>{t('已有账户？')} </span>
       <Link to='/login' style={accentLinkStyle}>{t('登录')}</Link>
     </div>
@@ -270,7 +305,7 @@ const RegisterForm = () => {
   /* ─── OAuth view ─── */
   const renderOAuthOptions = () => (
     <div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {status.wechat_login && (
           <Button theme='borderless' className='w-full flex items-center justify-center' type='tertiary'
             icon={<Icon svg={<WeChatIcon />} style={{ color: '#07C160' }} />}
@@ -329,22 +364,19 @@ const RegisterForm = () => {
         )}
       </div>
 
-      <Divider margin='16px' align='center' style={{ borderColor: 'var(--border-subtle)' }}>
+      <Divider margin='12px' align='center' style={{ borderColor: 'var(--border-subtle)' }}>
         <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{t('或')}</span>
       </Divider>
 
       <button
         onClick={handleEmailRegisterClick}
         disabled={emailRegisterLoading}
-        style={{
-          width: '100%', height: 48, background: 'var(--accent-gradient)', color: '#fff',
-          border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer',
-          boxShadow: '0 12px 24px -8px rgba(0,114,255,0.3)', transition: 'all 300ms ease',
-        }}
+        style={primaryCtaStyle}
       >
         {t('使用 用户名 注册')}
       </button>
 
+      {renderTermsCheckbox()}
       {renderLoginLink()}
     </div>
   );
@@ -378,16 +410,14 @@ const RegisterForm = () => {
 
         {renderTermsCheckbox()}
 
-        <div style={{ paddingTop: 8 }}>
+        <div style={{ paddingTop: 6 }}>
           <button
             type='button'
             onClick={handleSubmit}
-            disabled={registerLoading || ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms)}
+            disabled={registerLoading || !agreedToTerms}
             style={{
-              width: '100%', height: 48, background: 'var(--accent-gradient)', color: '#fff',
-              border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer',
-              boxShadow: '0 12px 24px -8px rgba(0,114,255,0.3)', transition: 'all 300ms ease',
-              opacity: registerLoading || ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) ? 0.6 : 1,
+              ...primaryCtaStyle,
+              opacity: registerLoading || !agreedToTerms ? 0.6 : 1,
             }}
           >
             {registerLoading ? t('注册中...') : t('注册')}
@@ -397,7 +427,7 @@ const RegisterForm = () => {
 
       {hasOAuthRegisterOptions && (
         <>
-          <Divider margin='16px' align='center' style={{ borderColor: 'var(--border-subtle)' }}>
+          <Divider margin='12px' align='center' style={{ borderColor: 'var(--border-subtle)' }}>
             <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{t('或')}</span>
           </Divider>
           <Button theme='borderless' type='tertiary' className='w-full'
@@ -433,11 +463,11 @@ const RegisterForm = () => {
   return (
     <AuthLayout>
       {/* Form header */}
-      <div style={{ marginBottom: 32 }}>
-        <h2 style={{ fontSize: 30, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-serif)', marginBottom: 8, letterSpacing: '-0.02em' }}>
+      <div style={{ marginBottom: 18 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-serif)', marginBottom: 4, letterSpacing: '-0.02em' }}>
           {t('创建账户')}
         </h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: 14, fontWeight: 300 }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: 13, fontWeight: 300 }}>
           {t('注册以开始使用 AI 服务')}
         </p>
       </div>

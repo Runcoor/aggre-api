@@ -67,16 +67,16 @@ import AuthLayout from './AuthLayout';
 
 /* ─── Shared style constants ─── */
 const oauthBtnStyle = {
-  borderRadius: 12,
+  borderRadius: 10,
   border: '1px solid var(--border-default)',
   background: 'var(--surface)',
-  height: 48,
+  height: 42,
   transition: 'all 150ms ease-out',
   width: '100%',
 };
 
 const oauthBtnTextStyle = {
-  marginLeft: 10,
+  marginLeft: 8,
   color: 'var(--text-primary)',
   fontSize: 13,
   fontWeight: 500,
@@ -86,6 +86,20 @@ const accentLinkStyle = {
   color: 'var(--accent)',
   textDecoration: 'none',
   fontWeight: 600,
+};
+
+const primaryCtaStyle = {
+  width: '100%',
+  height: 46,
+  background: 'var(--accent-gradient)',
+  color: '#fff',
+  border: 'none',
+  borderRadius: 10,
+  fontSize: 14,
+  fontWeight: 700,
+  cursor: 'pointer',
+  boxShadow: '0 10px 20px -8px rgba(0,114,255,0.3)',
+  transition: 'all 300ms ease',
 };
 
 const LoginForm = () => {
@@ -189,7 +203,7 @@ const LoginForm = () => {
   // ── All handlers (unchanged) ──
 
   const onWeChatLoginClicked = () => {
-    if ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) {
+    if (!agreedToTerms) {
       showInfo(t('请先阅读并同意用户协议和隐私政策'));
       return;
     }
@@ -230,7 +244,7 @@ const LoginForm = () => {
   }
 
   async function handleSubmit(e) {
-    if ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) {
+    if (!agreedToTerms) {
       showInfo(t('请先阅读并同意用户协议和隐私政策'));
       return;
     }
@@ -272,7 +286,7 @@ const LoginForm = () => {
   }
 
   const onTelegramLoginClicked = async (response) => {
-    if ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) {
+    if (!agreedToTerms) {
       showInfo(t('请先阅读并同意用户协议和隐私政策'));
       return;
     }
@@ -298,7 +312,7 @@ const LoginForm = () => {
   };
 
   const handleGitHubClick = () => {
-    if ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
     if (githubButtonDisabled) return;
     setGithubLoading(true);
     setGithubButtonDisabled(true);
@@ -309,25 +323,25 @@ const LoginForm = () => {
   };
 
   const handleDiscordClick = () => {
-    if ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
     setDiscordLoading(true);
     try { onDiscordOAuthClicked(status.discord_client_id, { shouldLogout: true }); } finally { setTimeout(() => setDiscordLoading(false), 3000); }
   };
 
   const handleOIDCClick = () => {
-    if ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
     setOidcLoading(true);
     try { onOIDCClicked(status.oidc_authorization_endpoint, status.oidc_client_id, false, { shouldLogout: true }); } finally { setTimeout(() => setOidcLoading(false), 3000); }
   };
 
   const handleLinuxDOClick = () => {
-    if ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
     setLinuxdoLoading(true);
     try { onLinuxDOOAuthClicked(status.linuxdo_client_id, { shouldLogout: true }); } finally { setTimeout(() => setLinuxdoLoading(false), 3000); }
   };
 
   const handleCustomOAuthClick = (provider) => {
-    if ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
     setCustomOAuthLoading((prev) => ({ ...prev, [provider.slug]: true }));
     try { onCustomOAuthClicked(provider, { shouldLogout: true }); } finally { setTimeout(() => { setCustomOAuthLoading((prev) => ({ ...prev, [provider.slug]: false })); }, 3000); }
   };
@@ -335,7 +349,7 @@ const LoginForm = () => {
   const handleEmailLoginClick = () => { setEmailLoginLoading(true); setShowEmailLogin(true); setEmailLoginLoading(false); };
 
   const handlePasskeyLogin = async () => {
-    if ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
+    if (!agreedToTerms) { showInfo(t('请先阅读并同意用户协议和隐私政策')); return; }
     if (!passkeySupported) { showInfo('当前环境无法使用 Passkey 登录'); return; }
     if (!window.PublicKeyCredential) { showInfo('当前浏览器不支持 Passkey'); return; }
     setPasskeyLoading(true);
@@ -378,21 +392,16 @@ const LoginForm = () => {
     setInputs({ username: '', password: '', wechat_verification_code: '' });
   };
 
-  /* ─── Terms checkbox ─── */
+  /* ─── Terms checkbox (always shown, always required) ─── */
   const renderTermsCheckbox = () => {
-    if (!hasUserAgreement && !hasPrivacyPolicy) return null;
     return (
-      <div style={{ marginTop: 16 }}>
+      <div style={{ marginTop: 12 }}>
         <Checkbox checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)}>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
             {t('我已阅读并同意')}
-            {hasUserAgreement && (
-              <a href='/user-agreement' target='_blank' rel='noopener noreferrer' style={{ ...accentLinkStyle, margin: '0 4px', fontSize: 12 }}>{t('用户协议')}</a>
-            )}
-            {hasUserAgreement && hasPrivacyPolicy && t('和')}
-            {hasPrivacyPolicy && (
-              <a href='/privacy-policy' target='_blank' rel='noopener noreferrer' style={{ ...accentLinkStyle, margin: '0 4px', fontSize: 12 }}>{t('隐私政策')}</a>
-            )}
+            <a href='/user-agreement' target='_blank' rel='noopener noreferrer' style={{ ...accentLinkStyle, margin: '0 4px', fontSize: 12 }}>{t('用户协议')}</a>
+            {t('和')}
+            <a href='/privacy-policy' target='_blank' rel='noopener noreferrer' style={{ ...accentLinkStyle, margin: '0 4px', fontSize: 12 }}>{t('隐私政策')}</a>
           </span>
         </Checkbox>
       </div>
@@ -403,7 +412,7 @@ const LoginForm = () => {
   const renderRegisterLink = () => {
     if (status.self_use_mode_enabled) return null;
     return (
-      <div style={{ marginTop: 24, textAlign: 'center', fontSize: 13 }}>
+      <div style={{ marginTop: 14, textAlign: 'center', fontSize: 13 }}>
         <span style={{ color: 'var(--text-muted)' }}>{t('没有账户？')} </span>
         <Link to='/register' style={accentLinkStyle}>{t('注册')}</Link>
       </div>
@@ -413,7 +422,7 @@ const LoginForm = () => {
   /* ─── OAuth view ─── */
   const renderOAuthOptions = () => (
     <div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {status.wechat_login && (
           <Button theme='borderless' className='w-full flex items-center justify-center' type='tertiary'
             icon={<Icon svg={<WeChatIcon />} style={{ color: '#07C160' }} />}
@@ -479,18 +488,14 @@ const LoginForm = () => {
         )}
       </div>
 
-      <Divider margin='16px' align='center' style={{ borderColor: 'var(--border-subtle)' }}>
+      <Divider margin='12px' align='center' style={{ borderColor: 'var(--border-subtle)' }}>
         <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{t('或')}</span>
       </Divider>
 
       <button
         onClick={handleEmailLoginClick}
         disabled={emailLoginLoading}
-        style={{
-          width: '100%', height: 48, background: 'var(--accent-gradient)', color: '#fff',
-          border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer',
-          boxShadow: '0 12px 24px -8px rgba(0,114,255,0.3)', transition: 'all 300ms ease',
-        }}
+        style={primaryCtaStyle}
       >
         {t('使用 邮箱或用户名 登录')}
       </button>
@@ -530,16 +535,14 @@ const LoginForm = () => {
 
         {renderTermsCheckbox()}
 
-        <div style={{ paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ paddingTop: 6, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <button
             type='button'
             onClick={handleSubmit}
-            disabled={loginLoading || ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms)}
+            disabled={loginLoading || !agreedToTerms}
             style={{
-              width: '100%', height: 48, background: 'var(--accent-gradient)', color: '#fff',
-              border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer',
-              boxShadow: '0 12px 24px -8px rgba(0,114,255,0.3)', transition: 'all 300ms ease',
-              opacity: loginLoading || ((hasUserAgreement || hasPrivacyPolicy) && !agreedToTerms) ? 0.6 : 1,
+              ...primaryCtaStyle,
+              opacity: loginLoading || !agreedToTerms ? 0.6 : 1,
             }}
           >
             {loginLoading ? t('登录中...') : t('登录')}
@@ -563,7 +566,7 @@ const LoginForm = () => {
 
       {hasOAuthLoginOptions && (
         <>
-          <Divider margin='16px' align='center' style={{ borderColor: 'var(--border-subtle)' }}>
+          <Divider margin='12px' align='center' style={{ borderColor: 'var(--border-subtle)' }}>
             <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{t('或')}</span>
           </Divider>
           <Button theme='borderless' type='tertiary' className='w-full'
@@ -608,11 +611,11 @@ const LoginForm = () => {
   return (
     <AuthLayout>
       {/* Form header */}
-      <div style={{ marginBottom: 32 }}>
-        <h2 style={{ fontSize: 30, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-serif)', marginBottom: 8, letterSpacing: '-0.02em' }}>
+      <div style={{ marginBottom: 18 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-serif)', marginBottom: 4, letterSpacing: '-0.02em' }}>
           {t('欢迎回来')}
         </h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: 14, fontWeight: 300 }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: 13, fontWeight: 300 }}>
           {t('登录您的账户以继续使用 API 服务')}
         </p>
       </div>

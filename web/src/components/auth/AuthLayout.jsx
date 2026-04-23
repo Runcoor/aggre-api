@@ -1,3 +1,22 @@
+/*
+Copyright (C) 2025 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
+
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getSystemName } from '../../helpers';
@@ -189,7 +208,7 @@ const AuthLayout = ({ children }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '32px 28px',
+          padding: '20px 28px',
           background: 'var(--bg-base)',
           minHeight: '100vh',
           overflow: 'auto',
@@ -197,16 +216,16 @@ const AuthLayout = ({ children }) => {
       >
         <div style={{ width: '100%', maxWidth: 380 }}>
           {/* Brand anchor — uses favicon.svg */}
-          <div style={{ marginBottom: 40 }}>
+          <div style={{ marginBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <img
                 src="/favicon.svg"
                 alt="Logo"
-                style={{ height: 32, width: 32, objectFit: 'contain' }}
+                style={{ height: 28, width: 28, objectFit: 'contain' }}
               />
               <span
                 style={{
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: 800,
                   letterSpacing: '-0.02em',
                   color: 'var(--text-primary)',
@@ -241,11 +260,11 @@ const AuthLayout = ({ children }) => {
         }
         /* Override Semi UI Form.Input inside auth pages */
         .auth-form-area .semi-input-wrapper {
-          height: 48px !important;
-          border-radius: 12px !important;
+          height: 42px !important;
+          border-radius: 10px !important;
           border: 1px solid var(--border-default, #e5e7eb) !important;
           background: #fff !important;
-          padding: 0 16px !important;
+          padding: 0 14px !important;
           transition: all 300ms ease !important;
           box-shadow: none !important;
         }
@@ -267,7 +286,7 @@ const AuthLayout = ({ children }) => {
           display: none !important;
         }
         .auth-form-area .semi-input-wrapper .semi-input {
-          font-size: 14px !important;
+          font-size: 13px !important;
           height: 100% !important;
         }
         .auth-form-area .semi-input-wrapper .semi-input::placeholder {
@@ -283,7 +302,10 @@ const AuthLayout = ({ children }) => {
           padding-left: 2px !important;
         }
         .auth-form-area .semi-form-field {
-          margin-bottom: 16px !important;
+          margin-bottom: 10px !important;
+        }
+        .auth-form-area .semi-form-field-label {
+          padding-bottom: 4px !important;
         }
       `}</style>
     </div>

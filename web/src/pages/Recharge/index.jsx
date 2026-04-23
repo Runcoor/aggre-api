@@ -45,7 +45,6 @@ import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
 import SubscriptionPlansCard from '../../components/topup/SubscriptionPlansCard';
 import PaymentConfirmModal from '../../components/topup/modals/PaymentConfirmModal';
-import { useComplianceGate } from '../../components/common/ComplianceAgreementModal';
 
 /* ─── Scoped styles ─── */
 const STYLES = `
@@ -197,7 +196,6 @@ const RechargePage = () => {
   const [open, setOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [redemptionCode, setRedemptionCode] = useState('');
-  const { gate: complianceGate, modal: complianceModal } = useComplianceGate(t);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [topUpLink, setTopUpLink] = useState('');
   const [statusLoading, setStatusLoading] = useState(true);
@@ -743,7 +741,7 @@ const RechargePage = () => {
                           <Button theme='solid' type='primary' block loading={paymentLoading}
                             onClick={() => {
                               if (selectedPayMethod === 'cryptomus') {
-                                complianceGate(() => cryptomusTopUp());
+                                cryptomusTopUp();
                               } else {
                                 preTopUp(selectedPayMethod);
                               }
@@ -770,7 +768,7 @@ const RechargePage = () => {
 
       {/* ─── Modals ─── */}
       <PaymentConfirmModal
-        t={t} open={open} onlineTopUp={() => complianceGate(onlineTopUp)} handleCancel={() => setOpen(false)}
+        t={t} open={open} onlineTopUp={onlineTopUp} handleCancel={() => setOpen(false)}
         confirmLoading={confirmLoading} topUpCount={topUpCount}
         renderQuotaWithAmount={renderQuotaWithAmount}
         amountLoading={amountLoading} renderAmount={renderAmount}
@@ -779,8 +777,7 @@ const RechargePage = () => {
       />
       <Modal
         title={t('确定要充值 $')} visible={creemOpen}
-        onOk={() => complianceGate(onlineCreemTopUp)}
-        onCancel={() => { setCreemOpen(false); setSelectedCreemProduct(null); }}
+        onOk={onlineCreemTopUp} onCancel={() => { setCreemOpen(false); setSelectedCreemProduct(null); }}
         maskClosable={false} size='small' centered confirmLoading={confirmLoading}
       >
         {selectedCreemProduct && (
@@ -797,7 +794,6 @@ const RechargePage = () => {
           </div>
         )}
       </Modal>
-      {complianceModal}
     </>
   );
 };

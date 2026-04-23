@@ -11,6 +11,7 @@ import (
 	"github.com/runcoor/aggre-api/common"
 	"github.com/runcoor/aggre-api/constant"
 	"github.com/runcoor/aggre-api/dto"
+	"github.com/runcoor/aggre-api/relay/channel/claude"
 	relaycommon "github.com/runcoor/aggre-api/relay/common"
 	"github.com/runcoor/aggre-api/relay/helper"
 	"github.com/runcoor/aggre-api/service"
@@ -60,6 +61,8 @@ func ClaudeHelper(c *gin.Context, info *relaycommon.RelayInfo) (newAPIError *typ
 		}
 		request.OutputConfig = json.RawMessage(fmt.Sprintf(`{"effort":"%s"}`, effortLevel))
 		request.Temperature = common.GetPointer[float64](1.0)
+		// claude-opus-4-6 不允许同时指定 temperature 和 top_p，忽略 top_p
+		request.TopP = nil
 		info.UpstreamModelName = request.Model
 	} else if model_setting.GetClaudeSettings().ThinkingAdapterEnabled &&
 		strings.HasSuffix(request.Model, "-thinking") {
@@ -83,6 +86,24 @@ func ClaudeHelper(c *gin.Context, info *relaycommon.RelayInfo) (newAPIError *typ
 		}
 		info.UpstreamModelName = request.Model
 	}
+
+	// claude-opus-4-7 及以上版本不接受任何非默认的 temperature/top_p/top_k，
+	// 无论是否经过 thinking 适配，都需要清除这些参数
+	// 否则会返回 400: temperature is deprecated for this model
+	if strings.HasPrefix(request.Model, "claude-opus-4-7") {
+		request.Temperature = nil
+		request.TopP = nil
+		request.TopK = nil
+	}
+
+	// claude-*-4-6 系列（如 claude-opus-4-6、claude-sonnet-4-6）不允许同时指定 temperature 和 top_p，
+	// 若用户同时传递了两者，忽略 top_p，保留 temperature
+	if strings.Contains(request.Model, "-4-6") && request.Temperature != nil && request.TopP != nil {
+		request.TopP = nil
+	}
+
+	// 清除所有消息中无效的 thinking 块，防止 signature 损坏触发 500
+	claude.SanitizeClaudeRequestThinkingBlocks(request)
 
 	if info.ChannelSetting.SystemPrompt != "" {
 		if request.System == nil {

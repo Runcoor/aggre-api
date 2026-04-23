@@ -472,6 +472,11 @@ func RequestOpenAI2ClaudeMessage(c *gin.Context, textRequest dto.GeneralOpenAIRe
 
 	claudeRequest.Prompt = ""
 	claudeRequest.Messages = claudeMessages
+
+	// claude-opus-4-7 及以上版本不接受非默认的 temperature/top_p/top_k，
+	// 传入任何非默认值都会返回 400: temperature is deprecated for this model
+	sanitizeOpus47Params(&claudeRequest)
+
 	return &claudeRequest, nil
 }
 
@@ -1018,4 +1023,69 @@ func mapToolChoice(toolChoice any, parallelToolCalls *bool) *dto.ClaudeToolChoic
 	}
 
 	return claudeToolChoice
+}
+
+// SanitizeClaudeRequestThinkingBlocks 清除 ClaudeRequest 所有消息内容中的 thinking/redacted_thinking 块。
+//
+// 背景：Claude API 对 thinking 块有严格要求——thinking 块需要同时有非空的 thinking 字段和
+// 有效的 signature 字段，redacted_thinking 块需要有非空的 data 字段。任何不满足条件的块
+// 都会触发 500 错误（"each thinking block must contain thinking" 或
+// "Invalid 'signature' in 'thinking' block"）。
+//
+// 由于代理层无法保证 signature 的完整性（流式传输中 signature 可能在 message_stop 之前就被
+// 截断保存，导致后续请求携带不完整的 signature），最安全的做法是直接清除所有 thinking 块。
+// 这与 Anthropic 官方建议一致。
+//
+// 不处理非 assistant 角色消息，它们不会包含 thinking 块。
+func SanitizeClaudeRequestThinkingBlocks(request *dto.ClaudeRequest) {
+	if request == nil {
+		return
+	}
+
+	for i, message := range request.Messages {
+		if message.Role != "assistant" {
+			continue
+		}
+		if message.IsStringContent() {
+			continue
+		}
+		content, err := message.ParseContent()
+		if err != nil || len(content) == 0 {
+			continue
+		}
+
+		filtered := make([]dto.ClaudeMediaMessage, 0, len(content))
+		removedCount := 0
+
+		for _, block := range content {
+			if block.Type == "thinking" || block.Type == "redacted_thinking" {
+				// 直接清除所有 thinking/redacted_thinking 块
+				// 代理层无法保证 signature 完整性，传入损坏的块会触发 500 错误
+				removedCount++
+				continue
+			}
+			filtered = append(filtered, block)
+		}
+
+		if removedCount > 0 {
+			common.SysLog(fmt.Sprintf("filtered %d thinking block(s) from %s message[%d]", removedCount, message.Role, i))
+			request.Messages[i].SetContent(filtered)
+		}
+	}
+}
+
+// sanitizeOpus47Params 清除 claude-opus-4-7 及以上版本不支持的参数。
+// 从 Opus 4.7 开始，设置任何非默认的 temperature/top_p/top_k 都会返回
+// 400: temperature is deprecated for this model。
+// Anthropic 官方建议完全省略这些参数，改用 prompt 来引导模型行为。
+func sanitizeOpus47Params(request *dto.ClaudeRequest) {
+	if request == nil {
+		return
+	}
+	// 匹配 claude-opus-4-7 及其变体（如 claude-opus-4-7-20250514 等）
+	if strings.HasPrefix(request.Model, "claude-opus-4-7") {
+		request.Temperature = nil
+		request.TopP = nil
+		request.TopK = nil
+	}
 }

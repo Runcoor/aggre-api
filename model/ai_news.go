@@ -102,7 +102,7 @@ type AINewsBriefing struct {
 	Type         string `json:"type" gorm:"type:varchar(16);not null;index"`
 	Title        string `json:"title" gorm:"type:varchar(512);not null"`
 	Summary      string `json:"summary" gorm:"type:text"`
-	Content      string `json:"content" gorm:"type:longtext"`
+	Content      string `json:"content" gorm:"type:text"`
 	SourcesJSON  string `json:"sources_json" gorm:"column:sources_json;type:text"`
 	PlanIdsJSON  string `json:"plan_ids_json" gorm:"column:plan_ids_json;type:text;default:'[]'"`
 	Status       string `json:"status" gorm:"type:varchar(16);not null;index;default:'draft'"`

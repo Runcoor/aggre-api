@@ -32,9 +32,17 @@ type chatRequest struct {
 }
 
 type chatResponse struct {
+	Model   string `json:"model"`
 	Choices []struct {
 		Message ChatMessage `json:"message"`
 	} `json:"choices"`
+	Usage *struct {
+		PromptTokens             int `json:"prompt_tokens"`
+		CompletionTokens         int `json:"completion_tokens"`
+		CompletionTokensDetails *struct {
+			ReasoningTokens int `json:"reasoning_tokens"`
+		} `json:"completion_tokens_details"`
+	} `json:"usage"`
 	Error *struct {
 		Message string `json:"message"`
 		Type    string `json:"type"`
@@ -109,9 +117,41 @@ func ChatComplete(ctx context.Context, model string, messages []ChatMessage, max
 		if strings.TrimSpace(alt) != "" {
 			return alt, nil
 		}
-		return "", fmt.Errorf("LLM returned empty content (status %d, body=%s)", resp.StatusCode, truncate(string(body), 512))
+		return "", emptyContentError(resp.StatusCode, parsed, body, model)
 	}
 	return content, nil
+}
+
+// emptyContentError builds a human-readable error when content is null/empty.
+// Detects the "reasoning model with lost output" case (completion_tokens
+// significantly larger than reasoning_tokens) and points the user at the real
+// fix: the channel mapped the request to a reasoning model whose Responses-API
+// output was dropped during conversion to chat-completions shape.
+func emptyContentError(statusCode int, parsed chatResponse, body []byte, requestedModel string) error {
+	bodyTail := truncate(string(body), 512)
+	if parsed.Usage != nil {
+		comp := parsed.Usage.CompletionTokens
+		reasoning := 0
+		if parsed.Usage.CompletionTokensDetails != nil {
+			reasoning = parsed.Usage.CompletionTokensDetails.ReasoningTokens
+		}
+		if comp > reasoning+50 {
+			actual := requestedModel
+			if parsed.Model != "" && parsed.Model != requestedModel {
+				actual = fmt.Sprintf("%s (channel mapped to %s)", requestedModel, parsed.Model)
+			}
+			return fmt.Errorf(
+				"上游返回 content=null 但 completion_tokens=%d (其中 reasoning=%d) — "+
+					"模型 %s 实际生成了 %d tokens 的输出,但渠道在转换 Responses API → chat completions 时丢失了 content。"+
+					"修法:① 在 AI 前沿设置里把模型换成非 reasoning 模型(如 claude-sonnet-4-6 / gpt-4o);"+
+					"② 或修复渠道 model_mapping(避免映射到 gpt-5 / o1 等 reasoning 模型);"+
+					"③ 或在渠道层修复 Responses → chat completions 的 output_text 提取。"+
+					"原始响应: %s",
+				comp, reasoning, actual, comp-reasoning, bodyTail,
+			)
+		}
+	}
+	return fmt.Errorf("LLM returned empty content (status %d, body=%s)", statusCode, bodyTail)
 }
 
 // extractAltContent looks for Claude-native content blocks in the raw response

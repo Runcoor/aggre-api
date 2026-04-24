@@ -21,7 +21,6 @@ import React, { useState } from 'react';
 import { Tabs, TabPane } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 
-import { useIsMobile } from '../../hooks/common/useIsMobile';
 import SettingsTab from './SettingsTab';
 import SourcesTab from './SourcesTab';
 import BriefingsTab from './BriefingsTab';
@@ -29,19 +28,12 @@ import BriefingsTab from './BriefingsTab';
 const AiNews = () => {
   const { t } = useTranslation();
   const [active, setActive] = useState('briefings');
-  const isMobile = useIsMobile();
 
   return (
-    <div
-      style={{
-        padding: isMobile ? '12px 12px 24px' : '16px 24px',
-        maxWidth: 1280,
-        margin: '0 auto',
-      }}
-    >
+    <div style={{ padding: '16px 24px', maxWidth: 1280, margin: '0 auto' }}>
       <h1
         style={{
-          fontSize: isMobile ? 20 : 24,
+          fontSize: 24,
           fontWeight: 700,
           letterSpacing: '-0.02em',
           color: 'var(--text-primary)',

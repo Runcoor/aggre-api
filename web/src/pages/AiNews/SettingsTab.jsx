@@ -31,7 +31,6 @@ import {
 } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 import { API, showError, showSuccess } from '../../helpers';
-import { useIsMobile } from '../../hooks/common/useIsMobile';
 
 const Field = ({ label, hint, children }) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 18 }}>
@@ -47,7 +46,6 @@ const Field = ({ label, hint, children }) => (
 
 const SettingsTab = () => {
   const { t } = useTranslation();
-  const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState(null);
@@ -137,7 +135,7 @@ const SettingsTab = () => {
   const update = (patch) => setSettings({ ...settings, ...patch });
 
   return (
-    <div style={{ maxWidth: 720, padding: isMobile ? 4 : 12 }}>
+    <div style={{ maxWidth: 720, padding: 12 }}>
       <Banner
         type='info'
         description={t(
@@ -297,7 +295,7 @@ const SettingsTab = () => {
       </Field>
 
       <Field label={t('每日定时')}>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <Switch
             checked={!!settings.cron_enabled}
             onChange={(v) => update({ cron_enabled: v })}
@@ -335,17 +333,12 @@ const SettingsTab = () => {
         >
           {t('保存设置')}
         </Button>
-        {!isMobile ? <div style={{ flex: 1 }} /> : null}
+        <div style={{ flex: 1 }} />
         <Input
           value={testModel}
           onChange={setTestModel}
           placeholder={t('测试用模型(留空 = 深度模型)')}
-          style={{
-            width: isMobile ? '100%' : 280,
-            order: isMobile ? 2 : 0,
-            fontFamily: 'var(--font-mono)',
-            fontSize: 13,
-          }}
+          style={{ width: 280, fontFamily: 'var(--font-mono)', fontSize: 13 }}
         />
         <Button loading={testing} onClick={onTest}>
           {t('测试 LLM')}

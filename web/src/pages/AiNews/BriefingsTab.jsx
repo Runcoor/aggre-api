@@ -36,7 +36,6 @@ import {
 import { IconRefresh, IconSend, IconPlusCircle, IconDelete, IconClose, IconImage, IconDownload } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import { API, showError, showSuccess } from '../../helpers';
-import { useIsMobile } from '../../hooks/common/useIsMobile';
 
 const STATUS_COLORS = {
   draft: 'grey',
@@ -84,7 +83,6 @@ const fmtDuration = (start, end) => {
 
 const BriefingsTab = () => {
   const { t } = useTranslation();
-  const isMobile = useIsMobile();
   const [briefings, setBriefings] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -608,7 +606,6 @@ const BriefingsTab = () => {
             dataSource={briefings}
             rowKey='id'
             pagination={false}
-            scroll={{ x: 760 }}
           />
           <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
             <Pagination
@@ -624,19 +621,14 @@ const BriefingsTab = () => {
       <Modal
         visible={sheetVisible}
         onCancel={() => setSheetVisible(false)}
-        fullScreen={isMobile}
-        width={isMobile ? undefined : 'min(1200px, 92vw)'}
-        height={isMobile ? undefined : '85vh'}
+        width='min(1200px, 92vw)'
+        height='85vh'
         footer={null}
         closeOnEsc
         title={null}
         header={null}
-        bodyStyle={{
-          padding: 0,
-          height: isMobile ? '100%' : '85vh',
-          overflow: 'hidden',
-        }}
-        style={isMobile ? undefined : { borderRadius: 12, overflow: 'hidden' }}
+        bodyStyle={{ padding: 0, height: '85vh', overflow: 'hidden' }}
+        style={{ borderRadius: 12, overflow: 'hidden' }}
       >
         {editing ? (
           <div
@@ -652,10 +644,9 @@ const BriefingsTab = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 8,
-                padding: isMobile ? '10px 12px' : '14px 20px',
+                gap: 12,
+                padding: '14px 20px',
                 borderBottom: '1px solid var(--border-subtle)',
-                flexWrap: 'wrap',
               }}
             >
               <Tag color={editing.type === 'deep' ? 'violet' : 'cyan'} size='small'>
@@ -667,24 +658,11 @@ const BriefingsTab = () => {
               <Tag color={STATUS_COLORS[editing.status] || 'grey'} size='small'>
                 {editing.status}
               </Tag>
-              {!isMobile ? (
-                <span
-                  style={{
-                    fontSize: 13,
-                    color: 'var(--text-primary)',
-                    fontWeight: 500,
-                    marginLeft: 8,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: 320,
-                  }}
-                >
-                  {editForm.title || editing.title}
-                </span>
-              ) : null}
+              <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500, marginLeft: 8 }}>
+                {editForm.title || editing.title}
+              </span>
               <div style={{ flex: 1 }} />
-              <Button size={isMobile ? 'small' : 'default'} onClick={onSave} loading={saving}>
+              <Button onClick={onSave} loading={saving}>
                 {t('保存')}
               </Button>
               <Popconfirm
@@ -692,7 +670,6 @@ const BriefingsTab = () => {
                 onConfirm={onSend}
               >
                 <Button
-                  size={isMobile ? 'small' : 'default'}
                   theme='solid'
                   type='primary'
                   icon={<IconSend />}
@@ -700,14 +677,11 @@ const BriefingsTab = () => {
                   disabled={editing.status === 'sent'}
                 >
                   {recipientsTotal > 0
-                    ? isMobile
-                      ? t('发送 ({{n}})', { n: recipientsTotal })
-                      : t('发送给 {{n}} 位用户', { n: recipientsTotal })
-                    : t('发送')}
+                    ? t('发送给 {{n}} 位用户', { n: recipientsTotal })
+                    : t('发送给用户')}
                 </Button>
               </Popconfirm>
               <Button
-                size={isMobile ? 'small' : 'default'}
                 icon={<IconClose />}
                 theme='borderless'
                 onClick={() => setSheetVisible(false)}
@@ -886,7 +860,6 @@ const BriefingsTab = () => {
         onClose={() => setSocialVisible(false)}
         onGenerate={generateSocialPost}
         onDownload={downloadSocialZip}
-        isMobile={isMobile}
         t={t}
       />
     </div>
@@ -1435,7 +1408,6 @@ const SocialPostModal = ({
   onClose,
   onGenerate,
   onDownload,
-  isMobile,
   t,
 }) => {
   const hasPost = !!post;
@@ -1444,19 +1416,14 @@ const SocialPostModal = ({
     <Modal
       visible={visible}
       onCancel={onClose}
-      fullScreen={isMobile}
-      width={isMobile ? undefined : 'min(960px, 92vw)'}
-      height={isMobile ? undefined : '85vh'}
+      width='min(960px, 92vw)'
+      height='85vh'
       footer={null}
       closeOnEsc
       title={null}
       header={null}
-      bodyStyle={{
-        padding: 0,
-        height: isMobile ? '100%' : '85vh',
-        overflow: 'hidden',
-      }}
-      style={isMobile ? undefined : { borderRadius: 12, overflow: 'hidden' }}
+      bodyStyle={{ padding: 0, height: '85vh', overflow: 'hidden' }}
+      style={{ borderRadius: 12, overflow: 'hidden' }}
     >
       {!briefing ? null : (
         <div
@@ -1472,10 +1439,9 @@ const SocialPostModal = ({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 8,
-              padding: isMobile ? '10px 12px' : '14px 20px',
+              gap: 12,
+              padding: '14px 20px',
               borderBottom: '1px solid var(--border-subtle)',
-              flexWrap: 'wrap',
             }}
           >
             <Tag color='violet' size='small'>
@@ -1484,50 +1450,42 @@ const SocialPostModal = ({
             <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
               #{briefing.id}
             </span>
-            {!isMobile ? (
-              <span
-                style={{
-                  fontSize: 13,
-                  color: 'var(--text-primary)',
-                  fontWeight: 500,
-                  marginLeft: 8,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  maxWidth: 360,
-                }}
-              >
-                {briefing.title}
-              </span>
-            ) : null}
+            <span
+              style={{
+                fontSize: 13,
+                color: 'var(--text-primary)',
+                fontWeight: 500,
+                marginLeft: 8,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: 360,
+              }}
+            >
+              {briefing.title}
+            </span>
             <div style={{ flex: 1 }} />
             {hasPost ? (
               <>
                 <Button
-                  size={isMobile ? 'small' : 'default'}
                   icon={<IconDownload />}
                   theme='solid'
                   type='primary'
                   onClick={onDownload}
                 >
-                  {isMobile ? 'ZIP' : t('下载 ZIP')}
+                  {t('下载 ZIP')}
                 </Button>
                 <Popconfirm
                   title={t('重新生成会替换现有图片,是否继续?')}
                   onConfirm={onGenerate}
                 >
-                  <Button
-                    size={isMobile ? 'small' : 'default'}
-                    icon={<IconRefresh />}
-                    loading={generating}
-                  >
-                    {isMobile ? t('重生') : t('重新生成')}
+                  <Button icon={<IconRefresh />} loading={generating}>
+                    {t('重新生成')}
                   </Button>
                 </Popconfirm>
               </>
             ) : null}
             <Button
-              size={isMobile ? 'small' : 'default'}
               icon={<IconClose />}
               theme='borderless'
               onClick={onClose}

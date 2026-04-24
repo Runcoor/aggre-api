@@ -204,13 +204,7 @@ const SourcesTab = () => {
           style={{ padding: 30 }}
         />
       ) : (
-        <Table
-          columns={columns}
-          dataSource={sources}
-          rowKey='id'
-          pagination={false}
-          scroll={{ x: 600 }}
-        />
+        <Table columns={columns} dataSource={sources} rowKey='id' pagination={false} />
       )}
 
       <Modal

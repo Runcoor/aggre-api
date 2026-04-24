@@ -484,21 +484,12 @@ const PersonalSetting = () => {
         />
 
         {/* Section 4: 通知与偏好设置 */}
-        <section
-          style={{
-            background: 'var(--surface)',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px solid var(--border-subtle)',
-            padding: 'clamp(24px, 4vw, 48px)',
-          }}
-        >
-          <NotificationSettings
-            t={t}
-            notificationSettings={notificationSettings}
-            handleNotificationSettingChange={handleNotificationSettingChange}
-            saveNotificationSettings={saveNotificationSettings}
-          />
-        </section>
+        <NotificationSettings
+          t={t}
+          notificationSettings={notificationSettings}
+          handleNotificationSettingChange={handleNotificationSettingChange}
+          saveNotificationSettings={saveNotificationSettings}
+        />
       </div>
 
       {/* 模态框 */}

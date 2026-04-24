@@ -70,6 +70,12 @@ func GetSocialPostForBriefing(briefingId int) (*SocialPost, error) {
 // LLM analysis — turn briefing → social-platform copy + image prompts
 // =====================================================================
 
+// maxSocialImages is the hard ceiling on images per generated post. Set to 3
+// because: (a) 小红书 covers usually have 1-3 images anyway, (b) 3 × ~30s upstream
+// keeps total generation under our 8-min request budget, (c) image-gen calls
+// are paid per image — accidental 9-image runs add up fast.
+const maxSocialImages = 3
+
 type socialAnalysis struct {
 	Kind         string                 `json:"kind"`
 	Title        string                 `json:"title"`
@@ -113,9 +119,9 @@ const socialUserPromptTpl = `请把下面这篇 AI 行业深度分析改写成�
   - 如果 kind = "text_image": 300-600 字,markdown,段落空行分隔,可用 ## 小标题、列表、**加粗**;不要代码块、不要外链
 - tags: 3-6 个中文话题词,**不带 # 号**,例 ["AI", "GPT", "OpenAI"]
 - image_prompts:
-  - 至少 2 张,最多 9 张
-  - kind = "image_only" 建议 4-9 张
-  - kind = "text_image" 建议 2-3 张
+  - **必须 2 或 3 张,不要更多**
+  - kind = "image_only": 建议 3 张 (封面 + 2 个核心要点)
+  - kind = "text_image": 建议 2 张 (封面 + 1 个补充)
   - caption: 中文,这张图代表什么(<= 12 字),只给人看
   - prompt: **英文** DALL-E 风格描述,统一以 "modern flat illustration, soft gradient background, clean minimal aesthetic, premium tech magazine style, 1:1 square composition" 起手,后续追加该图具体内容
 
@@ -208,8 +214,10 @@ func parseSocialAnalysis(raw string) (*socialAnalysis, error) {
 	if len(out.ImagePrompts) < 2 {
 		return nil, fmt.Errorf("LLM returned %d image prompts, need at least 2", len(out.ImagePrompts))
 	}
-	if len(out.ImagePrompts) > 9 {
-		out.ImagePrompts = out.ImagePrompts[:9]
+	// Hard cap at 3 — keeps generation under ~2min, controls upstream cost,
+	// and matches the typical Xiaohongshu cover-image pattern.
+	if len(out.ImagePrompts) > maxSocialImages {
+		out.ImagePrompts = out.ImagePrompts[:maxSocialImages]
 	}
 	return &out, nil
 }

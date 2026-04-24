@@ -1395,8 +1395,8 @@ const SourcesPreview = ({ json }) => {
 };
 
 const SOCIAL_KIND_LABELS = {
-  image_only: '纯图卡片 (4-9 张)',
-  text_image: '图文笔记 (2-3 张)',
+  image_only: '纯图卡片',
+  text_image: '图文笔记',
 };
 
 const SocialPostModal = ({
@@ -1528,7 +1528,7 @@ const SocialLoadingPane = ({ generating, t }) => (
     </div>
     {generating ? (
       <div style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 480, textAlign: 'center', lineHeight: 1.6 }}>
-        {t('完成后可在此预览,并下载 ZIP 包(包含图片 + 文案 + 元信息),手动上传至小红书。')}
+        {t('每条最多 3 张图。完成后可在此预览,并下载 ZIP 包(包含图片 + 文案 + 元信息),手动上传至小红书。')}
       </div>
     ) : null}
   </div>

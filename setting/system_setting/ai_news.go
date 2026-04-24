@@ -9,6 +9,10 @@ import (
 const (
 	AINewsLLMSourceCustom  = "custom"
 	AINewsLLMSourceChannel = "channel"
+
+	AINewsAPIModeAuto      = "auto"
+	AINewsAPIModeChat      = "chat"
+	AINewsAPIModeResponses = "responses"
 )
 
 // AINewsSettings is the persisted configuration for the AI news agent.
@@ -23,6 +27,14 @@ type AINewsSettings struct {
 	LLMDeepModel      string `json:"llm_deep_model"`       // e.g. "claude-opus-4-7"
 	LLMSimpleModel    string `json:"llm_simple_model"`     // e.g. "claude-haiku-4-5"
 	LLMChannelId      int    `json:"llm_channel_id"`       // when LLMSource == "channel"
+
+	// LLMAPIMode controls which upstream endpoint to call.
+	//   - "" / "auto":      detect by model name (gpt-5*, o1*, o3*, o4* → /v1/responses)
+	//   - "chat":           always POST /v1/chat/completions
+	//   - "responses":      always POST /v1/responses
+	// Use "responses" when the channel proxies to OpenAI-compatible reasoning
+	// models that drop content during chat-completions conversion.
+	LLMAPIMode string `json:"llm_api_mode"`
 
 	// Preview/admin
 	AdminPreviewEmails []string `json:"admin_preview_emails"`

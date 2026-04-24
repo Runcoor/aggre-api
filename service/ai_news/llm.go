@@ -49,25 +49,72 @@ type chatResponse struct {
 	} `json:"error"`
 }
 
+// responsesRequest / responsesResponse mirror the minimal OpenAI Responses API
+// schema (https://platform.openai.com/docs/api-reference/responses). Used for
+// reasoning models (gpt-5*, o1*, o3*, o4*) where /v1/chat/completions loses
+// content during response conversion.
+type responsesRequest struct {
+	Model           string              `json:"model"`
+	Input           []responsesInputMsg `json:"input"`
+	MaxOutputTokens *int                `json:"max_output_tokens,omitempty"`
+}
+
+type responsesInputMsg struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+type responsesResponse struct {
+	Id     string `json:"id"`
+	Model  string `json:"model"`
+	Output []struct {
+		Type    string `json:"type"`
+		Role    string `json:"role"`
+		Content []struct {
+			Type string `json:"type"`
+			Text string `json:"text"`
+		} `json:"content"`
+	} `json:"output"`
+	Usage *struct {
+		InputTokens            int `json:"input_tokens"`
+		OutputTokens           int `json:"output_tokens"`
+		TotalTokens            int `json:"total_tokens"`
+		OutputTokensDetails *struct {
+			ReasoningTokens int `json:"reasoning_tokens"`
+		} `json:"output_tokens_details"`
+	} `json:"usage"`
+	Error *struct {
+		Message string `json:"message"`
+		Type    string `json:"type"`
+	} `json:"error"`
+}
+
 // ChatComplete dispatches a chat completion using the configured AI news LLM.
 //   - settings.LLMSource == "custom":  POST {LLMCustomBaseURL}/v1/chat/completions
 //   - settings.LLMSource == "channel": resolve the channel by id and use its
 //     base URL + key the same way.
 //
-// maxTokens controls the upstream response cap. Pass 0 to omit (some providers
-// like Anthropic require a non-zero value, so callers should always supply one).
-func ChatComplete(ctx context.Context, model string, messages []ChatMessage, maxTokens int) (string, error) {
+// Automatically routes to /v1/responses for reasoning-shaped model names
+// (unless LLMAPIMode overrides). maxTokens caps the upstream response.
+func ChatComplete(ctx context.Context, modelName string, messages []ChatMessage, maxTokens int) (string, error) {
 	settings := system_setting.GetAINewsSettings()
 	baseURL, apiKey, err := resolveLLMEndpoint(settings)
 	if err != nil {
 		return "", err
 	}
-	if model == "" {
+	if modelName == "" {
 		return "", fmt.Errorf("model is required")
 	}
 
+	if pickAPIMode(settings.LLMAPIMode, modelName) == system_setting.AINewsAPIModeResponses {
+		return chatViaResponsesAPI(ctx, baseURL, apiKey, modelName, messages, maxTokens)
+	}
+	return chatViaChatCompletions(ctx, baseURL, apiKey, modelName, messages, maxTokens)
+}
+
+func chatViaChatCompletions(ctx context.Context, baseURL, apiKey, modelName string, messages []ChatMessage, maxTokens int) (string, error) {
 	reqStruct := chatRequest{
-		Model:    model,
+		Model:    modelName,
 		Messages: messages,
 	}
 	if maxTokens > 0 {
@@ -79,19 +126,7 @@ func ChatComplete(ctx context.Context, model string, messages []ChatMessage, max
 	}
 
 	endpoint := strings.TrimRight(baseURL, "/") + "/v1/chat/completions"
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(reqBody))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-
-	resp, err := llmHTTPClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 4*1024*1024))
+	resp, body, err := doLLMHTTP(ctx, endpoint, apiKey, reqBody)
 	if err != nil {
 		return "", err
 	}
@@ -110,48 +145,128 @@ func ChatComplete(ctx context.Context, model string, messages []ChatMessage, max
 	}
 	content := parsed.Choices[0].Message.Content
 	if strings.TrimSpace(content) == "" {
-		// Some providers/adaptors return only thinking blocks or stop early
-		// when max_tokens is missing. Fall back to scanning for an alternate
-		// shape (Claude-native content blocks).
-		alt := extractAltContent(body)
-		if strings.TrimSpace(alt) != "" {
+		// Try alternate shapes first.
+		if alt := extractAltContent(body); strings.TrimSpace(alt) != "" {
 			return alt, nil
 		}
-		return "", emptyContentError(resp.StatusCode, parsed, body, model)
+		return "", emptyContentError(resp.StatusCode, parsed, body, modelName)
 	}
 	return content, nil
 }
 
-// emptyContentError builds a human-readable error when content is null/empty.
-// Detects the "reasoning model with lost output" case (completion_tokens
-// significantly larger than reasoning_tokens) and points the user at the real
-// fix: the channel mapped the request to a reasoning model whose Responses-API
-// output was dropped during conversion to chat-completions shape.
-func emptyContentError(statusCode int, parsed chatResponse, body []byte, requestedModel string) error {
-	bodyTail := truncate(string(body), 512)
-	if parsed.Usage != nil {
-		comp := parsed.Usage.CompletionTokens
-		reasoning := 0
-		if parsed.Usage.CompletionTokensDetails != nil {
-			reasoning = parsed.Usage.CompletionTokensDetails.ReasoningTokens
+func chatViaResponsesAPI(ctx context.Context, baseURL, apiKey, modelName string, messages []ChatMessage, maxTokens int) (string, error) {
+	input := make([]responsesInputMsg, 0, len(messages))
+	for _, m := range messages {
+		input = append(input, responsesInputMsg{Role: m.Role, Content: m.Content})
+	}
+	reqStruct := responsesRequest{
+		Model: modelName,
+		Input: input,
+	}
+	if maxTokens > 0 {
+		reqStruct.MaxOutputTokens = &maxTokens
+	}
+	reqBody, err := common.Marshal(reqStruct)
+	if err != nil {
+		return "", err
+	}
+
+	endpoint := strings.TrimRight(baseURL, "/") + "/v1/responses"
+	resp, body, err := doLLMHTTP(ctx, endpoint, apiKey, reqBody)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode/100 != 2 {
+		return "", fmt.Errorf("LLM /v1/responses HTTP %d: %s", resp.StatusCode, truncate(string(body), 512))
+	}
+	var parsed responsesResponse
+	if err := common.Unmarshal(body, &parsed); err != nil {
+		return "", fmt.Errorf("parse /v1/responses body: %w (body=%s)", err, truncate(string(body), 256))
+	}
+	if parsed.Error != nil {
+		return "", fmt.Errorf("LLM error: %s", parsed.Error.Message)
+	}
+	var sb strings.Builder
+	for _, out := range parsed.Output {
+		if out.Type != "message" {
+			continue
 		}
-		if comp > reasoning+50 {
-			actual := requestedModel
-			if parsed.Model != "" && parsed.Model != requestedModel {
-				actual = fmt.Sprintf("%s (channel mapped to %s)", requestedModel, parsed.Model)
+		if out.Role != "" && out.Role != "assistant" {
+			continue
+		}
+		for _, c := range out.Content {
+			if c.Type == "output_text" && c.Text != "" {
+				sb.WriteString(c.Text)
 			}
-			return fmt.Errorf(
-				"上游返回 content=null 但 completion_tokens=%d (其中 reasoning=%d) — "+
-					"模型 %s 实际生成了 %d tokens 的输出,但渠道在转换 Responses API → chat completions 时丢失了 content。"+
-					"修法:① 在 AI 前沿设置里把模型换成非 reasoning 模型(如 claude-sonnet-4-6 / gpt-4o);"+
-					"② 或修复渠道 model_mapping(避免映射到 gpt-5 / o1 等 reasoning 模型);"+
-					"③ 或在渠道层修复 Responses → chat completions 的 output_text 提取。"+
-					"原始响应: %s",
-				comp, reasoning, actual, comp-reasoning, bodyTail,
-			)
 		}
 	}
-	return fmt.Errorf("LLM returned empty content (status %d, body=%s)", statusCode, bodyTail)
+	if sb.Len() == 0 {
+		// Fallback: concatenate any text found anywhere in output[].
+		for _, out := range parsed.Output {
+			for _, c := range out.Content {
+				if c.Text != "" {
+					sb.WriteString(c.Text)
+				}
+			}
+		}
+	}
+	text := strings.TrimSpace(sb.String())
+	if text == "" {
+		return "", fmt.Errorf("LLM /v1/responses returned no output_text (body=%s)", truncate(string(body), 512))
+	}
+	return text, nil
+}
+
+func doLLMHTTP(ctx context.Context, endpoint, apiKey string, reqBody []byte) (*http.Response, []byte, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(reqBody))
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	resp, err := llmHTTPClient.Do(req)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 4*1024*1024))
+	if err != nil {
+		return resp, nil, err
+	}
+	return resp, body, nil
+}
+
+// pickAPIMode resolves the effective API mode from the admin setting + model
+// name. Empty / "auto" delegates to isReasoningModel; explicit values win.
+func pickAPIMode(configured string, modelName string) string {
+	switch strings.ToLower(strings.TrimSpace(configured)) {
+	case system_setting.AINewsAPIModeChat:
+		return system_setting.AINewsAPIModeChat
+	case system_setting.AINewsAPIModeResponses:
+		return system_setting.AINewsAPIModeResponses
+	}
+	if isReasoningModel(modelName) {
+		return system_setting.AINewsAPIModeResponses
+	}
+	return system_setting.AINewsAPIModeChat
+}
+
+// isReasoningModel returns true for OpenAI-family reasoning model names.
+// These models use the Responses API and have no usable chat.completions path
+// (content ends up null because the non-reasoning tokens are returned as
+// output_text items, not chat content strings).
+func isReasoningModel(modelName string) bool {
+	m := strings.ToLower(strings.TrimSpace(modelName))
+	if m == "" {
+		return false
+	}
+	// o1, o1-mini, o1-preview, o1-pro, o3, o3-mini, o4-mini, etc.
+	for _, prefix := range []string{"o1", "o3", "o4", "gpt-5"} {
+		if m == prefix || strings.HasPrefix(m, prefix+"-") || strings.HasPrefix(m, prefix+".") {
+			return true
+		}
+	}
+	return false
 }
 
 // extractAltContent looks for Claude-native content blocks in the raw response
@@ -197,7 +312,68 @@ func extractAltContent(body []byte) string {
 			return strings.TrimSpace(sb.String())
 		}
 	}
+	// Try the response-already-has-output-field shape (channel leaked the raw
+	// Responses API shape through chat.completions).
+	var withOutput struct {
+		Output []struct {
+			Type    string `json:"type"`
+			Role    string `json:"role"`
+			Content []struct {
+				Type string `json:"type"`
+				Text string `json:"text"`
+			} `json:"content"`
+		} `json:"output"`
+	}
+	if err := common.Unmarshal(body, &withOutput); err == nil && len(withOutput.Output) > 0 {
+		var sb strings.Builder
+		for _, out := range withOutput.Output {
+			if out.Type != "message" {
+				continue
+			}
+			if out.Role != "" && out.Role != "assistant" {
+				continue
+			}
+			for _, c := range out.Content {
+				if c.Type == "output_text" && c.Text != "" {
+					sb.WriteString(c.Text)
+				}
+			}
+		}
+		if sb.Len() > 0 {
+			return strings.TrimSpace(sb.String())
+		}
+	}
 	return ""
+}
+
+// emptyContentError builds a human-readable error when content is null/empty.
+// Detects the "reasoning model with lost output" case (completion_tokens
+// significantly larger than reasoning_tokens) and points the user at the real
+// fix: switch to the /v1/responses API mode.
+func emptyContentError(statusCode int, parsed chatResponse, body []byte, requestedModel string) error {
+	bodyTail := truncate(string(body), 512)
+	if parsed.Usage != nil {
+		comp := parsed.Usage.CompletionTokens
+		reasoning := 0
+		if parsed.Usage.CompletionTokensDetails != nil {
+			reasoning = parsed.Usage.CompletionTokensDetails.ReasoningTokens
+		}
+		if comp > reasoning+50 {
+			actual := requestedModel
+			if parsed.Model != "" && parsed.Model != requestedModel {
+				actual = fmt.Sprintf("%s (channel mapped to %s)", requestedModel, parsed.Model)
+			}
+			return fmt.Errorf(
+				"上游返回 content=null 但 completion_tokens=%d (其中 reasoning=%d) — "+
+					"模型 %s 实际生成了 %d tokens,但 chat.completions 丢了 content。"+
+					"修法:在 AI 前沿设置里把“LLM API 模式”改为 responses(/v1/responses),"+
+					"或给模型名换个不以 gpt-5 / o1 / o3 / o4 开头的别名自动启用。"+
+					"原始响应: %s",
+				comp, reasoning, actual, comp-reasoning, bodyTail,
+			)
+		}
+	}
+	return fmt.Errorf("LLM returned empty content (status %d, body=%s)", statusCode, bodyTail)
 }
 
 func resolveLLMEndpoint(s system_setting.AINewsSettings) (baseURL, apiKey string, err error) {

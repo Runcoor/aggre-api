@@ -37,6 +37,15 @@ func UpdateAINewsSettings(c *gin.Context) {
 			return
 		}
 	}
+	switch req.LLMAPIMode {
+	case "", system_setting.AINewsAPIModeAuto,
+		system_setting.AINewsAPIModeChat,
+		system_setting.AINewsAPIModeResponses:
+		// ok
+	default:
+		common.ApiErrorMsg(c, `llm_api_mode must be "auto", "chat", or "responses"`)
+		return
+	}
 	if req.CronHour < 0 || req.CronHour > 23 {
 		common.ApiErrorMsg(c, "cron_hour must be 0-23")
 		return

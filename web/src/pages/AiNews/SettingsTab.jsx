@@ -198,6 +198,22 @@ const SettingsTab = () => {
       </Field>
 
       <Field
+        label={t('LLM API 模式')}
+        hint={t(
+          '默认 auto:模型名以 gpt-5 / o1 / o3 / o4 开头自动走 /v1/responses,其它走 /v1/chat/completions。如果上游是 reasoning 模型但 chat.completions 返回 content=null,改成 responses。',
+        )}
+      >
+        <RadioGroup
+          value={settings.llm_api_mode || 'auto'}
+          onChange={(e) => update({ llm_api_mode: e.target.value })}
+        >
+          <Radio value='auto'>{t('auto (按模型名自动判断)')}</Radio>
+          <Radio value='chat'>{t('chat (/v1/chat/completions)')}</Radio>
+          <Radio value='responses'>{t('responses (/v1/responses)')}</Radio>
+        </RadioGroup>
+      </Field>
+
+      <Field
         label={t('管理员预览邮箱')}
         hint={t('生成草稿后会发邮件到这些地址,逗号分隔')}
       >

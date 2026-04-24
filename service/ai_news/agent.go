@@ -27,6 +27,29 @@ type SourceItem struct {
 	URL   string `json:"url"`
 }
 
+// Trigger modes for RunOptions.
+const (
+	RunModeAuto    = "auto"    // discovery via configured sources + Jina (default)
+	RunModeURLs    = "urls"    // skip discovery; admin pasted URLs; still use Jina to fetch bodies
+	RunModeContent = "content" // skip discovery and fetching; admin pasted full article bodies
+)
+
+// ManualArticle is one piece of pre-fetched content supplied by the admin via
+// the "paste content" trigger mode.
+type ManualArticle struct {
+	Title   string `json:"title"`
+	URL     string `json:"url"`
+	Content string `json:"content"`
+}
+
+// RunOptions carry the per-trigger inputs that override the default auto path.
+// All-zero value means RunModeAuto.
+type RunOptions struct {
+	Mode     string          `json:"mode"`
+	URLs     []string        `json:"urls"`
+	Articles []ManualArticle `json:"articles"`
+}
+
 const (
 	// Max candidates to send to the LLM per run (cost control).
 	maxCandidatesPerRun = 12
@@ -41,61 +64,127 @@ const (
 //
 // Always returns nil for callers that don't care about errors; logs internally.
 // The boolean indicates whether at least one briefing was written.
-func RunAgent(ctx context.Context, triggeredBy int) (bool, error) {
+func RunAgent(ctx context.Context, triggeredBy int, opts RunOptions) (bool, error) {
 	rec := newRecorder(triggeredBy)
 	settings := system_setting.GetAINewsSettings()
+	mode := opts.Mode
+	if mode == "" {
+		mode = RunModeAuto
+	}
+	rec.note("mode=%s", mode)
 
-	sources, err := model.ListAINewsSources(true)
-	if err != nil {
-		common.SysLog("[ai-news] list sources failed: " + err.Error())
+	var candidates []candidate
+	skipDedup := false
+	skipFetch := false
+
+	switch mode {
+	case RunModeAuto:
+		sources, err := model.ListAINewsSources(true)
+		if err != nil {
+			common.SysLog("[ai-news] list sources failed: " + err.Error())
+			rec.finishFail(err)
+			return false, err
+		}
+		rec.update(func(s *RunStatus) { s.SourcesEnabled = len(sources) })
+		if len(sources) == 0 {
+			common.SysLog("[ai-news] no enabled sources configured; nothing to do")
+			rec.note("no enabled sources configured — add at least one RSS feed or search query")
+			rec.finishFail(fmt.Errorf("no enabled sources configured"))
+			return false, nil
+		}
+		candidates = collectCandidates(ctx, sources, settings, rec)
+
+	case RunModeURLs:
+		urls := dedupAndCleanURLs(opts.URLs)
+		if len(urls) == 0 {
+			rec.finishFail(fmt.Errorf("no URLs provided in manual-URLs mode"))
+			return false, nil
+		}
+		rec.note("manual URLs: %d", len(urls))
+		for _, u := range urls {
+			candidates = append(candidates, candidate{
+				Title:  u,
+				URL:    u,
+				Source: "Manual:URL",
+			})
+		}
+		skipDedup = true
+
+	case RunModeContent:
+		articles := cleanArticles(opts.Articles)
+		if len(articles) == 0 {
+			rec.finishFail(fmt.Errorf("no articles provided in manual-content mode"))
+			return false, nil
+		}
+		rec.note("manual articles: %d", len(articles))
+		for i, a := range articles {
+			body := a.Content
+			if len(body) > maxBodyChars {
+				body = body[:maxBodyChars]
+			}
+			title := strings.TrimSpace(a.Title)
+			if title == "" {
+				title = fmt.Sprintf("Manual article #%d", i+1)
+			}
+			candidates = append(candidates, candidate{
+				Title:  title,
+				URL:    strings.TrimSpace(a.URL),
+				Source: "Manual:Content",
+				Body:   body,
+			})
+		}
+		skipDedup = true
+		skipFetch = true
+
+	default:
+		err := fmt.Errorf("unknown trigger mode %q", mode)
 		rec.finishFail(err)
 		return false, err
 	}
-	rec.update(func(s *RunStatus) { s.SourcesEnabled = len(sources) })
-	if len(sources) == 0 {
-		common.SysLog("[ai-news] no enabled sources configured; nothing to do")
-		rec.note("no enabled sources configured — add at least one RSS feed or search query")
-		rec.finishFail(fmt.Errorf("no enabled sources configured"))
-		return false, nil
-	}
 
-	// 1) Discover candidates
-	candidates := collectCandidates(ctx, sources, settings, rec)
 	rec.update(func(s *RunStatus) { s.CandidatesFound = len(candidates) })
 	if len(candidates) == 0 {
 		common.SysLog("[ai-news] zero candidates discovered")
-		rec.note("zero candidates discovered — all sources returned empty or errored (see notes above)")
+		rec.note("zero candidates discovered (see notes above)")
 		rec.finishFail(fmt.Errorf("zero candidates discovered"))
 		return false, nil
 	}
 
-	// 2) Dedup against recent briefings (last 7 days)
-	rec.phase(RunPhaseDedup)
-	candidates = dedupAgainstRecentBriefings(candidates)
-	rec.update(func(s *RunStatus) { s.CandidatesAfterDedup = len(candidates) })
-	if len(candidates) == 0 {
-		common.SysLog("[ai-news] all candidates already processed in dedup window")
-		rec.note("all candidates already processed in last %d days", int(dedupWindow.Hours()/24))
-		rec.finishFail(fmt.Errorf("all candidates already processed"))
-		return false, nil
+	// 2) Dedup against recent briefings (last 7 days) — skipped for manual modes.
+	if !skipDedup {
+		rec.phase(RunPhaseDedup)
+		candidates = dedupAgainstRecentBriefings(candidates)
+		rec.update(func(s *RunStatus) { s.CandidatesAfterDedup = len(candidates) })
+		if len(candidates) == 0 {
+			common.SysLog("[ai-news] all candidates already processed in dedup window")
+			rec.note("all candidates already processed in last %d days", int(dedupWindow.Hours()/24))
+			rec.finishFail(fmt.Errorf("all candidates already processed"))
+			return false, nil
+		}
+	} else {
+		rec.update(func(s *RunStatus) { s.CandidatesAfterDedup = len(candidates) })
 	}
 
-	// 3) Cap and fetch full bodies (Jina)
-	rec.phase(RunPhaseFetch)
-	if len(candidates) > maxCandidatesPerRun {
+	// 3) Cap and fetch full bodies (Jina) — skipped if bodies were supplied.
+	if !skipFetch {
+		rec.phase(RunPhaseFetch)
+		if len(candidates) > maxCandidatesPerRun {
+			candidates = candidates[:maxCandidatesPerRun]
+		}
+		for i := range candidates {
+			body, ferr := JinaRead(ctx, candidates[i].URL, settings.JinaAPIKey)
+			if ferr != nil {
+				common.SysLog(fmt.Sprintf("[ai-news] jina read %s failed: %v", candidates[i].URL, ferr))
+				rec.note("jina read failed: %s — %v", candidates[i].URL, ferr)
+				continue
+			}
+			if len(body) > maxBodyChars {
+				body = body[:maxBodyChars]
+			}
+			candidates[i].Body = body
+		}
+	} else if len(candidates) > maxCandidatesPerRun {
 		candidates = candidates[:maxCandidatesPerRun]
-	}
-	for i := range candidates {
-		body, ferr := JinaRead(ctx, candidates[i].URL, settings.JinaAPIKey)
-		if ferr != nil {
-			common.SysLog(fmt.Sprintf("[ai-news] jina read %s failed: %v", candidates[i].URL, ferr))
-			rec.note("jina read failed: %s — %v", candidates[i].URL, ferr)
-			continue
-		}
-		if len(body) > maxBodyChars {
-			body = body[:maxBodyChars]
-		}
-		candidates[i].Body = body
 	}
 
 	// Drop candidates with empty body
@@ -108,8 +197,8 @@ func RunAgent(ctx context.Context, triggeredBy int) (bool, error) {
 	rec.update(func(s *RunStatus) { s.BodiesFetched = len(withBody) })
 	if len(withBody) == 0 {
 		common.SysLog("[ai-news] all candidates failed body extraction")
-		rec.note("all candidates failed body extraction — check Jina API key / connectivity")
-		rec.finishFail(fmt.Errorf("all candidates failed body extraction"))
+		rec.note("no candidates have body content — check Jina API key / connectivity (or paste full article content directly)")
+		rec.finishFail(fmt.Errorf("no candidates have body content"))
 		return false, nil
 	}
 
@@ -241,13 +330,42 @@ func dedupAgainstRecentBriefings(candidates []candidate) []candidate {
 	return out
 }
 
+func dedupAndCleanURLs(in []string) []string {
+	seen := make(map[string]bool)
+	out := make([]string, 0, len(in))
+	for _, u := range in {
+		u = strings.TrimSpace(u)
+		if u == "" || seen[u] {
+			continue
+		}
+		// Reject obvious non-URLs early so the LLM doesn't get junk.
+		if !strings.HasPrefix(u, "http://") && !strings.HasPrefix(u, "https://") {
+			continue
+		}
+		seen[u] = true
+		out = append(out, u)
+	}
+	return out
+}
+
+func cleanArticles(in []ManualArticle) []ManualArticle {
+	out := make([]ManualArticle, 0, len(in))
+	for _, a := range in {
+		if strings.TrimSpace(a.Content) == "" {
+			continue
+		}
+		out = append(out, a)
+	}
+	return out
+}
+
 // PreflightCheckSettings validates that the AI news agent has the minimum
 // configuration to run. Returns a non-nil error with a human-readable message
 // if anything obvious would prevent a successful run.
 //
-// Used by the admin "trigger now" endpoint to surface config errors immediately
-// instead of letting the goroutine fail silently.
-func PreflightCheckSettings() error {
+// In manual-trigger modes (urls / content), the "no sources configured" check
+// is skipped because the admin is supplying inputs directly.
+func PreflightCheckSettings(opts RunOptions) error {
 	settings := system_setting.GetAINewsSettings()
 	switch settings.LLMSource {
 	case system_setting.AINewsLLMSourceCustom:
@@ -267,22 +385,40 @@ func PreflightCheckSettings() error {
 	if strings.TrimSpace(settings.LLMDeepModel) == "" && strings.TrimSpace(settings.LLMSimpleModel) == "" {
 		return fmt.Errorf("深度模型和简单模型都未配置")
 	}
-	sources, err := model.ListAINewsSources(true)
-	if err != nil {
-		return fmt.Errorf("查询信息源失败: %w", err)
+
+	mode := opts.Mode
+	if mode == "" {
+		mode = RunModeAuto
 	}
-	if len(sources) == 0 {
-		return fmt.Errorf("尚未配置任何启用的信息源,请到信息源页添加 RSS 或 search")
+	switch mode {
+	case RunModeAuto:
+		sources, err := model.ListAINewsSources(true)
+		if err != nil {
+			return fmt.Errorf("查询信息源失败: %w", err)
+		}
+		if len(sources) == 0 {
+			return fmt.Errorf("尚未配置任何启用的信息源,请到信息源页添加 RSS 或 search,或选择手动模式")
+		}
+	case RunModeURLs:
+		if len(dedupAndCleanURLs(opts.URLs)) == 0 {
+			return fmt.Errorf("手动 URL 模式需要至少一个有效的 http(s) 链接")
+		}
+	case RunModeContent:
+		if len(cleanArticles(opts.Articles)) == 0 {
+			return fmt.Errorf("手动正文模式需要至少一篇带内容的文章")
+		}
+	default:
+		return fmt.Errorf("未知触发模式: %q", mode)
 	}
 	return nil
 }
 
 // RunAgentManually is the entry point exposed to admin trigger endpoint.
 // It runs in a background goroutine with its own timeout context.
-func RunAgentManually(triggeredBy int) {
+func RunAgentManually(triggeredBy int, opts RunOptions) {
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
 		defer cancel()
-		_, _ = RunAgent(ctx, triggeredBy)
+		_, _ = RunAgent(ctx, triggeredBy, opts)
 	}()
 }

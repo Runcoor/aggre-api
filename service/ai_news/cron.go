@@ -56,7 +56,7 @@ func cronTick() {
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
 		defer cancel()
-		if _, err := RunAgent(ctx, 0); err != nil {
+		if _, err := RunAgent(ctx, 0, RunOptions{Mode: RunModeAuto}); err != nil {
 			common.SysLog("[ai-news] cron run error: " + err.Error())
 		}
 	}()

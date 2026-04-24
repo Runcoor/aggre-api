@@ -15,17 +15,31 @@ import (
 // TriggerAINewsRun fires the agent in a background goroutine and returns 202.
 // Performs synchronous pre-flight validation so misconfigured triggers fail
 // immediately with a useful message instead of dropping the failure into a log.
+//
+// Body (all fields optional):
+//
+//	{
+//	  "mode": "auto" | "urls" | "content",   // default "auto"
+//	  "urls": ["https://...", ...],          // when mode == "urls"
+//	  "articles": [{title, url, content}, ...] // when mode == "content"
+//	}
 func TriggerAINewsRun(c *gin.Context) {
 	if ai_news.IsRunning() {
 		common.ApiErrorMsg(c, "agent 正在运行中,请稍后再试")
 		return
 	}
-	if err := ai_news.PreflightCheckSettings(); err != nil {
+	var opts ai_news.RunOptions
+	// Body is optional; ignore decode errors so an empty POST means auto mode.
+	_ = c.ShouldBindJSON(&opts)
+	if opts.Mode == "" {
+		opts.Mode = ai_news.RunModeAuto
+	}
+	if err := ai_news.PreflightCheckSettings(opts); err != nil {
 		common.ApiErrorMsg(c, err.Error())
 		return
 	}
 	adminId := c.GetInt("id")
-	ai_news.RunAgentManually(adminId)
+	ai_news.RunAgentManually(adminId, opts)
 	common.ApiSuccess(c, gin.H{"message": "agent triggered (running in background)"})
 }
 

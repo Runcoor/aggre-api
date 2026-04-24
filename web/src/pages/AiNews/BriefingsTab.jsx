@@ -29,10 +29,12 @@ import {
   SideSheet,
   Spin,
   Table,
+  Tabs,
+  TabPane,
   Tag,
   TextArea,
 } from '@douyinfe/semi-ui';
-import { IconRefresh, IconSend } from '@douyinfe/semi-icons';
+import { IconRefresh, IconSend, IconPlusCircle, IconDelete } from '@douyinfe/semi-icons';
 import { useTranslation } from 'react-i18next';
 import { API, showError, showSuccess } from '../../helpers';
 
@@ -99,6 +101,14 @@ const BriefingsTab = () => {
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
 
+  // Trigger modal state
+  const [triggerVisible, setTriggerVisible] = useState(false);
+  const [triggerMode, setTriggerMode] = useState('auto');
+  const [triggerUrls, setTriggerUrls] = useState('');
+  const [triggerArticles, setTriggerArticles] = useState([
+    { title: '', url: '', content: '' },
+  ]);
+
   const loadRunStatus = async () => {
     try {
       const res = await API.get('/api/ai-news/admin/run-status');
@@ -152,12 +162,45 @@ const BriefingsTab = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runStatus?.running]);
 
-  const onTrigger = async () => {
+  const openTrigger = () => {
+    setTriggerMode('auto');
+    setTriggerUrls('');
+    setTriggerArticles([{ title: '', url: '', content: '' }]);
+    setTriggerVisible(true);
+  };
+
+  const submitTrigger = async () => {
+    let body = { mode: triggerMode };
+    if (triggerMode === 'urls') {
+      const urls = triggerUrls
+        .split('\n')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+      if (urls.length === 0) {
+        showError(t('请至少粘贴一条 URL'));
+        return;
+      }
+      body.urls = urls;
+    } else if (triggerMode === 'content') {
+      const articles = triggerArticles
+        .map((a) => ({
+          title: (a.title || '').trim(),
+          url: (a.url || '').trim(),
+          content: (a.content || '').trim(),
+        }))
+        .filter((a) => a.content.length > 0);
+      if (articles.length === 0) {
+        showError(t('请至少填写一篇带正文的文章'));
+        return;
+      }
+      body.articles = articles;
+    }
     setTriggering(true);
     try {
-      const res = await API.post('/api/ai-news/admin/trigger');
+      const res = await API.post('/api/ai-news/admin/trigger', body);
       if (res?.data?.success) {
-        showSuccess(t('已触发,Agent 在后台运行,请稍后刷新'));
+        showSuccess(t('已触发,Agent 在后台运行,请关注下方状态'));
+        setTriggerVisible(false);
         loadRunStatus();
       } else {
         showError(res?.data?.message || t('触发失败'));
@@ -167,6 +210,20 @@ const BriefingsTab = () => {
     } finally {
       setTriggering(false);
     }
+  };
+
+  const updateArticle = (idx, patch) => {
+    setTriggerArticles((prev) =>
+      prev.map((a, i) => (i === idx ? { ...a, ...patch } : a)),
+    );
+  };
+  const addArticle = () => {
+    setTriggerArticles((prev) => [...prev, { title: '', url: '', content: '' }]);
+  };
+  const removeArticle = (idx) => {
+    setTriggerArticles((prev) =>
+      prev.length === 1 ? prev : prev.filter((_, i) => i !== idx),
+    );
   };
 
   const openEdit = async (id) => {
@@ -368,8 +425,7 @@ const BriefingsTab = () => {
           theme='solid'
           type='primary'
           icon={<IconRefresh />}
-          loading={triggering}
-          onClick={onTrigger}
+          onClick={openTrigger}
         >
           {t('立即触发 Agent')}
         </Button>
@@ -501,6 +557,110 @@ const BriefingsTab = () => {
           </div>
         ) : null}
       </SideSheet>
+
+      <Modal
+        title={t('触发 AI 前沿 Agent')}
+        visible={triggerVisible}
+        onCancel={() => setTriggerVisible(false)}
+        onOk={submitTrigger}
+        confirmLoading={triggering}
+        okText={t('开始生成')}
+        cancelText={t('取消')}
+        width={720}
+      >
+        <Tabs
+          type='line'
+          activeKey={triggerMode}
+          onChange={setTriggerMode}
+        >
+          <TabPane tab={t('自动 (默认)')} itemKey='auto'>
+            <div style={{ padding: '12px 4px', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+              {t('使用“信息源”页配置的 RSS / 搜索词,自动收集候选,经 Jina 抓取正文后交给 LLM 生成深度 + 简单两份简报。')}
+              <br />
+              {t('适合日常使用 / 定时任务。')}
+            </div>
+          </TabPane>
+
+          <TabPane tab={t('手动 URLs')} itemKey='urls'>
+            <div style={{ padding: '12px 4px' }}>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8 }}>
+                {t('每行一条 http(s) 链接。Agent 会跳过去重,通过 Jina 抓取正文后生成简报。')}
+              </div>
+              <TextArea
+                value={triggerUrls}
+                onChange={setTriggerUrls}
+                placeholder={'https://example.com/article-1\nhttps://example.com/article-2'}
+                autosize={{ minRows: 8, maxRows: 16 }}
+                style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}
+              />
+            </div>
+          </TabPane>
+
+          <TabPane tab={t('手动正文')} itemKey='content'>
+            <div style={{ padding: '12px 4px' }}>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8 }}>
+                {t('粘贴文章正文,Agent 会跳过抓取,直接用这些内容交给 LLM 生成简报。URL 选填(用于来源引用)。')}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {triggerArticles.map((a, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      padding: 12,
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: 8,
+                      background: 'var(--bg-subtle, #fafafa)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>
+                        {t('文章')} #{idx + 1}
+                      </span>
+                      <div style={{ flex: 1 }} />
+                      {triggerArticles.length > 1 ? (
+                        <Button
+                          size='small'
+                          icon={<IconDelete />}
+                          type='danger'
+                          theme='borderless'
+                          onClick={() => removeArticle(idx)}
+                        >
+                          {t('移除')}
+                        </Button>
+                      ) : null}
+                    </div>
+                    <Input
+                      value={a.title}
+                      onChange={(v) => updateArticle(idx, { title: v })}
+                      placeholder={t('标题(选填)')}
+                      style={{ marginBottom: 8 }}
+                    />
+                    <Input
+                      value={a.url}
+                      onChange={(v) => updateArticle(idx, { url: v })}
+                      placeholder={t('URL(选填,用于来源引用)')}
+                      style={{ marginBottom: 8, fontFamily: 'var(--font-mono)', fontSize: 12 }}
+                    />
+                    <TextArea
+                      value={a.content}
+                      onChange={(v) => updateArticle(idx, { content: v })}
+                      placeholder={t('正文(必填,Markdown 或纯文本均可)')}
+                      autosize={{ minRows: 6, maxRows: 14 }}
+                    />
+                  </div>
+                ))}
+                <Button
+                  icon={<IconPlusCircle />}
+                  onClick={addArticle}
+                  style={{ alignSelf: 'flex-start' }}
+                >
+                  {t('添加一篇')}
+                </Button>
+              </div>
+            </div>
+          </TabPane>
+        </Tabs>
+      </Modal>
     </div>
   );
 };

@@ -112,6 +112,7 @@ const BriefingsTab = () => {
   const [recipientsTotal, setRecipientsTotal] = useState(0);
   const [recipientsPage, setRecipientsPage] = useState(1);
   const [recipientsSearch, setRecipientsSearch] = useState('');
+  const [recipientsDiag, setRecipientsDiag] = useState(null);
 
   // Trigger modal state
   const [triggerVisible, setTriggerVisible] = useState(false);
@@ -298,6 +299,7 @@ const BriefingsTab = () => {
       if (res?.data?.success) {
         setRecipients(res.data.data?.items || []);
         setRecipientsTotal(res.data.data?.total || 0);
+        setRecipientsDiag(res.data.data?.diagnostic || null);
       } else {
         showError(res?.data?.message || t('加载收件人失败'));
       }
@@ -660,6 +662,7 @@ const BriefingsTab = () => {
                   loading={recipientsLoading}
                   items={recipients}
                   total={recipientsTotal}
+                  diagnostic={recipientsDiag}
                   page={recipientsPage}
                   search={recipientsSearch}
                   onSearchChange={setRecipientsSearch}
@@ -917,6 +920,7 @@ const RecipientsPane = ({
   loading,
   items,
   total,
+  diagnostic,
   page,
   search,
   onSearchChange,
@@ -1030,17 +1034,7 @@ const RecipientsPane = ({
             <Spin />
           </div>
         ) : items.length === 0 ? (
-          <Empty
-            image={
-              <img src='/NoDataillustration.svg' style={{ width: 150, height: 150 }} />
-            }
-            darkModeImage={
-              <img src='/NoDataillustration.svg' style={{ width: 150, height: 150 }} />
-            }
-            title={t('没有匹配的收件人')}
-            description={t('当前的 plan_ids 没有匹配到任何活跃订阅用户。改一下推送范围或检查订阅状态。')}
-            style={{ padding: 30 }}
-          />
+          <RecipientsEmpty diagnostic={diagnostic} t={t} />
         ) : (
           <>
             <Table
@@ -1062,6 +1056,137 @@ const RecipientsPane = ({
             ) : null}
           </>
         )}
+      </div>
+    </div>
+  );
+};
+
+const FAILING_FILTER_LABELS = {
+  no_plan_match: '该 plan_ids 下完全没有任何用户订阅记录(连过期/取消的都没有)。可能 plan_id 写错了。',
+  no_active_status: '有订阅记录但没有 status=active 的(全是 expired / cancelled)。让用户重新订阅或在订阅管理里把状态调整为 active。',
+  all_expired: '有 active 订阅,但都已经过期(end_time 在过去)。续费或调整 end_time。',
+  all_users_disabled: '订阅都是 active 且未过期,但对应的用户账号被禁用(users.status != 1)。检查用户管理页。',
+  no_email_addresses: '订阅、用户都正常,但用户没有填邮箱(users.email 为空)。引导用户绑定邮箱。',
+};
+
+const RecipientsEmpty = ({ diagnostic, t }) => {
+  if (!diagnostic) {
+    return (
+      <Empty
+        image={
+          <img src='/NoDataillustration.svg' style={{ width: 150, height: 150 }} />
+        }
+        darkModeImage={
+          <img src='/NoDataillustration.svg' style={{ width: 150, height: 150 }} />
+        }
+        title={t('没有匹配的收件人')}
+        description={t('当前的 plan_ids 没有匹配到任何活跃订阅用户。改一下推送范围或检查订阅状态。')}
+        style={{ padding: 30 }}
+      />
+    );
+  }
+  const stages = [
+    { label: t('该 plan_ids 下的所有订阅记录'), count: diagnostic.total_subscriptions },
+    { label: t('+ status = active'), count: diagnostic.after_status_active },
+    { label: t('+ 未过期 (end_time = 0 或 > now)'), count: diagnostic.after_not_expired },
+    { label: t('+ 用户启用 (users.status = 1)'), count: diagnostic.after_user_enabled },
+    { label: t('+ 邮箱非空'), count: diagnostic.after_has_email },
+    { label: t('= 去重后的最终收件人数'), count: diagnostic.distinct_users, highlight: true },
+  ];
+  const breakdown = diagnostic.status_breakdown || {};
+  const breakdownKeys = Object.keys(breakdown);
+  const hint = diagnostic.first_failing_filter
+    ? t(FAILING_FILTER_LABELS[diagnostic.first_failing_filter] || diagnostic.first_failing_filter)
+    : '';
+  return (
+    <div style={{ maxWidth: 720, margin: '24px auto', padding: '0 24px' }}>
+      <div
+        style={{
+          padding: 20,
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 12,
+          background: 'var(--surface, #fff)',
+        }}
+      >
+        <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
+          {t('当前 plan_ids 没有匹配到收件人')}
+        </div>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+          plan_ids: <code style={{ fontFamily: 'var(--font-mono)' }}>
+            {JSON.stringify(diagnostic.plan_ids || [])}
+          </code>
+        </div>
+
+        <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>{t('过滤过程')}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 16 }}>
+          {stages.map((s, i) => {
+            const dropped = i > 0 && stages[i - 1].count > s.count;
+            return (
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '6px 10px',
+                  borderRadius: 6,
+                  background: s.highlight
+                    ? 'var(--semi-color-primary-light-default, #eff6ff)'
+                    : dropped && s.count === 0
+                      ? 'var(--semi-color-danger-light-default, #fef2f2)'
+                      : 'transparent',
+                  fontSize: 13,
+                  fontFamily: 'var(--font-mono)',
+                }}
+              >
+                <span style={{ flex: 1, color: dropped && s.count === 0 ? 'var(--semi-color-danger, #dc2626)' : 'var(--text-primary)' }}>
+                  {s.label}
+                </span>
+                <strong style={{ color: dropped && s.count === 0 ? 'var(--semi-color-danger, #dc2626)' : 'var(--text-primary)' }}>
+                  {s.count}
+                </strong>
+                {dropped ? (
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', minWidth: 60, textAlign: 'right' }}>
+                    -{stages[i - 1].count - s.count}
+                  </span>
+                ) : (
+                  <span style={{ minWidth: 60 }}></span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {breakdownKeys.length > 0 ? (
+          <>
+            <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>
+              {t('该 plan_ids 下的订阅状态分布')}
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+              {breakdownKeys.map((k) => (
+                <Tag key={k} size='small' color={k === 'active' ? 'green' : 'grey'}>
+                  {k}: {breakdown[k]}
+                </Tag>
+              ))}
+            </div>
+          </>
+        ) : null}
+
+        {hint ? (
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 8,
+              background: 'var(--semi-color-warning-light-default, #fffbeb)',
+              border: '1px solid var(--semi-color-warning-light-active, #fde68a)',
+              fontSize: 13,
+              color: 'var(--text-primary)',
+              lineHeight: 1.6,
+            }}
+          >
+            <strong>{t('诊断')}:</strong> {hint}
+          </div>
+        ) : null}
       </div>
     </div>
   );

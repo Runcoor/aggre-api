@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/runcoor/aggre-api/common"
@@ -114,13 +115,21 @@ func ListAINewsRecipients(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
-	common.ApiSuccess(c, gin.H{
+	resp := gin.H{
 		"items":     items,
 		"total":     total,
 		"page":      page,
 		"page_size": pageSize,
 		"plan_ids":  planIds,
-	})
+	}
+	// When the search box is empty and we matched nobody, attach the diagnostic
+	// so the admin can see exactly which filter eliminated everyone.
+	if total == 0 && strings.TrimSpace(search) == "" {
+		if diag, derr := ai_news.DiagnoseRecipients(planIds); derr == nil {
+			resp["diagnostic"] = diag
+		}
+	}
+	common.ApiSuccess(c, resp)
 }
 
 // SendAINewsBriefing dispatches a briefing by email to all eligible subscribers.

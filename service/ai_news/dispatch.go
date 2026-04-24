@@ -92,6 +92,101 @@ type RecipientDetail struct {
 	AlreadySent  bool   `json:"already_sent"`
 }
 
+// RecipientsDiagnostic walks the same filter chain that FindRecipientDetails
+// uses and reports the row count after each filter, so admins can pinpoint
+// why a plan_ids selection returns zero recipients.
+type RecipientsDiagnostic struct {
+	PlanIds                []int  `json:"plan_ids"`
+	TotalSubscriptions     int64  `json:"total_subscriptions"`            // matching plan_ids only
+	AfterStatusActive      int64  `json:"after_status_active"`            // + status='active'
+	AfterNotExpired        int64  `json:"after_not_expired"`              // + end_time=0 OR > now
+	AfterUserEnabled       int64  `json:"after_user_enabled"`             // + u.status=1
+	AfterHasEmail          int64  `json:"after_has_email"`                // + u.email <> ''
+	DistinctUsers          int64  `json:"distinct_users"`                 // final
+	StatusBreakdown        map[string]int64 `json:"status_breakdown"`     // count by us.status (no other filters)
+	FirstFailingFilter     string `json:"first_failing_filter,omitempty"` // human-readable hint
+}
+
+// DiagnoseRecipients returns counts at each filter stage for the given plan_ids.
+func DiagnoseRecipients(planIds []int) (*RecipientsDiagnostic, error) {
+	d := &RecipientsDiagnostic{PlanIds: planIds, StatusBreakdown: map[string]int64{}}
+	now := time.Now().Unix()
+
+	base := func() *gorm.DB {
+		q := model.DB.Table("user_subscriptions us").
+			Joins("JOIN users u ON u.id = us.user_id")
+		if len(planIds) > 0 {
+			q = q.Where("us.plan_id IN ?", planIds)
+		}
+		return q
+	}
+
+	// Layer 0: total matching plan_ids (no status filters)
+	if err := base().Count(&d.TotalSubscriptions).Error; err != nil {
+		return d, err
+	}
+	// Status breakdown for matching plan_ids
+	type statusRow struct {
+		Status string
+		Cnt    int64
+	}
+	var rows []statusRow
+	if err := base().Select("us.status as status, COUNT(*) as cnt").
+		Group("us.status").Scan(&rows).Error; err == nil {
+		for _, r := range rows {
+			d.StatusBreakdown[r.Status] = r.Cnt
+		}
+	}
+
+	// Layer 1: + status=active
+	if err := base().Where("us.status = ?", "active").Count(&d.AfterStatusActive).Error; err != nil {
+		return d, err
+	}
+	// Layer 2: + not expired
+	if err := base().Where("us.status = ?", "active").
+		Where("us.end_time = 0 OR us.end_time > ?", now).
+		Count(&d.AfterNotExpired).Error; err != nil {
+		return d, err
+	}
+	// Layer 3: + user enabled
+	if err := base().Where("us.status = ?", "active").
+		Where("us.end_time = 0 OR us.end_time > ?", now).
+		Where("u.status = ?", 1).
+		Count(&d.AfterUserEnabled).Error; err != nil {
+		return d, err
+	}
+	// Layer 4: + has email
+	if err := base().Where("us.status = ?", "active").
+		Where("us.end_time = 0 OR us.end_time > ?", now).
+		Where("u.status = ?", 1).
+		Where("u.email <> ''").
+		Count(&d.AfterHasEmail).Error; err != nil {
+		return d, err
+	}
+	// Final: distinct users
+	if err := base().Where("us.status = ?", "active").
+		Where("us.end_time = 0 OR us.end_time > ?", now).
+		Where("u.status = ?", 1).
+		Where("u.email <> ''").
+		Distinct("us.user_id").Count(&d.DistinctUsers).Error; err != nil {
+		return d, err
+	}
+
+	switch {
+	case d.TotalSubscriptions == 0:
+		d.FirstFailingFilter = "no_plan_match"
+	case d.AfterStatusActive == 0:
+		d.FirstFailingFilter = "no_active_status"
+	case d.AfterNotExpired == 0:
+		d.FirstFailingFilter = "all_expired"
+	case d.AfterUserEnabled == 0:
+		d.FirstFailingFilter = "all_users_disabled"
+	case d.AfterHasEmail == 0:
+		d.FirstFailingFilter = "no_email_addresses"
+	}
+	return d, nil
+}
+
 // FindRecipientDetails returns the per-user list of recipients for a briefing,
 // joined with plan info. Used by the admin UI to preview who will receive it
 // before clicking Send.

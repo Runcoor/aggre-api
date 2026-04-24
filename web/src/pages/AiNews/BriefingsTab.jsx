@@ -556,19 +556,21 @@ const BriefingsTab = () => {
       <Modal
         visible={sheetVisible}
         onCancel={() => setSheetVisible(false)}
-        fullScreen
+        width='min(1200px, 92vw)'
+        height='85vh'
         footer={null}
         closeOnEsc
         title={null}
         header={null}
-        bodyStyle={{ padding: 0, height: '100vh' }}
+        bodyStyle={{ padding: 0, height: '85vh', overflow: 'hidden' }}
+        style={{ borderRadius: 12, overflow: 'hidden' }}
       >
         {editing ? (
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
-              height: '100vh',
+              height: '100%',
               background: 'var(--surface, #fff)',
             }}
           >
@@ -578,9 +580,8 @@ const BriefingsTab = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 12,
-                padding: '12px 24px',
+                padding: '14px 20px',
                 borderBottom: '1px solid var(--border-subtle)',
-                background: 'var(--bg-subtle, #fafafa)',
               }}
             >
               <Tag color={editing.type === 'deep' ? 'violet' : 'cyan'} size='small'>
@@ -869,9 +870,8 @@ const PreviewPane = ({ loading, html, subject, onRefresh, t }) => (
   <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
     <div
       style={{
-        padding: '12px 24px',
+        padding: '12px 20px',
         borderBottom: '1px solid var(--border-subtle)',
-        background: 'var(--bg-subtle, #fafafa)',
         display: 'flex',
         alignItems: 'center',
         gap: 12,
@@ -991,7 +991,6 @@ const RecipientsPane = ({
         style={{
           padding: '12px 24px',
           borderBottom: '1px solid var(--border-subtle)',
-          background: 'var(--bg-subtle, #fafafa)',
           display: 'flex',
           alignItems: 'center',
           gap: 12,

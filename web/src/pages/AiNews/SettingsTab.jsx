@@ -52,6 +52,7 @@ const SettingsTab = () => {
   const [channels, setChannels] = useState([]);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState(null);
+  const [testModel, setTestModel] = useState('');
 
   const loadSettings = async () => {
     setLoading(true);
@@ -91,7 +92,8 @@ const SettingsTab = () => {
     setTesting(true);
     setTestResult(null);
     try {
-      const res = await API.post('/api/ai-news/admin/test-llm', {});
+      const body = testModel.trim() ? { model: testModel.trim() } : {};
+      const res = await API.post('/api/ai-news/admin/test-llm', body);
       if (res?.data?.success) {
         setTestResult(res.data.data);
       } else {
@@ -280,7 +282,7 @@ const SettingsTab = () => {
         </div>
       </Field>
 
-      <div style={{ marginTop: 24, display: 'flex', gap: 8 }}>
+      <div style={{ marginTop: 24, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <Button
           theme='solid'
           type='primary'
@@ -289,6 +291,13 @@ const SettingsTab = () => {
         >
           {t('保存设置')}
         </Button>
+        <div style={{ flex: 1 }} />
+        <Input
+          value={testModel}
+          onChange={setTestModel}
+          placeholder={t('测试用模型(留空 = 深度模型)')}
+          style={{ width: 280, fontFamily: 'var(--font-mono)', fontSize: 13 }}
+        />
         <Button loading={testing} onClick={onTest}>
           {t('测试 LLM')}
         </Button>

@@ -278,8 +278,11 @@ func chatViaResponsesAPI(ctx context.Context, baseURL, apiKey, modelName string,
 }
 
 // responsesEmptyError builds a clear error when /v1/responses returns
-// status=completed with output: []. The most common cause is reasoning
-// consuming the entire output budget.
+// status=completed with output: []. Two common causes:
+//   1. reasoning consumed the entire output budget
+//   2. an intermediate proxy (CLIProxyAPI / new-api / etc.) lost the
+//      output_text blocks during conversion — the model wrote tokens but they
+//      never made it back to us.
 func responsesEmptyError(parsed responsesResponse, body []byte, modelName string) error {
 	bodyTail := truncate(string(body), 1500)
 	hint := ""
@@ -289,8 +292,21 @@ func responsesEmptyError(parsed responsesResponse, body []byte, modelName string
 		if parsed.Usage.OutputTokensDetails != nil {
 			reasoning = parsed.Usage.OutputTokensDetails.ReasoningTokens
 		}
-		if out > 0 && reasoning >= out-50 {
-			hint = fmt.Sprintf(" — output_tokens=%d 几乎全部用于 reasoning (%d),没留给文本输出。模型 %s 可能不接受 reasoning.effort 参数,或者 max_output_tokens 太小。试试在 AI 前沿设置里把模型换成非 reasoning 模型。", out, reasoning, modelName)
+		nonReasoning := out - reasoning
+		switch {
+		case out > 0 && nonReasoning > 0:
+			hint = fmt.Sprintf(
+				" — 模型实际产了 %d tokens 的非 reasoning 输出 (output_tokens=%d, reasoning=%d),"+
+					"但 output[] 是空的,说明中间代理 (CLIProxyAPI / new-api 等) 在转换响应时把 output_text blocks 丢了。"+
+					"换一个该代理能正确转换的模型(可在“测试 LLM”里输入模型名快速试)。",
+				nonReasoning, out, reasoning,
+			)
+		case out > 0 && reasoning >= out:
+			hint = fmt.Sprintf(
+				" — output_tokens=%d 全部用于 reasoning,模型 %s 没有产出任何文本 token,"+
+					"可能 reasoning.effort 没生效,或这个模型对短 prompt 仍偏好深度思考。换个非 reasoning 模型试试。",
+				out, modelName,
+			)
 		}
 	}
 	return fmt.Errorf("LLM /v1/responses returned no output_text%s (body=%s)", hint, bodyTail)

@@ -18,559 +18,670 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 /**
- * PricingPage — full-width editorial layout matching the HTML mockup.
+ * PricingPage — clean compact model list designed in Claude Design
+ * (handoff bundle "aggre-token", file "Model List.html").
  *
- * NO sidebar. All filters live in the header as horizontal tabs/toggles.
+ * Single accent gradient `#0072ff → #00c6ff`. Three view modes
+ * (列表 / 卡片 / 表格), three chip filter rows (类型 / 能力 / 提供商),
+ * floating selection bar, detail drawer.
  *
- * Structure:
- *   ┌─────────────────────────────────────────────────────────────────┐
- *   │ Row 1: [blue label + big headline]         [search input]      │
- *   │ Row 2: Tab pills  [All Models] [tag1] [tag2] ...              │
- *   │ Row 3: PROVIDER [seg] │ MODALITY [seg] │ actions               │
- *   ├─────────────────────────────────────────────────────────────────┤
- *   │ 2-col card grid (or table view)                                │
- *   │ Pagination                                                     │
- *   └─────────────────────────────────────────────────────────────────┘
+ * Data, search, filtering, currency, displayPrice all reuse the
+ * existing useModelPricingData hook so behaviour stays consistent
+ * with the rest of the dashboard.
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
-import { ImagePreview, Switch, Select, Button } from '@douyinfe/semi-ui';
-import { IconSearch, IconCopy, IconRefresh } from '@douyinfe/semi-icons';
+import React, { useState, useMemo, useEffect } from 'react';
+import { ImagePreview } from '@douyinfe/semi-ui';
+import {
+  calculateModelPrice,
+  getLobeHubIcon,
+  stringToColor,
+} from '../../../../helpers';
 import ModelDetailSideSheet from '../modal/ModelDetailSideSheet';
-import PricingCardView from '../view/card/PricingCardView';
-import PricingTable from '../view/table/PricingTable';
 import { useModelPricingData } from '../../../../hooks/model-pricing/useModelPricingData';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
-import { usePricingFilterCounts } from '../../../../hooks/model-pricing/usePricingFilterCounts';
-import { resetPricingFilters } from '../../../../helpers/utils';
 
-/* ─── Segmented pill toggle — matches mockup exactly:
-   container: bg-surface-container-high rounded-xl p-1
-   active:    bg-surface-container-lowest shadow-sm rounded-lg ─── */
-const SegmentedPills = ({ items, value, onChange }) => (
-  <div
-    style={{
-      display: 'inline-flex',
-      padding: 4,
-      background: 'var(--bg-muted)',
-      borderRadius: 12,
-      gap: 0,
-      flexWrap: 'wrap',
-    }}
-  >
-    {items.map((item) => {
-      const active = value === item.value;
-      return (
+/* ─── Inline icons ─── */
+const Icon = {
+  Search: (p) => (
+    <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' {...p}>
+      <circle cx='11' cy='11' r='7' />
+      <path d='m20 20-3.5-3.5' />
+    </svg>
+  ),
+  Refresh: (p) => (
+    <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' {...p}>
+      <path d='M21 12a9 9 0 1 1-3-6.7L21 8' />
+      <path d='M21 3v5h-5' />
+    </svg>
+  ),
+  Check: (p) => (
+    <svg width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='3.5' strokeLinecap='round' strokeLinejoin='round' {...p}>
+      <path d='m4 12 5 5L20 6' />
+    </svg>
+  ),
+  Arrow: (p) => (
+    <svg width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.4' strokeLinecap='round' strokeLinejoin='round' {...p}>
+      <path d='M5 12h14' />
+      <path d='m13 6 6 6-6 6' />
+    </svg>
+  ),
+  Chevron: (p) => (
+    <svg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' {...p}>
+      <path d='m6 9 6 6 6-6' />
+    </svg>
+  ),
+  ListV: (p) => (
+    <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' {...p}>
+      <path d='M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01' />
+    </svg>
+  ),
+  Cards: (p) => (
+    <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' {...p}>
+      <rect x='3' y='3' width='8' height='8' rx='1.5' />
+      <rect x='13' y='3' width='8' height='8' rx='1.5' />
+      <rect x='3' y='13' width='8' height='8' rx='1.5' />
+      <rect x='13' y='13' width='8' height='8' rx='1.5' />
+    </svg>
+  ),
+  Table: (p) => (
+    <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' {...p}>
+      <rect x='3' y='4' width='18' height='16' rx='2' />
+      <path d='M3 10h18M3 15h18M9 4v16' />
+    </svg>
+  ),
+};
+
+/* ─── Provider avatar — uses LobeHub icon if available, else colored initials ─── */
+function ProviderAvatar({ model, size = 36 }) {
+  const iconKey = model?.icon || model?.vendor_icon;
+  if (iconKey) {
+    return (
+      <span
+        className='aml-avatar'
+        style={{
+          width: size,
+          height: size,
+          background: 'var(--aml-line-soft)',
+          borderRadius: 10,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flex: 'none',
+          overflow: 'hidden',
+        }}
+      >
+        {getLobeHubIcon(iconKey, Math.floor(size * 0.55))}
+      </span>
+    );
+  }
+  const text = (model?.model_name || '?').slice(0, 2).toUpperCase();
+  const c = stringToColor(model?.model_name || '');
+  return (
+    <span
+      className='aml-avatar'
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 10,
+        background: `${c}1f`,
+        color: c,
+        fontSize: Math.floor(size * 0.32),
+        fontWeight: 700,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 'none',
+        border: `1px solid ${c}33`,
+      }}
+    >
+      {text}
+    </span>
+  );
+}
+
+/* ─── Price cell ─── */
+function PriceCell({ label, value, t }) {
+  if (value == null || value === '') {
+    return (
+      <div className='aml-price-cell muted'>
+        <div className='label'>{label}</div>
+        <div className='value mono'>—</div>
+      </div>
+    );
+  }
+  return (
+    <div className='aml-price-cell'>
+      <div className='label'>{label}</div>
+      <div className='value mono'>
+        {value}
+        <span className='unit'> /1M</span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Chip ─── */
+function Chip({ active, onClick, children, count }) {
+  return (
+    <button type='button' className={`aml-chip ${active ? 'active' : ''}`} onClick={onClick}>
+      {children}
+      {count != null && <span className='aml-chip-count'>{count}</span>}
+    </button>
+  );
+}
+
+/* ─── Toggle ─── */
+function Toggle({ on, onChange, label }) {
+  return (
+    <div className={`aml-toggle ${on ? 'on' : ''}`} onClick={() => onChange(!on)}>
+      <span>{label}</span>
+      <span className='switch' />
+    </div>
+  );
+}
+
+/* ─── List row ─── */
+function ListRow({ m, selected, onToggleSelect, onView, t }) {
+  const tags = parseTags(m.tags);
+  return (
+    <div className={`aml-row ${selected ? 'selected' : ''}`}>
+      <ProviderAvatar model={m} />
+      <div className='aml-model-info'>
+        <div className='aml-model-name'>
+          {m.model_name}
+          {m.vendor_name && <span className='aml-pill'>{m.vendor_name}</span>}
+        </div>
+        <div className='aml-model-desc'>{m.description || '—'}</div>
+      </div>
+      <PriceCell label={t('输入')} value={m._input} t={t} />
+      <PriceCell label={t('输出')} value={m._output} t={t} />
+      <div className='aml-cache-cell' style={{ display: 'contents' }}>
+        <PriceCell label={t('缓存读取')} value={m._cache} t={t} />
+      </div>
+      <div className='aml-tag-cell'>
+        {tags.slice(0, 2).map((tg) => (
+          <span key={tg} className='aml-tag'>{tg}</span>
+        ))}
+      </div>
+      <div className='aml-row-actions'>
         <button
-          key={item.value}
           type='button'
-          onClick={() => onChange(item.value)}
-          style={{
-            padding: '7px 16px',
-            borderRadius: 8,
-            border: 'none',
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            transition: 'all 150ms',
-            background: active ? 'var(--surface)' : 'transparent',
-            color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
-            boxShadow: active ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+          className={`aml-checkbox ${selected ? 'checked' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelect(m.model_name);
+          }}
+          aria-label={t('选择')}
+        >
+          <Icon.Check />
+        </button>
+        <button type='button' className='aml-btn-primary' onClick={() => onView(m)}>
+          {t('查看详情')} <Icon.Arrow />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Card item ─── */
+function CardItem({ m, selected, onToggleSelect, onView, t }) {
+  const tags = parseTags(m.tags);
+  return (
+    <div className='aml-card-item'>
+      <div className='aml-card-head'>
+        <ProviderAvatar model={m} />
+        <div className='info'>
+          <div className='name'>{m.model_name}</div>
+          <div className='desc'>{m.description || '—'}</div>
+        </div>
+        <button
+          type='button'
+          className={`aml-checkbox ${selected ? 'checked' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelect(m.model_name);
           }}
         >
-          {item.label}
+          <Icon.Check />
         </button>
-      );
-    })}
-  </div>
-);
+      </div>
+      <div className='aml-card-prices'>
+        <PriceCell label={t('输入')} value={m._input} t={t} />
+        <PriceCell label={t('输出')} value={m._output} t={t} />
+        <PriceCell label={t('缓存')} value={m._cache} t={t} />
+      </div>
+      <div className='aml-card-foot'>
+        <div className='left'>
+          {(m.supported_endpoint_types || []).slice(0, 1).map((ep) => (
+            <span key={ep} className='aml-tag alt'>{ep}</span>
+          ))}
+          {tags.slice(0, 3).map((tg) => (
+            <span key={tg} className='aml-tag'>{tg}</span>
+          ))}
+        </div>
+        <button type='button' className='aml-btn-primary' onClick={() => onView(m)}>
+          {t('详情')} <Icon.Arrow />
+        </button>
+      </div>
+    </div>
+  );
+}
 
-/* ─── Tab pills row — matches mockup's All Models / Standard / Custom / ... ─── */
-const TabPills = ({ items, value, onChange }) => (
-  <nav
-    className='flex items-center gap-2 overflow-x-auto pb-1'
-    style={{ scrollbarWidth: 'none' }}
-  >
-    {items.map((item) => {
-      const active = value === item.value;
-      return (
-        <button
-          key={item.value}
-          type='button'
-          onClick={() => onChange(item.value)}
-          style={{
-            padding: '10px 20px',
-            borderRadius: 9999,
-            border: 'none',
-            fontSize: 13,
-            fontFamily: 'Manrope, var(--font-sans)',
-            fontWeight: 700,
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            transition: 'all 150ms',
-            background: active ? 'var(--accent)' : 'var(--bg-subtle)',
-            color: active ? '#fff' : 'var(--text-secondary)',
-          }}
-        >
-          {item.label}
-        </button>
-      );
-    })}
-  </nav>
-);
+/* ─── Table view ─── */
+function TableView({ items, selected, onToggleSelect, onView, t }) {
+  return (
+    <div className='aml-table-wrap'>
+      <table className='aml-table'>
+        <thead>
+          <tr>
+            <th style={{ width: 32 }}></th>
+            <th>{t('模型')}</th>
+            <th>{t('提供商')}</th>
+            <th className='num'>{t('输入')} /1M</th>
+            <th className='num'>{t('输出')} /1M</th>
+            <th className='num'>{t('缓存')} /1M</th>
+            <th>{t('能力')}</th>
+            <th style={{ width: 80 }}></th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((m) => {
+            const tags = parseTags(m.tags);
+            const isSel = selected.has(m.model_name);
+            return (
+              <tr key={m.model_name} className={isSel ? 'selected' : ''}>
+                <td>
+                  <button
+                    type='button'
+                    className={`aml-checkbox ${isSel ? 'checked' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleSelect(m.model_name);
+                    }}
+                  >
+                    <Icon.Check />
+                  </button>
+                </td>
+                <td>
+                  <div className='aml-name-cell'>
+                    <ProviderAvatar model={m} size={32} />
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 600 }}>{m.model_name}</div>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: 'var(--aml-ink-400)',
+                          marginTop: 2,
+                          maxWidth: 280,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {m.description || '—'}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span className='aml-pill'>{m.vendor_name || '—'}</span>
+                </td>
+                <td className='num grad-num mono'>{m._input || '—'}</td>
+                <td className='num grad-num mono'>{m._output || '—'}</td>
+                <td className='num grad-num mono'>{m._cache || '—'}</td>
+                <td>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    {tags.slice(0, 3).map((tg) => (
+                      <span key={tg} className='aml-tag'>{tg}</span>
+                    ))}
+                  </div>
+                </td>
+                <td>
+                  <button type='button' className='aml-btn-primary' onClick={() => onView(m)}>
+                    {t('详情')}
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ─── parse tags helper ─── */
+function parseTags(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.filter(Boolean);
+  return String(raw)
+    .split(/[,;|]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
 /* ═══════════════════════════════════════════════════════════
-   Main page component
+   Main page
    ═══════════════════════════════════════════════════════════ */
 const PricingPage = () => {
   const pricingData = useModelPricingData();
   const isMobile = useIsMobile();
-  const [showRatio, setShowRatio] = useState(false);
-  const [viewMode, setViewMode] = useState('card');
 
   const {
     models,
     filteredModels,
     loading,
-    filterVendor,
-    setFilterVendor,
     filterEndpointType,
     setFilterEndpointType,
     filterTag,
     setFilterTag,
-    filterQuotaType,
-    setFilterQuotaType,
-    filterGroup,
-    handleGroupClick,
-    setFilterGroup,
+    filterVendor,
+    setFilterVendor,
     searchValue,
     handleChange,
     handleCompositionStart,
     handleCompositionEnd,
-    usableGroup,
     groupRatio,
     selectedGroup,
     currency,
     setCurrency,
     siteDisplayType,
     tokenUnit,
-    setTokenUnit,
     showWithRecharge,
     setShowWithRecharge,
-    pageSize,
-    setPageSize,
-    currentPage,
-    setCurrentPage,
+    displayPrice,
+    refresh,
+    openModelDetail,
     selectedRowKeys,
     setSelectedRowKeys,
-    rowSelection,
-    copyText,
-    displayPrice,
-    openModelDetail,
     t,
   } = pricingData;
 
-  const allProps = {
-    ...pricingData,
-    showRatio,
-    setShowRatio,
-    viewMode,
-    setViewMode,
+  const [view, setView] = useState('list');
+  const [sortBy, setSortBy] = useState('default');
+
+  // Compute prices for the visible models so we can sort/render uniformly.
+  const itemsWithPrices = useMemo(() => {
+    return filteredModels.map((m) => {
+      const price = calculateModelPrice({
+        record: m,
+        selectedGroup,
+        groupRatio,
+        tokenUnit,
+        displayPrice,
+        currency,
+        quotaDisplayType: siteDisplayType,
+      });
+      return {
+        ...m,
+        _input: price.inputPrice ?? price.price ?? null,
+        _output: price.completionPrice ?? null,
+        _cache: price.cachePrice ?? null,
+        _inputNumeric: price.isPerToken
+          ? extractNumeric(price.inputPrice)
+          : extractNumeric(price.price),
+      };
+    });
+  }, [
+    filteredModels,
+    selectedGroup,
+    groupRatio,
+    tokenUnit,
+    displayPrice,
+    currency,
+    siteDisplayType,
+  ]);
+
+  const sortedItems = useMemo(() => {
+    if (sortBy === 'default') return itemsWithPrices;
+    const arr = [...itemsWithPrices];
+    if (sortBy === 'price-asc') {
+      arr.sort((a, b) => (a._inputNumeric ?? Infinity) - (b._inputNumeric ?? Infinity));
+    } else if (sortBy === 'price-desc') {
+      arr.sort((a, b) => (b._inputNumeric ?? -Infinity) - (a._inputNumeric ?? -Infinity));
+    } else if (sortBy === 'name') {
+      arr.sort((a, b) => (a.model_name || '').localeCompare(b.model_name || ''));
+    }
+    return arr;
+  }, [itemsWithPrices, sortBy]);
+
+  // Selection wired into the existing selectedRowKeys.
+  const selected = useMemo(() => new Set(selectedRowKeys), [selectedRowKeys]);
+  const toggleSelect = (key) => {
+    setSelectedRowKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return Array.from(next);
+    });
   };
+  const clearSelection = () => setSelectedRowKeys([]);
 
-  // Tag pills for the tab row
-  const tagItems = useMemo(() => {
-    const allTags = new Set();
+  // Counts + chip option lists derived from full models (not filtered) so chips don't disappear.
+  const { tagOpts, providerOpts, endpointOpts, counts } = useMemo(() => {
+    const tagCount = {};
+    const provCount = {};
+    const epCount = {};
     models.forEach((m) => {
-      if (m.tags) {
-        (typeof m.tags === 'string' ? m.tags.split(/[,;|]+/) : Array.isArray(m.tags) ? m.tags : [])
-          .map((tag) => tag.trim())
-          .filter(Boolean)
-          .forEach((tag) => allTags.add(tag));
+      parseTags(m.tags).forEach((tg) => {
+        tagCount[tg] = (tagCount[tg] || 0) + 1;
+      });
+      if (m.vendor_name) {
+        provCount[m.vendor_name] = (provCount[m.vendor_name] || 0) + 1;
       }
+      (m.supported_endpoint_types || []).forEach((ep) => {
+        epCount[ep] = (epCount[ep] || 0) + 1;
+      });
     });
-    return [
-      { value: 'all', label: t('全部模型') },
-      ...Array.from(allTags)
-        .sort()
-        .map((tag) => ({ value: tag, label: tag })),
-    ];
-  }, [models, t]);
-
-  // Vendor pills — top 8
-  const vendorItems = useMemo(() => {
-    const vendors = new Set();
-    models.forEach((m) => {
-      if (m.vendor_name) vendors.add(m.vendor_name);
-    });
-    const sorted = Array.from(vendors).sort();
-    return [
-      { value: 'all', label: t('全部') },
-      ...sorted.slice(0, 8).map((v) => ({ value: v, label: v })),
-    ];
-  }, [models, t]);
-
-  // Endpoint type pills
-  const endpointItems = useMemo(() => {
-    const eps = new Set();
-    models.forEach((m) => {
-      (m.supported_endpoint_types || []).forEach((ep) => eps.add(ep));
-    });
-    return [
-      { value: 'all', label: t('全部') },
-      ...Array.from(eps)
-        .sort()
-        .map((ep) => ({ value: ep, label: ep })),
-    ];
-  }, [models, t]);
-
-  const handleResetFilters = useCallback(
-    () =>
-      resetPricingFilters({
-        handleChange,
-        setShowWithRecharge,
-        setCurrency,
-        setShowRatio,
-        setViewMode,
-        setFilterGroup,
-        setFilterQuotaType,
-        setFilterEndpointType,
-        setFilterVendor,
-        setFilterTag,
-        setCurrentPage,
-        setTokenUnit,
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
+    return {
+      tagOpts: ['all', ...Object.keys(tagCount).sort()],
+      providerOpts: ['all', ...Object.keys(provCount).sort()],
+      endpointOpts: ['all', ...Object.keys(epCount).sort()],
+      counts: { tagCount, provCount, epCount },
+    };
+  }, [models]);
 
   const supportsCurrencyDisplay = siteDisplayType !== 'TOKENS';
 
   return (
-    <div
-      style={{
-        background: 'var(--bg-base)',
-        minHeight: '100%',
-        flex: '1 0 auto',
-      }}
-    >
-      <main
-        style={{
-          maxWidth: 1440,
-          margin: '0 auto',
-          padding: isMobile ? '20px 16px 32px' : '32px 28px 48px',
-        }}
-      >
-        {/* ═══════════ HEADER ═══════════ */}
-        <header style={{ marginBottom: isMobile ? 20 : 32 }}>
-          {/* Row 1: label + headline + search */}
-          <div
-            className='flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-8'
-            style={{ marginBottom: isMobile ? 16 : 24 }}
-          >
-            <div>
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.2em',
-                  textTransform: 'uppercase',
-                  color: 'var(--accent)',
-                }}
-              >
-                {t('模型定价')}
-              </span>
-              <h1
-                style={{
-                  fontFamily: 'Manrope, var(--font-sans)',
-                  fontSize: isMobile ? 32 : 44,
-                  fontWeight: 800,
-                  letterSpacing: '-0.035em',
-                  color: 'var(--text-primary)',
-                  margin: '4px 0 0 0',
-                  lineHeight: 1.1,
-                }}
-              >
-                {t('模型列表')}
-              </h1>
-            </div>
-            {/* Search — matches mockup: h-14, rounded-2xl, glass bg */}
-            <div className='w-full md:w-96'>
-              <div
-                className='flex items-center gap-3'
-                style={{
-                  height: 56,
-                  padding: '0 20px',
-                  background:
-                    'color-mix(in srgb, var(--bg-muted) 50%, transparent)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  borderRadius: 16,
-                  transition: 'background 200ms, box-shadow 200ms',
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.background = 'var(--surface)';
-                  e.currentTarget.style.boxShadow =
-                    '0 8px 24px -8px rgba(0,0,0,0.1)';
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.background =
-                    'color-mix(in srgb, var(--bg-muted) 50%, transparent)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <IconSearch style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                <input
-                  type='text'
-                  value={searchValue}
-                  onChange={(e) => handleChange(e.target.value)}
-                  onCompositionStart={handleCompositionStart}
-                  onCompositionEnd={handleCompositionEnd}
-                  placeholder={t('搜索模型名称...')}
-                  style={{
-                    flex: 1,
-                    background: 'transparent',
-                    border: 'none',
-                    outline: 'none',
-                    fontSize: 14,
-                    color: 'var(--text-primary)',
-                    fontFamily: 'var(--font-sans)',
-                  }}
-                />
-              </div>
+    <div className='aml-root'>
+      <style>{PAGE_CSS}</style>
+
+      <div className='aml-page'>
+        {/* HEADER */}
+        <header className='aml-header'>
+          <div className='aml-title-block'>
+            <div className='eyebrow'>{t('模型定价 · Aggre Token')}</div>
+            <h1>{t('模型列表')}</h1>
+            <div className='sub'>
+              {t('统一接入 {{count}} 个主流模型，按使用量计费，毫秒级路由切换。', {
+                count: models.length,
+              })}
             </div>
           </div>
-
-          {/* Row 2: Tag tab pills */}
-          <div style={{ marginBottom: isMobile ? 12 : 16 }}>
-            <TabPills
-              items={tagItems}
-              value={filterTag}
-              onChange={setFilterTag}
-            />
-          </div>
-
-          {/* Row 3: Segmented filter toggles + actions */}
-          {/* Matches mockup: bg-surface-container-lowest/40 backdrop-blur-md rounded-3xl */}
-          <div
-            className='flex flex-wrap items-center gap-4 md:gap-6'
-            style={{
-              padding: isMobile ? '12px 14px' : '16px 24px',
-              background:
-                'color-mix(in srgb, var(--surface) 40%, transparent)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              borderRadius: 24,
-            }}
-          >
-            {/* Provider */}
-            <div className='flex items-center gap-3'>
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-muted)',
-                }}
-              >
-                {t('供应商')}
-              </span>
-              <SegmentedPills
-                items={vendorItems}
-                value={filterVendor}
-                onChange={setFilterVendor}
+          <div className='aml-header-tools'>
+            <div className='aml-search'>
+              <Icon.Search />
+              <input
+                placeholder={t('搜索模型名称或能力…')}
+                value={searchValue}
+                onChange={(e) => handleChange(e.target.value)}
+                onCompositionStart={handleCompositionStart}
+                onCompositionEnd={handleCompositionEnd}
               />
             </div>
-
-            <div
-              className='hidden md:block'
-              style={{
-                width: 1,
-                height: 24,
-                background: 'var(--border-subtle)',
-                flexShrink: 0,
-              }}
-            />
-
-            {/* Endpoint type */}
-            <div className='flex items-center gap-3'>
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-muted)',
-                }}
-              >
-                {t('类型')}
-              </span>
-              <SegmentedPills
-                items={endpointItems}
-                value={filterEndpointType}
-                onChange={setFilterEndpointType}
-              />
-            </div>
-
-            <div style={{ flex: '1 1 0', minWidth: 0 }} />
-
-            {/* Action buttons */}
-            <div className='flex items-center gap-2 flex-wrap'>
-              {selectedRowKeys.length > 0 && (
-                <Button
-                  size='small'
-                  icon={<IconCopy />}
-                  onClick={() => copyText(selectedRowKeys)}
-                  style={{
-                    background: 'var(--accent-gradient)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 'var(--radius-md)',
-                  }}
-                >
-                  {t('复制')} ({selectedRowKeys.length})
-                </Button>
-              )}
-
-              {!isMobile && supportsCurrencyDisplay && (
-                <>
-                  <div className='flex items-center gap-1.5'>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                      {t('充值价格')}
-                    </span>
-                    <Switch
-                      size='small'
-                      checked={showWithRecharge}
-                      onChange={setShowWithRecharge}
-                    />
-                  </div>
-                  {showWithRecharge && (
-                    <Select
-                      size='small'
-                      value={currency}
-                      onChange={setCurrency}
-                      style={{ width: 80 }}
-                      optionList={[
-                        { value: 'USD', label: 'USD' },
-                        { value: 'CNY', label: 'CNY' },
-                        { value: 'CUSTOM', label: t('自定义') },
-                      ]}
-                    />
-                  )}
-                </>
-              )}
-              {!isMobile && (
-                <>
-                  <div className='flex items-center gap-1.5'>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                      {t('倍率')}
-                    </span>
-                    <Switch
-                      size='small'
-                      checked={showRatio}
-                      onChange={setShowRatio}
-                    />
-                  </div>
-                  <button
-                    type='button'
-                    onClick={() =>
-                      setViewMode(viewMode === 'table' ? 'card' : 'table')
-                    }
-                    style={{
-                      padding: '5px 12px',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-default)',
-                      background:
-                        viewMode === 'table'
-                          ? 'var(--accent)'
-                          : 'var(--surface)',
-                      color:
-                        viewMode === 'table' ? '#fff' : 'var(--text-secondary)',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {t('表格')}
-                  </button>
-                  <button
-                    type='button'
-                    onClick={() =>
-                      setTokenUnit(tokenUnit === 'K' ? 'M' : 'K')
-                    }
-                    style={{
-                      padding: '5px 12px',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-default)',
-                      background:
-                        tokenUnit === 'K'
-                          ? 'var(--accent)'
-                          : 'var(--surface)',
-                      color:
-                        tokenUnit === 'K' ? '#fff' : 'var(--text-secondary)',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {tokenUnit}
-                  </button>
-                </>
-              )}
-              <button
-                type='button'
-                onClick={handleResetFilters}
-                style={{
-                  padding: 6,
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border-default)',
-                  background: 'var(--surface)',
-                  color: 'var(--text-muted)',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                }}
-                title={t('重置筛选')}
-              >
-                <IconRefresh size='small' />
+            <div className='aml-view-toggle' role='tablist'>
+              <button type='button' className={view === 'list' ? 'active' : ''} onClick={() => setView('list')}>
+                <Icon.ListV /> {t('列表')}
+              </button>
+              <button type='button' className={view === 'cards' ? 'active' : ''} onClick={() => setView('cards')}>
+                <Icon.Cards /> {t('卡片')}
+              </button>
+              <button type='button' className={view === 'table' ? 'active' : ''} onClick={() => setView('table')}>
+                <Icon.Table /> {t('表格')}
               </button>
             </div>
+            <button type='button' className='aml-icon-btn' title={t('刷新')} onClick={refresh}>
+              <Icon.Refresh />
+            </button>
           </div>
         </header>
 
-        {/* ═══════════ CONTENT ═══════════ */}
-        {viewMode === 'card' ? (
-          <PricingCardView
-            filteredModels={filteredModels}
-            loading={loading}
-            rowSelection={rowSelection}
-            pageSize={pageSize}
-            setPageSize={setPageSize}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            selectedGroup={selectedGroup}
-            groupRatio={groupRatio}
-            copyText={copyText}
-            setModalImageUrl={pricingData.setModalImageUrl}
-            setIsModalOpenurl={pricingData.setIsModalOpenurl}
-            currency={currency}
-            siteDisplayType={siteDisplayType}
-            tokenUnit={tokenUnit}
-            displayPrice={displayPrice}
-            showRatio={showRatio}
-            selectedRowKeys={selectedRowKeys}
-            setSelectedRowKeys={setSelectedRowKeys}
-            openModelDetail={openModelDetail}
+        {/* FILTER BAR */}
+        <div className='aml-filter-bar'>
+          <div className='aml-filter-row'>
+            <span className='aml-filter-label'>{t('类型')}</span>
+            <div className='aml-chip-row'>
+              {endpointOpts.map((ep) => (
+                <Chip
+                  key={ep}
+                  active={filterEndpointType === ep}
+                  onClick={() => setFilterEndpointType(ep)}
+                >
+                  {ep === 'all' ? t('全部') : ep}
+                </Chip>
+              ))}
+            </div>
+          </div>
+          <div className='aml-filter-divider' />
+          <div className='aml-filter-row'>
+            <span className='aml-filter-label'>{t('能力')}</span>
+            <div className='aml-chip-row'>
+              {tagOpts.map((tg) => (
+                <Chip key={tg} active={filterTag === tg} onClick={() => setFilterTag(tg)}>
+                  {tg === 'all' ? t('全部') : tg}
+                </Chip>
+              ))}
+            </div>
+          </div>
+          <div className='aml-filter-divider' />
+          <div className='aml-filter-row'>
+            <span className='aml-filter-label'>{t('提供商')}</span>
+            <div className='aml-chip-row'>
+              {providerOpts.map((pv) => (
+                <Chip key={pv} active={filterVendor === pv} onClick={() => setFilterVendor(pv)}>
+                  {pv === 'all' ? t('全部') : pv}
+                </Chip>
+              ))}
+            </div>
+            {!isMobile && supportsCurrencyDisplay && (
+              <div className='aml-toggle-group'>
+                <Toggle
+                  on={showWithRecharge}
+                  onChange={setShowWithRecharge}
+                  label={t('充值价格')}
+                />
+                {showWithRecharge && (
+                  <select
+                    className='aml-mini-select'
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                  >
+                    <option value='USD'>USD</option>
+                    <option value='CNY'>CNY</option>
+                    <option value='CUSTOM'>{t('自定义')}</option>
+                  </select>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* RESULT META */}
+        <div className='aml-result-meta'>
+          <div className='count'>
+            {t('共')} <strong>{sortedItems.length}</strong> {t('个模型')}
+            <span style={{ margin: '0 6px', color: 'var(--aml-ink-300)' }}>·</span>
+            {t('已选')} <strong>{selected.size}</strong>
+          </div>
+          <button
+            type='button'
+            className='aml-sort-select'
+            onClick={() => {
+              const opts = ['default', 'price-asc', 'price-desc', 'name'];
+              setSortBy(opts[(opts.indexOf(sortBy) + 1) % opts.length]);
+            }}
+          >
+            {t('排序')}：{
+              {
+                default: t('默认'),
+                'price-asc': t('价格 ↑'),
+                'price-desc': t('价格 ↓'),
+                name: t('名称'),
+              }[sortBy]
+            }{' '}
+            <Icon.Chevron />
+          </button>
+        </div>
+
+        {/* CONTENT */}
+        {loading && (
+          <div className='aml-empty'>{t('加载中…')}</div>
+        )}
+
+        {!loading && view === 'list' && (
+          <div className='aml-list'>
+            {sortedItems.map((m) => (
+              <ListRow
+                key={m.model_name}
+                m={m}
+                selected={selected.has(m.model_name)}
+                onToggleSelect={toggleSelect}
+                onView={openModelDetail}
+                t={t}
+              />
+            ))}
+          </div>
+        )}
+
+        {!loading && view === 'cards' && (
+          <div className='aml-cards'>
+            {sortedItems.map((m) => (
+              <CardItem
+                key={m.model_name}
+                m={m}
+                selected={selected.has(m.model_name)}
+                onToggleSelect={toggleSelect}
+                onView={openModelDetail}
+                t={t}
+              />
+            ))}
+          </div>
+        )}
+
+        {!loading && view === 'table' && (
+          <TableView
+            items={sortedItems}
+            selected={selected}
+            onToggleSelect={toggleSelect}
+            onView={openModelDetail}
             t={t}
           />
-        ) : (
-          <PricingTable {...allProps} />
         )}
-      </main>
 
-      {/* Modals */}
+        {!loading && sortedItems.length === 0 && (
+          <div className='aml-empty'>
+            {t('没有匹配的模型，试试调整筛选条件。')}
+          </div>
+        )}
+
+        {/* SELECTION BAR */}
+        <div className={`aml-sel-bar ${selected.size > 0 ? 'show' : ''}`}>
+          <span className='count-pill'>{selected.size}</span>
+          <span>{t('已选模型')}</span>
+          <button type='button' onClick={clearSelection}>{t('清空')}</button>
+          <button
+            type='button'
+            className='sb-action'
+            onClick={() => pricingData.copyText(Array.from(selected).join(','))}
+          >
+            {t('复制名称')} <Icon.Arrow />
+          </button>
+        </div>
+      </div>
+
+      {/* Detail drawer (reused) */}
       <ImagePreview
         src={pricingData.modalImageUrl}
         visible={pricingData.isModalOpenurl}
@@ -581,12 +692,12 @@ const PricingPage = () => {
         onClose={pricingData.closeModelDetail}
         modelData={pricingData.selectedModel}
         groupRatio={groupRatio}
-        usableGroup={usableGroup}
+        usableGroup={pricingData.usableGroup}
         currency={currency}
         siteDisplayType={siteDisplayType}
         tokenUnit={tokenUnit}
         displayPrice={displayPrice}
-        showRatio={showRatio}
+        showRatio={false}
         vendorsMap={pricingData.vendorsMap}
         endpointMap={pricingData.endpointMap}
         autoGroups={pricingData.autoGroups}
@@ -595,5 +706,333 @@ const PricingPage = () => {
     </div>
   );
 };
+
+/* ─── pull a numeric value out of a formatted price string for sorting ─── */
+function extractNumeric(formatted) {
+  if (!formatted) return null;
+  const m = String(formatted).match(/[-+]?[0-9]*\.?[0-9]+/);
+  return m ? parseFloat(m[0]) : null;
+}
+
+/* ─── Page CSS — scoped under .aml-root ─── */
+const PAGE_CSS = `
+.aml-root {
+  --aml-grad: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
+  --aml-grad-soft: linear-gradient(135deg, rgba(0,114,255,0.08) 0%, rgba(0,198,255,0.08) 100%);
+  --aml-grad-softer: linear-gradient(135deg, rgba(0,114,255,0.04) 0%, rgba(0,198,255,0.04) 100%);
+  --aml-blue-1: #0072ff;
+  --aml-blue-2: #00c6ff;
+  --aml-ink-900: #0b1a2b;
+  --aml-ink-700: #2a3a4d;
+  --aml-ink-500: #5b6878;
+  --aml-ink-400: #8593a3;
+  --aml-ink-300: #b6bfca;
+  --aml-line: #e8edf3;
+  --aml-line-soft: #f1f4f8;
+  --aml-bg: #f7f9fc;
+  --aml-card: #ffffff;
+  --aml-radius: 14px;
+  --aml-radius-sm: 10px;
+  font-family: "Inter", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--aml-bg);
+  color: var(--aml-ink-900);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100%;
+  flex: 1 0 auto;
+}
+.aml-root .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.aml-root button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+.aml-root input, .aml-root select { font-family: inherit; }
+
+/* layout */
+.aml-page { max-width: 1280px; margin: 0 auto; padding: 32px 28px 80px; box-sizing: border-box; }
+
+/* header */
+.aml-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+.aml-title-block .eyebrow {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--aml-grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+  margin-bottom: 6px;
+}
+.aml-title-block h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+.aml-title-block .sub { color: var(--aml-ink-500); font-size: 13px; margin-top: 6px; }
+.aml-header-tools { display: flex; align-items: center; gap: 10px; }
+
+.aml-search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--aml-card);
+  border: 1px solid var(--aml-line);
+  border-radius: 999px;
+  padding: 8px 14px 8px 12px;
+  width: 280px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.aml-search:focus-within {
+  border-color: rgba(0,114,255,0.4);
+  box-shadow: 0 0 0 4px rgba(0,114,255,0.08);
+}
+.aml-search svg { color: var(--aml-ink-400); flex: none; }
+.aml-search input { border: none; outline: none; background: transparent; flex: 1; font-size: 13px; color: var(--aml-ink-900); min-width: 0; }
+.aml-search input::placeholder { color: var(--aml-ink-400); }
+
+.aml-icon-btn {
+  width: 36px; height: 36px; border-radius: 999px;
+  background: var(--aml-card); border: 1px solid var(--aml-line);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--aml-ink-500); transition: all .15s;
+}
+.aml-icon-btn:hover { color: var(--aml-blue-1); border-color: rgba(0,114,255,0.3); }
+
+.aml-view-toggle {
+  display: inline-flex; padding: 3px; background: var(--aml-card);
+  border: 1px solid var(--aml-line); border-radius: 999px; gap: 2px;
+}
+.aml-view-toggle button {
+  padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 500;
+  color: var(--aml-ink-500); display: inline-flex; align-items: center; gap: 6px;
+}
+.aml-view-toggle button.active {
+  background: var(--aml-grad); color: white;
+  box-shadow: 0 2px 8px rgba(0,114,255,0.25);
+}
+
+/* filter bar */
+.aml-filter-bar {
+  background: var(--aml-card); border: 1px solid var(--aml-line);
+  border-radius: var(--aml-radius); padding: 14px 16px;
+  margin-bottom: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.aml-filter-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.aml-filter-label {
+  font-size: 12px; color: var(--aml-ink-500); font-weight: 500;
+  flex: none; padding-right: 4px; min-width: 48px;
+}
+.aml-chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.aml-chip {
+  font-size: 12px; padding: 6px 12px; border-radius: 999px;
+  background: transparent; color: var(--aml-ink-700);
+  border: 1px solid transparent;
+  transition: all .12s;
+  font-weight: 500; white-space: nowrap;
+}
+.aml-chip:hover { background: var(--aml-line-soft); }
+.aml-chip.active {
+  background: var(--aml-grad); color: white;
+  box-shadow: 0 2px 6px rgba(0,114,255,0.2);
+}
+.aml-chip-count {
+  margin-left: 4px; font-size: 11px; opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+.aml-filter-divider { height: 1px; background: var(--aml-line-soft); margin: 0 -16px; }
+
+.aml-toggle-group { display: inline-flex; align-items: center; gap: 14px; margin-left: auto; }
+.aml-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--aml-ink-500); cursor: pointer; }
+.aml-toggle .switch { position: relative; width: 30px; height: 16px; background: #dfe5ec; border-radius: 999px; transition: background .15s; flex: none; }
+.aml-toggle .switch::after {
+  content: ''; position: absolute; left: 2px; top: 2px; width: 12px; height: 12px;
+  background: white; border-radius: 50%; transition: transform .15s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+.aml-toggle.on .switch { background: var(--aml-grad); }
+.aml-toggle.on .switch::after { transform: translateX(14px); }
+.aml-mini-select {
+  font-size: 12px; padding: 4px 8px; border-radius: 8px;
+  border: 1px solid var(--aml-line); background: var(--aml-card); color: var(--aml-ink-700);
+  cursor: pointer;
+}
+
+/* result meta */
+.aml-result-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; padding: 0 4px;
+}
+.aml-result-meta .count { font-size: 12px; color: var(--aml-ink-500); }
+.aml-result-meta .count strong { color: var(--aml-ink-900); font-weight: 600; }
+.aml-sort-select {
+  font-size: 12px; color: var(--aml-ink-700); background: transparent;
+  border: none; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
+}
+.aml-sort-select:hover { color: var(--aml-blue-1); }
+
+/* list view */
+.aml-list { display: flex; flex-direction: column; gap: 6px; }
+.aml-row {
+  background: var(--aml-card); border: 1px solid var(--aml-line);
+  border-radius: var(--aml-radius);
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 36px minmax(220px, 1.4fr) repeat(3, 1fr) auto auto;
+  gap: 18px; align-items: center;
+  transition: border-color .12s, box-shadow .12s;
+  position: relative;
+}
+.aml-row:hover {
+  border-color: rgba(0,114,255,0.25);
+  box-shadow: 0 4px 14px -6px rgba(0,114,255,0.18);
+}
+.aml-row.selected {
+  border-color: rgba(0,114,255,0.5);
+  background: linear-gradient(180deg, rgba(0,114,255,0.025), transparent 40%);
+}
+.aml-row.selected::before {
+  content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px;
+  background: var(--aml-grad); border-radius: 0 3px 3px 0;
+}
+
+.aml-model-info { min-width: 0; }
+.aml-model-name { font-size: 14px; font-weight: 600; color: var(--aml-ink-900); display: flex; align-items: center; gap: 8px; }
+.aml-model-desc { font-size: 12px; color: var(--aml-ink-500); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.aml-pill {
+  font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 4px;
+  background: var(--aml-line-soft); color: var(--aml-ink-500);
+  text-transform: lowercase; letter-spacing: 0.02em;
+}
+
+.aml-price-cell { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.aml-price-cell .label { font-size: 11px; color: var(--aml-ink-400); font-weight: 500; }
+.aml-price-cell .value {
+  font-size: 14px; font-weight: 600;
+  background: var(--aml-grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+  font-feature-settings: "tnum";
+  white-space: nowrap;
+}
+.aml-price-cell .unit { font-size: 10px; color: var(--aml-ink-400); margin-left: 1px; font-weight: 500; }
+.aml-price-cell.muted .value { background: none; -webkit-text-fill-color: var(--aml-ink-300); color: var(--aml-ink-300); }
+
+.aml-tag-cell { display: flex; gap: 4px; flex-wrap: wrap; max-width: 130px; justify-content: flex-end; }
+.aml-tag {
+  font-size: 10px; font-weight: 500;
+  padding: 3px 8px; border-radius: 4px;
+  background: var(--aml-grad-soft); color: var(--aml-blue-1);
+  text-transform: uppercase; letter-spacing: 0.04em;
+  border: 1px solid rgba(0,114,255,0.1);
+  white-space: nowrap;
+}
+.aml-tag.alt { background: var(--aml-line-soft); color: var(--aml-ink-500); border-color: transparent; }
+
+.aml-row-actions { display: flex; align-items: center; gap: 8px; }
+.aml-checkbox {
+  width: 16px; height: 16px; border-radius: 4px;
+  border: 1.5px solid var(--aml-ink-300);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .12s; background: white;
+  flex: none; padding: 0;
+}
+.aml-checkbox.checked { background: var(--aml-grad); border-color: transparent; }
+.aml-checkbox.checked svg { color: white; }
+.aml-checkbox svg { opacity: 0; transition: opacity .12s; }
+.aml-checkbox.checked svg { opacity: 1; }
+
+.aml-btn-primary {
+  background: var(--aml-grad); color: white;
+  padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 5px;
+  box-shadow: 0 2px 8px rgba(0,114,255,0.22);
+  transition: transform .12s, box-shadow .12s;
+  white-space: nowrap;
+}
+.aml-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,114,255,0.32); }
+.aml-btn-primary svg { transition: transform .12s; }
+.aml-btn-primary:hover svg { transform: translateX(2px); }
+
+/* table view */
+.aml-table-wrap { background: var(--aml-card); border: 1px solid var(--aml-line); border-radius: var(--aml-radius); overflow: hidden; }
+.aml-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.aml-table thead th {
+  text-align: left; font-size: 11px; font-weight: 600; color: var(--aml-ink-500);
+  text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 12px 16px; background: #fafbfd; border-bottom: 1px solid var(--aml-line);
+  white-space: nowrap;
+}
+.aml-table thead th.num { text-align: right; }
+.aml-table tbody td { padding: 12px 16px; border-bottom: 1px solid var(--aml-line-soft); vertical-align: middle; }
+.aml-table tbody tr:last-child td { border-bottom: none; }
+.aml-table tbody tr:hover { background: #fafbfd; }
+.aml-table tbody tr.selected { background: linear-gradient(90deg, rgba(0,114,255,0.04), transparent); }
+.aml-name-cell { display: flex; align-items: center; gap: 10px; }
+.aml-table .num { text-align: right; font-feature-settings: "tnum"; white-space: nowrap; }
+.aml-table .grad-num { background: var(--aml-grad); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 600; }
+
+/* card view */
+.aml-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.aml-card-item {
+  background: var(--aml-card); border: 1px solid var(--aml-line);
+  border-radius: var(--aml-radius); padding: 16px;
+  transition: border-color .12s, box-shadow .12s;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.aml-card-item:hover { border-color: rgba(0,114,255,0.25); box-shadow: 0 4px 14px -6px rgba(0,114,255,0.18); }
+.aml-card-head { display: flex; gap: 12px; align-items: flex-start; }
+.aml-card-head .info { flex: 1; min-width: 0; }
+.aml-card-head .name { font-size: 15px; font-weight: 600; }
+.aml-card-head .desc {
+  font-size: 12px; color: var(--aml-ink-500); margin-top: 4px; line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.aml-card-prices {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  padding: 10px 12px; background: var(--aml-grad-softer);
+  border-radius: var(--aml-radius-sm);
+}
+.aml-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.aml-card-foot .left { display: flex; gap: 4px; flex-wrap: wrap; }
+
+/* selection bar */
+.aml-sel-bar {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
+  background: #0b1a2b; color: white;
+  padding: 10px 12px 10px 18px; border-radius: 999px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 14px 40px -10px rgba(11,26,43,0.5);
+  transition: transform .25s cubic-bezier(0.2, 0.9, 0.2, 1);
+  font-size: 13px;
+  z-index: 50;
+}
+.aml-sel-bar.show { transform: translateX(-50%) translateY(0); }
+.aml-sel-bar .count-pill {
+  background: var(--aml-grad); padding: 2px 10px; border-radius: 999px; font-weight: 600;
+  font-size: 12px;
+}
+.aml-sel-bar button { color: rgba(255,255,255,0.7); font-size: 12px; padding: 4px 8px; border-radius: 6px; }
+.aml-sel-bar button:hover { color: white; background: rgba(255,255,255,0.08); }
+.aml-sel-bar .sb-action {
+  background: var(--aml-grad); color: white; padding: 7px 14px; border-radius: 999px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+
+/* empty state */
+.aml-empty {
+  padding: 60px 20px; text-align: center; color: var(--aml-ink-400);
+  background: var(--aml-card); border: 1px solid var(--aml-line); border-radius: var(--aml-radius);
+}
+
+/* responsive */
+@media (max-width: 1100px) {
+  .aml-row { grid-template-columns: 36px 1.4fr 1fr 1fr 1fr auto; }
+  .aml-row .aml-cache-cell { display: none !important; }
+  .aml-row .aml-tag-cell { display: none; }
+}
+@media (max-width: 720px) {
+  .aml-cards { grid-template-columns: 1fr; }
+  .aml-row { grid-template-columns: 36px 1fr auto; }
+  .aml-row .aml-price-cell, .aml-row .aml-tag-cell, .aml-row .aml-cache-cell { display: none !important; }
+  .aml-header { flex-direction: column; align-items: flex-start; }
+  .aml-search { width: 100%; }
+  .aml-page { padding: 20px 14px 80px; }
+}
+@media (max-width: 1100px) and (min-width: 721px) {
+  .aml-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* dark-mode awareness — soften the bg/lines if the host is dark */
+@media (prefers-color-scheme: dark) {
+  .aml-root { background: transparent; }
+}
+`;
 
 export default PricingPage;

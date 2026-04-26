@@ -541,7 +541,7 @@ const PricingPage = () => {
     t,
   } = pricingData;
 
-  const [view, setView] = useState('card');
+  const [view, setView] = useState('cards');
   const [sortBy, setSortBy] = useState('default');
 
   // Compute prices for the visible models so we can sort/render uniformly.

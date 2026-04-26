@@ -20,11 +20,17 @@ For commercial licensing, please contact support@quantumnous.com
 import React from 'react';
 
 export const MODEL_DRAWER_STYLES = `
-/* Kill SideSheet's default border-radius so the panel meets the viewport edge. */
+/* Kill SideSheet's default border-radius and inner body padding so the
+   panel meets the viewport edge cleanly and our scoped layout fills height. */
 .semi-sidesheet-inner.md-detail-sheet,
 .semi-sidesheet-inner.md-detail-sheet .semi-sidesheet-content,
 .semi-sidesheet-inner.md-detail-sheet .semi-sidesheet-body {
   border-radius: 0 !important;
+}
+.semi-sidesheet-inner.md-detail-sheet .semi-sidesheet-body {
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 .md-root {
@@ -41,7 +47,8 @@ export const MODEL_DRAWER_STYLES = `
   --md-bg: #f6f8fc;
   --md-card: #ffffff;
   --md-body-bg: #f8fafc;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: var(--md-card);
@@ -142,8 +149,9 @@ export const MODEL_DRAWER_STYLES = `
 /* Body — only this scrolls */
 .md-body {
   flex: 1;
+  min-height: 0;
   overflow: auto;
-  padding: 18px 22px;
+  padding: 14px 16px;
   background: var(--md-body-bg);
 }
 
@@ -152,8 +160,8 @@ export const MODEL_DRAWER_STYLES = `
   background: var(--md-card);
   border: 1px solid var(--md-line);
   border-radius: 12px;
-  padding: 18px 20px;
-  margin-bottom: 14px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
 }
 .md-card:last-child {
   margin-bottom: 0;

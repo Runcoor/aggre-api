@@ -20,12 +20,17 @@ For commercial licensing, please contact support@quantumnous.com
 import React from 'react';
 
 export const TOKEN_DRAWER_STYLES = `
-/* Drawer container — kill all border-radius from Semi SideSheet so the
-   panel meets the viewport edge cleanly. */
-.semi-sidesheet-inner,
-.semi-sidesheet-content,
-.semi-sidesheet-body {
+/* Drawer container — scoped to .tk-create-sheet so other SideSheet
+   instances on the page keep their default styling. */
+.semi-sidesheet-inner.tk-create-sheet,
+.semi-sidesheet-inner.tk-create-sheet .semi-sidesheet-content,
+.semi-sidesheet-inner.tk-create-sheet .semi-sidesheet-body {
   border-radius: 0 !important;
+}
+.semi-sidesheet-inner.tk-create-sheet .semi-sidesheet-body {
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 /* Spin inside body must not break the parent flex column. */
@@ -51,7 +56,8 @@ export const TOKEN_DRAWER_STYLES = `
   --tk-bg: #f6f8fc;
   --tk-card: #ffffff;
   --tk-danger: #ef5b5b;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: var(--tk-card);

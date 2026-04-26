@@ -31,6 +31,7 @@ For commercial licensing, please contact support@quantumnous.com
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ImagePreview } from '@douyinfe/semi-ui';
 import {
   calculateModelPrice,
@@ -44,40 +45,103 @@ import { useIsMobile } from '../../../../hooks/common/useIsMobile';
 /* ─── Inline icons ─── */
 const Icon = {
   Search: (p) => (
-    <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' {...p}>
+    <svg
+      width='14'
+      height='14'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      {...p}
+    >
       <circle cx='11' cy='11' r='7' />
       <path d='m20 20-3.5-3.5' />
     </svg>
   ),
   Refresh: (p) => (
-    <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' {...p}>
+    <svg
+      width='14'
+      height='14'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      {...p}
+    >
       <path d='M21 12a9 9 0 1 1-3-6.7L21 8' />
       <path d='M21 3v5h-5' />
     </svg>
   ),
   Check: (p) => (
-    <svg width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='3.5' strokeLinecap='round' strokeLinejoin='round' {...p}>
+    <svg
+      width='10'
+      height='10'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='3.5'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      {...p}
+    >
       <path d='m4 12 5 5L20 6' />
     </svg>
   ),
   Arrow: (p) => (
-    <svg width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.4' strokeLinecap='round' strokeLinejoin='round' {...p}>
+    <svg
+      width='11'
+      height='11'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2.4'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      {...p}
+    >
       <path d='M5 12h14' />
       <path d='m13 6 6 6-6 6' />
     </svg>
   ),
   Chevron: (p) => (
-    <svg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' {...p}>
+    <svg
+      width='12'
+      height='12'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      {...p}
+    >
       <path d='m6 9 6 6 6-6' />
     </svg>
   ),
   ListV: (p) => (
-    <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' {...p}>
+    <svg
+      width='13'
+      height='13'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      {...p}
+    >
       <path d='M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01' />
     </svg>
   ),
   Cards: (p) => (
-    <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' {...p}>
+    <svg
+      width='13'
+      height='13'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      {...p}
+    >
       <rect x='3' y='3' width='8' height='8' rx='1.5' />
       <rect x='13' y='3' width='8' height='8' rx='1.5' />
       <rect x='3' y='13' width='8' height='8' rx='1.5' />
@@ -85,7 +149,15 @@ const Icon = {
     </svg>
   ),
   Table: (p) => (
-    <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' {...p}>
+    <svg
+      width='13'
+      height='13'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      {...p}
+    >
       <rect x='3' y='4' width='18' height='16' rx='2' />
       <path d='M3 10h18M3 15h18M9 4v16' />
     </svg>
@@ -164,7 +236,11 @@ function PriceCell({ label, value, t }) {
 /* ─── Chip ─── */
 function Chip({ active, onClick, children, count }) {
   return (
-    <button type='button' className={`aml-chip ${active ? 'active' : ''}`} onClick={onClick}>
+    <button
+      type='button'
+      className={`aml-chip ${active ? 'active' : ''}`}
+      onClick={onClick}
+    >
       {children}
       {count != null && <span className='aml-chip-count'>{count}</span>}
     </button>
@@ -174,7 +250,10 @@ function Chip({ active, onClick, children, count }) {
 /* ─── Toggle ─── */
 function Toggle({ on, onChange, label }) {
   return (
-    <div className={`aml-toggle ${on ? 'on' : ''}`} onClick={() => onChange(!on)}>
+    <div
+      className={`aml-toggle ${on ? 'on' : ''}`}
+      onClick={() => onChange(!on)}
+    >
       <span>{label}</span>
       <span className='switch' />
     </div>
@@ -201,7 +280,9 @@ function ListRow({ m, selected, onToggleSelect, onView, t }) {
       </div>
       <div className='aml-tag-cell'>
         {tags.slice(0, 2).map((tg) => (
-          <span key={tg} className='aml-tag'>{tg}</span>
+          <span key={tg} className='aml-tag'>
+            {tg}
+          </span>
         ))}
       </div>
       <div className='aml-row-actions'>
@@ -216,7 +297,11 @@ function ListRow({ m, selected, onToggleSelect, onView, t }) {
         >
           <Icon.Check />
         </button>
-        <button type='button' className='aml-btn-primary' onClick={() => onView(m)}>
+        <button
+          type='button'
+          className='aml-btn-primary'
+          onClick={() => onView(m)}
+        >
           {t('查看详情')} <Icon.Arrow />
         </button>
       </div>
@@ -254,13 +339,21 @@ function CardItem({ m, selected, onToggleSelect, onView, t }) {
       <div className='aml-card-foot'>
         <div className='left'>
           {(m.supported_endpoint_types || []).slice(0, 1).map((ep) => (
-            <span key={ep} className='aml-tag alt'>{ep}</span>
+            <span key={ep} className='aml-tag alt'>
+              {ep}
+            </span>
           ))}
           {tags.slice(0, 3).map((tg) => (
-            <span key={tg} className='aml-tag'>{tg}</span>
+            <span key={tg} className='aml-tag'>
+              {tg}
+            </span>
           ))}
         </div>
-        <button type='button' className='aml-btn-primary' onClick={() => onView(m)}>
+        <button
+          type='button'
+          className='aml-btn-primary'
+          onClick={() => onView(m)}
+        >
           {t('详情')} <Icon.Arrow />
         </button>
       </div>
@@ -333,12 +426,18 @@ function TableView({ items, selected, onToggleSelect, onView, t }) {
                 <td>
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                     {tags.slice(0, 3).map((tg) => (
-                      <span key={tg} className='aml-tag'>{tg}</span>
+                      <span key={tg} className='aml-tag'>
+                        {tg}
+                      </span>
                     ))}
                   </div>
                 </td>
                 <td>
-                  <button type='button' className='aml-btn-primary' onClick={() => onView(m)}>
+                  <button
+                    type='button'
+                    className='aml-btn-primary'
+                    onClick={() => onView(m)}
+                  >
                     {t('详情')}
                   </button>
                 </td>
@@ -437,11 +536,18 @@ const PricingPage = () => {
     if (sortBy === 'default') return itemsWithPrices;
     const arr = [...itemsWithPrices];
     if (sortBy === 'price-asc') {
-      arr.sort((a, b) => (a._inputNumeric ?? Infinity) - (b._inputNumeric ?? Infinity));
+      arr.sort(
+        (a, b) => (a._inputNumeric ?? Infinity) - (b._inputNumeric ?? Infinity),
+      );
     } else if (sortBy === 'price-desc') {
-      arr.sort((a, b) => (b._inputNumeric ?? -Infinity) - (a._inputNumeric ?? -Infinity));
+      arr.sort(
+        (a, b) =>
+          (b._inputNumeric ?? -Infinity) - (a._inputNumeric ?? -Infinity),
+      );
     } else if (sortBy === 'name') {
-      arr.sort((a, b) => (a.model_name || '').localeCompare(b.model_name || ''));
+      arr.sort((a, b) =>
+        (a.model_name || '').localeCompare(b.model_name || ''),
+      );
     }
     return arr;
   }, [itemsWithPrices, sortBy]);
@@ -495,9 +601,12 @@ const PricingPage = () => {
             <div className='eyebrow'>{t('模型定价 · Aggre Token')}</div>
             <h1>{t('模型列表')}</h1>
             <div className='sub'>
-              {t('统一接入 {{count}} 个主流模型，按使用量计费，毫秒级路由切换。', {
-                count: models.length,
-              })}
+              {t(
+                '统一接入 {{count}} 个主流模型，按使用量计费，毫秒级路由切换。',
+                {
+                  count: models.length,
+                },
+              )}
             </div>
           </div>
           <div className='aml-header-tools'>
@@ -512,17 +621,34 @@ const PricingPage = () => {
               />
             </div>
             <div className='aml-view-toggle' role='tablist'>
-              <button type='button' className={view === 'list' ? 'active' : ''} onClick={() => setView('list')}>
+              <button
+                type='button'
+                className={view === 'list' ? 'active' : ''}
+                onClick={() => setView('list')}
+              >
                 <Icon.ListV /> {t('列表')}
               </button>
-              <button type='button' className={view === 'cards' ? 'active' : ''} onClick={() => setView('cards')}>
+              <button
+                type='button'
+                className={view === 'cards' ? 'active' : ''}
+                onClick={() => setView('cards')}
+              >
                 <Icon.Cards /> {t('卡片')}
               </button>
-              <button type='button' className={view === 'table' ? 'active' : ''} onClick={() => setView('table')}>
+              <button
+                type='button'
+                className={view === 'table' ? 'active' : ''}
+                onClick={() => setView('table')}
+              >
                 <Icon.Table /> {t('表格')}
               </button>
             </div>
-            <button type='button' className='aml-icon-btn' title={t('刷新')} onClick={refresh}>
+            <button
+              type='button'
+              className='aml-icon-btn'
+              title={t('刷新')}
+              onClick={refresh}
+            >
               <Icon.Refresh />
             </button>
           </div>
@@ -549,7 +675,11 @@ const PricingPage = () => {
             <span className='aml-filter-label'>{t('能力')}</span>
             <div className='aml-chip-row'>
               {tagOpts.map((tg) => (
-                <Chip key={tg} active={filterTag === tg} onClick={() => setFilterTag(tg)}>
+                <Chip
+                  key={tg}
+                  active={filterTag === tg}
+                  onClick={() => setFilterTag(tg)}
+                >
                   {tg === 'all' ? t('全部') : tg}
                 </Chip>
               ))}
@@ -560,7 +690,11 @@ const PricingPage = () => {
             <span className='aml-filter-label'>{t('提供商')}</span>
             <div className='aml-chip-row'>
               {providerOpts.map((pv) => (
-                <Chip key={pv} active={filterVendor === pv} onClick={() => setFilterVendor(pv)}>
+                <Chip
+                  key={pv}
+                  active={filterVendor === pv}
+                  onClick={() => setFilterVendor(pv)}
+                >
                   {pv === 'all' ? t('全部') : pv}
                 </Chip>
               ))}
@@ -592,7 +726,9 @@ const PricingPage = () => {
         <div className='aml-result-meta'>
           <div className='count'>
             {t('共')} <strong>{sortedItems.length}</strong> {t('个模型')}
-            <span style={{ margin: '0 6px', color: 'var(--aml-ink-300)' }}>·</span>
+            <span style={{ margin: '0 6px', color: 'var(--aml-ink-300)' }}>
+              ·
+            </span>
             {t('已选')} <strong>{selected.size}</strong>
           </div>
           <button
@@ -603,7 +739,8 @@ const PricingPage = () => {
               setSortBy(opts[(opts.indexOf(sortBy) + 1) % opts.length]);
             }}
           >
-            {t('排序')}：{
+            {t('排序')}：
+            {
               {
                 default: t('默认'),
                 'price-asc': t('价格 ↑'),
@@ -616,9 +753,7 @@ const PricingPage = () => {
         </div>
 
         {/* CONTENT */}
-        {loading && (
-          <div className='aml-empty'>{t('加载中…')}</div>
-        )}
+        {loading && <div className='aml-empty'>{t('加载中…')}</div>}
 
         {!loading && view === 'list' && (
           <div className='aml-list'>
@@ -665,21 +800,30 @@ const PricingPage = () => {
             {t('没有匹配的模型，试试调整筛选条件。')}
           </div>
         )}
-
-        {/* SELECTION BAR */}
-        <div className={`aml-sel-bar ${selected.size > 0 ? 'show' : ''}`}>
-          <span className='count-pill'>{selected.size}</span>
-          <span>{t('已选模型')}</span>
-          <button type='button' onClick={clearSelection}>{t('清空')}</button>
-          <button
-            type='button'
-            className='sb-action'
-            onClick={() => pricingData.copyText(Array.from(selected).join(','))}
-          >
-            {t('复制名称')} <Icon.Arrow />
-          </button>
-        </div>
       </div>
+
+      {/* SELECTION BAR — portalled to body so ancestor transforms cannot
+         trap position:fixed; only mounted while there's a selection. */}
+      {selected.size > 0 &&
+        createPortal(
+          <div className='aml-sel-bar show'>
+            <span className='count-pill'>{selected.size}</span>
+            <span>{t('已选模型')}</span>
+            <button type='button' onClick={clearSelection}>
+              {t('清空')}
+            </button>
+            <button
+              type='button'
+              className='sb-action'
+              onClick={() =>
+                pricingData.copyText(Array.from(selected).join(','))
+              }
+            >
+              {t('复制名称')} <Icon.Arrow />
+            </button>
+          </div>,
+          document.body,
+        )}
 
       {/* Detail drawer (reused) */}
       <ImagePreview
@@ -917,12 +1061,15 @@ const PAGE_CSS = `
 
 .aml-row-actions { display: flex; align-items: center; gap: 8px; }
 .aml-checkbox {
-  width: 16px; height: 16px; border-radius: 4px;
-  border: 1.5px solid var(--aml-ink-300);
+  width: 18px; height: 18px; border-radius: 4px;
+  border: 1.5px solid #94a3b8;
   display: inline-flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: all .12s; background: white;
+  cursor: pointer; transition: all .12s;
+  background: white;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,1);
   flex: none; padding: 0;
 }
+.aml-checkbox:hover { border-color: var(--aml-blue-1); background: var(--aml-grad-soft); }
 .aml-checkbox.checked { background: var(--aml-grad); border-color: transparent; }
 .aml-checkbox.checked svg { color: white; }
 .aml-checkbox svg { opacity: 0; transition: opacity .12s; }
@@ -982,18 +1129,22 @@ const PAGE_CSS = `
 .aml-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .aml-card-foot .left { display: flex; gap: 4px; flex-wrap: wrap; }
 
-/* selection bar */
+/* selection bar — portalled to body, slides up on mount */
 .aml-sel-bar {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
   background: #0b1a2b; color: white;
   padding: 10px 12px 10px 18px; border-radius: 999px;
   display: flex; align-items: center; gap: 12px;
   box-shadow: 0 14px 40px -10px rgba(11,26,43,0.5);
-  transition: transform .25s cubic-bezier(0.2, 0.9, 0.2, 1);
   font-size: 13px;
-  z-index: 50;
+  z-index: 1100;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  animation: aml-sel-bar-in .26s cubic-bezier(0.2, 0.9, 0.2, 1);
 }
-.aml-sel-bar.show { transform: translateX(-50%) translateY(0); }
+@keyframes aml-sel-bar-in {
+  from { transform: translateX(-50%) translateY(140%); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
 .aml-sel-bar .count-pill {
   background: var(--aml-grad); padding: 2px 10px; border-radius: 999px; font-weight: 600;
   font-size: 12px;

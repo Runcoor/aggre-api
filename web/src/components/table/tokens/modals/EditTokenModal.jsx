@@ -350,8 +350,9 @@ const EditTokenModal = (props) => {
         onCancel={handleClose}
         closable={false}
         headerStyle={{ display: 'none' }}
-        bodyStyle={{ padding: 0, height: '100%' }}
+        bodyStyle={{ padding: 0 }}
         style={{ borderRadius: 0 }}
+        className='tk-create-sheet'
         footer={null}
         mask
       >

@@ -370,28 +370,39 @@ export const ACCOUNT_SETTINGS_STYLES = `
 .aas-root .aas-sub-card .aas-sub-title { font-size: 12px; font-weight: 500; color: var(--aas-ink-900); }
 .aas-root .aas-sub-card .aas-sub-desc { font-size: 10.5px; color: var(--aas-ink-500); margin-top: 1px; }
 
-/* sticky save bar */
-.aas-root .aas-save-bar {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
+/* sticky save bar — portalled to body, unscoped so portal escape still styles */
+.aas-save-bar {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
   background: #0b1a2b; color: white;
   padding: 8px 8px 8px 18px; border-radius: 999px;
   display: flex; align-items: center; gap: 14px;
   box-shadow: 0 14px 40px -10px rgba(11,26,43,0.5);
-  transition: transform .25s cubic-bezier(0.2, 0.9, 0.2, 1);
   font-size: 13px;
-  z-index: 50;
+  z-index: 1100;
   white-space: nowrap;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  animation: aas-save-bar-in .26s cubic-bezier(0.2, 0.9, 0.2, 1);
 }
-.aas-root .aas-save-bar.show { transform: translateX(-50%) translateY(0); }
-.aas-root .aas-save-bar .aas-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--aas-orange); animation: aas-pulse 1.5s infinite; flex: none; }
-.aas-root .aas-save-bar .aas-discard {
+@keyframes aas-save-bar-in {
+  from { transform: translateX(-50%) translateY(140%); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+.aas-save-bar .aas-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #ff9500;
+  animation: aas-pulse 1.5s infinite; flex: none;
+}
+.aas-save-bar button { font-family: inherit; cursor: pointer; border: none; background: transparent; color: inherit; }
+.aas-save-bar .aas-discard {
   color: rgba(255,255,255,0.7); font-size: 12px; padding: 4px 10px; border-radius: 6px;
 }
-.aas-root .aas-save-bar .aas-discard:hover { color: white; background: rgba(255,255,255,0.08); }
-.aas-root .aas-save-bar .aas-save-action {
-  background: var(--aas-grad); color: white; padding: 7px 16px; border-radius: 999px; font-weight: 600;
+.aas-save-bar .aas-discard:hover { color: white; background: rgba(255,255,255,0.08); }
+.aas-save-bar .aas-save-action {
+  background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
+  color: white; padding: 7px 16px; border-radius: 999px; font-weight: 600;
+  font-size: 12px;
 }
-.aas-root .aas-save-bar .aas-save-action:disabled { opacity: 0.65; cursor: progress; }
+.aas-save-bar .aas-save-action:disabled { opacity: 0.65; cursor: progress; }
 @keyframes aas-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }

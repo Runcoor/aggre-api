@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useContext, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   API,
@@ -567,23 +568,31 @@ const PersonalSetting = () => {
             />
           </div>
         </div>
-
-        {/* Save bar */}
-        <div className={`aas-save-bar ${dirty ? 'show' : ''}`}>
-          <span className='aas-dot' />
-          <span>{t('有未保存的更改')}</span>
-          <button className='aas-discard' onClick={discardNotificationChanges}>
-            {t('放弃')}
-          </button>
-          <button
-            className='aas-save-action'
-            onClick={saveNotificationSettings}
-            disabled={savingNotif}
-          >
-            {savingNotif ? '…' : t('保存设置')}
-          </button>
-        </div>
       </div>
+
+      {/* Save bar — portalled to body, only mounted while there are
+         unsaved changes. Floats fixed near the viewport bottom. */}
+      {dirty &&
+        createPortal(
+          <div className='aas-save-bar show'>
+            <span className='aas-dot' />
+            <span>{t('有未保存的更改')}</span>
+            <button
+              className='aas-discard'
+              onClick={discardNotificationChanges}
+            >
+              {t('放弃')}
+            </button>
+            <button
+              className='aas-save-action'
+              onClick={saveNotificationSettings}
+              disabled={savingNotif}
+            >
+              {savingNotif ? '…' : t('保存设置')}
+            </button>
+          </div>,
+          document.body,
+        )}
 
       {/* Modals — kept outside the scoped root so Semi portal styles don't leak */}
       <EmailBindModal

@@ -20,6 +20,21 @@ For commercial licensing, please contact support@quantumnous.com
 import React from 'react';
 
 export const TOKEN_DRAWER_STYLES = `
+/* Drawer container — kill all border-radius from Semi SideSheet so the
+   panel meets the viewport edge cleanly. */
+.semi-sidesheet-inner,
+.semi-sidesheet-content,
+.semi-sidesheet-body {
+  border-radius: 0 !important;
+}
+
+/* Spin inside body must not break the parent flex column. */
+.tk-body .tk-spin-body,
+.tk-body .semi-spin-wrapper,
+.tk-body .semi-spin-children {
+  width: 100%;
+}
+
 .tk-root {
   --tk-grad: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
   --tk-grad-soft: linear-gradient(135deg, rgba(0,114,255,0.08) 0%, rgba(0,198,255,0.08) 100%);
@@ -500,12 +515,13 @@ export const TOKEN_DRAWER_STYLES = `
   background: var(--tk-grad-softer);
 }
 
-/* Semi UI overrides — group/model selects + datepicker */
+/* Semi UI overrides — group/model selects + datepicker
+   Single border on outermost element only; inner wrappers are border-less. */
 .tk-root .semi-select,
 .tk-root .semi-datepicker {
   width: 100% !important;
 }
-.tk-root .semi-select-selection,
+.tk-root .semi-select,
 .tk-root .semi-datepicker .semi-input-wrapper,
 .tk-root .semi-input-wrapper {
   border: 1px solid var(--tk-line) !important;
@@ -514,25 +530,38 @@ export const TOKEN_DRAWER_STYLES = `
   background: white !important;
   box-shadow: none !important;
   transition: all 0.12s;
+  outline: none !important;
 }
-.tk-root .semi-select:hover .semi-select-selection,
+.tk-root .semi-select-selection,
+.tk-root .semi-select-selection-multiple {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  min-height: 36px !important;
+  padding: 0 8px !important;
+}
+.tk-root .semi-select:hover,
 .tk-root .semi-datepicker:hover .semi-input-wrapper,
 .tk-root .semi-input-wrapper:hover {
   border-color: rgba(0, 114, 255, 0.3) !important;
 }
-.tk-root .semi-select-focus .semi-select-selection,
+.tk-root .semi-select-focus,
+.tk-root .semi-select-open,
 .tk-root .semi-input-wrapper-focus,
 .tk-root .semi-datepicker .semi-input-wrapper-focus {
   border-color: rgba(0, 114, 255, 0.5) !important;
   box-shadow: 0 0 0 3px rgba(0, 114, 255, 0.1) !important;
 }
+.tk-root .semi-select-focus .semi-select-selection,
+.tk-root .semi-select-open .semi-select-selection {
+  border: none !important;
+  box-shadow: none !important;
+}
 .tk-root .semi-select-selection-text,
 .tk-root .semi-input {
   font-size: 13px !important;
   color: var(--tk-ink-900) !important;
-}
-.tk-root .semi-select .semi-select-content {
-  padding: 4px 12px;
 }
 .tk-root .semi-tag {
   background: var(--tk-grad-soft) !important;

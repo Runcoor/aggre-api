@@ -344,58 +344,53 @@ const EditTokenModal = (props) => {
   return (
     <>
       <SideSheet
-        placement={isEdit ? 'right' : 'left'}
+        placement='right'
         visible={props.visiable}
         width={isMobile ? '100%' : 520}
         onCancel={handleClose}
         closable={false}
         headerStyle={{ display: 'none' }}
         bodyStyle={{ padding: 0, height: '100%' }}
+        style={{ borderRadius: 0 }}
         footer={null}
         mask
       >
         <TokenDrawerStyles />
         <div className='tk-root'>
-          <Spin
-            spinning={loading}
-            wrapperClassName='tk-spin'
-            style={{ height: '100%' }}
-          >
-            <div className='tk-head'>
-              <div className='tk-head-left'>
-                <div className='tk-head-icon'>
-                  <I.Key />
-                </div>
-                <div className='tk-head-text'>
-                  <h3>
-                    {isEdit ? t('更新令牌信息') : t('创建新的令牌')}
-                    <span
-                      className={`tk-head-tag ${isEdit ? 'edit' : 'create'}`}
-                    >
-                      {isEdit ? t('更新') : t('新建')}
-                    </span>
-                  </h3>
-                  <p>
-                    {isEdit
-                      ? t('修改后立即生效，已签发的密钥保持不变')
-                      : t('令牌创建后仅显示一次完整密钥，请妥善保管')}
-                  </p>
-                </div>
+          <div className='tk-head'>
+            <div className='tk-head-left'>
+              <div className='tk-head-icon'>
+                <I.Key />
               </div>
-              <button
-                type='button'
-                className='tk-head-close'
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleClose();
-                }}
-                aria-label={t('关闭')}
-              >
-                <I.Close />
-              </button>
+              <div className='tk-head-text'>
+                <h3>
+                  {isEdit ? t('更新令牌信息') : t('创建新的令牌')}
+                  <span className={`tk-head-tag ${isEdit ? 'edit' : 'create'}`}>
+                    {isEdit ? t('更新') : t('新建')}
+                  </span>
+                </h3>
+                <p>
+                  {isEdit
+                    ? t('修改后立即生效，已签发的密钥保持不变')
+                    : t('令牌创建后仅显示一次完整密钥，请妥善保管')}
+                </p>
+              </div>
             </div>
+            <button
+              type='button'
+              className='tk-head-close'
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClose();
+              }}
+              aria-label={t('关闭')}
+            >
+              <I.Close />
+            </button>
+          </div>
 
-            <div className='tk-body'>
+          <div className='tk-body'>
+            <Spin spinning={loading} wrapperClassName='tk-spin-body'>
               {/* Section 1: 基本信息 */}
               <div className='tk-section'>
                 <div className='tk-section-head'>
@@ -709,61 +704,59 @@ const EditTokenModal = (props) => {
                   </div>
                 </div>
               </div>
-            </div>
+            </Spin>
+          </div>
 
-            <div className='tk-foot'>
-              <div className='tk-summary'>
-                {isEdit ? (
-                  <>
-                    <span>{t('保存为')}</span>
-                    <strong>{summary.quotaText}</strong>
-                    <span className='tk-summary-sep'>·</span>
-                    <span>{summary.expiryText}</span>
-                  </>
-                ) : (
-                  <>
-                    <span>
-                      {t('将创建')} <strong>{summary.count}</strong>{' '}
-                      {t('个令牌')}
-                    </span>
-                    <span className='tk-summary-sep'>·</span>
-                    <span>{summary.quotaText}</span>
-                    <span className='tk-summary-sep'>·</span>
-                    <span>
-                      {form.expired_time === -1
-                        ? t('永不过期')
-                        : EXPIRY_PRESETS.find((p) => p.v === activePreset)
-                              ?.label
-                          ? t(
-                              EXPIRY_PRESETS.find((p) => p.v === activePreset)
-                                .label,
-                            )
-                          : t('自定义')}
-                    </span>
-                  </>
-                )}
-              </div>
-              <div className='tk-actions'>
-                <button
-                  type='button'
-                  className='tk-btn tk-btn-ghost'
-                  onClick={handleClose}
-                  disabled={loading}
-                >
-                  {t('取消')}
-                </button>
-                <button
-                  type='button'
-                  className='tk-btn tk-btn-primary'
-                  onClick={submit}
-                  disabled={loading}
-                >
-                  {isEdit ? <I.Save /> : <I.Plus />}
-                  {isEdit ? t('保存修改') : t('创建令牌')}
-                </button>
-              </div>
+          <div className='tk-foot'>
+            <div className='tk-summary'>
+              {isEdit ? (
+                <>
+                  <span>{t('保存为')}</span>
+                  <strong>{summary.quotaText}</strong>
+                  <span className='tk-summary-sep'>·</span>
+                  <span>{summary.expiryText}</span>
+                </>
+              ) : (
+                <>
+                  <span>
+                    {t('将创建')} <strong>{summary.count}</strong> {t('个令牌')}
+                  </span>
+                  <span className='tk-summary-sep'>·</span>
+                  <span>{summary.quotaText}</span>
+                  <span className='tk-summary-sep'>·</span>
+                  <span>
+                    {form.expired_time === -1
+                      ? t('永不过期')
+                      : EXPIRY_PRESETS.find((p) => p.v === activePreset)?.label
+                        ? t(
+                            EXPIRY_PRESETS.find((p) => p.v === activePreset)
+                              .label,
+                          )
+                        : t('自定义')}
+                  </span>
+                </>
+              )}
             </div>
-          </Spin>
+            <div className='tk-actions'>
+              <button
+                type='button'
+                className='tk-btn tk-btn-ghost'
+                onClick={handleClose}
+                disabled={loading}
+              >
+                {t('取消')}
+              </button>
+              <button
+                type='button'
+                className='tk-btn tk-btn-primary'
+                onClick={submit}
+                disabled={loading}
+              >
+                {isEdit ? <I.Save /> : <I.Plus />}
+                {isEdit ? t('保存修改') : t('创建令牌')}
+              </button>
+            </div>
+          </div>
         </div>
       </SideSheet>
 

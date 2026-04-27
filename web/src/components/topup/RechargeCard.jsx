@@ -34,7 +34,6 @@ import {
   CreditCard,
   Coins,
   Wallet,
-  Receipt,
   Sparkles,
   AlertCircle,
   TicketCheck,
@@ -586,28 +585,16 @@ const RechargeCard = ({
             overflow: 'hidden',
           }}
         >
-          <div className='px-5 py-4 border-b border-[var(--border-subtle)] flex items-center justify-between'>
-            <div className='flex items-center gap-3'>
-              <span
-                className='flex items-center justify-center'
-                style={{ width: 32, height: 32, borderRadius: 'var(--radius-md)', background: 'var(--accent-light)' }}
-              >
-                <CreditCard size={16} style={{ color: 'var(--accent)' }} />
-              </span>
-              <h3 className='text-base font-semibold' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
-                {t('账户充值')}
-              </h3>
-            </div>
-            <Button
-              icon={<Receipt size={14} />}
-              theme='outline'
-              type='tertiary'
-              size='small'
-              onClick={onOpenHistory}
-              className='!rounded-[var(--radius-md)]'
+          <div className='px-5 py-4 border-b border-[var(--border-subtle)] flex items-center gap-3'>
+            <span
+              className='flex items-center justify-center'
+              style={{ width: 32, height: 32, borderRadius: 'var(--radius-md)', background: 'var(--accent-light)' }}
             >
-              {t('账单')}
-            </Button>
+              <CreditCard size={16} style={{ color: 'var(--accent)' }} />
+            </span>
+            <h3 className='text-base font-semibold' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
+              {t('账户充值')}
+            </h3>
           </div>
           <div className='p-5'>
             <Tabs type='card' activeKey={activeTab} onChange={setActiveTab}>
@@ -661,33 +648,21 @@ const RechargeCard = ({
             overflow: 'hidden',
           }}
         >
-          <div className='px-5 py-4 border-b border-[var(--border-subtle)] flex items-center justify-between'>
-            <div className='flex items-center gap-3'>
-              <span
-                className='flex items-center justify-center'
-                style={{ width: 32, height: 32, borderRadius: 'var(--radius-md)', background: 'var(--accent-light)' }}
-              >
-                <CreditCard size={16} style={{ color: 'var(--accent)' }} />
-              </span>
-              <div>
-                <h3 className='text-base font-semibold leading-tight' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
-                  {t('账户充值')}
-                </h3>
-                <p className='text-xs mt-0.5' style={{ color: 'var(--text-muted)' }}>
-                  {t('多种充值方式，安全便捷')}
-                </p>
-              </div>
-            </div>
-            <Button
-              icon={<Receipt size={14} />}
-              theme='outline'
-              type='tertiary'
-              size='small'
-              onClick={onOpenHistory}
-              className='!rounded-[var(--radius-md)]'
+          <div className='px-5 py-4 border-b border-[var(--border-subtle)] flex items-center gap-3'>
+            <span
+              className='flex items-center justify-center'
+              style={{ width: 32, height: 32, borderRadius: 'var(--radius-md)', background: 'var(--accent-light)' }}
             >
-              {t('账单')}
-            </Button>
+              <CreditCard size={16} style={{ color: 'var(--accent)' }} />
+            </span>
+            <div>
+              <h3 className='text-base font-semibold leading-tight' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
+                {t('账户充值')}
+              </h3>
+              <p className='text-xs mt-0.5' style={{ color: 'var(--text-muted)' }}>
+                {t('多种充值方式，安全便捷')}
+              </p>
+            </div>
           </div>
           <div className='p-5'>
             {topupContent}

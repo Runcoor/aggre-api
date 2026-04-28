@@ -228,20 +228,22 @@ const BillDetailModal = ({ visible, onCancel, record, userInfo, t }) => {
             </div>
           </div>
 
-          {/* Customer Info */}
+          {/* Customer Info — prefer the record's owner over the viewer */}
           <div style={{ flex: 1 }}>
             <div style={sectionTitle}>{t('bill.customerInfo')}</div>
             <div style={rowStyle}>
               <span style={labelStyle}>{t('bill.customerName')}</span>
-              <span style={valueStyle}>{userInfo?.display_name || userInfo?.username || '—'}</span>
+              <span style={valueStyle}>
+                {record.display_name || record.username || userInfo?.display_name || userInfo?.username || '—'}
+              </span>
             </div>
             <div style={rowStyle}>
               <span style={labelStyle}>{t('bill.customerEmail')}</span>
-              <span style={valueStyle}>{userInfo?.email || '—'}</span>
+              <span style={valueStyle}>{record.email || (record.user_id === userInfo?.id ? userInfo?.email : '') || '—'}</span>
             </div>
             <div style={rowStyle}>
               <span style={labelStyle}>{t('bill.userId')}</span>
-              <span style={{ ...valueStyle, fontFamily: 'monospace' }}>{userInfo?.id || '—'}</span>
+              <span style={{ ...valueStyle, fontFamily: 'monospace' }}>{record.user_id || userInfo?.id || '—'}</span>
             </div>
             <div style={rowStyle}>
               <span style={labelStyle}>{t('bill.customerNote')}</span>

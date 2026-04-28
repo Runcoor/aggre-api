@@ -65,7 +65,10 @@ const ReceiptModal = ({ visible, onCancel, record, userInfo, t }) => {
   const receiptNo = buildReceiptNo(record);
   const totalPaid = Number(record.money || 0);
   const issueDate = formatIssueDate(record.complete_time || record.create_time);
-  const customerRef = userInfo?.email || (userInfo?.id ? `UID-${userInfo.id}` : '—');
+  const customerRef =
+    record.email ||
+    (record.user_id === userInfo?.id ? userInfo?.email : '') ||
+    (record.user_id ? `UID-${record.user_id}` : userInfo?.id ? `UID-${userInfo.id}` : '—');
 
   const printOrSave = () => {
     const element = receiptRef.current;

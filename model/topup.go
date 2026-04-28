@@ -21,6 +21,52 @@ type TopUp struct {
 	CreateTime       int64   `json:"create_time"`
 	CompleteTime     int64   `json:"complete_time"`
 	Status           string  `json:"status"`
+
+	Username    string `json:"username" gorm:"-"`
+	DisplayName string `json:"display_name" gorm:"-"`
+	Email       string `json:"email" gorm:"-"`
+}
+
+// enrichTopUpsWithUser batch-loads username/display_name/email for a slice of TopUps
+// so the frontend can render the owning customer rather than the viewer.
+func enrichTopUpsWithUser(tx *gorm.DB, topups []*TopUp) {
+	if len(topups) == 0 {
+		return
+	}
+	userIdSet := make(map[int]struct{}, len(topups))
+	for _, t := range topups {
+		if t.UserId > 0 {
+			userIdSet[t.UserId] = struct{}{}
+		}
+	}
+	if len(userIdSet) == 0 {
+		return
+	}
+	userIds := make([]int, 0, len(userIdSet))
+	for id := range userIdSet {
+		userIds = append(userIds, id)
+	}
+	type userBrief struct {
+		Id          int    `json:"id"`
+		Username    string `json:"username"`
+		DisplayName string `json:"display_name"`
+		Email       string `json:"email"`
+	}
+	var users []userBrief
+	if err := tx.Table("users").Select("id, username, display_name, email").Where("id IN ?", userIds).Scan(&users).Error; err != nil {
+		return
+	}
+	idx := make(map[int]userBrief, len(users))
+	for _, u := range users {
+		idx[u.Id] = u
+	}
+	for _, t := range topups {
+		if u, ok := idx[t.UserId]; ok {
+			t.Username = u.Username
+			t.DisplayName = u.DisplayName
+			t.Email = u.Email
+		}
+	}
 }
 
 // HasSuccessTopUp 检查用户是否有过成功的充值记录
@@ -137,6 +183,8 @@ func GetUserTopUps(userId int, pageInfo *common.PageInfo) (topups []*TopUp, tota
 		return nil, 0, err
 	}
 
+	enrichTopUpsWithUser(tx, topups)
+
 	// Commit transaction
 	if err = tx.Commit().Error; err != nil {
 		return nil, 0, err
@@ -166,6 +214,8 @@ func GetAllTopUps(pageInfo *common.PageInfo) (topups []*TopUp, total int64, err 
 		tx.Rollback()
 		return nil, 0, err
 	}
+
+	enrichTopUpsWithUser(tx, topups)
 
 	if err = tx.Commit().Error; err != nil {
 		return nil, 0, err
@@ -201,6 +251,8 @@ func SearchUserTopUps(userId int, keyword string, pageInfo *common.PageInfo) (to
 		tx.Rollback()
 		return nil, 0, err
 	}
+
+	enrichTopUpsWithUser(tx, topups)
 
 	if err = tx.Commit().Error; err != nil {
 		return nil, 0, err
@@ -238,6 +290,8 @@ func SearchAllTopUps(keyword string, pageInfo *common.PageInfo, status string) (
 		tx.Rollback()
 		return nil, 0, err
 	}
+
+	enrichTopUpsWithUser(tx, topups)
 
 	if err = tx.Commit().Error; err != nil {
 		return nil, 0, err

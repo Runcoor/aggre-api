@@ -98,31 +98,6 @@ const ReceiptModal = ({ visible, onCancel, record, userInfo, t }) => {
     };
   };
 
-  const seal = (
-    <svg width='110' height='110' viewBox='0 0 110 110' style={{ overflow: 'visible' }}>
-      <defs>
-        <path id='rcpt-circle-top' d='M 55,55 m -42,0 a 42,42 0 1,1 84,0' />
-        <path id='rcpt-circle-bot' d='M 55,55 m -42,0 a 42,42 0 1,0 84,0' />
-      </defs>
-      <circle cx='55' cy='55' r='50' fill='none' stroke='#b91c1c' strokeWidth='2.5' />
-      <circle cx='55' cy='55' r='44' fill='none' stroke='#b91c1c' strokeWidth='1' />
-      <text fill='#b91c1c' fontSize='9' fontWeight='700' letterSpacing='2'>
-        <textPath href='#rcpt-circle-top' startOffset='50%' textAnchor='middle'>
-          AGGRETOKEN · OFFICIAL RECEIPT
-        </textPath>
-      </text>
-      <text fill='#b91c1c' fontSize='8' fontWeight='600' letterSpacing='1.5'>
-        <textPath href='#rcpt-circle-bot' startOffset='50%' textAnchor='middle'>
-          PAYMENT CONFIRMED · 付款确认
-        </textPath>
-      </text>
-      <polygon points='55,30 58,40 68,40 60,46 63,56 55,50 47,56 50,46 42,40 52,40' fill='#b91c1c' />
-      <text x='55' y='75' textAnchor='middle' fill='#b91c1c' fontSize='14' fontWeight='800' letterSpacing='2'>
-        PAID
-      </text>
-    </svg>
-  );
-
   const labelStyle = {
     fontSize: 10,
     color: '#6b7280',
@@ -337,8 +312,25 @@ const ReceiptModal = ({ visible, onCancel, record, userInfo, t }) => {
               {t('This document is a payment receipt for record purposes only and does not constitute a tax invoice. 本收据仅为付款凭证，不作为税务发票使用。')}
             </p>
           </div>
-          <div style={{ width: 130, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-            <div style={{ transform: 'rotate(-12deg)' }}>{seal}</div>
+          <div style={{ width: 150, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 14px',
+                border: '2px solid #16a34a',
+                borderRadius: 6,
+                color: '#16a34a',
+                fontWeight: 800,
+                fontSize: 13,
+                letterSpacing: 2,
+                background: 'rgba(22, 163, 74, 0.06)',
+              }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#16a34a' }} />
+              PAID · 已付款
+            </div>
             <div style={{ fontSize: 10, color: '#64748b', letterSpacing: 1, fontWeight: 600 }}>
               {issueDate}
             </div>

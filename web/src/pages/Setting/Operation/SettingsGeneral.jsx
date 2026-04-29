@@ -47,6 +47,7 @@ export default function GeneralSettings(props) {
   const [inputs, setInputs] = useState({
     TopUpLink: '',
     TGGroupLink: '',
+    PremiumGroups: '',
     'general_setting.docs_link': '',
     'general_setting.quota_display_type': 'USD',
     'general_setting.custom_currency_symbol': '¤',
@@ -270,6 +271,19 @@ export default function GeneralSettings(props) {
                   initValue={''}
                   placeholder={t('例如 https://t.me/your_group')}
                   onChange={handleFieldChange('TGGroupLink')}
+                  showClear
+                />
+              </Col>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                <Form.Input
+                  field={'PremiumGroups'}
+                  label={t('高级用户组（QQ 群悬浮按钮）')}
+                  initValue={''}
+                  placeholder={t('逗号分隔，例如 Pro,Ultra')}
+                  extraText={t(
+                    '只有用户分组在此列表内才会看到右下角 QQ 群悬浮按钮，留空则关闭该功能',
+                  )}
+                  onChange={handleFieldChange('PremiumGroups')}
                   showClear
                 />
               </Col>

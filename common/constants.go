@@ -17,6 +17,10 @@ var Footer = ""
 var Logo = ""
 var TopUpLink = ""
 var TGGroupLink = ""
+// Comma-separated group names (matches the user.group / plan.upgrade_group
+// values) whose members see the premium-only QQ group floating button on
+// the dashboard. Empty disables the feature entirely.
+var PremiumGroups = "Pro,Ultra"
 
 // var ChatLink = ""
 // var ChatLink2 = ""

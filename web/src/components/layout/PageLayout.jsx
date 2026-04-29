@@ -22,6 +22,7 @@ import { Layout } from '@douyinfe/semi-ui';
 import SiderBar from './SiderBar';
 import App from '../../App';
 import FooterBar from './Footer';
+import QqGroupFloat from '../QqGroupFloat';
 import { ToastContainer } from 'react-toastify';
 import React, { useContext, useEffect, useState } from 'react';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
@@ -262,6 +263,12 @@ const PageLayout = () => {
         </Layout>
       </Layout>
       <ToastContainer />
+      {/* Premium-only QQ group floating button. The component itself
+          decides visibility based on user.group + admin's PremiumGroups
+          config + auth-page route guard. */}
+      {!['/login', '/register', '/forget-password', '/reset', '/oauth'].some(
+        (p) => location.pathname.startsWith(p),
+      ) && <QqGroupFloat />}
     </Layout>
   );
 };

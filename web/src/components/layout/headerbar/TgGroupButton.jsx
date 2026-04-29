@@ -21,8 +21,10 @@ import React from 'react';
 import { Button, Tooltip } from '@douyinfe/semi-ui';
 import { SiTelegram } from 'react-icons/si';
 
-const TG_BLUE = '#229ED9';
-
+// The icon stays neutral (--text-secondary) by default so it sits visually
+// flat with the lucide icons next to it. On hover the parent button picks
+// up the Telegram brand blue, which the SVG inherits via currentColor —
+// gives a small "this is Telegram" hint without disrupting the row.
 const TgGroupButton = ({ tgGroupLink, t }) => {
   if (!tgGroupLink) return null;
 
@@ -32,14 +34,16 @@ const TgGroupButton = ({ tgGroupLink, t }) => {
         aria-label={t('加入 Telegram 群组')}
         theme='borderless'
         type='tertiary'
-        className='!w-8 !h-8 !p-0 flex items-center justify-center'
+        className='tg-group-btn !w-8 !h-8 !p-0 flex items-center justify-center'
         style={{
           borderRadius: 'var(--radius-sm)',
+          color: 'var(--text-secondary)',
           background: 'transparent',
-          transition: 'background-color 150ms ease-out',
+          transition:
+            'background-color 150ms ease-out, color 150ms ease-out',
         }}
         onClick={() => window.open(tgGroupLink, '_blank', 'noopener,noreferrer')}
-        icon={<SiTelegram size={16} color={TG_BLUE} />}
+        icon={<SiTelegram size={16} color='currentColor' />}
       />
     </Tooltip>
   );

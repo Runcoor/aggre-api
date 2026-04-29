@@ -157,6 +157,7 @@ func InitOptionMap() {
 	common.OptionMap["AudioCompletionRatio"] = ratio_setting.AudioCompletionRatio2JSONString()
 	common.OptionMap["TopUpLink"] = common.TopUpLink
 	common.OptionMap["TGGroupLink"] = common.TGGroupLink
+	common.OptionMap["PremiumGroups"] = common.PremiumGroups
 	//common.OptionMap["ChatLink"] = common.ChatLink
 	//common.OptionMap["ChatLink2"] = common.ChatLink2
 	common.OptionMap["QuotaPerUnit"] = strconv.FormatFloat(common.QuotaPerUnit, 'f', -1, 64)
@@ -545,6 +546,8 @@ func updateOptionMap(key string, value string) (err error) {
 		common.TopUpLink = value
 	case "TGGroupLink":
 		common.TGGroupLink = value
+	case "PremiumGroups":
+		common.PremiumGroups = value
 	//case "ChatLink":
 	//	common.ChatLink = value
 	//case "ChatLink2":

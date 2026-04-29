@@ -13,6 +13,7 @@ web/dist
 one-api
 aggre-api
 *.png
+!web/public/*.png
 /__debug_bin*
 .DS_Store
 tiktoken_cache

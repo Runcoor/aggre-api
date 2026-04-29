@@ -401,39 +401,34 @@ func getUserGroupByIdTx(tx *gorm.DB, userId int) (string, error) {
 	return group, nil
 }
 
+// downgradeUserGroupForSubscriptionTx is invoked when a single subscription
+// is being invalidated/cancelled. After the cancel, recompute user.group
+// from whatever upgrade-bearing subscriptions still remain active. If none
+// are left, fall back to the system default group.
 func downgradeUserGroupForSubscriptionTx(tx *gorm.DB, sub *UserSubscription, now int64) (string, error) {
 	if tx == nil || sub == nil {
 		return "", errors.New("invalid downgrade args")
 	}
-	upgradeGroup := strings.TrimSpace(sub.UpgradeGroup)
-	if upgradeGroup == "" {
+	if strings.TrimSpace(sub.UpgradeGroup) == "" {
 		return "", nil
 	}
 	currentGroup, err := getUserGroupByIdTx(tx, sub.UserId)
 	if err != nil {
 		return "", err
 	}
-	if currentGroup != upgradeGroup {
-		return "", nil
+	remaining, err := listActiveUpgradeGroupsTx(tx, sub.UserId, now, sub.Id)
+	if err != nil {
+		return "", err
 	}
-	var activeSub UserSubscription
-	activeQuery := tx.Where("user_id = ? AND status = ? AND end_time > ? AND id <> ? AND upgrade_group <> ''",
-		sub.UserId, "active", now, sub.Id).
-		Order("end_time desc, id desc").
-		Limit(1).
-		Find(&activeSub)
-	if activeQuery.Error == nil && activeQuery.RowsAffected > 0 {
-		return "", nil
-	}
-	prevGroup := strings.TrimSpace(sub.PrevUserGroup)
-	if prevGroup == "" || prevGroup == currentGroup {
+	target := resolveUserGroupFromActive(remaining)
+	if target == currentGroup {
 		return "", nil
 	}
 	if err := tx.Model(&User{}).Where("id = ?", sub.UserId).
-		Update("group", prevGroup).Error; err != nil {
+		Update("group", target).Error; err != nil {
 		return "", err
 	}
-	return prevGroup, nil
+	return target, nil
 }
 
 func CreateUserSubscriptionFromPlanTx(tx *gorm.DB, userId int, plan *SubscriptionPlan, source string) (*UserSubscription, error) {
@@ -476,10 +471,16 @@ func CreateUserSubscriptionFromPlanTx(tx *gorm.DB, userId int, plan *Subscriptio
 		if err != nil {
 			return nil, err
 		}
-		if currentGroup != upgradeGroup {
+		// Only-up semantics: never demote user.group when a lesser-tier plan
+		// is purchased while a higher-tier plan is still active. The previous
+		// implementation unconditionally overwrote, so a user holding Ultra
+		// who topped up with Pro would silently fall to Pro for the rest of
+		// the Ultra window.
+		nextGroup := resolveUserGroupOnBuy(currentGroup, upgradeGroup)
+		if nextGroup != currentGroup {
 			prevGroup = currentGroup
 			if err := tx.Model(&User{}).Where("id = ?", userId).
-				Update("group", upgradeGroup).Error; err != nil {
+				Update("group", nextGroup).Error; err != nil {
 				return nil, err
 			}
 		}
@@ -666,6 +667,107 @@ func GetAllActiveUserSubscriptions(userId int) ([]SubscriptionSummary, error) {
 		return nil, err
 	}
 	return buildSubscriptionSummaries(subs), nil
+}
+
+// commonUserGroupDefault is the group used for fresh accounts and as the
+// fallback when a user has no active premium subscription. Mirrors the
+// gorm default on User.Group.
+const commonUserGroupDefault = "default"
+
+// parsePremiumGroups returns the configured PremiumGroups CSV as a normalized,
+// trimmed slice. Order is preserved — first element is highest priority.
+func parsePremiumGroups() []string {
+	raw := strings.TrimSpace(common.PremiumGroups)
+	if raw == "" {
+		return nil
+	}
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if t := strings.TrimSpace(p); t != "" {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
+// groupRank returns the priority of group within the configured order.
+// Smaller is higher. Empty / unknown groups land beyond the configured list.
+func groupRank(group string, ranks []string) int {
+	norm := strings.ToLower(strings.TrimSpace(group))
+	if norm == "" {
+		return 1 << 30
+	}
+	for i, r := range ranks {
+		if strings.EqualFold(strings.TrimSpace(r), norm) {
+			return i
+		}
+	}
+	return len(ranks)
+}
+
+// resolveUserGroupOnBuy implements the "only-up" semantics: the user's
+// stored group never regresses to a lower-priority group when a new plan is
+// purchased. Buying a same-priority plan or an unknown group while already
+// on a premium tier leaves user.group untouched.
+func resolveUserGroupOnBuy(currentGroup, incoming string) string {
+	current := strings.TrimSpace(currentGroup)
+	next := strings.TrimSpace(incoming)
+	if next == "" {
+		return current
+	}
+	if current == "" || strings.EqualFold(current, commonUserGroupDefault) {
+		return next
+	}
+	ranks := parsePremiumGroups()
+	if groupRank(next, ranks) < groupRank(current, ranks) {
+		return next
+	}
+	return current
+}
+
+// resolveUserGroupFromActive picks the highest-priority group from the given
+// active-subscription groups. When none qualify, falls back to the system
+// default group.
+func resolveUserGroupFromActive(activeGroups []string) string {
+	ranks := parsePremiumGroups()
+	best := ""
+	bestRank := -1
+	for _, g := range activeGroups {
+		t := strings.TrimSpace(g)
+		if t == "" {
+			continue
+		}
+		r := groupRank(t, ranks)
+		if best == "" || r < bestRank {
+			best = t
+			bestRank = r
+		}
+	}
+	if best == "" {
+		return commonUserGroupDefault
+	}
+	return best
+}
+
+// listActiveUpgradeGroupsTx mirrors GetActiveUpgradeGroups but operates
+// inside a caller-supplied transaction. exclude is the id of a subscription
+// the caller wants to ignore (e.g. the one currently being expired).
+func listActiveUpgradeGroupsTx(tx *gorm.DB, userId int, now int64, excludeSubId int) ([]string, error) {
+	if tx == nil {
+		tx = DB
+	}
+	var groups []string
+	q := tx.Model(&UserSubscription{}).
+		Where("user_id = ? AND status = ? AND end_time > ? AND upgrade_group <> ''",
+			userId, "active", now)
+	if excludeSubId > 0 {
+		q = q.Where("id <> ?", excludeSubId)
+	}
+	if err := q.Distinct("upgrade_group").Pluck("upgrade_group", &groups).Error; err != nil {
+		return nil, err
+	}
+	return groups, nil
 }
 
 // GetActiveUpgradeGroups returns the distinct upgrade_group values from a
@@ -902,44 +1004,28 @@ func ExpireDueSubscriptions(limit int) (int, error) {
 			}
 			expiredCount += int(res.RowsAffected)
 
-			// If there's an active upgraded subscription, keep current group.
-			var activeSub UserSubscription
-			activeQuery := tx.Where("user_id = ? AND status = ? AND end_time > ? AND upgrade_group <> ''",
-				userId, "active", now).
-				Order("end_time desc, id desc").
-				Limit(1).
-				Find(&activeSub)
-			if activeQuery.Error == nil && activeQuery.RowsAffected > 0 {
-				return nil
-			}
-
-			// No active upgraded subscription, downgrade to previous group if needed.
-			var lastExpired UserSubscription
-			expiredQuery := tx.Where("user_id = ? AND status = ? AND upgrade_group <> ''",
-				userId, "expired").
-				Order("end_time desc, id desc").
-				Limit(1).
-				Find(&lastExpired)
-			if expiredQuery.Error != nil || expiredQuery.RowsAffected == 0 {
-				return nil
-			}
-			upgradeGroup := strings.TrimSpace(lastExpired.UpgradeGroup)
-			prevGroup := strings.TrimSpace(lastExpired.PrevUserGroup)
-			if upgradeGroup == "" || prevGroup == "" {
-				return nil
-			}
+			// Recompute user.group from whatever upgrade-bearing subscriptions
+			// are still active. If none remain, drop back to the system default.
+			// This replaces the prev_user_group rollback chain, which produced
+			// stale "ghost" groups when a user had cycled through multiple
+			// tiers (e.g. Ultra → Pro → expired left them on Ultra forever).
 			currentGroup, err := getUserGroupByIdTx(tx, userId)
 			if err != nil {
 				return err
 			}
-			if currentGroup != upgradeGroup || currentGroup == prevGroup {
+			remaining, err := listActiveUpgradeGroupsTx(tx, userId, now, 0)
+			if err != nil {
+				return err
+			}
+			target := resolveUserGroupFromActive(remaining)
+			if target == currentGroup {
 				return nil
 			}
 			if err := tx.Model(&User{}).Where("id = ?", userId).
-				Update("group", prevGroup).Error; err != nil {
+				Update("group", target).Error; err != nil {
 				return err
 			}
-			cacheGroup = prevGroup
+			cacheGroup = target
 			return nil
 		})
 		if err != nil {

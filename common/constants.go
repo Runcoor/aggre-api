@@ -17,10 +17,15 @@ var Footer = ""
 var Logo = ""
 var TopUpLink = ""
 var TGGroupLink = ""
-// Comma-separated group names (matches the user.group / plan.upgrade_group
-// values) whose members see the premium-only QQ group floating button on
-// the dashboard. Empty disables the feature entirely.
-var PremiumGroups = "Pro,Ultra"
+// Comma-separated, ORDER-SENSITIVE list of group names (matches the
+// user.group / plan.upgrade_group values). First element is the highest
+// priority. Drives two things:
+//   1. user.group resolution: on subscription buy, only-up; on expire, the
+//      highest-ranked remaining active sub wins.
+//   2. UI gating: members of any listed group see the premium-only QQ
+//      group floating button on the dashboard.
+// Empty disables both.
+var PremiumGroups = "Ultra,Pro"
 
 // var ChatLink = ""
 // var ChatLink2 = ""

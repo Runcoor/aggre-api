@@ -4477,7 +4477,11 @@ html.dark .username-pill::after {
   transform: translateX(80px);
 }
 
-/* QR popup card */
+/* QR popup card. Bottom-right pinned 12px above the button. The ::before
+ * pseudo creates an invisible 14px hit-area "bridge" between the card and
+ * the button so the mouse can travel up into the card without crossing a
+ * dead zone (which would otherwise fire mouseleave on the wrapper and
+ * snap the card back to hidden). */
 .qq-float-card {
   position: absolute;
   bottom: calc(100% + 12px);
@@ -4497,6 +4501,20 @@ html.dark .username-pill::after {
   transition:
     transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
     opacity 180ms ease-out;
+}
+.qq-float-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 14px;
+  background: transparent;
+  /* Stay interactive even when the card is hidden so the wrapper's
+   * mouseleave is suppressed by mouse traffic over the bridge — i.e.
+   * mouse can leave the button, cross the gap, and hit the card without
+   * the wrapper ever thinking the pointer escaped. */
+  pointer-events: auto;
 }
 .qq-float-card[data-visible='1'] {
   transform: translateY(0) scale(1);
@@ -4560,24 +4578,37 @@ html.dark .username-pill::after {
   letter-spacing: 0.02em;
 }
 
-/* Edge tab (minimized state) */
+/* Edge tab (minimized state). A 32×84 handle pinned to the right edge of
+ * the viewport with the rounded corner only on the visible (left) side.
+ * Stacks the QQ glyph above a small chevron pointing inward to telegraph
+ * "click here to bring it back". Slightly inflates on hover so the tab
+ * feels like a real grab handle and not a stray sliver. */
 .qq-float-tab {
   position: absolute;
   right: -20px; /* offset to align with viewport edge given root's right:20px */
   bottom: 0;
-  width: 16px;
-  height: 56px;
+  width: 32px;
+  height: 84px;
+  padding: 12px 0 10px;
   border: none;
-  border-radius: 8px 0 0 8px;
+  border-radius: 14px 0 0 14px;
   background: linear-gradient(180deg, #12B7F5 0%, #0284C7 100%);
-  box-shadow: -4px 4px 12px rgba(14, 165, 233, 0.25);
+  box-shadow:
+    -6px 6px 18px rgba(14, 165, 233, 0.28),
+    inset 1px 0 0 rgba(255, 255, 255, 0.18);
   cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 4px;
   opacity: 0;
-  transform: translateX(20px);
-  transition: opacity 200ms ease-out, transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateX(24px);
+  transition:
+    opacity 200ms ease-out,
+    transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 180ms ease-out,
+    box-shadow 180ms ease-out;
 }
 .qq-float-root[data-state='minimized'] .qq-float-tab {
   opacity: 1;
@@ -4585,6 +4616,20 @@ html.dark .username-pill::after {
 }
 .qq-float-tab:hover {
   background: linear-gradient(180deg, #0EA5E9 0%, #0369A1 100%);
+  box-shadow:
+    -8px 8px 22px rgba(14, 165, 233, 0.4),
+    inset 1px 0 0 rgba(255, 255, 255, 0.25);
+}
+.qq-float-tab-chevron {
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qq-float-tab:hover .qq-float-tab-chevron {
+  color: rgba(255, 255, 255, 1);
+  transform: translateX(-2px);
+  transition: color 160ms ease-out, transform 160ms ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {

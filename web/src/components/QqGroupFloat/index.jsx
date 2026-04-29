@@ -20,7 +20,7 @@ For commercial licensing, please contact support@quantumnous.com
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SiTencentqq } from 'react-icons/si';
-import { X, ChevronRight } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft } from 'lucide-react';
 import { UserContext } from '../../context/User';
 import { StatusContext } from '../../context/Status';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
@@ -162,7 +162,10 @@ const QqGroupFloat = () => {
         aria-label={t('展开 QQ 群入口')}
         onClick={handleRestore}
       >
-        <SiTencentqq size={14} color='#FFFFFF' />
+        <SiTencentqq size={18} color='#FFFFFF' />
+        <span className='qq-float-tab-chevron'>
+          <ChevronLeft size={14} />
+        </span>
       </button>
     </div>
   );

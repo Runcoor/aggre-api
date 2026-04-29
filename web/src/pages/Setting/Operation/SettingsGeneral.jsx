@@ -277,11 +277,11 @@ export default function GeneralSettings(props) {
               <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.Input
                   field={'PremiumGroups'}
-                  label={t('高级用户组（QQ 群悬浮按钮）')}
+                  label={t('高级用户组（按优先级从高到低）')}
                   initValue={''}
-                  placeholder={t('逗号分隔，例如 Pro,Ultra')}
+                  placeholder={t('逗号分隔，例如 Ultra,Pro')}
                   extraText={t(
-                    '只有用户分组在此列表内才会看到右下角 QQ 群悬浮按钮，留空则关闭该功能',
+                    '顺序敏感：靠前的等级更高。决定订阅购买时的"只升不降"逻辑、过期时的回退分组，以及右下角 QQ 群按钮的可见性。留空则关闭该功能。',
                   )}
                   onChange={handleFieldChange('PremiumGroups')}
                   showClear

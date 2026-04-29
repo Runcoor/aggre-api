@@ -25,23 +25,24 @@ import { UserContext } from '../../context/User';
 import { StatusContext } from '../../context/Status';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
 
-const SESSION_CLOSED_KEY = 'qqGroupFloatClosed';
 const QR_IMG = '/aggre-qq-group-qrcode.png';
 
 // Floating premium-only QQ group button rendered fixed at the bottom-right
 // of the dashboard. Three states:
 //   - expanded: round QQ button + hover shows QR card above
 //   - minimized: collapsed to a thin tab on the right edge (click to expand)
-//   - closed: hidden for the rest of the session (sessionStorage flag)
+//   - closed: hidden until the next page refresh / navigation. We deliberately
+//     do NOT persist this to storage — users complained that there was no
+//     obvious way to bring the entry back, and "refresh = restored" is a
+//     predictable, discoverable affordance. The minimize-to-edge state stays
+//     for users who want the button out of the way without losing access.
 const QqGroupFloat = () => {
   const { t } = useTranslation();
   const [userState] = useContext(UserContext);
   const [statusState] = useContext(StatusContext);
   const isMobile = useIsMobile();
 
-  const [closed, setClosed] = useState(
-    () => typeof window !== 'undefined' && sessionStorage.getItem(SESSION_CLOSED_KEY) === '1',
-  );
+  const [closed, setClosed] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [hovered, setHovered] = useState(false);
 
@@ -84,7 +85,6 @@ const QqGroupFloat = () => {
 
   const handleClose = (e) => {
     e?.stopPropagation();
-    sessionStorage.setItem(SESSION_CLOSED_KEY, '1');
     setClosed(true);
   };
 

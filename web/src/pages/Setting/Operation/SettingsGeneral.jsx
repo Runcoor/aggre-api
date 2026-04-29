@@ -63,6 +63,12 @@ export default function GeneralSettings(props) {
   });
   const refForm = useRef();
   const [inputsRow, setInputsRow] = useState(inputs);
+  // Capture the schema keys ONCE at mount. The previous implementation read
+  // `Object.keys(inputs)` from the live state, which then got clobbered after
+  // the first useEffect pass into a subset, so any field that was missing from
+  // the parent's first-render options object (e.g. TGGroupLink, PremiumGroups
+  // before they were seeded upstream) silently disappeared on the second pass.
+  const schemaKeysRef = useRef(Object.keys(inputs));
 
   function handleFieldChange(fieldName) {
     return (value) => {
@@ -202,8 +208,9 @@ export default function GeneralSettings(props) {
 
   useEffect(() => {
     const currentInputs = {};
+    const schemaKeys = schemaKeysRef.current;
     for (let key in props.options) {
-      if (Object.keys(inputs).includes(key)) {
+      if (schemaKeys.includes(key)) {
         currentInputs[key] = props.options[key];
       }
     }

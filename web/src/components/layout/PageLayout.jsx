@@ -34,6 +34,7 @@ import {
   getSystemName,
   showError,
   setStatusData,
+  setUserData,
 } from '../../helpers';
 import { UserContext } from '../../context/User';
 import { StatusContext } from '../../context/Status';
@@ -123,6 +124,33 @@ const PageLayout = () => {
       }
     }
   }, []);
+
+  // Refresh the cached user record whenever the user (re-)enters /console.
+  // Keeps `user.group` and `active_subscription_groups` in sync with what
+  // the server actually thinks — without this, a freshly purchased plan
+  // (or an admin-side group change) wouldn't surface until the user logs
+  // out and back in. Optimistic: never blocks the render.
+  useEffect(() => {
+    if (!isConsoleRoute) return;
+    if (!userState?.user?.id) return;
+    let cancelled = false;
+    API.get('/api/user/self')
+      .then((res) => {
+        if (cancelled) return;
+        if (res?.data?.success && res.data.data) {
+          const next = res.data.data;
+          userDispatch({ type: 'login', payload: next });
+          setUserData(next);
+        }
+      })
+      .catch(() => {
+        /* silent — stale cache is still usable */
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConsoleRoute, userState?.user?.id]);
 
   useEffect(() => {
     let preferredLang;

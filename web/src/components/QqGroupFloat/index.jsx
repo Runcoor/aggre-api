@@ -47,13 +47,31 @@ const QqGroupFloat = () => {
 
   const eligible = useMemo(() => {
     const raw = statusState?.status?.premium_groups;
-    const userGroup = userState?.user?.group;
-    if (!raw || !userGroup) return false;
+    if (!raw) return false;
     const allowed = String(raw)
       .split(',')
       .map((g) => g.trim().toLowerCase())
       .filter(Boolean);
-    return allowed.includes(String(userGroup).trim().toLowerCase());
+    if (!allowed.length) return false;
+
+    // Preferred: intersect against the active subscription list. A user
+    // with multiple plans (e.g. Pro + Ultra running in parallel) is
+    // eligible as long as at least one of them grants a premium group,
+    // regardless of which one user.group currently mirrors.
+    const subGroups = userState?.user?.active_subscription_groups;
+    if (Array.isArray(subGroups)) {
+      const userGroups = subGroups
+        .map((g) => String(g || '').trim().toLowerCase())
+        .filter(Boolean);
+      return allowed.some((g) => userGroups.includes(g));
+    }
+
+    // Fallback for older backends that do not yet expose the array
+    // (e.g. during the GH Actions deploy window): treat user.group as
+    // a single-element list. Once the backend rolls out, this branch
+    // is no longer hit.
+    const single = String(userState?.user?.group || '').trim().toLowerCase();
+    return single ? allowed.includes(single) : false;
   }, [statusState, userState]);
 
   // Reset hover when transitioning to minimized so the QR card doesn't

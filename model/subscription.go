@@ -668,6 +668,26 @@ func GetAllActiveUserSubscriptions(userId int) ([]SubscriptionSummary, error) {
 	return buildSubscriptionSummaries(subs), nil
 }
 
+// GetActiveUpgradeGroups returns the distinct upgrade_group values from a
+// user's currently active subscriptions. Useful for tier-based UI gating
+// where user.group (single value) may have drifted from reality.
+func GetActiveUpgradeGroups(userId int) ([]string, error) {
+	if userId <= 0 {
+		return nil, errors.New("invalid userId")
+	}
+	now := common.GetTimestamp()
+	var groups []string
+	err := DB.Model(&UserSubscription{}).
+		Where("user_id = ? AND status = ? AND end_time > ? AND upgrade_group <> ''",
+			userId, "active", now).
+		Distinct("upgrade_group").
+		Pluck("upgrade_group", &groups).Error
+	if err != nil {
+		return nil, err
+	}
+	return groups, nil
+}
+
 // HasActiveUserSubscription returns whether the user has any active subscription.
 // This is a lightweight existence check to avoid heavy pre-consume transactions.
 func HasActiveUserSubscription(userId int) (bool, error) {

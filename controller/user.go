@@ -471,6 +471,15 @@ func GetSelf(c *gin.Context) {
 	// 获取用户设置并提取sidebar_modules
 	userSetting := user.GetSetting()
 
+	// Distinct upgrade_group values from the user's currently active
+	// subscriptions. Lets the frontend gate premium-only UI (e.g. the QQ
+	// group floating button) on the actual subscription list rather than
+	// the single user.group field, which can drift on multi-tier users.
+	activeGroups, _ := model.GetActiveUpgradeGroups(id)
+	if activeGroups == nil {
+		activeGroups = []string{}
+	}
+
 	// 构建响应数据，包含用户信息和权限
 	responseData := map[string]interface{}{
 		"id":                user.Id,
@@ -496,8 +505,9 @@ func GetSelf(c *gin.Context) {
 		"linux_do_id":       user.LinuxDOId,
 		"setting":           user.Setting,
 		"stripe_customer":   user.StripeCustomer,
-		"sidebar_modules":   userSetting.SidebarModules, // 正确提取sidebar_modules字段
-		"permissions":       permissions,                // 新增权限字段
+		"sidebar_modules":            userSetting.SidebarModules, // 正确提取sidebar_modules字段
+		"permissions":                permissions,                // 新增权限字段
+		"active_subscription_groups": activeGroups,
 	}
 
 	c.JSON(http.StatusOK, gin.H{

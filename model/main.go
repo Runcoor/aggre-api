@@ -303,6 +303,7 @@ func migrateDB() error {
 			return err
 		}
 	}
+	backfillAffRewardSettledOnce()
 	return nil
 }
 
@@ -374,8 +375,35 @@ func migrateDBFast() error {
 			return err
 		}
 	}
+	backfillAffRewardSettledOnce()
 	common.SysLog("database migrated")
 	return nil
+}
+
+// backfillAffRewardSettledOnce marks every existing invitee
+// (inviter_id != 0) as already settled so that, after the switch from
+// "grant-on-registration" to "grant-on-first-topup", their next topup
+// doesn't trigger a duplicate grant. Gated by an Option-table flag so it
+// runs exactly once across the cluster — even if migrate runs on every
+// boot, only the first run actually backfills.
+func backfillAffRewardSettledOnce() {
+	const flagKey = "_migration_aff_reward_settled_v1"
+	var existing Option
+	if err := DB.Where(commonKeyCol+" = ?", flagKey).First(&existing).Error; err == nil {
+		return
+	}
+	res := DB.Model(&User{}).
+		Where("inviter_id <> ? AND aff_reward_settled = ?", 0, false).
+		Update("aff_reward_settled", true)
+	if res.Error != nil {
+		common.SysLog("backfillAffRewardSettledOnce update failed: " + res.Error.Error())
+		return
+	}
+	if err := DB.Create(&Option{Key: flagKey, Value: fmt.Sprintf("%d", common.GetTimestamp())}).Error; err != nil {
+		// Race with another instance — both ran the UPDATE (idempotent), one wins the flag.
+		common.SysLog("backfillAffRewardSettledOnce flag write race (ok): " + err.Error())
+	}
+	common.SysLog(fmt.Sprintf("backfillAffRewardSettledOnce: marked %d existing invitees as settled", res.RowsAffected))
 }
 
 func migrateLOGDB() error {

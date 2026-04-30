@@ -45,6 +45,13 @@ type User struct {
 	AffQuota         int            `json:"aff_quota" gorm:"type:int;default:0;column:aff_quota"`           // 邀请剩余额度
 	AffHistoryQuota  int            `json:"aff_history_quota" gorm:"type:int;default:0;column:aff_history"` // 邀请历史额度
 	InviterId        int            `json:"inviter_id" gorm:"type:int;column:inviter_id;index"`
+	// AffRewardSettled marks whether the inviter reward for this user has
+	// already been granted. Reward is granted on first successful payment
+	// (wallet topup or subscription purchase) — see
+	// MaybeGrantInviteRewardOnFirstTopUp. Existing invitees migrated from
+	// the old "grant-on-registration" logic are backfilled to true so they
+	// don't get re-granted on next topup; see backfillAffRewardSettledOnce.
+	AffRewardSettled bool `json:"aff_reward_settled" gorm:"type:bool;default:false;column:aff_reward_settled"`
 	DeletedAt        gorm.DeletedAt `gorm:"index"`
 	LinuxDOId        string         `json:"linux_do_id" gorm:"column:linux_do_id;index"`
 	Setting          string         `json:"setting" gorm:"type:text;column:setting"`
@@ -450,17 +457,12 @@ func (user *User) Insert(inviterId int) error {
 	if common.QuotaForNewUser > 0 {
 		RecordLog(user.Id, LogTypeSystem, fmt.Sprintf("新用户注册赠送 %s", logger.LogQuota(common.QuotaForNewUser)))
 	}
-	if inviterId != 0 {
-		if common.QuotaForInvitee > 0 {
-			_ = IncreaseUserQuota(user.Id, common.QuotaForInvitee, true)
-			RecordLog(user.Id, LogTypeSystem, fmt.Sprintf("使用邀请码赠送 %s", logger.LogQuota(common.QuotaForInvitee)))
-		}
-		if common.QuotaForInviter > 0 {
-			//_ = IncreaseUserQuota(inviterId, common.QuotaForInviter)
-			RecordLog(inviterId, LogTypeSystem, fmt.Sprintf("邀请用户赠送 %s", logger.LogQuota(common.QuotaForInviter)))
-			_ = inviteUser(inviterId)
-		}
-	}
+	// Invite reward is intentionally NOT granted at registration time. It is
+	// deferred to the invitee's first successful payment via
+	// MaybeGrantInviteRewardOnFirstTopUp, which prevents a free-quota farm
+	// where attackers register endless invitees just to mint AffQuota.
+	// InviterId is already persisted on the user row above (DB.Create), so
+	// the relationship is recoverable when the topup hook fires.
 	return nil
 }
 
@@ -477,6 +479,11 @@ func (user *User) InsertWithTx(tx *gorm.DB, inviterId int) error {
 	}
 	user.Quota = common.QuotaForNewUser
 	user.AffCode = common.GetRandomString(4)
+	// OAuth path didn't persist InviterId before — register-time grant in
+	// FinalizeOAuthUserCreation could fire without ever recording the
+	// inviter on the user row. Now that the reward is deferred to first
+	// topup, the relationship MUST be on the row so the hook can find it.
+	user.InviterId = inviterId
 
 	// 初始化用户设置
 	if user.Setting == "" {
@@ -511,15 +518,66 @@ func (user *User) FinalizeOAuthUserCreation(inviterId int) {
 	if common.QuotaForNewUser > 0 {
 		RecordLog(user.Id, LogTypeSystem, fmt.Sprintf("新用户注册赠送 %s", logger.LogQuota(common.QuotaForNewUser)))
 	}
-	if inviterId != 0 {
-		if common.QuotaForInvitee > 0 {
-			_ = IncreaseUserQuota(user.Id, common.QuotaForInvitee, true)
-			RecordLog(user.Id, LogTypeSystem, fmt.Sprintf("使用邀请码赠送 %s", logger.LogQuota(common.QuotaForInvitee)))
+	// See User.Insert: invite reward is deferred to first successful payment.
+	_ = inviterId
+}
+
+// MaybeGrantInviteRewardOnFirstTopUp grants the deferred invite reward when
+// an invitee makes their first successful payment (wallet topup or
+// subscription purchase). Idempotent — the aff_reward_settled flag ensures
+// the grant fires at most once per invitee, even under concurrent webhook
+// callbacks.
+//
+// Concurrency: a conditional UPDATE (`WHERE aff_reward_settled = false`)
+// inside a transaction guarantees that only one caller wins the race —
+// RowsAffected==1 marks that caller as the grantor. SQLite silently
+// ignores FOR UPDATE so we rely on the conditional update for correctness
+// across all three supported databases.
+//
+// Two-sided grant (mirrors the original register-time logic):
+//   - invitee gets QuotaForInvitee directly into spendable Quota
+//   - inviter gets QuotaForInviter into AffQuota plus tier bonus via
+//     inviteUser, which also bumps AffCount and may grant a tier milestone.
+func MaybeGrantInviteRewardOnFirstTopUp(userId int) {
+	if userId <= 0 {
+		return
+	}
+	var inviterId int
+	err := DB.Transaction(func(tx *gorm.DB) error {
+		var u User
+		if err := tx.Select("id, inviter_id, aff_reward_settled").
+			Where("id = ?", userId).First(&u).Error; err != nil {
+			return err
 		}
-		if common.QuotaForInviter > 0 {
-			RecordLog(inviterId, LogTypeSystem, fmt.Sprintf("邀请用户赠送 %s", logger.LogQuota(common.QuotaForInviter)))
-			_ = inviteUser(inviterId)
+		if u.InviterId == 0 || u.InviterId == userId {
+			return nil
 		}
+		// Conditional update wins the race; concurrent callers see RowsAffected==0.
+		res := tx.Model(&User{}).
+			Where("id = ? AND aff_reward_settled = ?", userId, false).
+			Update("aff_reward_settled", true)
+		if res.Error != nil {
+			return res.Error
+		}
+		if res.RowsAffected == 1 {
+			inviterId = u.InviterId
+		}
+		return nil
+	})
+	if err != nil {
+		common.SysError("MaybeGrantInviteRewardOnFirstTopUp tx: " + err.Error())
+		return
+	}
+	if inviterId == 0 {
+		return
+	}
+	if common.QuotaForInvitee > 0 {
+		_ = IncreaseUserQuota(userId, common.QuotaForInvitee, true)
+		RecordLog(userId, LogTypeSystem, fmt.Sprintf("使用邀请码赠送 %s", logger.LogQuota(common.QuotaForInvitee)))
+	}
+	if common.QuotaForInviter > 0 {
+		RecordLog(inviterId, LogTypeSystem, fmt.Sprintf("邀请用户赠送 %s", logger.LogQuota(common.QuotaForInviter)))
+		_ = inviteUser(inviterId)
 	}
 }
 

@@ -153,6 +153,7 @@ func Recharge(referenceId string, customerId string) (err error) {
 	}
 
 	RecordLog(topUp.UserId, LogTypeTopup, fmt.Sprintf("使用在线充值成功，充值金额: %v，支付金额：%d", logger.FormatQuota(int(quota)), topUp.Amount))
+	MaybeGrantInviteRewardOnFirstTopUp(topUp.UserId)
 
 	return nil
 }
@@ -368,6 +369,7 @@ func ManualCompleteTopUp(tradeNo string) error {
 
 	// 事务外记录日志，避免阻塞
 	RecordLog(userId, LogTypeTopup, fmt.Sprintf("管理员补单成功，充值金额: %v，支付金额：%f", logger.FormatQuota(quotaToAdd), payMoney))
+	MaybeGrantInviteRewardOnFirstTopUp(userId)
 	return nil
 }
 // GetTopUpByIdAndUserId returns a single topup record owned by the given user.
@@ -447,6 +449,7 @@ func RechargeCreem(referenceId string, customerEmail string, customerName string
 	}
 
 	RecordLog(topUp.UserId, LogTypeTopup, fmt.Sprintf("使用Creem充值成功，充值额度: %v，支付金额：%.2f", quota, topUp.Money))
+	MaybeGrantInviteRewardOnFirstTopUp(topUp.UserId)
 
 	return nil
 }
@@ -505,6 +508,7 @@ func RechargeWaffo(tradeNo string) (err error) {
 
 	if quotaToAdd > 0 {
 		RecordLog(topUp.UserId, LogTypeTopup, fmt.Sprintf("Waffo充值成功，充值额度: %v，支付金额: %.2f", logger.FormatQuota(quotaToAdd), topUp.Money))
+		MaybeGrantInviteRewardOnFirstTopUp(topUp.UserId)
 	}
 
 	return nil
@@ -565,6 +569,7 @@ func RechargeCryptomus(tradeNo string) (err error) {
 
 	if quotaToAdd > 0 {
 		RecordLog(topUp.UserId, LogTypeTopup, fmt.Sprintf("Cryptomus 加密货币充值成功，充值额度: %v，支付金额: %.2f USD", logger.FormatQuota(quotaToAdd), topUp.Money))
+		MaybeGrantInviteRewardOnFirstTopUp(topUp.UserId)
 	}
 
 	return nil

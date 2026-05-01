@@ -514,20 +514,22 @@ const PersonalSetting = () => {
     setDirty(false);
   };
 
-  // Compute the binding count for the nav badge ("2/7" etc.).
+  // Compute the binding count for the nav badge ("2/7" etc.). Mirrors
+  // AccountManagement: count a provider only if it's enabled at the site
+  // level, OR the user has already bound it (so it stays visible).
   const bindingMeta = useMemo(() => {
     const u = userState?.user || {};
     const candidates = [
-      { enabled: true, bound: !!u.email },
-      { enabled: status?.wechat_login !== undefined, bound: !!u.wechat_id },
-      { enabled: status?.github_oauth !== undefined, bound: !!u.github_id },
-      { enabled: status?.discord_oauth !== undefined, bound: !!u.discord_id },
-      { enabled: status?.telegram_oauth !== undefined, bound: !!u.telegram_id },
-      { enabled: status?.linuxdo_oauth !== undefined, bound: !!u.linux_do_id },
-      { enabled: status?.oidc_enabled !== undefined, bound: !!u.oidc_id },
+      { visible: true, bound: !!u.email },
+      { visible: !!status?.wechat_login || !!u.wechat_id, bound: !!u.wechat_id },
+      { visible: !!status?.github_oauth || !!u.github_id, bound: !!u.github_id },
+      { visible: !!status?.discord_oauth || !!u.discord_id, bound: !!u.discord_id },
+      { visible: !!status?.telegram_oauth || !!u.telegram_id, bound: !!u.telegram_id },
+      { visible: !!status?.linuxdo_oauth || !!u.linux_do_id, bound: !!u.linux_do_id },
+      { visible: !!status?.oidc_enabled || !!u.oidc_id, bound: !!u.oidc_id },
     ];
-    const total = candidates.filter((c) => c.enabled).length;
-    const bound = candidates.filter((c) => c.enabled && c.bound).length;
+    const total = candidates.filter((c) => c.visible).length;
+    const bound = candidates.filter((c) => c.visible && c.bound).length;
     return total > 0 ? `${bound}/${total}` : null;
   }, [userState?.user, status]);
 

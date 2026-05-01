@@ -68,7 +68,10 @@ export const ACCOUNT_SETTINGS_STYLES = `
 }
 .aas-root *, .aas-root *::before, .aas-root *::after { box-sizing: border-box; }
 .aas-root .aas-mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-feature-settings: "tnum"; }
-.aas-root button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; padding: 0; }
+/* Bare button reset for our custom buttons. Padding is intentionally
+   omitted so Semi UI buttons embedded in this page (e.g. TwoFASetting)
+   keep their default padding. */
+.aas-root button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
 .aas-root input, .aas-root select, .aas-root textarea { font-family: inherit; }
 
 .aas-root .aas-page { max-width: 1240px; margin: 0 auto; padding: 24px 28px 80px; }

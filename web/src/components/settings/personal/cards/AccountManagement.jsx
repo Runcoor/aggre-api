@@ -138,21 +138,18 @@ const AccountManagement = ({
     enabled: true,
   });
 
-  if (status.wechat_login !== undefined) {
+  // Hide unenabled providers entirely. Still surface them when the user
+  // is already bound (so they can unbind), but if a provider is disabled
+  // at the site level AND not bound, drop it from the grid.
+  if (status.wechat_login || userState.user?.wechat_id) {
     providerCards.push({
       key: 'wechat',
       iconKey: 'wechat',
       icon: <I.WeChat size={18} />,
       name: t('微信'),
-      detail:
-        userState.user?.wechat_id ||
-        (status.wechat_login ? t('未绑定') : t('未启用')),
+      detail: userState.user?.wechat_id || t('未绑定'),
       bound: isBound(userState.user?.wechat_id),
-      actionLabel: isBound(userState.user?.wechat_id)
-        ? t('管理')
-        : status.wechat_login
-          ? t('绑定')
-          : t('未启用'),
+      actionLabel: isBound(userState.user?.wechat_id) ? t('管理') : t('绑定'),
       onClick: status.wechat_login
         ? () => setShowWeChatBindModal(true)
         : undefined,
@@ -160,21 +157,17 @@ const AccountManagement = ({
     });
   }
 
-  if (status.github_oauth !== undefined) {
+  if (status.github_oauth || userState.user?.github_id) {
     providerCards.push({
       key: 'github',
       iconKey: 'github',
       icon: <I.GitHub size={18} />,
       name: 'GitHub',
-      detail:
-        userState.user?.github_id ||
-        (status.github_oauth ? t('未绑定') : t('未启用')),
+      detail: userState.user?.github_id || t('未绑定'),
       bound: isBound(userState.user?.github_id),
       actionLabel: isBound(userState.user?.github_id)
         ? t('已绑定')
-        : status.github_oauth
-          ? t('绑定')
-          : t('未启用'),
+        : t('绑定'),
       onClick:
         !isBound(userState.user?.github_id) && status.github_oauth
           ? () => onGitHubOAuthClicked(status.github_client_id)
@@ -183,21 +176,17 @@ const AccountManagement = ({
     });
   }
 
-  if (status.discord_oauth !== undefined) {
+  if (status.discord_oauth || userState.user?.discord_id) {
     providerCards.push({
       key: 'discord',
       iconKey: 'discord',
       icon: <I.Discord size={18} />,
       name: 'Discord',
-      detail:
-        userState.user?.discord_id ||
-        (status.discord_oauth ? t('未绑定') : t('未启用')),
+      detail: userState.user?.discord_id || t('未绑定'),
       bound: isBound(userState.user?.discord_id),
       actionLabel: isBound(userState.user?.discord_id)
         ? t('已绑定')
-        : status.discord_oauth
-          ? t('绑定')
-          : t('未启用'),
+        : t('绑定'),
       onClick:
         !isBound(userState.user?.discord_id) && status.discord_oauth
           ? () => onDiscordOAuthClicked(status.discord_client_id)
@@ -206,21 +195,17 @@ const AccountManagement = ({
     });
   }
 
-  if (status.telegram_oauth !== undefined) {
+  if (status.telegram_oauth || userState.user?.telegram_id) {
     providerCards.push({
       key: 'telegram',
       iconKey: 'telegram',
       icon: <I.Telegram size={18} />,
       name: 'Telegram',
-      detail:
-        userState.user?.telegram_id ||
-        (status.telegram_oauth ? t('未绑定') : t('未启用')),
+      detail: userState.user?.telegram_id || t('未绑定'),
       bound: isBound(userState.user?.telegram_id),
       actionLabel: isBound(userState.user?.telegram_id)
         ? t('已绑定')
-        : status.telegram_oauth
-          ? t('绑定')
-          : t('未启用'),
+        : t('绑定'),
       onClick:
         !isBound(userState.user?.telegram_id) && status.telegram_oauth
           ? () => setShowTelegramBindModal(true)
@@ -229,21 +214,17 @@ const AccountManagement = ({
     });
   }
 
-  if (status.linuxdo_oauth !== undefined) {
+  if (status.linuxdo_oauth || userState.user?.linux_do_id) {
     providerCards.push({
       key: 'linuxdo',
       iconKey: 'linuxdo',
       icon: <I.Linux size={18} />,
       name: 'LinuxDO',
-      detail:
-        userState.user?.linux_do_id ||
-        (status.linuxdo_oauth ? t('未绑定') : t('未启用')),
+      detail: userState.user?.linux_do_id || t('未绑定'),
       bound: isBound(userState.user?.linux_do_id),
       actionLabel: isBound(userState.user?.linux_do_id)
         ? t('已绑定')
-        : status.linuxdo_oauth
-          ? t('绑定')
-          : t('未启用'),
+        : t('绑定'),
       onClick:
         !isBound(userState.user?.linux_do_id) && status.linuxdo_oauth
           ? () => onLinuxDOOAuthClicked(status.linuxdo_client_id)
@@ -252,21 +233,17 @@ const AccountManagement = ({
     });
   }
 
-  if (status.oidc_enabled !== undefined) {
+  if (status.oidc_enabled || userState.user?.oidc_id) {
     providerCards.push({
       key: 'oidc',
       iconKey: 'oidc',
       icon: <I.Oidc size={18} />,
       name: 'OIDC',
-      detail:
-        userState.user?.oidc_id ||
-        (status.oidc_enabled ? t('未绑定') : t('未启用')),
+      detail: userState.user?.oidc_id || t('未绑定'),
       bound: isBound(userState.user?.oidc_id),
       actionLabel: isBound(userState.user?.oidc_id)
         ? t('已绑定')
-        : status.oidc_enabled
-          ? t('绑定')
-          : t('未启用'),
+        : t('绑定'),
       onClick:
         !isBound(userState.user?.oidc_id) && status.oidc_enabled
           ? () =>

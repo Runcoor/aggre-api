@@ -677,7 +677,7 @@ const RechargePage = () => {
                                 {m.type === 'alipay' ? <SiAlipay size={22} color='#1677FF' /> : m.type === 'wxpay' ? <SiWechat size={22} color='#07C160' /> : <CreditCard size={20} style={{ color: 'var(--text-muted)' }} />}
                               </div>
                               <div style={{ flex: 1, textAlign: 'left' }}>
-                                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{m.name}</div>
+                                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{m.name ? t(m.name) : ''}</div>
                                 <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('即时到账')}</div>
                               </div>
                               {selectedPayMethod === m.type && (

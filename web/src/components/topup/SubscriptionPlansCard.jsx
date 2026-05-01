@@ -243,10 +243,10 @@ const SubscriptionPlansCard = ({
     (plans || []).forEach((p) => {
       const plan = p?.plan;
       if (!plan?.id) return;
-      map.set(plan.id, plan.title || '');
+      map.set(plan.id, plan.title ? t(plan.title) : '');
     });
     return map;
-  }, [plans]);
+  }, [plans, t]);
 
   const getPlanPurchaseCount = (planId) =>
     planPurchaseCountMap.get(planId) || 0;
@@ -475,7 +475,7 @@ const SubscriptionPlansCard = ({
                         ) : (
                           <span className='inline-flex text-xs font-bold uppercase tracking-wider px-2.5 py-1'
                             style={{ borderRadius: 9999, background: 'var(--surface-active)', color: 'var(--text-secondary)' }}>
-                            {plan?.title || t('订阅套餐')}
+                            {plan?.title ? t(plan.title) : t('订阅套餐')}
                           </span>
                         )}
                       </div>
@@ -497,10 +497,10 @@ const SubscriptionPlansCard = ({
                         )}
                       </div>
                       {plan?.subtitle && (
-                        <p className='text-sm mb-4' style={{ color: 'var(--text-secondary)' }}>{plan.subtitle}</p>
+                        <p className='text-sm mb-4' style={{ color: 'var(--text-secondary)' }}>{t(plan.subtitle)}</p>
                       )}
                       {isPopular && plan?.title && (
-                        <p className='text-sm font-bold mb-4' style={{ color: 'var(--text-primary)' }}>{plan.title}</p>
+                        <p className='text-sm font-bold mb-4' style={{ color: 'var(--text-primary)' }}>{t(plan.title)}</p>
                       )}
 
                       {/* Benefits with check icons */}

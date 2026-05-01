@@ -273,7 +273,7 @@ const PlanCard = ({ index, plan, popular, t, onSubscribe }) => {
             lineHeight: 1.3,
           }}
         >
-          {plan.title}
+          {plan.title ? t(plan.title) : ''}
         </h3>
 
         {/* Price */}
@@ -335,7 +335,7 @@ const PlanCard = ({ index, plan, popular, t, onSubscribe }) => {
             flex: 1,
           }}
         >
-          {plan.subtitle}
+          {plan.subtitle ? t(plan.subtitle) : ''}
         </p>
 
         {/* CTA */}
@@ -508,7 +508,7 @@ const ComparisonTable = ({ plans, t }) => {
                       color: isPopular ? 'var(--accent)' : 'var(--text-secondary)',
                     }}
                   >
-                    {p.title}
+                    {p.title ? t(p.title) : ''}
                   </th>
                 );
               })}
@@ -575,7 +575,7 @@ const ComparisonTable = ({ plans, t }) => {
                 return (
                   <div key={p.id}>
                     <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 2 }}>
-                      {p.title}
+                      {p.title ? t(p.title) : ''}
                     </div>
                     <div style={{ fontSize: 12, color: isPopular && row.highlight ? 'var(--accent)' : 'var(--text-primary)', fontWeight: row.highlight ? 600 : 500 }}>
                       {row.cell(p)}

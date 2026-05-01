@@ -4486,9 +4486,9 @@ html.dark .username-pill::after {
   position: absolute;
   bottom: calc(100% + 12px);
   right: 0;
-  width: 240px;
-  padding: 12px 12px 10px;
-  border-radius: 14px;
+  width: 160px;
+  padding: 8px 8px 7px;
+  border-radius: 12px;
   background: var(--surface);
   border: 1px solid var(--border-default);
   box-shadow:
@@ -4525,11 +4525,11 @@ html.dark .username-pill::after {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
 }
 .qq-float-card-title {
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: 0.01em;
@@ -4537,12 +4537,12 @@ html.dark .username-pill::after {
 .qq-float-card-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 .qq-float-icon-btn {
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
   border: none;
   background: transparent;
   color: var(--text-muted);
@@ -4557,7 +4557,7 @@ html.dark .username-pill::after {
   color: var(--text-primary);
 }
 .qq-float-qr-wrap {
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
   background: #000;
   display: flex;
@@ -4571,9 +4571,9 @@ html.dark .username-pill::after {
   user-select: none;
 }
 .qq-float-card-foot {
-  margin-top: 8px;
+  margin-top: 6px;
   text-align: center;
-  font-size: 11px;
+  font-size: 9px;
   color: var(--text-muted);
   letter-spacing: 0.02em;
 }

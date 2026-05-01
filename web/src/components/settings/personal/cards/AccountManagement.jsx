@@ -128,7 +128,7 @@ const AccountManagement = ({
   providerCards.push({
     key: 'email',
     iconKey: 'email',
-    icon: <I.Mail />,
+    icon: <I.Mail size={18} />,
     name: t('邮箱'),
     detail: userState.user?.email || t('未绑定'),
     primary: !!userState.user?.email,
@@ -142,7 +142,7 @@ const AccountManagement = ({
     providerCards.push({
       key: 'wechat',
       iconKey: 'wechat',
-      icon: <I.WeChat />,
+      icon: <I.WeChat size={18} />,
       name: t('微信'),
       detail:
         userState.user?.wechat_id ||
@@ -164,7 +164,7 @@ const AccountManagement = ({
     providerCards.push({
       key: 'github',
       iconKey: 'github',
-      icon: <I.GitHub />,
+      icon: <I.GitHub size={18} />,
       name: 'GitHub',
       detail:
         userState.user?.github_id ||
@@ -187,7 +187,7 @@ const AccountManagement = ({
     providerCards.push({
       key: 'discord',
       iconKey: 'discord',
-      icon: <I.Discord />,
+      icon: <I.Discord size={18} />,
       name: 'Discord',
       detail:
         userState.user?.discord_id ||
@@ -210,7 +210,7 @@ const AccountManagement = ({
     providerCards.push({
       key: 'telegram',
       iconKey: 'telegram',
-      icon: <I.Telegram />,
+      icon: <I.Telegram size={18} />,
       name: 'Telegram',
       detail:
         userState.user?.telegram_id ||
@@ -233,7 +233,7 @@ const AccountManagement = ({
     providerCards.push({
       key: 'linuxdo',
       iconKey: 'linuxdo',
-      icon: <I.Linux />,
+      icon: <I.Linux size={18} />,
       name: 'LinuxDO',
       detail:
         userState.user?.linux_do_id ||
@@ -256,7 +256,7 @@ const AccountManagement = ({
     providerCards.push({
       key: 'oidc',
       iconKey: 'oidc',
-      icon: <I.Oidc />,
+      icon: <I.Oidc size={18} />,
       name: 'OIDC',
       detail:
         userState.user?.oidc_id ||
@@ -286,7 +286,7 @@ const AccountManagement = ({
       providerCards.push({
         key: `custom_${provider.slug}`,
         iconKey: 'custom',
-        icon: <I.Plug />,
+        icon: <I.Plug size={16} />,
         name: provider.name,
         detail: bound ? binding?.provider_user_id || t('已绑定') : t('未绑定'),
         bound,
@@ -304,6 +304,80 @@ const AccountManagement = ({
   const linkedCount = providerCards.filter((c) => c.bound).length;
   const totalCount = providerCards.length;
 
+  // ---------- security checklist data ----------
+  const securityChecklist = [
+    {
+      id: 'token',
+      icon: <I.Key size={14} />,
+      title: t('系统访问令牌'),
+      desc: systemToken
+        ? t('已生成 · 仅本次会话可见')
+        : t('用于 API 调用的身份验证令牌 · 尚未生成'),
+      done: !!systemToken,
+      tag: systemToken
+        ? { text: t('已生成'), kind: 'success' }
+        : null,
+      buttonLabel: systemToken ? t('重新生成') : t('生成令牌'),
+      buttonIcon: <I.Refresh size={12} />,
+      onClick: generateAccessToken,
+      primary: false,
+    },
+    {
+      id: 'password',
+      icon: <I.Lock size={14} />,
+      title: t('密码管理'),
+      desc: t('定期更改密码可以提高账户安全性'),
+      done: true,
+      tag: null,
+      buttonLabel: t('修改密码'),
+      buttonIcon: <I.Arrow size={12} />,
+      onClick: () => setShowChangePasswordModal(true),
+      primary: false,
+    },
+    {
+      id: 'passkey',
+      icon: <I.Fingerprint size={14} />,
+      title: t('Passkey 登录'),
+      desc: passkeyEnabled
+        ? t('已启用 · 最后使用：{{ts}}', { ts: lastUsedLabel })
+        : !passkeySupported
+          ? t('当前设备不支持 Passkey · 使用受支持的浏览器尝试')
+          : t('使用生物识别免密登录 · 尚未注册'),
+      done: !!passkeyEnabled,
+      tag: passkeyEnabled
+        ? { text: t('已启用'), kind: 'success' }
+        : { text: t('推荐'), kind: 'brand' },
+      buttonLabel: passkeyEnabled
+        ? passkeyDeleteLoading
+          ? '…'
+          : t('解绑 Passkey')
+        : passkeyRegisterLoading
+          ? '…'
+          : t('注册 Passkey'),
+      buttonIcon: passkeyEnabled ? <I.Trash size={12} /> : <I.Plus size={12} />,
+      onClick: passkeyEnabled
+        ? () => {
+            Modal.confirm({
+              title: t('确认解绑 Passkey'),
+              content: t('解绑后将无法使用 Passkey 登录，确定要继续吗？'),
+              okText: t('确认解绑'),
+              cancelText: t('取消'),
+              okType: 'danger',
+              onOk: onPasskeyDelete,
+            });
+          }
+        : onPasskeyRegister,
+      buttonClass: passkeyEnabled ? 'danger' : '',
+      buttonDisabled: passkeyEnabled
+        ? passkeyDeleteLoading
+        : !passkeySupported || passkeyRegisterLoading,
+      primary: false,
+    },
+  ];
+
+  const completedCount = securityChecklist.filter((it) => it.done).length;
+  const totalSecurityCount = securityChecklist.length + 1; // +1 for 2FA
+
   const tokenSuffix = systemToken
     ? `sk-${'*'.repeat(3)}${systemToken.slice(-4)}`
     : t('尚未生成');
@@ -317,46 +391,59 @@ const AccountManagement = ({
       {/* === ACCOUNT BINDINGS === */}
       <section className='aas-section' id='sec-account'>
         <div className='aas-section-head'>
-          <h2>
-            {t('账户绑定')}{' '}
-            <span className='aas-hint'>· {t('外部身份提供方')}</span>
-          </h2>
-          <span className='aas-meta'>
-            {t('已绑定')}{' '}
-            <strong style={{ color: 'var(--aas-ink-900)' }}>
-              {linkedCount}
-            </strong>
-            {' / '}
-            {totalCount} {t('个')}
-          </span>
+          <div className='aas-head-ttl'>
+            <div className='aas-head-ic'>
+              <I.Link size={14} />
+            </div>
+            <div>
+              <h3>{t('账户绑定')}</h3>
+              <div className='aas-head-sub'>
+                {t('外部身份提供方 · 已绑定')}{' '}
+                <b>
+                  {linkedCount}/{totalCount}
+                </b>{' '}
+                {t('个')}
+              </div>
+            </div>
+          </div>
         </div>
         <div className='aas-bindings'>
-          {providerCards.map((b) => (
-            <div className='aas-binding' key={b.key}>
-              <div className={`aas-binding-icon ${b.iconKey}`}>{b.icon}</div>
-              <div className='aas-binding-info'>
-                <div className='aas-binding-name'>
-                  {b.name}
-                  {b.primary && (
-                    <span className='aas-primary-tag'>{t('主')}</span>
-                  )}
-                </div>
-                <div
-                  className={`aas-binding-status ${b.bound ? 'bound' : ''}`}
-                  title={b.detail}
-                >
-                  {b.detail}
-                </div>
-              </div>
-              <button
-                className={`aas-binding-action ${b.unbindStyle ? 'unbind' : ''} ${!b.onClick || b.loading ? 'disabled' : ''}`}
-                onClick={b.onClick}
-                disabled={!b.onClick || b.loading}
+          {providerCards.map((b) => {
+            const onClick = b.onClick;
+            const disabled = !onClick || b.loading;
+            return (
+              <div
+                className={`aas-binding ${b.bound ? 'bound' : ''}`}
+                key={b.key}
               >
-                {b.loading ? '…' : b.actionLabel}
-              </button>
-            </div>
-          ))}
+                <div className={`aas-binding-icon ${b.iconKey}`}>{b.icon}</div>
+                <div className='aas-binding-info'>
+                  <div className='aas-binding-name'>
+                    {b.name}
+                    <span
+                      className={`aas-binding-dot ${b.bound ? 'on' : 'off'}`}
+                    />
+                    {b.primary && (
+                      <span className='aas-primary-tag'>{t('主')}</span>
+                    )}
+                  </div>
+                  <div
+                    className={`aas-binding-status ${b.bound ? 'bound' : ''}`}
+                    title={b.detail}
+                  >
+                    {b.detail}
+                  </div>
+                </div>
+                <button
+                  className={`aas-binding-action ${b.unbindStyle ? 'unbind' : !b.bound && b.enabled ? 'brand' : ''} ${disabled ? 'disabled' : ''}`}
+                  onClick={onClick}
+                  disabled={disabled}
+                >
+                  {b.loading ? '…' : b.actionLabel}
+                </button>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -386,146 +473,97 @@ const AccountManagement = ({
       {/* === SECURITY === */}
       <section className='aas-section' id='sec-security'>
         <div className='aas-section-head'>
-          <h2>
-            {t('安全设置')}{' '}
-            <span className='aas-hint'>· {t('建议每 90 天轮换密钥')}</span>
-          </h2>
+          <div className='aas-head-ttl'>
+            <div className='aas-head-ic'>
+              <I.Shield size={14} />
+            </div>
+            <div>
+              <h3>{t('安全设置')}</h3>
+              <div className='aas-head-sub'>
+                <b>
+                  {completedCount}/{totalSecurityCount}
+                </b>{' '}
+                {t('项已完成')} · {t('建议每 90 天轮换密钥')}
+              </div>
+            </div>
+          </div>
         </div>
-        <div className='aas-section-body'>
-          {/* System Access Token */}
-          <div className='aas-row'>
-            <div className='aas-row-icon tinted-blue'>
-              <I.Key />
-            </div>
-            <div className='aas-row-info'>
-              <div className='aas-row-title'>{t('系统访问令牌')}</div>
-              <div className='aas-row-desc'>
-                {t('用于 API 调用的身份验证令牌')} ·{' '}
-                <span className='aas-mono'>{tokenSuffix}</span>
-              </div>
-              {systemToken && (
-                <div className='aas-token-display'>
-                  <span
-                    style={{
-                      flex: 1,
-                      minWidth: 0,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {systemToken}
-                  </span>
-                  <button onClick={() => copyToken(systemToken)}>
-                    <I.Copy /> {t('复制')}
-                  </button>
-                </div>
-              )}
-            </div>
-            <button className='aas-btn' onClick={generateAccessToken}>
-              <I.Refresh /> {systemToken ? t('重新生成') : t('生成令牌')}
-            </button>
-          </div>
-
-          {/* Password */}
-          <div className='aas-row'>
-            <div className='aas-row-icon'>
-              <I.Lock />
-            </div>
-            <div className='aas-row-info'>
-              <div className='aas-row-title'>{t('密码管理')}</div>
-              <div className='aas-row-desc'>
-                {t('定期更改密码可以提高账户安全性')}
-              </div>
-            </div>
-            <button
-              className='aas-btn'
-              onClick={() => setShowChangePasswordModal(true)}
+        <div className='aas-sec-list'>
+          {securityChecklist.map((it) => (
+            <div
+              key={it.id}
+              className={`aas-sec-row ${it.done ? 'done' : 'todo'}`}
             >
-              {t('修改密码')}
-            </button>
-          </div>
-
-          {/* Passkey */}
-          <div className='aas-row'>
-            <div className='aas-row-icon tinted-blue'>
-              <I.Fingerprint />
-            </div>
-            <div className='aas-row-info'>
-              <div className='aas-row-title'>
-                {t('Passkey 登录')}{' '}
-                {passkeyEnabled ? (
-                  <span className='aas-pill ok'>{t('已启用')}</span>
-                ) : (
-                  <span className='aas-pill info'>{t('推荐')}</span>
-                )}
+              <div className='aas-sec-check'>
+                {it.done ? <I.Check size={14} /> : it.icon}
               </div>
-              <div className='aas-row-desc'>
-                {passkeyEnabled
-                  ? t('已启用 Passkey，无需密码即可登录')
-                  : t('使用生物识别免密且更安全的登录体验')}
-                {' · '}
-                {t('最后使用')}：{lastUsedLabel}
-                {!passkeySupported && (
-                  <>
-                    {' · '}
-                    <span style={{ color: 'var(--aas-orange)' }}>
-                      {t('当前设备不支持')}
+              <div className='aas-sec-info'>
+                <div className='aas-sec-title'>
+                  {it.title}
+                  {it.tag && (
+                    <span className={`aas-tag ${it.tag.kind}`}>
+                      {it.tag.text}
                     </span>
-                  </>
+                  )}
+                </div>
+                <div className='aas-sec-desc'>{it.desc}</div>
+                {it.id === 'token' && systemToken && (
+                  <div className='aas-token-display'>
+                    <span
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                      title={systemToken}
+                    >
+                      {systemToken}
+                    </span>
+                    <button onClick={() => copyToken(systemToken)}>
+                      <I.Copy size={12} /> {t('复制')}
+                    </button>
+                  </div>
                 )}
               </div>
+              <button
+                className={`aas-btn sm ${it.buttonClass || ''} ${it.primary ? 'primary' : ''}`}
+                onClick={it.onClick}
+                disabled={it.buttonDisabled}
+              >
+                {it.buttonIcon} {it.buttonLabel}
+              </button>
             </div>
-            {passkeyEnabled ? (
-              <button
-                className='aas-btn danger'
-                disabled={passkeyDeleteLoading}
-                onClick={() => {
-                  Modal.confirm({
-                    title: t('确认解绑 Passkey'),
-                    content: t('解绑后将无法使用 Passkey 登录，确定要继续吗？'),
-                    okText: t('确认解绑'),
-                    cancelText: t('取消'),
-                    okType: 'danger',
-                    onOk: onPasskeyDelete,
-                  });
-                }}
-              >
-                {passkeyDeleteLoading ? '…' : t('解绑 Passkey')}
-              </button>
-            ) : (
-              <button
-                className='aas-btn'
-                disabled={!passkeySupported || passkeyRegisterLoading}
-                onClick={onPasskeyRegister}
-              >
-                {passkeyRegisterLoading ? '…' : t('注册 Passkey')}
-              </button>
-            )}
-          </div>
+          ))}
 
-          {/* 2FA — embedded existing component as a sub-row */}
-          <div className='aas-row' style={{ display: 'block' }}>
-            <div style={{ padding: '4px 0 8px' }}>
+          {/* 2FA — embedded full panel inside its own row container */}
+          <div className='aas-sec-row' style={{ display: 'block' }}>
+            <div style={{ padding: '4px 2px 8px' }}>
               <TwoFASetting t={t} />
             </div>
           </div>
 
           {/* Delete account — danger row */}
-          <div className='aas-row aas-danger-row'>
-            <div className='aas-row-icon tinted-red'>
-              <I.Power />
+          <div className='aas-sec-row danger-row'>
+            <div className='aas-sec-check'>
+              <I.Power size={14} />
             </div>
-            <div className='aas-row-info'>
-              <div className='aas-row-title'>{t('删除账户')}</div>
-              <div className='aas-row-desc'>
-                {t('此操作不可逆，所有数据将被永久删除')}
+            <div className='aas-sec-info'>
+              <div className='aas-sec-title'>
+                {t('删除账户')}{' '}
+                <span className='aas-tag danger'>{t('不可逆')}</span>
+              </div>
+              <div className='aas-sec-desc'>
+                {t(
+                  '所有数据将被永久删除 · 包括 API 调用记录、计费记录与绑定关系',
+                )}
               </div>
             </div>
             <button
-              className='aas-btn danger'
+              className='aas-btn danger sm'
               onClick={() => setShowAccountDeleteModal(true)}
             >
-              {t('注销账户')}
+              <I.Trash size={12} /> {t('注销账户')}
             </button>
           </div>
         </div>

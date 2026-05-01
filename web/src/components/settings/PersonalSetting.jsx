@@ -17,12 +17,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   API,
   copy,
+  isAdmin,
+  isRoot,
+  renderQuota,
   showError,
   showInfo,
   showSuccess,
@@ -33,10 +36,8 @@ import {
   setUserData,
 } from '../../helpers';
 import { UserContext } from '../../context/User';
-import { Modal } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 
-import UserInfoHeader from './personal/components/UserInfoHeader';
 import AccountManagement from './personal/cards/AccountManagement';
 import NotificationSettings from './personal/cards/NotificationSettings';
 import CheckinCalendar from './personal/cards/CheckinCalendar';
@@ -49,13 +50,34 @@ import {
   AccountSettingsStyles,
 } from './personal/_shared/AccountSettingsStyles';
 
-const NAV_ITEMS = (t) => [
-  { id: 'account', label: t('账户绑定'), icon: <I.Plug /> },
-  { id: 'security', label: t('安全设置'), icon: <I.Shield /> },
-  { id: 'notifications', label: t('通知配置'), icon: <I.Bell /> },
-  { id: 'pricing', label: t('价格设置'), icon: <I.Tag /> },
-  { id: 'privacy', label: t('隐私设置'), icon: <I.Lock /> },
+const NAV_ITEMS = (t, bindingMeta) => [
+  { id: 'profile', label: t('个人资料'), icon: 'User' },
+  {
+    id: 'account',
+    label: t('账户绑定'),
+    icon: 'Link',
+    meta: bindingMeta,
+  },
+  { id: 'security', label: t('安全设置'), icon: 'Shield' },
+  { id: 'notifications', label: t('通知配置'), icon: 'Bell' },
+  { id: 'pricing', label: t('价格策略'), icon: 'Tag' },
+  { id: 'privacy', label: t('隐私设置'), icon: 'Lock' },
 ];
+
+// Detect a friendly local timezone label like "(GMT+08:00) Asia/Shanghai".
+const detectTimezone = () => {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    const offsetMin = -new Date().getTimezoneOffset();
+    const sign = offsetMin >= 0 ? '+' : '-';
+    const abs = Math.abs(offsetMin);
+    const h = String(Math.floor(abs / 60)).padStart(2, '0');
+    const m = String(abs % 60).padStart(2, '0');
+    return `(GMT${sign}${h}:${m}) ${tz}`;
+  } catch (e) {
+    return 'UTC';
+  }
+};
 
 const PersonalSetting = () => {
   const [userState, userDispatch] = useContext(UserContext);
@@ -102,9 +124,10 @@ const PersonalSetting = () => {
     recordIpLog: false,
   });
 
-  const [activeNav, setActiveNav] = useState('account');
+  const [activeNav, setActiveNav] = useState('profile');
   const [dirty, setDirty] = useState(false);
   const [savingNotif, setSavingNotif] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
 
   useEffect(() => {
     let saved = localStorage.getItem('status');
@@ -183,23 +206,23 @@ const PersonalSetting = () => {
     }
   }, [userState?.user?.setting]);
 
-  // Section anchor scroll spy.
+  // Anchor scroll-spy.
   useEffect(() => {
-    const ids = NAV_ITEMS(t).map((n) => `sec-${n.id}`);
+    const ids = ['profile', 'account', 'security', 'notifications', 'pricing', 'privacy'];
+    const headerOffset = 120;
     const handler = () => {
-      const scrollY = window.scrollY + 120;
+      const scrollY = window.scrollY + headerOffset;
       let current = ids[0];
       for (const id of ids) {
-        const el = document.getElementById(id);
+        const el = document.getElementById(`sec-${id}`);
         if (el && el.offsetTop <= scrollY) current = id;
       }
-      const next = current.replace(/^sec-/, '');
-      setActiveNav((prev) => (prev === next ? prev : next));
+      setActiveNav((prev) => (prev === current ? prev : current));
     };
     window.addEventListener('scroll', handler, { passive: true });
     handler();
     return () => window.removeEventListener('scroll', handler);
-  }, [t]);
+  }, []);
 
   const handleInputChange = (name, value) => {
     setInputs((prev) => ({ ...prev, [name]: value }));
@@ -491,57 +514,235 @@ const PersonalSetting = () => {
     setDirty(false);
   };
 
-  const navItems = NAV_ITEMS(t);
+  // Compute the binding count for the nav badge ("2/7" etc.).
+  const bindingMeta = useMemo(() => {
+    const u = userState?.user || {};
+    const candidates = [
+      { enabled: true, bound: !!u.email },
+      { enabled: status?.wechat_login !== undefined, bound: !!u.wechat_id },
+      { enabled: status?.github_oauth !== undefined, bound: !!u.github_id },
+      { enabled: status?.discord_oauth !== undefined, bound: !!u.discord_id },
+      { enabled: status?.telegram_oauth !== undefined, bound: !!u.telegram_id },
+      { enabled: status?.linuxdo_oauth !== undefined, bound: !!u.linux_do_id },
+      { enabled: status?.oidc_enabled !== undefined, bound: !!u.oidc_id },
+    ];
+    const total = candidates.filter((c) => c.enabled).length;
+    const bound = candidates.filter((c) => c.enabled && c.bound).length;
+    return total > 0 ? `${bound}/${total}` : null;
+  }, [userState?.user, status]);
+
+  const navItems = NAV_ITEMS(t, bindingMeta);
+
+  // ----- profile card data -----
+  const username = userState?.user?.username || 'null';
+  const displayName = userState?.user?.display_name || username;
+  const initial = (username && username[0] ? username[0] : 'A').toUpperCase();
+  const avatarSrc = userState?.user?.avatar || null;
+  const balance = renderQuota(userState?.user?.quota, 2);
+  const usedQuota = renderQuota(userState?.user?.used_quota, 2);
+  const requestCount = userState?.user?.request_count ?? 0;
+  const groupName = userState?.user?.group || t('默认');
+  const roleLabel = isRoot()
+    ? t('超级管理员')
+    : isAdmin()
+    ? t('管理员')
+    : t('普通用户');
+
+  // ----- profile section data -----
+  const userEmail = userState?.user?.email || '';
+  const timezone = useMemo(() => detectTimezone(), []);
+
+  const jumpTo = (id) => {
+    const el = document.getElementById(`sec-${id}`);
+    if (!el) return;
+    const top =
+      el.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
 
   return (
     <div className='aas-root'>
       <AccountSettingsStyles />
 
       <div className='aas-page'>
-        <header className='aas-page-head'>
-          <div>
-            <h1 className='aas-page-title'>{t('账户设置')}</h1>
-            <div className='aas-page-sub'>
-              {t('个人资料、账户绑定、安全策略与通知偏好')}
+        {/* topbar */}
+        <div className='aas-topbar'>
+          <div className='aas-brand'>
+            <span className='aas-brand-mk'>
+              <i />
+            </span>
+            Aggre <span className='aas-brand-meta'>Console</span>
+          </div>
+          <div className='aas-crumb'>
+            {t('控制台')}{' '}
+            <span className='aas-crumb-sep'>/</span> <b>{t('账户设置')}</b>
+          </div>
+          <div style={{ flex: 1 }} />
+        </div>
+
+        {/* layout */}
+        <div className='aas-app-grid'>
+          {/* sticky sidebar */}
+          <aside className='aas-side'>
+            <div className='aas-profile-card'>
+              <div className='aas-pc-row'>
+                <div className='aas-pc-ava'>
+                  {!avatarFailed && avatarSrc ? (
+                    <img
+                      src={avatarSrc}
+                      alt={username}
+                      onError={() => setAvatarFailed(true)}
+                    />
+                  ) : (
+                    initial
+                  )}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <h2 className='aas-pc-name' title={displayName}>
+                    {displayName}
+                  </h2>
+                  <div className='aas-pc-at' title={`@${username}`}>
+                    @{username}
+                  </div>
+                  <span className='aas-pc-role' title={`${groupName} · ${roleLabel}`}>
+                    <I.Spark size={10} /> {groupName} · {roleLabel}
+                  </span>
+                </div>
+              </div>
+              <div className='aas-pc-balance'>
+                <div className='aas-pc-lbl'>{t('当前余额')}</div>
+                <div
+                  className='aas-pc-val aas-mono'
+                  title={String(balance)}
+                >
+                  {balance}
+                </div>
+                <div className='aas-pc-sub'>
+                  {t('可用额度 · 累计 {{count}} 次调用', {
+                    count: requestCount,
+                  })}
+                </div>
+              </div>
+              <div className='aas-pc-mini'>
+                <div>
+                  <div className='aas-pc-mlbl'>{t('历史消耗')}</div>
+                  <div
+                    className='aas-pc-mval aas-mono'
+                    title={String(usedQuota)}
+                  >
+                    {usedQuota}
+                  </div>
+                  <div className='aas-pc-msub'>
+                    {t('{{count}} 次', { count: requestCount })}
+                  </div>
+                </div>
+                <div>
+                  <div className='aas-pc-mlbl'>{t('请求次数')}</div>
+                  <div className='aas-pc-mval aas-mono'>
+                    {requestCount}
+                  </div>
+                  <div className='aas-pc-msub'>{t('自注册以来')}</div>
+                </div>
+              </div>
             </div>
-          </div>
-        </header>
 
-        {/* Wallet hero */}
-        <UserInfoHeader t={t} userState={userState} />
+            <nav className='aas-anchors'>
+              {navItems.map((item) => {
+                const IconCmp = I[item.icon];
+                return (
+                  <button
+                    key={item.id}
+                    type='button'
+                    className={`aas-anchor ${activeNav === item.id ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveNav(item.id);
+                      jumpTo(item.id);
+                    }}
+                  >
+                    <span className='aas-anchor-ic'>
+                      {IconCmp ? <IconCmp size={15} /> : null}
+                    </span>
+                    <span className='aas-anchor-ct'>{item.label}</span>
+                    {item.meta && (
+                      <span className='aas-anchor-tag'>{item.meta}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
 
-        {/* Optional check-in calendar (kept full width above the layout grid) */}
-        {status?.checkin_enabled && (
-          <div style={{ marginBottom: 16 }}>
-            <CheckinCalendar
-              t={t}
-              status={status}
-              turnstileEnabled={turnstileEnabled}
-              turnstileSiteKey={turnstileSiteKey}
-            />
-          </div>
-        )}
+          {/* main column */}
+          <div className='aas-main'>
+            {/* Optional check-in calendar — kept inline before profile section */}
+            {status?.checkin_enabled && (
+              <CheckinCalendar
+                t={t}
+                status={status}
+                turnstileEnabled={turnstileEnabled}
+                turnstileSiteKey={turnstileSiteKey}
+              />
+            )}
 
-        <div className='aas-layout'>
-          <nav className='aas-nav-rail'>
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                type='button'
-                className={`aas-nav-item ${activeNav === item.id ? 'active' : ''}`}
-                onClick={() => {
-                  setActiveNav(item.id);
-                  document
-                    .getElementById(`sec-${item.id}`)
-                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }}
-              >
-                {item.icon} {item.label}
-              </button>
-            ))}
-          </nav>
+            {/* === PROFILE === */}
+            <section className='aas-section' id='sec-profile'>
+              <div className='aas-section-head'>
+                <div className='aas-head-ttl'>
+                  <div className='aas-head-ic'>
+                    <I.User size={14} />
+                  </div>
+                  <div>
+                    <h3>{t('个人资料')}</h3>
+                    <div className='aas-head-sub'>
+                      {t('用于账户登录与对外展示')}
+                    </div>
+                  </div>
+                </div>
+                <div className='aas-head-right'>
+                  <button
+                    className='aas-btn sm'
+                    onClick={() => setShowEmailBindModal(true)}
+                  >
+                    {userEmail ? t('更换邮箱') : t('绑定邮箱')}
+                  </button>
+                </div>
+              </div>
+              <div className='aas-fields'>
+                <div className='aas-field'>
+                  <div className='aas-field-label'>
+                    {t('主邮箱')}
+                    <span className='aas-field-meta'>
+                      {userEmail ? t('已验证') : t('未绑定')}
+                    </span>
+                  </div>
+                  <div className='aas-input'>
+                    <I.Mail size={14} />
+                    <input
+                      readOnly
+                      value={userEmail}
+                      placeholder={t('未绑定邮箱')}
+                    />
+                    {userEmail && (
+                      <span className='aas-tag success'>{t('已验证')}</span>
+                    )}
+                  </div>
+                </div>
+                <div className='aas-field'>
+                  <div className='aas-field-label'>
+                    {t('时区')}
+                    <span className='aas-field-meta'>
+                      {t('影响计费周期')}
+                    </span>
+                  </div>
+                  <div className='aas-input'>
+                    <I.Globe size={14} />
+                    <input readOnly value={timezone} />
+                  </div>
+                </div>
+              </div>
+            </section>
 
-          <div className='aas-main-col'>
+            {/* AccountManagement renders sec-account + sec-security */}
             <AccountManagement
               t={t}
               userState={userState}
@@ -560,6 +761,7 @@ const PersonalSetting = () => {
               onPasskeyDelete={handleRemovePasskey}
             />
 
+            {/* NotificationSettings renders sec-notifications + sec-pricing + sec-privacy + sec-sidebar */}
             <NotificationSettings
               t={t}
               notificationSettings={notificationSettings}

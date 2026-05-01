@@ -280,61 +280,68 @@ const NotificationSettings = ({
       {/* === NOTIFICATIONS === */}
       <section className='aas-section' id='sec-notifications'>
         <div className='aas-section-head'>
-          <h2>
-            {t('通知配置')}{' '}
-            <span className='aas-hint'>· {t('接收方式与额度阈值')}</span>
-          </h2>
-        </div>
-        <div className='aas-section-body'>
-          <div className='aas-row'>
-            <div className='aas-row-icon tinted-blue'>
-              <I.Mail />
+          <div className='aas-head-ttl'>
+            <div className='aas-head-ic'>
+              <I.Bell size={14} />
             </div>
-            <div className='aas-row-info'>
-              <div className='aas-row-title'>{t('邮件通知')}</div>
-              <div className='aas-row-desc'>
-                {t('启用后将通过邮件接收预警和系统通知')}
+            <div>
+              <h3>{t('通知配置')}</h3>
+              <div className='aas-head-sub'>
+                {t('接收方式与额度阈值')}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className='aas-pref first'>
+          <div className='aas-pref-glyph'>
+            <I.Mail size={14} />
+          </div>
+          <div className='aas-pref-info'>
+            <div className='aas-pref-title'>{t('邮件通知')}</div>
+            <div className='aas-pref-desc'>
+              {t('启用后将通过邮件接收预警和系统通知')}
+            </div>
+          </div>
+          <Switch
+            checked={notificationSettings.warningType === 'email'}
+            onChange={(v) => setField('warningType', v ? 'email' : '')}
+          />
+        </div>
+        {isAdminOrRoot && (
+          <div className='aas-pref'>
+            <div className='aas-pref-glyph muted'>
+              <I.Bell size={14} />
+            </div>
+            <div className='aas-pref-info'>
+              <div className='aas-pref-title'>
+                {t('上游模型更新通知')}{' '}
+                <span className='aas-tag muted'>{t('仅管理员')}</span>
+              </div>
+              <div className='aas-pref-desc'>
+                {t('接收上游模型变更提醒')}
               </div>
             </div>
             <Switch
-              checked={notificationSettings.warningType === 'email'}
-              onChange={(v) => setField('warningType', v ? 'email' : '')}
+              checked={
+                !!notificationSettings.upstreamModelUpdateNotifyEnabled
+              }
+              onChange={(v) =>
+                setField('upstreamModelUpdateNotifyEnabled', v)
+              }
             />
           </div>
-          {isAdminOrRoot && (
-            <div className='aas-row'>
-              <div className='aas-row-icon'>
-                <I.Bell />
-              </div>
-              <div className='aas-row-info'>
-                <div className='aas-row-title'>{t('上游模型更新通知')}</div>
-                <div className='aas-row-desc'>
-                  {t('仅管理员可见，接收上游模型变更提醒')}
-                </div>
-              </div>
-              <Switch
-                checked={
-                  !!notificationSettings.upstreamModelUpdateNotifyEnabled
-                }
-                onChange={(v) =>
-                  setField('upstreamModelUpdateNotifyEnabled', v)
-                }
-              />
-            </div>
-          )}
-        </div>
+        )}
 
-        <div className='aas-config-grid'>
+        <div className='aas-thresh'>
           <div className='aas-field'>
-            <label>
-              {t('额度预警阈值')}{' '}
-              <span className='aas-help'>
+            <div className='aas-field-label'>
+              {t('额度预警阈值')}
+              <span className='aas-field-meta'>
                 {renderQuotaWithPrompt(notificationSettings.warningThreshold)}
-              </span>{' '}
-              <span className='aas-req'>*</span>
-            </label>
+              </span>
+            </div>
             <div className='aas-input'>
-              <I.Bell />
+              <I.Alert size={14} style={{ color: '#d97706' }} />
               <input
                 type='text'
                 value={notificationSettings.warningThreshold}
@@ -347,9 +354,12 @@ const NotificationSettings = ({
             </div>
           </div>
           <div className='aas-field'>
-            <label>{t('通知邮箱')}</label>
+            <div className='aas-field-label'>
+              {t('通知邮箱')}
+              <span className='aas-field-meta'>{t('可选')}</span>
+            </div>
             <div className='aas-input'>
-              <I.Mail />
+              <I.Mail size={14} />
               <input
                 type='text'
                 value={notificationSettings.notificationEmail}
@@ -365,37 +375,28 @@ const NotificationSettings = ({
 
         {/* Advanced channels (webhook / bark / gotify) — collapsed by default */}
         <div
-          style={{
-            borderTop: '1px solid var(--aas-line-soft)',
-            padding: '10px 18px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            cursor: 'pointer',
-            color: 'var(--aas-ink-500)',
-            fontSize: 12,
-            userSelect: 'none',
-          }}
+          className='aas-advanced'
           onClick={() => setAdvancedOpen((v) => !v)}
         >
-          <I.Webhook />
-          <span style={{ flex: 1 }}>{t('高级通知通道')}</span>
+          <span className='aas-advanced-l'>
+            <I.Send size={13} />
+            {t('高级通知通道')}
+          </span>
           <span
+            className='aas-advanced-r'
             style={{
               transform: advancedOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform .15s',
-              display: 'inline-flex',
             }}
           >
-            <I.Chevron />
+            <I.Chevron size={14} />
           </span>
         </div>
         {advancedOpen && (
-          <div className='aas-config-grid'>
+          <div className='aas-advanced-grid'>
             <div className='aas-field'>
-              <label>{t('Webhook URL')}</label>
+              <div className='aas-field-label'>{t('Webhook URL')}</div>
               <div className='aas-input'>
-                <I.Webhook />
+                <I.Webhook size={14} />
                 <input
                   type='text'
                   value={notificationSettings.webhookUrl}
@@ -405,9 +406,9 @@ const NotificationSettings = ({
               </div>
             </div>
             <div className='aas-field'>
-              <label>{t('Webhook Secret')}</label>
+              <div className='aas-field-label'>{t('Webhook Secret')}</div>
               <div className='aas-input'>
-                <I.Lock />
+                <I.Lock size={14} />
                 <input
                   type='text'
                   value={notificationSettings.webhookSecret}
@@ -416,9 +417,9 @@ const NotificationSettings = ({
               </div>
             </div>
             <div className='aas-field'>
-              <label>Bark URL</label>
+              <div className='aas-field-label'>Bark URL</div>
               <div className='aas-input'>
-                <I.Bell />
+                <I.Bell size={14} />
                 <input
                   type='text'
                   value={notificationSettings.barkUrl}
@@ -428,9 +429,9 @@ const NotificationSettings = ({
               </div>
             </div>
             <div className='aas-field'>
-              <label>Gotify URL</label>
+              <div className='aas-field-label'>Gotify URL</div>
               <div className='aas-input'>
-                <I.Bell />
+                <I.Bell size={14} />
                 <input
                   type='text'
                   value={notificationSettings.gotifyUrl}
@@ -440,9 +441,9 @@ const NotificationSettings = ({
               </div>
             </div>
             <div className='aas-field'>
-              <label>Gotify Token</label>
+              <div className='aas-field-label'>Gotify Token</div>
               <div className='aas-input'>
-                <I.Key />
+                <I.Key size={14} />
                 <input
                   type='text'
                   value={notificationSettings.gotifyToken}
@@ -451,11 +452,12 @@ const NotificationSettings = ({
               </div>
             </div>
             <div className='aas-field'>
-              <label>
-                Gotify Priority <span className='aas-help'>0-10</span>
-              </label>
+              <div className='aas-field-label'>
+                Gotify Priority
+                <span className='aas-field-meta'>0-10</span>
+              </div>
               <div className='aas-input'>
-                <I.Sliders />
+                <I.Sliders size={14} />
                 <input
                   type='number'
                   min='0'
@@ -472,51 +474,65 @@ const NotificationSettings = ({
       {/* === PRICING === */}
       <section className='aas-section' id='sec-pricing'>
         <div className='aas-section-head'>
-          <h2>{t('价格设置')}</h2>
-        </div>
-        <div className='aas-section-body'>
-          <div className='aas-row'>
-            <div className='aas-row-icon tinted-orange'>
-              <I.Tag />
+          <div className='aas-head-ttl'>
+            <div className='aas-head-ic'>
+              <I.Tag size={14} />
             </div>
-            <div className='aas-row-info'>
-              <div className='aas-row-title'>
-                {t('接受未设置价格的模型')}{' '}
-                <span className='aas-pill warn'>{t('谨慎')}</span>
-              </div>
-              <div className='aas-row-desc'>
-                {t('当模型没有设置价格时仍接受调用，可能产生高额费用')}
-              </div>
+            <div>
+              <h3>{t('价格策略')}</h3>
+              <div className='aas-head-sub'>{t('计费与模型策略')}</div>
             </div>
-            <Switch
-              checked={!!notificationSettings.acceptUnsetModelRatioModel}
-              onChange={(v) => setField('acceptUnsetModelRatioModel', v)}
-            />
           </div>
+        </div>
+        <div className='aas-pref first'>
+          <div className='aas-pref-glyph warn'>
+            <I.Tag size={14} />
+          </div>
+          <div className='aas-pref-info'>
+            <div className='aas-pref-title'>
+              {t('接受未设置价格的模型')}{' '}
+              <span className='aas-tag warn'>{t('谨慎')}</span>
+            </div>
+            <div className='aas-pref-desc'>
+              {t('当模型没有设置价格时仍接受调用，可能产生高额费用')}
+            </div>
+          </div>
+          <Switch
+            checked={!!notificationSettings.acceptUnsetModelRatioModel}
+            onChange={(v) => setField('acceptUnsetModelRatioModel', v)}
+          />
         </div>
       </section>
 
       {/* === PRIVACY === */}
       <section className='aas-section' id='sec-privacy'>
         <div className='aas-section-head'>
-          <h2>{t('隐私设置')}</h2>
-        </div>
-        <div className='aas-section-body'>
-          <div className='aas-row'>
-            <div className='aas-row-icon'>
-              <I.Lock />
+          <div className='aas-head-ttl'>
+            <div className='aas-head-ic'>
+              <I.Lock size={14} />
             </div>
-            <div className='aas-row-info'>
-              <div className='aas-row-title'>{t('记录请求与错误日志 IP')}</div>
-              <div className='aas-row-desc'>
-                {t('开启后，"消费"和"错误"日志中将记录您的客户端 IP 地址')}
-              </div>
+            <div>
+              <h3>{t('隐私设置')}</h3>
+              <div className='aas-head-sub'>{t('日志与可观测性')}</div>
             </div>
-            <Switch
-              checked={!!notificationSettings.recordIpLog}
-              onChange={(v) => setField('recordIpLog', v)}
-            />
           </div>
+        </div>
+        <div className='aas-pref first'>
+          <div className='aas-pref-glyph muted'>
+            <I.Eye size={14} />
+          </div>
+          <div className='aas-pref-info'>
+            <div className='aas-pref-title'>
+              {t('记录请求与错误日志 IP')}
+            </div>
+            <div className='aas-pref-desc'>
+              {t('开启后，"消费"和"错误"日志中将记录您的客户端 IP 地址')}
+            </div>
+          </div>
+          <Switch
+            checked={!!notificationSettings.recordIpLog}
+            onChange={(v) => setField('recordIpLog', v)}
+          />
         </div>
       </section>
 
@@ -524,84 +540,81 @@ const NotificationSettings = ({
       {hasSidebarSettingsPermission() && sectionConfigs.length > 0 && (
         <section className='aas-section' id='sec-sidebar'>
           <div className='aas-section-head'>
-            <h2>
-              {t('边栏设置')}{' '}
-              <span className='aas-hint'>
-                · {t('个性化侧边栏要显示的功能')}
-              </span>
-            </h2>
-            <span className='aas-meta'>
-              <button
-                className='aas-btn'
-                onClick={resetSidebarModules}
-                style={{ marginRight: 8 }}
-              >
+            <div className='aas-head-ttl'>
+              <div className='aas-head-ic'>
+                <I.Layout size={14} />
+              </div>
+              <div>
+                <h3>{t('边栏设置')}</h3>
+                <div className='aas-head-sub'>
+                  {t('个性化侧边栏要显示的功能')}
+                </div>
+              </div>
+            </div>
+            <div className='aas-head-right'>
+              <button className='aas-btn sm' onClick={resetSidebarModules}>
                 {t('重置')}
               </button>
               <button
-                className='aas-btn primary'
+                className='aas-btn primary sm'
                 onClick={saveSidebarSettings}
                 disabled={sidebarLoading}
               >
                 {sidebarLoading ? '…' : t('保存边栏设置')}
               </button>
-            </span>
+            </div>
           </div>
-          <div className='aas-section-body'>
-            {sectionConfigs.map((section) => {
-              const sectionEnabled =
-                sidebarModulesUser[section.key]?.enabled !== false;
-              return (
-                <React.Fragment key={section.key}>
-                  <div className='aas-row'>
-                    <div className='aas-row-icon'>
-                      <I.Layout />
-                    </div>
-                    <div className='aas-row-info'>
-                      <div className='aas-row-title'>{section.title}</div>
-                      <div className='aas-row-desc'>{section.description}</div>
-                    </div>
-                    <Switch
-                      checked={sectionEnabled}
-                      onChange={handleSectionChange(section.key)}
-                    />
+          {sectionConfigs.map((section, idx) => {
+            const sectionEnabled =
+              sidebarModulesUser[section.key]?.enabled !== false;
+            return (
+              <React.Fragment key={section.key}>
+                <div className={`aas-pref ${idx === 0 ? 'first' : ''}`}>
+                  <div className='aas-pref-glyph muted'>
+                    <I.Layout size={14} />
                   </div>
-                  <div className='aas-sub-grid'>
-                    {section.modules
-                      .filter((m) => isAllowedByAdmin(section.key, m.key))
-                      .map((module) => {
-                        const moduleEnabled =
-                          sidebarModulesUser[section.key]?.[module.key] !==
-                          false;
-                        return (
-                          <div
-                            key={module.key}
-                            className={`aas-sub-card ${sectionEnabled ? '' : 'disabled'}`}
-                          >
-                            <div className='aas-sub-info'>
-                              <div className='aas-sub-title'>
-                                {module.title}
-                              </div>
-                              <div className='aas-sub-desc'>
-                                {module.description}
-                              </div>
+                  <div className='aas-pref-info'>
+                    <div className='aas-pref-title'>{section.title}</div>
+                    <div className='aas-pref-desc'>{section.description}</div>
+                  </div>
+                  <Switch
+                    checked={sectionEnabled}
+                    onChange={handleSectionChange(section.key)}
+                  />
+                </div>
+                <div className='aas-sub-grid'>
+                  {section.modules
+                    .filter((m) => isAllowedByAdmin(section.key, m.key))
+                    .map((module) => {
+                      const moduleEnabled =
+                        sidebarModulesUser[section.key]?.[module.key] !==
+                        false;
+                      return (
+                        <div
+                          key={module.key}
+                          className={`aas-sub-card ${sectionEnabled ? '' : 'disabled'}`}
+                        >
+                          <div className='aas-sub-info'>
+                            <div className='aas-sub-title'>{module.title}</div>
+                            <div className='aas-sub-desc'>
+                              {module.description}
                             </div>
-                            <Switch
-                              checked={moduleEnabled}
-                              onChange={handleModuleChange(
-                                section.key,
-                                module.key,
-                              )}
-                              disabled={!sectionEnabled}
-                            />
                           </div>
-                        );
-                      })}
-                  </div>
-                </React.Fragment>
-              );
-            })}
-          </div>
+                          <Switch
+                            checked={moduleEnabled}
+                            onChange={handleModuleChange(
+                              section.key,
+                              module.key,
+                            )}
+                            disabled={!sectionEnabled}
+                          />
+                        </div>
+                      );
+                    })}
+                </div>
+              </React.Fragment>
+            );
+          })}
         </section>
       )}
     </>

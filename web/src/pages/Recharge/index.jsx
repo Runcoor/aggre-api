@@ -526,7 +526,6 @@ const RechargePage = () => {
                 enableOnlineTopUp={enableOnlineTopUp}
                 enableStripeTopUp={enableStripeTopUp}
                 enableCreemTopUp={enableCreemTopUp}
-                enableNowPaymentsTopUp={enableNowPaymentsTopUp}
                 billingPreference={billingPreference}
                 onChangeBillingPreference={updateBillingPreference}
                 activeSubscriptions={activeSubscriptions}
@@ -706,7 +705,7 @@ const RechargePage = () => {
                               )}
                             </button>
                           )}
-                          {/* NowPayments */}
+                          {/* 加密货币支付（NowPayments） — 不暴露第三方品牌名 */}
                           {enableNowPaymentsTopUp && (
                             <button key='nowpayments' className={`rc-pay-method${selectedPayMethod === 'nowpayments' ? ' selected' : ''}`}
                               onClick={() => setSelectedPayMethod('nowpayments')}>
@@ -714,8 +713,8 @@ const RechargePage = () => {
                                 ₮
                               </div>
                               <div style={{ flex: 1, textAlign: 'left' }}>
-                                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{t('NowPayments (USDT / Crypto)')}</div>
-                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('支持 USDT/USDC 等多链，托管页面付款')}</div>
+                                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{t('加密货币支付')}</div>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('链上到账，多链支持')}</div>
                               </div>
                               {selectedPayMethod === 'nowpayments' && (
                                 <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -24,7 +24,7 @@ import {
   Button,
   Select,
 } from '@douyinfe/semi-ui';
-import { Crown, CalendarClock, Package, Coins } from 'lucide-react';
+import { Crown, CalendarClock, Package } from 'lucide-react';
 import { SiStripe } from 'react-icons/si';
 import { IconCreditCard } from '@douyinfe/semi-icons';
 import { getCurrencyConfig } from '../../../helpers/render';
@@ -45,7 +45,6 @@ const SubscriptionPurchaseModal = ({
   enableOnlineTopUp = false,
   enableStripeTopUp = false,
   enableCreemTopUp = false,
-  enableNowPaymentsTopUp = false,
   purchaseLimitInfo = null,
   onPayStripe,
   onPayCreem,
@@ -68,10 +67,10 @@ const SubscriptionPurchaseModal = ({
   // 只有当管理员开启支付网关 AND 套餐配置了对应的支付ID时才显示
   const hasStripe = enableStripeTopUp && !!plan?.stripe_price_id;
   const hasCreem = enableCreemTopUp && !!plan?.creem_product_id;
+  // 加密货币支付（NowPayments）通过统一的 epay 选择器中的 type='nowpayments' 选项呈现，
+  // 不再单独按钮渲染。是否可用由 epayMethods 中是否包含该项决定。
   const hasEpay = enableOnlineTopUp && epayMethods.length > 0;
-  // NowPayments 不需要套餐侧的额外配置 — 只要管理员开启网关就可用，直接按 plan.price_amount 报价
-  const hasNowPayments = enableNowPaymentsTopUp;
-  const hasAnyPayment = hasStripe || hasCreem || hasEpay || hasNowPayments;
+  const hasAnyPayment = hasStripe || hasCreem || hasEpay;
   const purchaseLimit = Number(purchaseLimitInfo?.limit || 0);
   const purchaseCount = Number(purchaseLimitInfo?.count || 0);
   const purchaseLimitReached =
@@ -237,23 +236,7 @@ const SubscriptionPurchaseModal = ({
                 </div>
               )}
 
-              {/* NowPayments — 加密货币支付 */}
-              {hasNowPayments && (
-                <div className='flex gap-2'>
-                  <Button
-                    theme='light'
-                    className='flex-1'
-                    icon={<Coins size={14} color='#26B2A8' />}
-                    onClick={onPayNowPayments}
-                    loading={paying}
-                    disabled={purchaseLimitReached}
-                  >
-                    {t('USDT / 加密货币')}
-                  </Button>
-                </div>
-              )}
-
-              {/* 易支付 */}
+              {/* 易支付 / 加密货币 — 统一下拉选择 */}
               {hasEpay && (
                 <div className='flex gap-2'>
                   <Select
@@ -264,14 +247,24 @@ const SubscriptionPurchaseModal = ({
                     placeholder={t('选择支付方式')}
                     optionList={epayMethods.map((m) => ({
                       value: m.type,
-                      label: m.name || m.type,
+                      // 加密货币通道隐藏第三方品牌名，统一显示为「加密货币支付」
+                      label:
+                        m.type === 'nowpayments'
+                          ? t('加密货币支付')
+                          : m.name || m.type,
                     }))}
                     disabled={purchaseLimitReached}
                   />
                   <Button
                     theme='solid'
                     type='primary'
-                    onClick={onPayEpay}
+                    onClick={() => {
+                      if (selectedEpayMethod === 'nowpayments') {
+                        onPayNowPayments?.();
+                      } else {
+                        onPayEpay?.();
+                      }
+                    }}
                     loading={paying}
                     disabled={!selectedEpayMethod || purchaseLimitReached}
                   >

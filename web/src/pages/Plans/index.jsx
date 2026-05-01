@@ -685,7 +685,6 @@ const PlansPage = () => {
           enableOnlineTopUp: !!data.enable_online_topup,
           enableStripeTopUp: !!data.enable_stripe_topup,
           enableCreemTopUp: !!data.enable_creem_topup,
-          enableNowPaymentsTopUp: !!data.enable_nowpayments_topup,
         };
         setPaymentInfo(info);
         return info;
@@ -712,8 +711,9 @@ const PlansPage = () => {
       setSelectedPlan({ plan });
       setModalOpen(true);
       const info = paymentInfo || (await ensurePaymentInfo());
+      // 下拉中保留 nowpayments — 若没有传统易支付方式，则自动落到加密货币
       const firstEpay = (info?.payMethods || []).find(
-        (m) => m?.type && m.type !== 'stripe' && m.type !== 'creem' && m.type !== 'waffo' && m.type !== 'cryptomus' && m.type !== 'nowpayments',
+        (m) => m?.type && m.type !== 'stripe' && m.type !== 'creem' && m.type !== 'waffo' && m.type !== 'cryptomus',
       );
       setSelectedEpayMethod((prev) => prev || firstEpay?.type || '');
     },
@@ -1115,7 +1115,6 @@ const PlansPage = () => {
         enableOnlineTopUp={paymentInfo?.enableOnlineTopUp || false}
         enableStripeTopUp={paymentInfo?.enableStripeTopUp || false}
         enableCreemTopUp={paymentInfo?.enableCreemTopUp || false}
-        enableNowPaymentsTopUp={paymentInfo?.enableNowPaymentsTopUp || false}
         purchaseLimitInfo={null}
         onPayStripe={payStripe}
         onPayCreem={payCreem}

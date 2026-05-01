@@ -17,8 +17,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useState, useContext } from 'react';
-import { renderQuotaWithPrompt } from '../../../../helpers';
+import React, { useState, useContext, useEffect } from 'react';
+import { getQuotaPerUnit, renderNumber } from '../../../../helpers';
 import { UserContext } from '../../../../context/User';
 import { AasIcons as I } from '../_shared/AccountSettingsStyles';
 
@@ -32,6 +32,32 @@ const NotificationSettings = ({
   const isAdminOrRoot = (userState?.user?.role || 0) >= 10;
 
   const [advancedOpen, setAdvancedOpen] = useState(false);
+
+  // Warning threshold is stored in tokens on the backend, but the UI
+  // edits in USD for clarity. Keep a local string for the input so users
+  // can type "1.5" without the controlled value snapping mid-edit.
+  const quotaPerUnit = getQuotaPerUnit() || 500000;
+  const tokensToUsd = (tokens) =>
+    ((parseFloat(tokens) || 0) / quotaPerUnit).toFixed(2);
+  const [thresholdUsd, setThresholdUsd] = useState(() =>
+    tokensToUsd(notificationSettings.warningThreshold),
+  );
+  useEffect(() => {
+    const next = tokensToUsd(notificationSettings.warningThreshold);
+    setThresholdUsd((prev) =>
+      parseFloat(prev) === parseFloat(next) ? prev : next,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notificationSettings.warningThreshold, quotaPerUnit]);
+
+  const onThresholdUsdChange = (e) => {
+    const v = e.target.value;
+    setThresholdUsd(v);
+    const usd = parseFloat(v);
+    const tokens = isNaN(usd) ? 0 : Math.round(usd * quotaPerUnit);
+    handleNotificationSettingChange('warningThreshold', tokens);
+    if (markNotificationDirty) markNotificationDirty();
+  };
 
   const setField = (field, value) => {
     handleNotificationSettingChange(field, value);
@@ -115,20 +141,24 @@ const NotificationSettings = ({
             <div className='aas-field-label'>
               {t('额度预警阈值')}
               <span className='aas-field-meta'>
-                {renderQuotaWithPrompt(notificationSettings.warningThreshold)}
+                {t('≈ {{n}} tokens', {
+                  n: renderNumber(notificationSettings.warningThreshold || 0),
+                })}
               </span>
             </div>
             <div className='aas-input'>
               <I.Alert size={14} style={{ color: '#d97706' }} />
               <input
-                type='text'
-                value={notificationSettings.warningThreshold}
-                onChange={(e) => setRawField('warningThreshold', e)}
+                type='number'
+                step='0.01'
+                min='0'
+                value={thresholdUsd}
+                onChange={onThresholdUsdChange}
               />
-              <span className='aas-suffix'>tokens</span>
+              <span className='aas-suffix'>USD</span>
             </div>
             <div className='aas-field-help'>
-              {t('当余额低于此数值时，系统将通过选择的方式发送通知')}
+              {t('当余额低于此美元数值时，系统将通过选择的方式发送通知')}
             </div>
           </div>
           <div className='aas-field'>

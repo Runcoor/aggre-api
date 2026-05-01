@@ -64,6 +64,11 @@ export const WALLET_PAGE_STYLES = `
 }
 .wal-root .wal-page-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 4px; }
 .wal-root .wal-page-sub { color: var(--wal-ink-500); font-size: 12px; }
+.wal-root .wal-eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  background: var(--wal-grad, linear-gradient(135deg,#0072ff 0%,#00c6ff 100%));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
 .wal-root .wal-head-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .wal-root .wal-icon-btn {
   width: 34px; height: 34px; border-radius: 8px;

@@ -762,26 +762,41 @@ const RechargePage = () => {
                             {t('确认你的充值详情')}
                           </p>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ color: 'var(--text-secondary)' }}>{t('充值数量')}</span>
-                            <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>${topUpCount}</span>
-                          </div>
-                          {hasDiscount && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ color: 'var(--text-secondary)' }}>{t('折扣')} ({(currentDiscount * 10).toFixed(1)}{t('折')})</span>
-                              <span style={{ fontWeight: 500, color: 'var(--error)' }}>-¥{(topUpCount * priceRatio * (1 - currentDiscount)).toFixed(2)}</span>
+                        {(() => {
+                          // Crypto rails (NowPayments / Cryptomus) settle directly in USD —
+                          // skip the CNY conversion so the user sees the actual settlement price.
+                          const isCrypto =
+                            selectedPayMethod === 'nowpayments' ||
+                            selectedPayMethod === 'cryptomus';
+                          const symbol = isCrypto ? '$' : '¥';
+                          const rate = isCrypto ? 1 : priceRatio;
+                          const discountPart =
+                            topUpCount * rate * (1 - currentDiscount);
+                          const settlement =
+                            topUpCount * rate * currentDiscount;
+                          return (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ color: 'var(--text-secondary)' }}>{t('充值数量')}</span>
+                                <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>${topUpCount}</span>
+                              </div>
+                              {hasDiscount && (
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ color: 'var(--text-secondary)' }}>{t('折扣')} ({(currentDiscount * 10).toFixed(1)}{t('折')})</span>
+                                  <span style={{ fontWeight: 500, color: 'var(--error)' }}>-{symbol}{discountPart.toFixed(2)}</span>
+                                </div>
+                              )}
+                              <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 16, marginTop: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
+                                  {t('实付金额')}
+                                </span>
+                                <span style={{ fontSize: 32, fontWeight: 800, fontFamily: 'var(--font-serif)', color: 'var(--accent)' }}>
+                                  {symbol}{(isCrypto ? settlement : actualPay).toFixed(2)}
+                                </span>
+                              </div>
                             </div>
-                          )}
-                          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 16, marginTop: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                            <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
-                              {t('实付金额')}
-                            </span>
-                            <span style={{ fontSize: 32, fontWeight: 800, fontFamily: 'var(--font-serif)', color: 'var(--accent)' }}>
-                              ¥{actualPay.toFixed(2)}
-                            </span>
-                          </div>
-                        </div>
+                          );
+                        })()}
                         {selectedPayMethod && (
                           <Button theme='solid' type='primary' block loading={paymentLoading}
                             onClick={() => {

@@ -567,19 +567,11 @@ const PersonalSetting = () => {
       <AccountSettingsStyles />
 
       <div className='aas-page'>
-        {/* topbar */}
+        {/* topbar — eyebrow title, matches dashboard */}
         <div className='aas-topbar'>
-          <div className='aas-brand'>
-            <span className='aas-brand-mk'>
-              <i />
-            </span>
-            Aggre <span className='aas-brand-meta'>Console</span>
+          <div className='aas-eyebrow'>
+            {(status?.system_name || 'Aggre Token')} · {t('账户设置')}
           </div>
-          <div className='aas-crumb'>
-            {t('控制台')}{' '}
-            <span className='aas-crumb-sep'>/</span> <b>{t('账户设置')}</b>
-          </div>
-          <div style={{ flex: 1 }} />
         </div>
 
         {/* layout */}

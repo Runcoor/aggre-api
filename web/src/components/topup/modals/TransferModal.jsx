@@ -55,7 +55,7 @@ const TransferModal = ({
       <div className='space-y-4'>
         <div>
           <span className='block mb-2 text-sm font-medium' style={{ color: 'var(--text-primary)' }}>
-            {t('可用邀请额度')}
+            {t('可用邀请收益')}
           </span>
           <Input
             value={renderQuota(userState?.user?.aff_quota)}
@@ -65,13 +65,18 @@ const TransferModal = ({
         </div>
         <div>
           <span className='block mb-2 text-sm font-medium' style={{ color: 'var(--text-primary)' }}>
-            {t('划转额度')} · <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{t('最低') + renderQuota(getQuotaPerUnit())}</span>
+            {t('划转金额')} · <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{t('最低 $1.00')}</span>
           </span>
           <InputNumber
-            min={getQuotaPerUnit()}
-            max={userState?.user?.aff_quota || 0}
-            value={transferAmount}
-            onChange={(value) => setTransferAmount(value)}
+            min={1}
+            max={(userState?.user?.aff_quota || 0) / getQuotaPerUnit()}
+            value={transferAmount / getQuotaPerUnit()}
+            precision={2}
+            step={1}
+            prefix='$'
+            onChange={(value) =>
+              setTransferAmount(Math.round((value || 0) * getQuotaPerUnit()))
+            }
             className='w-full !rounded-lg'
           />
         </div>

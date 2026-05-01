@@ -29,6 +29,7 @@ import {
   getQuotaPerUnit,
 } from '../../helpers';
 import { UserContext } from '../../context/User';
+import { StatusContext } from '../../context/Status';
 
 import InvitationCard from './InvitationCard';
 import TransferModal from './modals/TransferModal';
@@ -62,6 +63,8 @@ const TopUp = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [userState, userDispatch] = useContext(UserContext);
+  const [statusState] = useContext(StatusContext);
+  const systemName = statusState?.status?.system_name || 'Aggre Token';
 
   const [openTransfer, setOpenTransfer] = useState(false);
   const [transferAmount, setTransferAmount] = useState(0);
@@ -382,9 +385,8 @@ const TopUp = () => {
       <div className='wal-page'>
         <div className='wal-page-head'>
           <div>
-            <h1 className='wal-page-title'>{t('钱包')}</h1>
-            <div className='wal-page-sub'>
-              {t('账户余额、充值、收益与交易明细')}
+            <div className='wal-eyebrow'>
+              {systemName} · {t('钱包账户')}
             </div>
           </div>
           <div className='wal-head-actions'>

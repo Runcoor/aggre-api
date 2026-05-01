@@ -76,19 +76,12 @@ export const ACCOUNT_SETTINGS_STYLES = `
 
 .aas-root .aas-page { max-width: 1240px; margin: 0 auto; padding: 24px 28px 80px; }
 
-/* ---------- topbar ---------- */
-.aas-root .aas-topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
-.aas-root .aas-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; letter-spacing: -.01em; color: var(--aas-ink-900); }
-.aas-root .aas-brand .aas-brand-mk {
-  width: 26px; height: 26px; border-radius: 8px; background: var(--aas-grad);
-  display: grid; place-items: center;
-  box-shadow: 0 8px 18px -8px rgba(0,114,255,.5), inset 0 1px 0 rgba(255,255,255,.4);
+/* ---------- topbar (eyebrow title — matches dashboard style) ---------- */
+.aas-root .aas-topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+.aas-root .aas-eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  background: var(--aas-grad); -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-.aas-root .aas-brand .aas-brand-mk i { display: block; width: 10px; height: 10px; border-radius: 3px; background: #fff; transform: rotate(45deg); }
-.aas-root .aas-brand-meta { color: var(--aas-ink-500); font-weight: 500; }
-.aas-root .aas-crumb { color: var(--aas-ink-500); font-size: 13px; display: flex; gap: 8px; align-items: center; }
-.aas-root .aas-crumb b { color: var(--aas-ink-700); font-weight: 600; }
-.aas-root .aas-crumb .aas-crumb-sep { color: var(--aas-ink-400); }
 
 /* ---------- two-col grid ---------- */
 .aas-root .aas-app-grid {

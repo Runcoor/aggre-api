@@ -21,6 +21,18 @@ import React from 'react';
 
 // All styles are scoped under .aas-root so they don't leak to other pages.
 export const ACCOUNT_SETTINGS_STYLES = `
+/* ------------------------------------------------------------------
+   Semi UI Layout adds \`overflow-x: hidden\` on \`.semi-layout-has-sider > .semi-layout\`,
+   which the spec promotes to \`overflow-y: auto\` and breaks
+   \`position: sticky\` against the window. Override only while this
+   page is mounted (the <style> tag lives inside .aas-root and unmounts
+   on route change).
+------------------------------------------------------------------ */
+.semi-layout-has-sider > .semi-layout,
+.semi-layout-has-sider > .semi-layout-content {
+  overflow: visible !important;
+}
+
 .aas-root {
   --aas-grad: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
   --aas-grad-r: linear-gradient(90deg, #0072ff 0%, #00c6ff 100%);

@@ -152,9 +152,15 @@ void main() {
     shift = (uMouse - 0.5) * uMouseInfluence;
   }
 
+  // Pure brand-gradient aurora — drop the cosineGradient phase shift
+  // so we don't get yellow/red tinges leaking through. Layer 1 mixes
+  // color1→color2 left-to-right, layer 2 reverses for depth, both
+  // modulated only by the noise-driven aurora intensity.
+  vec3 base1 = mix(uColor1, uColor2, uv.x);
+  vec3 base2 = mix(uColor2, uColor1, uv.x);
   vec3 col = vec3(0.0);
-  col += 0.99 * auroraGlow(t, shift) * cosineGradient(uv.x + uTime * uSpeed * 0.2 * uColorSpeed, vec3(0.5), vec3(0.5), vec3(1.0), vec3(0.3, 0.20, 0.20)) * uColor1;
-  col += 0.99 * auroraGlow(t + uLayerOffset, shift) * cosineGradient(uv.x + uTime * uSpeed * 0.1 * uColorSpeed, vec3(0.5), vec3(0.5), vec3(2.0, 1.0, 0.0), vec3(0.5, 0.20, 0.25)) * uColor2;
+  col += 0.99 * auroraGlow(t, shift) * base1;
+  col += 0.99 * auroraGlow(t + uLayerOffset, shift) * base2;
 
   col *= uBrightness;
   float alpha = clamp(length(col), 0.0, 1.0);

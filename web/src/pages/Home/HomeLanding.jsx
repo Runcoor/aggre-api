@@ -956,7 +956,7 @@ const HomeLanding = () => {
                   brightness={actualTheme === 'dark' ? 0.7 : 0.85}
                   color1={actualTheme === 'dark' ? '#0072ff' : '#5b96f5'}
                   color2={actualTheme === 'dark' ? '#00c6ff' : '#80d8ff'}
-                  bandHeight={0.62}
+                  bandHeight={0.7}
                   bandSpread={1.2}
                   mouseInfluence={0.18}
                   enableMouseInteraction

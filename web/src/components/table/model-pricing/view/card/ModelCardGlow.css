@@ -4,15 +4,20 @@ Copyright (C) 2025 QuantumNous
 ModelCardGlow — outer halo glow effect (BorderGlow concept from
 react-bits.dev), simplified to wrap an existing opaque card.
 
+Theme handling:
+  - Light theme uses normal blending + saturated brand blue. We DO NOT
+    use mix-blend-mode: plus-lighter on light because that mode caps at
+    the white ceiling — adding any color to white still renders as
+    white, so the glow becomes invisible on light backgrounds.
+  - Dark theme uses plus-lighter + a lighter blue. Additive blending
+    over a dark surface gives the classic neon glow.
+
 The original BorderGlow paints a mesh-gradient ring at the card border
 via ::before with a padding-box mask. That technique only works when the
 wrapper IS the card (has its own bg) — wrapping an existing card with
 its own bg hides the ring under the inner card's background. So we drop
 the ::before ring and keep only the outer .model-card-glow-edge halo,
 which extends BEYOND the wrapper bounds and is therefore visible.
-
-What you get: a cone of brand-blue light trailing outside the card edge
-in the direction of the cursor.
 */
 
 .model-card-glow {
@@ -20,15 +25,17 @@ in the direction of the cursor.
   --cursor-angle: 45deg;
   --edge-sensitivity: 20;
   --border-radius: 14px;
-  --glow-padding: 32px;
+  --glow-padding: 36px;
 
-  --glow-color: hsl(210deg 100% 65% / 100%);
-  --glow-color-60: hsl(210deg 100% 65% / 60%);
-  --glow-color-50: hsl(210deg 100% 65% / 50%);
-  --glow-color-40: hsl(210deg 100% 65% / 40%);
-  --glow-color-30: hsl(210deg 100% 65% / 30%);
-  --glow-color-20: hsl(210deg 100% 65% / 20%);
-  --glow-color-10: hsl(210deg 100% 65% / 10%);
+  /* Light theme — saturated brand blue, normal compositing.
+     Higher alpha because we're not relying on plus-lighter to amplify. */
+  --glow-color: hsl(212deg 100% 50% / 90%);
+  --glow-color-60: hsl(212deg 100% 50% / 70%);
+  --glow-color-50: hsl(212deg 100% 50% / 55%);
+  --glow-color-40: hsl(212deg 100% 50% / 42%);
+  --glow-color-30: hsl(212deg 100% 50% / 30%);
+  --glow-color-20: hsl(212deg 100% 50% / 20%);
+  --glow-color-10: hsl(212deg 100% 50% / 10%);
 
   position: relative;
   display: block;
@@ -36,6 +43,17 @@ in the direction of the cursor.
   border-radius: var(--border-radius);
   /* Wrapper itself stays transparent; the inner .aml-card-item /
      .aml-row keeps its own bg/border/shadow. */
+}
+
+/* Dark theme — lighter blue + additive blending for neon-glow vibe */
+html.dark .model-card-glow {
+  --glow-color: hsl(210deg 100% 70% / 100%);
+  --glow-color-60: hsl(210deg 100% 70% / 60%);
+  --glow-color-50: hsl(210deg 100% 70% / 50%);
+  --glow-color-40: hsl(210deg 100% 70% / 40%);
+  --glow-color-30: hsl(210deg 100% 70% / 30%);
+  --glow-color-20: hsl(210deg 100% 70% / 20%);
+  --glow-color-10: hsl(210deg 100% 70% / 10%);
 }
 
 /* Outer halo — extends `glow-padding` outside the card box, masked by a
@@ -68,6 +86,11 @@ in the direction of the cursor.
     (var(--edge-proximity) - var(--edge-sensitivity)) /
       (100 - var(--edge-sensitivity))
   );
+  /* No blend mode in light theme — direct compositing keeps the blue
+     visible on white surfaces. Dark theme switches to plus-lighter. */
+}
+
+html.dark .model-card-glow > .model-card-glow-edge {
   mix-blend-mode: plus-lighter;
 }
 
@@ -84,26 +107,28 @@ in the direction of the cursor.
 }
 
 /* The actual glow rings live on a pseudo-element of .model-card-glow-edge
-   so the conic-gradient mask above clips the box-shadow stack to a cone. */
+   so the conic-gradient mask above clips the box-shadow stack to a cone.
+   Inset values are bumped up vs. the original BorderGlow to give a more
+   pronounced halo against light surfaces. */
 .model-card-glow > .model-card-glow-edge::before {
   content: '';
   position: absolute;
   inset: var(--glow-padding);
   border-radius: var(--border-radius);
   box-shadow:
-    inset 0 0 0 1px var(--glow-color),
-    inset 0 0 1px 0 var(--glow-color-60),
-    inset 0 0 3px 0 var(--glow-color-50),
-    inset 0 0 6px 0 var(--glow-color-40),
-    inset 0 0 15px 0 var(--glow-color-30),
-    inset 0 0 25px 2px var(--glow-color-20),
-    inset 0 0 50px 2px var(--glow-color-10),
-    0 0 1px 0 var(--glow-color-60),
-    0 0 3px 0 var(--glow-color-50),
-    0 0 6px 0 var(--glow-color-40),
-    0 0 15px 0 var(--glow-color-30),
-    0 0 25px 2px var(--glow-color-20),
-    0 0 50px 2px var(--glow-color-10);
+    inset 0 0 0 1.5px var(--glow-color),
+    inset 0 0 2px 0 var(--glow-color-60),
+    inset 0 0 5px 0 var(--glow-color-50),
+    inset 0 0 10px 0 var(--glow-color-40),
+    inset 0 0 22px 0 var(--glow-color-30),
+    inset 0 0 38px 4px var(--glow-color-20),
+    inset 0 0 65px 4px var(--glow-color-10),
+    0 0 2px 0 var(--glow-color-60),
+    0 0 5px 0 var(--glow-color-50),
+    0 0 10px 0 var(--glow-color-40),
+    0 0 22px 0 var(--glow-color-30),
+    0 0 38px 4px var(--glow-color-20),
+    0 0 65px 4px var(--glow-color-10);
 }
 
 /* Inner content stays above the halo */

@@ -946,17 +946,17 @@ const HomeLanding = () => {
               <div
                 className='absolute inset-0 pointer-events-none'
                 style={{
-                  opacity: actualTheme === 'dark' ? 0.65 : 0.85,
+                  opacity: actualTheme === 'dark' ? 0.65 : 0.7,
                   mixBlendMode:
                     actualTheme === 'dark' ? 'plus-lighter' : 'normal',
                 }}
               >
                 <SoftAurora
                   speed={0.4}
-                  brightness={actualTheme === 'dark' ? 0.7 : 1.0}
-                  color1='#0072ff'
-                  color2='#00c6ff'
-                  bandHeight={0.55}
+                  brightness={actualTheme === 'dark' ? 0.7 : 0.85}
+                  color1={actualTheme === 'dark' ? '#0072ff' : '#5b96f5'}
+                  color2={actualTheme === 'dark' ? '#00c6ff' : '#80d8ff'}
+                  bandHeight={0.62}
                   bandSpread={1.2}
                   mouseInfluence={0.18}
                   enableMouseInteraction

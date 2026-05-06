@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import { Checkbox, Empty, Pagination, Tooltip } from '@douyinfe/semi-ui';
 import {
   stringToColor,
@@ -26,6 +26,7 @@ import {
   getModelPriceItems,
 } from '../../../../../helpers';
 import PricingCardSkeleton from './PricingCardSkeleton';
+import ModelCardGlow from './ModelCardGlow';
 import { useMinimumLoadingTime } from '../../../../../hooks/common/useMinimumLoadingTime';
 import { useIsMobile } from '../../../../../hooks/common/useIsMobile';
 
@@ -180,70 +181,34 @@ const ModelCard = ({
     ? model.tags.split(/[,;|]+/).map((t) => t.trim()).filter(Boolean)
     : Array.isArray(model.tags) ? model.tags : [];
 
-  // Spotlight effect — radial brand-blue gradient that follows the cursor.
-  // Disabled when the card is selected so we don't paint blue-on-blue.
-  const cardRef = useRef(null);
-  const [isHover, setIsHover] = useState(false);
-  const handleSpotlightMove = (e) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    cardRef.current.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-    cardRef.current.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-  };
-  const showSpotlight = !isSelected;
-
   return (
-    <article
-      ref={cardRef}
-      onClick={() => openModelDetail?.(model)}
-      onMouseMove={showSpotlight ? handleSpotlightMove : undefined}
-      className='group'
-      style={{
-        position: 'relative',
-        background: isSelected ? 'var(--accent-light)' : 'var(--surface)',
-        border: isSelected
-          ? '1px solid var(--accent)'
-          : '1px solid transparent',
-        borderRadius: 16,
-        padding: '18px 20px',
-        cursor: 'pointer',
-        transition:
-          'box-shadow 400ms cubic-bezier(0.22, 1, 0.36, 1), border-color 220ms',
-        overflow: 'hidden',
-        isolation: 'isolate',
-      }}
-      onMouseEnter={(e) => {
-        setIsHover(true);
-        if (!isSelected) {
-          e.currentTarget.style.boxShadow =
-            '0 24px 64px -16px rgba(0,0,0,0.06)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        setIsHover(false);
-        e.currentTarget.style.boxShadow = 'none';
-      }}
-    >
-      {/* Spotlight overlay — pure visual, pointer-events disabled so clicks
-          pass through to the article. Sits below content via z-index: 0. */}
-      {showSpotlight && (
-        <span
-          aria-hidden
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background:
-              'radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0, 114, 255, 0.15), transparent 60%)',
-            opacity: isHover ? 0.5 : 0,
-            transition: 'opacity 400ms ease',
-            pointerEvents: 'none',
-            borderRadius: 16,
-            zIndex: 0,
-          }}
-        />
-      )}
-      {/* Content wrapper — sits above the spotlight overlay. */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
+    <ModelCardGlow disabled={isSelected}>
+      <article
+        onClick={() => openModelDetail?.(model)}
+        className='group'
+        style={{
+          position: 'relative',
+          background: isSelected ? 'var(--accent-light)' : 'var(--surface)',
+          border: isSelected
+            ? '1px solid var(--accent)'
+            : '1px solid transparent',
+          borderRadius: 16,
+          padding: '18px 20px',
+          cursor: 'pointer',
+          transition:
+            'box-shadow 400ms cubic-bezier(0.22, 1, 0.36, 1), border-color 220ms',
+          overflow: 'hidden',
+        }}
+        onMouseEnter={(e) => {
+          if (!isSelected) {
+            e.currentTarget.style.boxShadow =
+              '0 24px 64px -16px rgba(0,0,0,0.06)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = 'none';
+        }}
+      >
       {/* ── Header: icon + name + badge ── */}
       <div
         className='flex justify-between items-start'
@@ -420,8 +385,8 @@ const ModelCard = ({
           </button>
         </div>
       </div>
-      </div>
-    </article>
+      </article>
+    </ModelCardGlow>
   );
 };
 

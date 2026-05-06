@@ -925,22 +925,38 @@ const HomeLanding = () => {
               />
             ) : (
               /* Desktop: WebGL aurora ribbons drifting behind the hero copy.
-                 Mouse listener attaches to the section itself (mouseTargetRef)
-                 so the canvas can stay pointer-events: none and the URL copy
-                 box / CTA buttons stay fully clickable. */
+
+                 Theme-aware blend mode:
+                   - dark  → mix-blend-mode: plus-lighter (additive glow on
+                     a dark surface, classic neon look)
+                   - light → mix-blend-mode: normal. plus-lighter clips to
+                     white on a white surface (any color + 1 = 1) so the
+                     aurora becomes invisible — we composite directly and
+                     bump brightness/opacity so the blue actually shows.
+
+                 bandHeight raised from 0.4 → 0.55. uv.y is bottom-up, so
+                 0.55 lands the brightest band at ~45% from the top, which
+                 is right under the headline + subtitle (where the URL
+                 copy box and CTA buttons sit).
+
+                 Mouse listener attaches to the section itself
+                 (mouseTargetRef) so the canvas can stay pointer-events:
+                 none and the URL copy box / CTA buttons under it remain
+                 clickable. */
               <div
                 className='absolute inset-0 pointer-events-none'
                 style={{
-                  opacity: 0.65,
-                  mixBlendMode: 'plus-lighter',
+                  opacity: actualTheme === 'dark' ? 0.65 : 0.85,
+                  mixBlendMode:
+                    actualTheme === 'dark' ? 'plus-lighter' : 'normal',
                 }}
               >
                 <SoftAurora
                   speed={0.4}
-                  brightness={0.7}
+                  brightness={actualTheme === 'dark' ? 0.7 : 1.0}
                   color1='#0072ff'
                   color2='#00c6ff'
-                  bandHeight={0.4}
+                  bandHeight={0.55}
                   bandSpread={1.2}
                   mouseInfluence={0.18}
                   enableMouseInteraction

@@ -1,25 +1,26 @@
 /*
 Copyright (C) 2025 QuantumNous
 
-ModelCardGlow — BorderGlow effect (react-bits.dev) adapted for QuantumNous
-model cards. Wraps the existing article without taking over its bg/border,
-so the underlying card keeps its own selected/hover states.
+ModelCardGlow — outer halo glow effect (BorderGlow concept from
+react-bits.dev), simplified to wrap an existing opaque card.
 
-Tuned for the brand:
-  - Glow color: hsl(210, 100%, 65%) — brand blue
-  - Mesh gradient stops cycle the brand gradient (#0072ff / #00c6ff / #38b6ff)
-  - --card-bg derives from the theme via var(--surface) so the inner mask
-    works in both light and dark mode
+The original BorderGlow paints a mesh-gradient ring at the card border
+via ::before with a padding-box mask. That technique only works when the
+wrapper IS the card (has its own bg) — wrapping an existing card with
+its own bg hides the ring under the inner card's background. So we drop
+the ::before ring and keep only the outer .model-card-glow-edge halo,
+which extends BEYOND the wrapper bounds and is therefore visible.
+
+What you get: a cone of brand-blue light trailing outside the card edge
+in the direction of the cursor.
 */
 
 .model-card-glow {
   --edge-proximity: 0;
   --cursor-angle: 45deg;
   --edge-sensitivity: 20;
-  --color-sensitivity: 40; /* edge-sensitivity + 20 */
-  --border-radius: 16px;
-  --glow-padding: 28px;
-  --cone-spread: 25;
+  --border-radius: 14px;
+  --glow-padding: 32px;
 
   --glow-color: hsl(210deg 100% 65% / 100%);
   --glow-color-60: hsl(210deg 100% 65% / 60%);
@@ -29,84 +30,33 @@ Tuned for the brand:
   --glow-color-20: hsl(210deg 100% 65% / 20%);
   --glow-color-10: hsl(210deg 100% 65% / 10%);
 
-  --gradient-one: radial-gradient(at 80% 55%, #0072ff 0px, transparent 50%);
-  --gradient-two: radial-gradient(at 69% 34%, #00c6ff 0px, transparent 50%);
-  --gradient-three: radial-gradient(at 8% 6%, #38b6ff 0px, transparent 50%);
-  --gradient-four: radial-gradient(at 41% 38%, #0072ff 0px, transparent 50%);
-  --gradient-five: radial-gradient(at 86% 85%, #00c6ff 0px, transparent 50%);
-  --gradient-six: radial-gradient(at 82% 18%, #38b6ff 0px, transparent 50%);
-  --gradient-seven: radial-gradient(at 51% 4%, #00c6ff 0px, transparent 50%);
-  --gradient-base: linear-gradient(#0072ff 0 100%);
-
   position: relative;
-  border-radius: var(--border-radius);
-  isolation: isolate;
-  transform: translate3d(0, 0, 0.01px);
   display: block;
-  /* No own bg / border / shadow — the inner article keeps those, so
-     selected/hover states already in PricingCardView still work. */
+  width: 100%;
+  border-radius: var(--border-radius);
+  /* Wrapper itself stays transparent; the inner .aml-card-item /
+     .aml-row keeps its own bg/border/shadow. */
 }
 
-.model-card-glow::before,
+/* Outer halo — extends `glow-padding` outside the card box, masked by a
+   conic-gradient to a thin cone trailing the cursor angle. */
 .model-card-glow > .model-card-glow-edge {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  transition: opacity 0.25s ease-out;
+  inset: calc(var(--glow-padding) * -1);
+  border-radius: calc(var(--border-radius) + var(--glow-padding));
   pointer-events: none;
-  z-index: 2;
-}
-
-/* Hide everything when not hovered, smooth fade-out */
-.model-card-glow:not(:hover)::before,
-.model-card-glow:not(:hover) > .model-card-glow-edge {
-  opacity: 0;
-  transition: opacity 0.75s ease-in-out;
-}
-
-/* Selected card: completely suppress glow */
-.model-card-glow.is-disabled::before,
-.model-card-glow.is-disabled > .model-card-glow-edge {
-  opacity: 0 !important;
+  z-index: 0;
   transition: opacity 0.25s ease-out;
-}
-
-/* Mesh-gradient border ring — only the edge bleeds gradient through the cone */
-.model-card-glow::before {
-  border: 1px solid transparent;
-  background:
-    linear-gradient(var(--surface) 0 100%) padding-box,
-    linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
-    var(--gradient-one) border-box,
-    var(--gradient-two) border-box,
-    var(--gradient-three) border-box,
-    var(--gradient-four) border-box,
-    var(--gradient-five) border-box,
-    var(--gradient-six) border-box,
-    var(--gradient-seven) border-box,
-    var(--gradient-base) border-box;
-
-  opacity: calc(
-    (var(--edge-proximity) - var(--color-sensitivity)) /
-      (100 - var(--color-sensitivity))
-  );
 
   mask-image: conic-gradient(
     from var(--cursor-angle) at center,
-    black calc(var(--cone-spread) * 1%),
-    transparent calc((var(--cone-spread) + 15) * 1%),
-    transparent calc((100 - var(--cone-spread) - 15) * 1%),
-    black calc((100 - var(--cone-spread)) * 1%)
+    black 2.5%,
+    transparent 10%,
+    transparent 90%,
+    black 97.5%
   );
-}
-
-/* Outer halo — extends beyond the card edge, soft glow trailing the cursor */
-.model-card-glow > .model-card-glow-edge {
-  inset: calc(var(--glow-padding) * -1);
-  z-index: 1;
-
-  mask-image: conic-gradient(
+  -webkit-mask-image: conic-gradient(
     from var(--cursor-angle) at center,
     black 2.5%,
     transparent 10%,
@@ -121,11 +71,25 @@ Tuned for the brand:
   mix-blend-mode: plus-lighter;
 }
 
+/* Fade out smoothly when not hovered */
+.model-card-glow:not(:hover) > .model-card-glow-edge {
+  opacity: 0;
+  transition: opacity 0.75s ease-in-out;
+}
+
+/* Selected card: fully suppress glow */
+.model-card-glow.is-disabled > .model-card-glow-edge {
+  opacity: 0 !important;
+  transition: opacity 0.25s ease-out;
+}
+
+/* The actual glow rings live on a pseudo-element of .model-card-glow-edge
+   so the conic-gradient mask above clips the box-shadow stack to a cone. */
 .model-card-glow > .model-card-glow-edge::before {
   content: '';
   position: absolute;
   inset: var(--glow-padding);
-  border-radius: inherit;
+  border-radius: var(--border-radius);
   box-shadow:
     inset 0 0 0 1px var(--glow-color),
     inset 0 0 1px 0 var(--glow-color-60),
@@ -142,9 +106,9 @@ Tuned for the brand:
     0 0 50px 2px var(--glow-color-10);
 }
 
-/* Inner content sits above the glow layers */
+/* Inner content stays above the halo */
 .model-card-glow-inner {
   position: relative;
-  z-index: 3;
+  z-index: 1;
   border-radius: inherit;
 }

@@ -39,6 +39,7 @@ import {
   stringToColor,
 } from '../../../../helpers';
 import ModelDetailSideSheet from '../modal/ModelDetailSideSheet';
+import ModelCardGlow from '../view/card/ModelCardGlow';
 import { useModelPricingData } from '../../../../hooks/model-pricing/useModelPricingData';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
 
@@ -306,6 +307,7 @@ function Toggle({ on, onChange, label }) {
 function ListRow({ m, selected, onToggleSelect, onView, t }) {
   const tags = parseTags(m.tags);
   return (
+    <ModelCardGlow disabled={selected}>
     <div className={`aml-row ${selected ? 'selected' : ''}`}>
       <ProviderAvatar model={m} />
       <div className='aml-model-info'>
@@ -344,6 +346,7 @@ function ListRow({ m, selected, onToggleSelect, onView, t }) {
         </button>
       </div>
     </div>
+    </ModelCardGlow>
   );
 }
 
@@ -351,6 +354,7 @@ function ListRow({ m, selected, onToggleSelect, onView, t }) {
 function CardItem({ m, selected, onToggleSelect, onView, t }) {
   const tags = parseTags(m.tags);
   return (
+    <ModelCardGlow disabled={selected}>
     <div className='aml-card-item'>
       <div className='aml-card-head'>
         <ProviderAvatar model={m} />
@@ -394,6 +398,7 @@ function CardItem({ m, selected, onToggleSelect, onView, t }) {
         </button>
       </div>
     </div>
+    </ModelCardGlow>
   );
 }
 

@@ -16,6 +16,7 @@ import {
 import { Link } from 'react-router-dom';
 import NoticeModal from '../../components/layout/NoticeModal';
 import TextAnimate from '../../components/animation/TextAnimate';
+import LogoLoop from '../../components/animation/LogoLoop';
 import {
   Moonshot,
   OpenAI,
@@ -86,56 +87,21 @@ const ProviderIconItem = ({ icon, size }) => {
   );
 };
 
-const ScrollingIcons = ({ isMobile }) => {
-  const trackRef = useRef(null);
+const ProviderLogoLoop = ({ isMobile }) => {
   const size = isMobile ? ICON_SIZE_SM : ICON_SIZE;
-  const icons = [...providerIcons, ...providerIcons];
-
   return (
-    <div className='relative w-full overflow-hidden' style={{ height: size + 32 }}>
-      <div
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 80,
-          zIndex: 2,
-          background: 'linear-gradient(to right, var(--bg-base), transparent)',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: 80,
-          zIndex: 2,
-          background: 'linear-gradient(to left, var(--bg-base), transparent)',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        ref={trackRef}
-        className='flex items-center gap-4'
-        style={{
-          animation: 'scroll-left 40s linear infinite',
-          width: 'max-content',
-        }}
-      >
-        {icons.map((icon, i) => (
-          <ProviderIconItem key={`${icon.key}-${i}`} icon={icon} size={size} />
-        ))}
-      </div>
-      <style>{`
-        @keyframes scroll-left {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-      `}</style>
-    </div>
+    <LogoLoop
+      logos={providerIcons}
+      speed={45}
+      direction='left'
+      logoHeight={size + 24}
+      gap={16}
+      hoverSpeed={15}
+      fadeOut
+      fadeOutColor='var(--bg-base)'
+      ariaLabel='AI provider logos'
+      renderItem={(item) => <ProviderIconItem icon={item} size={size} />}
+    />
   );
 };
 
@@ -1126,7 +1092,7 @@ const HomeLanding = () => {
               >
                 {t('支持众多的大模型供应商')}
               </p>
-              <ScrollingIcons isMobile={isMobile} />
+              <ProviderLogoLoop isMobile={isMobile} />
             </div>
           </section>
 

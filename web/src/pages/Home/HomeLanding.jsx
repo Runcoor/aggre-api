@@ -1192,9 +1192,9 @@ const HomeLanding = () => {
               }}
             />
             <div className='max-w-screen-xl mx-auto px-5 relative z-10'>
-              <div className='flex flex-col md:flex-row items-center gap-10 md:gap-8'>
+              <div className='flex flex-col md:flex-row items-center gap-10 md:gap-6'>
                 {/* Left — text + button */}
-                <div className='w-full md:w-1/2 text-center md:text-left'>
+                <div className='w-full md:w-2/5 text-center md:text-left'>
                   <TextAnimate
                     as='h2'
                     variant='scaleUp'
@@ -1266,11 +1266,11 @@ const HomeLanding = () => {
                   </div>
                 </div>
                 {/* Right — keyboard with left-side fade, offset down by half its height on desktop */}
-                <div className='w-full md:w-1/2 relative overflow-hidden md:translate-y-1/2'>
+                <div className='w-full md:w-3/5 relative overflow-hidden md:translate-y-1/2'>
                   <Keyboard
                     enableSound={false}
                     showPreview={false}
-                    className='[zoom:0.55] sm:[zoom:0.75] md:[zoom:0.85] lg:[zoom:1] xl:[zoom:1.1]'
+                    className='[zoom:0.7] sm:[zoom:0.95] md:[zoom:1.15] lg:[zoom:1.4] xl:[zoom:1.6]'
                   />
                   {/* 25% fade overlay on the keyboard's left side — text
                       column is on the left, fade transitions the keyboard

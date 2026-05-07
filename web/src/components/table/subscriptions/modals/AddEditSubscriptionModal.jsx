@@ -96,6 +96,7 @@ const AddEditSubscriptionModal = ({
     total_amount: 0,
     quota_description: '',
     upgrade_group: '',
+    allow_wallet_fallback: false,
     stripe_price_id: '',
     creem_product_id: '',
     dodo_product_id: '',
@@ -125,6 +126,7 @@ const AddEditSubscriptionModal = ({
       ),
       quota_description: p.quota_description || '',
       upgrade_group: p.upgrade_group || '',
+      allow_wallet_fallback: !!p.allow_wallet_fallback,
       stripe_price_id: p.stripe_price_id || '',
       creem_product_id: p.creem_product_id || '',
       dodo_product_id: p.dodo_product_id || '',
@@ -171,6 +173,7 @@ const AddEditSubscriptionModal = ({
           total_amount: displayAmountToQuota(values.total_amount),
           quota_description: values.quota_description || '',
           upgrade_group: values.upgrade_group || '',
+          allow_wallet_fallback: !!values.allow_wallet_fallback,
         },
       };
       if (editingPlan?.plan?.id) {
@@ -394,6 +397,17 @@ const AddEditSubscriptionModal = ({
                           </Select.Option>
                         ))}
                       </Form.Select>
+                    </Col>
+
+                    <Col span={12}>
+                      <Form.Switch
+                        field='allow_wallet_fallback'
+                        label={t('套餐外模型走钱包')}
+                        size='large'
+                        extraText={t(
+                          '开启后，订阅用户调用此套餐未覆盖的模型时，自动用钱包余额支付（使用 default 分组的渠道）；关闭则报错。',
+                        )}
+                      />
                     </Col>
 
                     <Col span={12}>

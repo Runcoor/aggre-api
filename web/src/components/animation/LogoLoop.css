@@ -4,6 +4,11 @@ Copyright (C) 2025 QuantumNous
 
 .logoloop {
   position: relative;
+  /* React Bits' upstream component leaves clipping to the caller (their
+     usage example wraps LogoLoop in a div with overflow:hidden). We bake
+     it in here so the track's width:max-content doesn't sprawl past the
+     fade gradients into adjacent layout. */
+  overflow: hidden;
 
   --logoloop-gap: 32px;
   --logoloop-logoHeight: 28px;

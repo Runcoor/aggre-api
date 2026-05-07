@@ -1,11 +1,24 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Table } from '@douyinfe/semi-ui';
+import { Table, Tag } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 import { API, showError, renderQuota } from '../../../helpers';
 
 function fmtTs(ts) {
   if (!ts) return '-';
   return new Date(ts * 1000).toLocaleString();
+}
+
+// Parse the `other` JSON string returned by /api/log/. Returns {} on any
+// failure so callers can read fields safely. The backend serializes
+// log.Other as a string (model/log.go: Other string `json:"other"`).
+function parseOther(other) {
+  if (!other) return {};
+  if (typeof other === 'object') return other;
+  try {
+    return JSON.parse(other) || {};
+  } catch {
+    return {};
+  }
 }
 
 const UsageLogsTab = ({ user }) => {
@@ -55,6 +68,20 @@ const UsageLogsTab = ({ user }) => {
       dataIndex: 'quota',
       render: (v) => renderQuota(v || 0),
       width: 100,
+    },
+    {
+      // Read billing_source from logs.other (set by service/log_info_generate.go).
+      // Possible values: "wallet" / "subscription" / "team" / "" (legacy rows).
+      title: t('扣费来源'),
+      dataIndex: 'other',
+      width: 100,
+      render: (other) => {
+        const src = parseOther(other).billing_source;
+        if (src === 'wallet') return <Tag color='blue'>{t('钱包')}</Tag>;
+        if (src === 'subscription') return <Tag color='green'>{t('套餐')}</Tag>;
+        if (src === 'team') return <Tag color='cyan'>{t('团队')}</Tag>;
+        return <Tag color='grey'>-</Tag>;
+      },
     },
     { title: t('耗时(ms)'), dataIndex: 'use_time', width: 110 },
   ];

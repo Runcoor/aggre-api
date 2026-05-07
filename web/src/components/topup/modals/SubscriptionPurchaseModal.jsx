@@ -178,7 +178,7 @@ html.dark .spm-pay--selected{
 /* ===== footer ===== */
 .spm-foot{margin-top:12px;padding:12px 22px 14px;display:flex;align-items:center;
   justify-content:space-between;gap:14px;border-top:1px solid var(--border-subtle);
-  background:linear-gradient(180deg,var(--surface),var(--bg-subtle))}
+  background:transparent}
 .spm-total{display:flex;flex-direction:column;gap:2px}
 .spm-total .l{font-size:10.5px;font-weight:700;letter-spacing:.10em;text-transform:uppercase;
   color:var(--text-secondary)}
@@ -593,7 +593,7 @@ const SubscriptionPurchaseModal = ({
 
           <p className='spm-fine'>
             {t('点击确认支付即代表您同意')}{' '}
-            <a href='/terms' target='_blank' rel='noreferrer'>
+            <a href='/terms-of-service' target='_blank' rel='noreferrer'>
               {t('服务条款')}
             </a>
             。

@@ -17,6 +17,7 @@ import { Link } from 'react-router-dom';
 import NoticeModal from '../../components/layout/NoticeModal';
 import TextAnimate from '../../components/animation/TextAnimate';
 import LogoLoop from '../../components/animation/LogoLoop';
+import WordRotate from '../../components/animation/WordRotate';
 import {
   Moonshot,
   OpenAI,
@@ -969,108 +970,98 @@ const HomeLanding = () => {
                   </span>
                 </Link>
               </div>
-              {/* Trust Strip — pill badges */}
+              {/* Trust Strip — single rotating pill */}
               <div className='mt-8 md:mt-10 flex justify-center'>
                 <div
-                  className='inline-flex flex-wrap justify-center gap-x-2 gap-y-2 md:gap-x-3'
-                  style={{ maxWidth: 620 }}
+                  className='trust-rotate-pill'
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '6px 16px',
+                    borderRadius: 'var(--radius-full, 9999px)',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border-subtle)',
+                    color: 'var(--text-secondary)',
+                    fontSize: 13,
+                    fontWeight: 500,
+                    letterSpacing: '0.01em',
+                    whiteSpace: 'nowrap',
+                    transition:
+                      'border-color 0.25s, color 0.25s, background 0.25s, box-shadow 0.25s',
+                    cursor: 'default',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--accent)';
+                    e.currentTarget.style.color = 'var(--accent)';
+                    e.currentTarget.style.background =
+                      'color-mix(in srgb, var(--accent) 6%, var(--surface))';
+                    e.currentTarget.style.boxShadow =
+                      '0 0 14px color-mix(in srgb, var(--accent) 18%, transparent)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                    e.currentTarget.style.color = 'var(--text-secondary)';
+                    e.currentTarget.style.background = 'var(--surface)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
                 >
-                  {[
-                    {
-                      icon: (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2.5" /><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
-                        </svg>
-                      ),
-                      text: t('余额随时可退'),
-                    },
-                    {
-                      icon: (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                        </svg>
-                      ),
-                      text: t('99.9% 可用率'),
-                    },
-                    {
-                      icon: (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                        </svg>
-                      ),
-                      text: t('不存储请求数据'),
-                    },
-                    {
-                      icon: (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" /><path d="M8 10h8" /><path d="M8 14h4" />
-                        </svg>
-                      ),
-                      text: t('按量计费无绑定'),
-                    },
-                    {
-                      icon: (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm0 0a9 9 0 1 1 18 0m0 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3Z" />
-                        </svg>
-                      ),
-                      text: t('7×24 技术支持'),
-                    },
-                  ].map((item, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        padding: '5px 12px',
-                        borderRadius: 'var(--radius-full, 9999px)',
-                        background: 'var(--surface)',
-                        border: '1px solid var(--border-subtle)',
-                        color: 'var(--text-secondary)',
-                        fontSize: 12,
-                        fontWeight: 500,
-                        letterSpacing: '0.01em',
-                        whiteSpace: 'nowrap',
-                        opacity: 0,
-                        animation: `trustFadeUp 0.5s ease-out ${0.08 * i}s forwards`,
-                        transition: 'border-color 0.25s, color 0.25s, background 0.25s, box-shadow 0.25s',
-                        cursor: 'default',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = 'var(--accent)';
-                        e.currentTarget.style.color = 'var(--accent)';
-                        e.currentTarget.style.background = 'color-mix(in srgb, var(--accent) 6%, var(--surface))';
-                        e.currentTarget.style.boxShadow = '0 0 12px color-mix(in srgb, var(--accent) 15%, transparent)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = 'var(--border-subtle)';
-                        e.currentTarget.style.color = 'var(--text-secondary)';
-                        e.currentTarget.style.background = 'var(--surface)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0, opacity: 0.7 }}>
-                        {item.icon}
-                      </span>
-                      {item.text}
-                    </div>
-                  ))}
+                  <WordRotate
+                    interval={2500}
+                    duration={500}
+                    items={[
+                      {
+                        icon: (
+                          <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                            <path d='M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2.5' /><path d='M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4' />
+                          </svg>
+                        ),
+                        text: t('余额随时可退'),
+                      },
+                      {
+                        icon: (
+                          <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                            <polygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2' />
+                          </svg>
+                        ),
+                        text: t('99.9% 可用率'),
+                      },
+                      {
+                        icon: (
+                          <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                            <rect width='18' height='11' x='3' y='11' rx='2' ry='2' /><path d='M7 11V7a5 5 0 0 1 10 0v4' />
+                          </svg>
+                        ),
+                        text: t('不存储请求数据'),
+                      },
+                      {
+                        icon: (
+                          <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                            <path d='M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z' /><path d='M8 10h8' /><path d='M8 14h4' />
+                          </svg>
+                        ),
+                        text: t('按量计费无绑定'),
+                      },
+                      {
+                        icon: (
+                          <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                            <path d='M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm0 0a9 9 0 1 1 18 0m0 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3Z' />
+                          </svg>
+                        ),
+                        text: t('7×24 技术支持'),
+                      },
+                    ]}
+                    render={(item) => (
+                      <>
+                        <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0, opacity: 0.7, marginRight: 6 }}>
+                          {item.icon}
+                        </span>
+                        {item.text}
+                      </>
+                    )}
+                  />
                 </div>
               </div>
-
-              <style>{`
-                @keyframes trustFadeUp {
-                  from {
-                    opacity: 0;
-                    transform: translateY(8px);
-                  }
-                  to {
-                    opacity: 1;
-                    transform: translateY(0);
-                  }
-                }
-              `}</style>
             </div>
 
             {/* Tutorial Tabs Panel */}

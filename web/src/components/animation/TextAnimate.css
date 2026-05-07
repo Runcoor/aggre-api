@@ -1,0 +1,60 @@
+/*
+Copyright (C) 2025 QuantumNous
+*/
+
+.text-animate {
+  /* Don't override the rendered tag's natural display (h1/h2/p stay
+     block). The wrapper just sits in the same flow.
+     We DO provide will-change so transform/filter promote to a layer. */
+  will-change: opacity, transform, filter;
+}
+
+/* fadeUp: blur + translateY + opacity — for headlines */
+.text-animate.ta-fadeUp {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  filter: blur(6px);
+  transition:
+    opacity var(--ta-duration, 700ms) cubic-bezier(0.22, 1, 0.36, 1)
+      var(--ta-delay, 0ms),
+    transform var(--ta-duration, 700ms) cubic-bezier(0.22, 1, 0.36, 1)
+      var(--ta-delay, 0ms),
+    filter var(--ta-duration, 700ms) cubic-bezier(0.22, 1, 0.36, 1)
+      var(--ta-delay, 0ms);
+}
+.text-animate.ta-fadeUp.is-playing {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  filter: blur(0);
+}
+
+/* fade: opacity only — for subtitles and body */
+.text-animate.ta-fade {
+  opacity: 0;
+  transition: opacity var(--ta-duration, 600ms) ease-out var(--ta-delay, 0ms);
+}
+.text-animate.ta-fade.is-playing {
+  opacity: 1;
+}
+
+/* blur: heavier blur, no movement — for accent / decorative text */
+.text-animate.ta-blur {
+  opacity: 0;
+  filter: blur(8px);
+  transition:
+    opacity var(--ta-duration, 800ms) ease-out var(--ta-delay, 0ms),
+    filter var(--ta-duration, 800ms) ease-out var(--ta-delay, 0ms);
+}
+.text-animate.ta-blur.is-playing {
+  opacity: 1;
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text-animate {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+}

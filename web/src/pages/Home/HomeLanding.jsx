@@ -15,6 +15,7 @@ import {
 } from '@douyinfe/semi-icons';
 import { Link } from 'react-router-dom';
 import NoticeModal from '../../components/layout/NoticeModal';
+import TextAnimate from '../../components/animation/TextAnimate';
 import {
   Moonshot,
   OpenAI,
@@ -596,15 +597,24 @@ const HomeFAQ = ({ t }) => {
           >
             FAQ
           </div>
-          <h2
+          <TextAnimate
+            as='h2'
+            variant='fadeUp'
+            duration={700}
             className='text-3xl md:text-4xl lg:text-5xl font-bold mb-4'
             style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
           >
             {t('常见问题')}
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem' }}>
+          </TextAnimate>
+          <TextAnimate
+            as='p'
+            variant='fade'
+            delay={200}
+            duration={600}
+            style={{ color: 'var(--text-secondary)', fontSize: '1.05rem' }}
+          >
             {t('关于服务的一切，你想知道的都在这里')}
-          </p>
+          </TextAnimate>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -785,7 +795,11 @@ const HomeLanding = () => {
               </div>
 
               {/* Heading */}
-              <h1
+              <TextAnimate
+                as='h1'
+                variant='fadeUp'
+                delay={100}
+                duration={800}
                 className={`text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-[0.95] mb-6 ${isChinese ? 'tracking-wide' : 'tracking-tighter'}`}
                 style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
               >
@@ -800,10 +814,14 @@ const HomeLanding = () => {
                 </span>
                 <br />
                 {t('优质 API 管理平台')}
-              </h1>
+              </TextAnimate>
 
               {/* Subtitle */}
-              <p
+              <TextAnimate
+                as='p'
+                variant='fade'
+                delay={350}
+                duration={700}
                 className='text-base md:text-xl lg:text-2xl font-light mb-8 max-w-2xl'
                 style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}
               >
@@ -812,7 +830,7 @@ const HomeLanding = () => {
                   {t('稳定、极速、满血版')}
                 </span>{' '}
                 {t('的 API 体验。')}
-              </p>
+              </TextAnimate>
 
               {/* Base URL — code snippet style */}
               <div
@@ -1116,22 +1134,35 @@ const HomeLanding = () => {
             <div className='max-w-screen-xl mx-auto px-5'>
               <div className='flex flex-col md:flex-row justify-between items-end mb-12 md:mb-20 gap-6'>
                 <div className='max-w-2xl'>
-                  <h2
+                  <TextAnimate
+                    as='h2'
+                    variant='fadeUp'
+                    duration={700}
                     className='text-3xl md:text-4xl lg:text-5xl font-bold mb-4'
                     style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
                   >
                     {t('核心优势：为性能而生')}
-                  </h2>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
+                  </TextAnimate>
+                  <TextAnimate
+                    as='p'
+                    variant='fade'
+                    delay={200}
+                    duration={600}
+                    style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}
+                  >
                     {t('企业级架构，为每一次调用保驾护航')}
-                  </p>
+                  </TextAnimate>
                 </div>
-                <div
+                <TextAnimate
+                  as='div'
+                  variant='fade'
+                  delay={400}
+                  duration={500}
                   className='text-xs font-semibold uppercase tracking-widest hidden md:block'
                   style={{ color: 'var(--accent)' }}
                 >
                   {t('功能架构')}
-                </div>
+                </TextAnimate>
               </div>
 
               <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
@@ -1185,7 +1216,10 @@ const HomeLanding = () => {
               }}
             />
             <div className='max-w-3xl mx-auto px-5 text-center relative z-10'>
-              <h2
+              <TextAnimate
+                as='h2'
+                variant='fadeUp'
+                duration={800}
                 className='text-3xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight'
                 style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
               >
@@ -1209,13 +1243,17 @@ const HomeLanding = () => {
                 >
                   {t('真货不缩水，体验极致')}
                 </span>
-              </h2>
-              <p
+              </TextAnimate>
+              <TextAnimate
+                as='p'
+                variant='fade'
+                delay={250}
+                duration={700}
                 className='text-base md:text-xl mb-10 max-w-2xl mx-auto'
                 style={{ color: 'var(--text-secondary)' }}
               >
                 {t('立刻即可开启您的下一代 AI 业务架构。')}
-              </p>
+              </TextAnimate>
               <div className='flex flex-col sm:flex-row gap-4 justify-center'>
                 <Link to='/quick-start'>
                   <Button

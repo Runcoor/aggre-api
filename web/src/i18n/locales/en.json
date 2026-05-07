@@ -513,7 +513,7 @@
     "核心优势：为性能而生": "Core Advantages: Built for Performance",
     "为什么选择我们？": "Why Choose Us?",
     "卓越稳定性": "Exceptional Stability",
-    "企业级 SLA 保证，99.9% 全年在线。多重负载均衡与实时熔断机制，确保您的业务永不断线。": "Enterprise-grade SLA with 99.9% year-round uptime. Multi-layer load balancing and real-time circuit breakers keep your business always online.",
+    "企业级 SLA 保证，{{value}}% 全年在线。多重负载均衡与实时熔断机制，确保您的业务永不断线。": "Enterprise-grade SLA with {{value}}% year-round uptime. Multi-layer load balancing and real-time circuit breakers keep your business always online.",
     "极速响应": "Lightning-Fast Response",
     "全球边缘节点并发，毫秒级延迟，感受如丝般顺滑的 API 调用体验。": "Concurrent global edge nodes with millisecond latency for a silky-smooth API experience.",
     "满血版体验": "Full-Power Experience",

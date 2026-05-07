@@ -18,6 +18,7 @@ import NoticeModal from '../../components/layout/NoticeModal';
 import TextAnimate from '../../components/animation/TextAnimate';
 import LogoLoop from '../../components/animation/LogoLoop';
 import WordRotate from '../../components/animation/WordRotate';
+import CountUp from '../../components/animation/CountUp';
 import {
   Moonshot,
   OpenAI,
@@ -1130,7 +1131,31 @@ const HomeLanding = () => {
                   wide
                   icon='shield_with_heart'
                   title={t('卓越稳定性')}
-                  desc={t('企业级 SLA 保证，99.9% 全年在线。多重负载均衡与实时熔断机制，确保您的业务永不断线。')}
+                  desc={(() => {
+                    // Split on a unique marker so we can inject the
+                    // <CountUp> JSX between the translated prefix and
+                    // suffix without losing i18n.
+                    const MARK = '__SLA_VALUE__';
+                    const parts = t(
+                      '企业级 SLA 保证，{{value}}% 全年在线。多重负载均衡与实时熔断机制，确保您的业务永不断线。',
+                      { value: MARK },
+                    ).split(MARK);
+                    return (
+                      <>
+                        {parts[0]}
+                        <CountUp
+                          value={99.9}
+                          decimals={1}
+                          duration={1800}
+                          style={{
+                            color: 'var(--text-primary)',
+                            fontWeight: 700,
+                          }}
+                        />
+                        {parts[1]}
+                      </>
+                    );
+                  })()}
                 />
                 <FeatureCard
                   icon='bolt'

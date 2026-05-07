@@ -41,6 +41,7 @@
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "sse.js": "^2.6.0",
+    "tailwind-merge": "^2.5.4",
     "tiktoken": "^1.0.22",
     "unist-util-visit": "^5.0.0",
     "use-debounce": "^10.0.4"

@@ -352,6 +352,7 @@ func NewBillingSession(c *gin.Context, relayInfo *relaycommon.RelayInfo, preCons
 	if common.GetContextKeyBool(c, constant.ContextKeyForceWalletBilling) {
 		logger.LogInfo(c, fmt.Sprintf("[billing] user %d wallet-fallback active, billing from wallet (model=%s, channel=%d)",
 			relayInfo.UserId, relayInfo.OriginModelName, relayInfo.ChannelId))
+		relayInfo.BillingWalletFallback = true
 		return tryWallet()
 	}
 

@@ -125,6 +125,12 @@ func appendBillingInfo(relayInfo *relaycommon.RelayInfo, other map[string]interf
 	if relayInfo.UserSetting.BillingPreference != "" {
 		other["billing_preference"] = relayInfo.UserSetting.BillingPreference
 	}
+	// wallet_fallback: true when distributor's wallet-fallback path fired
+	// (subscriber on a plan with allow_wallet_fallback=true, no channel in
+	// upgrade group, retried against default group + forced wallet billing).
+	if relayInfo.BillingWalletFallback {
+		other["wallet_fallback"] = true
+	}
 	if relayInfo.BillingSource == "subscription" {
 		if relayInfo.SubscriptionId != 0 {
 			other["subscription_id"] = relayInfo.SubscriptionId

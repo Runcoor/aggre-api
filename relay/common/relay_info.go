@@ -129,6 +129,11 @@ type RelayInfo struct {
 	// BillingSource indicates whether this request is billed from wallet quota or subscription.
 	// "" or "wallet" => wallet; "subscription" => subscription
 	BillingSource string
+	// BillingWalletFallback is true when BillingSource == "wallet" because the
+	// distributor's wallet-fallback path fired (subscriber's plan didn't have
+	// a channel for the requested model and plan.allow_wallet_fallback=true).
+	// Used purely for log/UI display.
+	BillingWalletFallback bool
 	// SubscriptionId is the user_subscriptions.id used when BillingSource == "subscription"
 	SubscriptionId int
 	// SubscriptionPreConsumed is the amount pre-consumed on subscription item (quota units or 1)

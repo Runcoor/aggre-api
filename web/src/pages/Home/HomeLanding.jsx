@@ -18,6 +18,7 @@ import LogoLoop from '../../components/animation/LogoLoop';
 import WordRotate from '../../components/animation/WordRotate';
 import CountUp from '../../components/animation/CountUp';
 import KineticText from '../../components/animation/KineticText';
+import { Keyboard } from '../../components/animation/Keyboard';
 import {
   Moonshot,
   OpenAI,
@@ -1178,64 +1179,91 @@ const HomeLanding = () => {
                 opacity: 0.3,
               }}
             />
-            <div className='max-w-3xl mx-auto px-5 text-center relative z-10'>
-              <TextAnimate
-                as='h2'
-                variant='scaleUp'
-                duration={900}
-                className='text-3xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight'
-                style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
-              >
-                {t('加入')}{' '}
-                <span
-                  style={{
-                    background: 'var(--accent-gradient)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  {systemName}
-                </span>
-                <br />
-                <span
-                  style={{
-                    background: 'var(--accent-gradient)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  {t('真货不缩水，体验极致')}
-                </span>
-              </TextAnimate>
-              <TextAnimate
-                as='p'
-                variant='slideLeftChar'
-                delay={350}
-                duration={550}
-                stagger={28}
-                className='text-base md:text-xl mb-10 max-w-2xl mx-auto'
-                style={{ color: 'var(--text-secondary)' }}
-              >
-                {t('立刻即可开启您的下一代 AI 业务架构。')}
-              </TextAnimate>
-              <div className='flex justify-center'>
-                <Link to='/quick-start'>
-                  <Button
-                    theme='solid'
-                    type='primary'
-                    size='large'
-                    style={{
-                      borderRadius: 9999,
-                      padding: '0 36px',
-                      background: 'var(--accent-gradient)',
-                      border: 'none',
-                      fontWeight: 600,
-                      height: 48,
-                    }}
+            <div className='max-w-screen-xl mx-auto px-5 relative z-10'>
+              <div className='flex flex-col md:flex-row items-center gap-10 md:gap-8'>
+                {/* Left — text + button */}
+                <div className='w-full md:w-1/2 text-center md:text-left'>
+                  <TextAnimate
+                    as='h2'
+                    variant='scaleUp'
+                    duration={900}
+                    className='text-3xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight'
+                    style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
                   >
-                    {t('快速开始')}
-                  </Button>
-                </Link>
+                    {t('加入')}{' '}
+                    <span
+                      style={{
+                        background: 'var(--accent-gradient)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      {systemName}
+                    </span>
+                    <br />
+                    <span
+                      style={{
+                        background: 'var(--accent-gradient)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      {t('真货不缩水，体验极致')}
+                    </span>
+                  </TextAnimate>
+                  <TextAnimate
+                    as='p'
+                    variant='slideLeftChar'
+                    delay={350}
+                    duration={550}
+                    stagger={28}
+                    className='text-base md:text-xl mb-10 max-w-2xl md:max-w-none mx-auto md:mx-0'
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    {t('立刻即可开启您的下一代 AI 业务架构。')}
+                  </TextAnimate>
+                  <div className='flex justify-center md:justify-start'>
+                    <Link to='/quick-start'>
+                      <Button
+                        theme='solid'
+                        type='primary'
+                        size='large'
+                        style={{
+                          borderRadius: 9999,
+                          padding: '0 36px',
+                          background: 'var(--accent-gradient)',
+                          border: 'none',
+                          fontWeight: 600,
+                          height: 48,
+                        }}
+                      >
+                        {t('快速开始')}
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+                {/* Right — keyboard with left-side fade */}
+                <div className='w-full md:w-1/2 relative overflow-hidden'>
+                  <Keyboard
+                    enableSound={false}
+                    showPreview={false}
+                    className='[zoom:0.7] sm:[zoom:0.9] md:[zoom:1] lg:[zoom:1.2] xl:[zoom:1.4]'
+                  />
+                  {/* 25% fade overlay on the keyboard's left side — text
+                      column is on the left, fade transitions the keyboard
+                      out into the section background as the eye scans
+                      from the text toward the right. */}
+                  <div
+                    aria-hidden='true'
+                    className='absolute inset-y-0 left-0 pointer-events-none'
+                    style={{
+                      width: '25%',
+                      background:
+                        'linear-gradient(to right, var(--bg-base) 0%, var(--bg-base) 30%, transparent 100%)',
+                      zIndex: 5,
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </section>

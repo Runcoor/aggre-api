@@ -10,8 +10,6 @@ import { useTranslation } from 'react-i18next';
 import {
   IconGithubLogo,
   IconPlay,
-  IconFile,
-
 } from '@douyinfe/semi-icons';
 import { Link } from 'react-router-dom';
 import NoticeModal from '../../components/layout/NoticeModal';
@@ -773,16 +771,10 @@ const HomeLanding = () => {
                 className={`text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-[0.95] mb-6 ${isChinese ? 'tracking-wide' : 'tracking-tighter'}`}
                 style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
               >
-                <span
-                  style={{
-                    background: 'var(--accent-gradient)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    display: 'inline-block',
-                  }}
-                >
-                  <KineticText text={systemName} />
-                </span>
+                <KineticText
+                  text={systemName}
+                  gradient='var(--accent-gradient)'
+                />
                 <br />
                 {t('优质 API 管理平台')}
               </TextAnimate>
@@ -871,7 +863,7 @@ const HomeLanding = () => {
                     size={isMobile ? 'default' : 'large'}
                     icon={<IconPlay />}
                     style={{
-                      borderRadius: 'var(--radius-md)',
+                      borderRadius: 9999,
                       padding: '0 28px',
                       background: 'var(--accent-gradient)',
                       border: 'none',
@@ -881,12 +873,12 @@ const HomeLanding = () => {
                     {t('快速开始')}
                   </Button>
                 </Link>
-                {isDemoSiteMode && statusState?.status?.version ? (
+                {isDemoSiteMode && statusState?.status?.version && (
                   <Button
                     size={isMobile ? 'default' : 'large'}
                     icon={<IconGithubLogo />}
                     style={{
-                      borderRadius: 'var(--radius-md)',
+                      borderRadius: 9999,
                       padding: '0 20px',
                       background: 'var(--surface-active)',
                       color: 'var(--text-primary)',
@@ -896,22 +888,6 @@ const HomeLanding = () => {
                   >
                     {statusState.status.version}
                   </Button>
-                ) : (
-                  <Link to='/docs'>
-                    <Button
-                      size={isMobile ? 'default' : 'large'}
-                      icon={<IconFile />}
-                      style={{
-                        borderRadius: 'var(--radius-md)',
-                        padding: '0 20px',
-                        background: 'var(--surface-active)',
-                        color: 'var(--text-primary)',
-                        border: '1px solid var(--border-default)',
-                      }}
-                    >
-                      {t('查看文档')}
-                    </Button>
-                  </Link>
                 )}
                 {/* Beginner guide button — gradient border + gradient text */}
                 <Link to='/guide' className='guide-btn-link'>
@@ -922,7 +898,7 @@ const HomeLanding = () => {
                       alignItems: 'center',
                       gap: 6,
                       padding: '1px',
-                      borderRadius: 'var(--radius-md)',
+                      borderRadius: 9999,
                       background: 'var(--accent-gradient)',
                       cursor: 'pointer',
                       transition: 'box-shadow 0.3s',
@@ -942,7 +918,7 @@ const HomeLanding = () => {
                         alignItems: 'center',
                         gap: 6,
                         padding: isMobile ? '7px 14px' : '9px 18px',
-                        borderRadius: 'calc(var(--radius-md) - 1px)',
+                        borderRadius: 9999,
                         background: 'var(--bg-base)',
                         fontSize: isMobile ? 13 : 14,
                         fontWeight: 600,
@@ -1242,14 +1218,14 @@ const HomeLanding = () => {
               >
                 {t('立刻即可开启您的下一代 AI 业务架构。')}
               </TextAnimate>
-              <div className='flex flex-col sm:flex-row gap-4 justify-center'>
+              <div className='flex justify-center'>
                 <Link to='/quick-start'>
                   <Button
                     theme='solid'
                     type='primary'
                     size='large'
                     style={{
-                      borderRadius: 'var(--radius-md)',
+                      borderRadius: 9999,
                       padding: '0 36px',
                       background: 'var(--accent-gradient)',
                       border: 'none',
@@ -1258,22 +1234,6 @@ const HomeLanding = () => {
                     }}
                   >
                     {t('快速开始')}
-                  </Button>
-                </Link>
-                <Link to='/docs'>
-                  <Button
-                    size='large'
-                    style={{
-                      borderRadius: 'var(--radius-md)',
-                      padding: '0 36px',
-                      background: 'var(--surface)',
-                      color: 'var(--accent)',
-                      border: '1px solid var(--border-default)',
-                      fontWeight: 600,
-                      height: 48,
-                    }}
-                  >
-                    {t('查看文档')}
                   </Button>
                 </Link>
               </div>

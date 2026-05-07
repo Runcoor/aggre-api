@@ -2,27 +2,35 @@
 Copyright (C) 2025 QuantumNous
 
 KineticText — splits text into per-character spans and plays a
-left-to-right wave on mouseenter. Wave runs to completion regardless
-of hover state — moving the cursor away mid-wave does NOT cut it off,
-which keeps the effect feeling deliberate rather than twitchy.
+left-to-right wave on mouseenter.
 
-Re-trigger pattern: remove → force reflow → add the .kt-is-waving
-class. Without the reflow CSS won't notice the class was ever absent
-and animation-name won't restart.
+Gradient mode (`gradient` prop): nesting spans inside a parent that
+uses background-clip:text breaks the gradient — descendants aren't
+sampled by the parent's clip. So when a gradient is requested we
+hand each char its own copy of the gradient, sized to
+N * char-width, with bg-position offset by index. Collectively the
+chars reproduce the parent's left→right sweep. Approximate for
+proportional fonts (slices are 1/N of bg width regardless of char's
+own width) but the visual difference reads as smooth.
 
-The component itself is transparent to text-color/background — drop it
-inside any styled wrapper (e.g. a gradient span with background-clip:
-text) and the per-char transforms will inherit the parent's painted
-appearance because background-clip sampling happens during the parent's
-paint phase, before child transforms are composited.
+Wave runs to completion regardless of hover state — moving the
+cursor away mid-wave does NOT cut it off. Re-trigger pattern:
+remove → force reflow → add the .kt-is-waving class.
 */
 
 import { useCallback, useMemo, useRef } from 'react';
 import './KineticText.css';
 
-const KineticText = ({ text, className = '', style, ...rest }) => {
+const KineticText = ({
+  text,
+  gradient,
+  className = '',
+  style,
+  ...rest
+}) => {
   const ref = useRef(null);
   const chars = useMemo(() => Array.from(String(text ?? '')), [text]);
+  const total = chars.length;
 
   const triggerWave = useCallback(() => {
     const el = ref.current;
@@ -32,20 +40,42 @@ const KineticText = ({ text, className = '', style, ...rest }) => {
     el.classList.add('kt-is-waving');
   }, []);
 
+  const wrapperClass = [
+    'kinetic-text',
+    gradient ? 'kinetic-text--gradient' : '',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const wrapperStyle = {
+    ...(gradient
+      ? { '--kt-gradient': gradient, '--kt-total': total }
+      : {}),
+    ...style,
+  };
+
   return (
     <span
       ref={ref}
-      className={`kinetic-text ${className}`.trim()}
-      style={style}
+      className={wrapperClass}
+      style={wrapperStyle}
       onMouseEnter={triggerWave}
       onFocus={triggerWave}
       {...rest}
     >
-      {chars.map((ch, i) => (
-        <span key={i} className='kt-char' style={{ '--kt-i': i }}>
-          {ch}
-        </span>
-      ))}
+      {chars.map((ch, i) => {
+        const pos = total > 1 ? (i / (total - 1)) * 100 : 0;
+        return (
+          <span
+            key={i}
+            className='kt-char'
+            style={{ '--kt-i': i, '--kt-pos': `${pos}%` }}
+          >
+            {ch}
+          </span>
+        );
+      })}
     </span>
   );
 };

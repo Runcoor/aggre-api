@@ -1265,26 +1265,23 @@ const HomeLanding = () => {
                     </Link>
                   </div>
                 </div>
-                {/* Right — keyboard with left-side fade, offset down by half its height on desktop.
-                    No overflow-hidden so the keyboard can extend slightly past
-                    the column on the right when zoom is large. */}
-                <div className='w-full md:w-3/5 relative md:translate-y-1/2'>
+                {/* Right — keyboard column. Left-side fade uses CSS mask-image
+                    (the keyboard itself fades to transparent on the left, page bg
+                    shows through naturally — no overlay div, no theme-color matching).
+                    Translated down half its height on desktop. */}
+                <div
+                  className='w-full md:w-3/5 relative md:translate-y-1/2'
+                  style={{
+                    WebkitMaskImage:
+                      'linear-gradient(to right, transparent 0%, black 35%)',
+                    maskImage:
+                      'linear-gradient(to right, transparent 0%, black 35%)',
+                  }}
+                >
                   <Keyboard
                     enableSound={false}
                     showPreview={false}
-                    className='[zoom:0.7] sm:[zoom:1] md:[zoom:1.25] lg:[zoom:1.6] xl:[zoom:1.85]'
-                  />
-                  {/* 35% fade on the keyboard's left side — pure linear bg→transparent
-                      (no opaque anchor) so it doesn't show up as a hard solid block. */}
-                  <div
-                    aria-hidden='true'
-                    className='absolute inset-y-0 left-0 pointer-events-none'
-                    style={{
-                      width: '35%',
-                      background:
-                        'linear-gradient(to right, var(--bg-base) 0%, transparent 100%)',
-                      zIndex: 5,
-                    }}
+                    className='[zoom:0.65] sm:[zoom:0.85] md:[zoom:1] lg:[zoom:1.35] xl:[zoom:1.7]'
                   />
                 </div>
               </div>

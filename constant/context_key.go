@@ -52,6 +52,14 @@ const (
 	ContextKeyUsingGroup  ContextKey = "group"
 	ContextKeyUserName    ContextKey = "username"
 
+	// ContextKeyForceWalletBilling is set by the distributor when a
+	// subscription user's request was served by the wallet-fallback
+	// path (their plan didn't have a channel for the requested model
+	// and plan.allow_wallet_fallback=true). The billing layer reads
+	// this and bills from the wallet directly, bypassing the user's
+	// BillingPreference (which would otherwise default to subscription_first).
+	ContextKeyForceWalletBilling ContextKey = "force_wallet_billing"
+
 	ContextKeyLocalCountTokens ContextKey = "local_count_tokens"
 
 	ContextKeySystemPromptOverride ContextKey = "system_prompt_override"

@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/runcoor/aggre-api/common"
+	"github.com/runcoor/aggre-api/constant"
 	"github.com/runcoor/aggre-api/logger"
 	"github.com/runcoor/aggre-api/model"
 	relaycommon "github.com/runcoor/aggre-api/relay/common"
@@ -341,6 +342,17 @@ func NewBillingSession(c *gin.Context, relayInfo *relaycommon.RelayInfo, preCons
 			return nil, apiErr
 		}
 		return session, nil
+	}
+
+	// Force-wallet override: distributor sets this when a subscriber's
+	// request was served via the wallet-fallback path (their plan has
+	// allow_wallet_fallback=true and the matching channel was found in
+	// the "default" group instead of the upgrade group). Bypass the
+	// user's BillingPreference and bill from wallet directly.
+	if common.GetContextKeyBool(c, constant.ContextKeyForceWalletBilling) {
+		logger.LogInfo(c, fmt.Sprintf("[billing] user %d wallet-fallback active, billing from wallet (model=%s, channel=%d)",
+			relayInfo.UserId, relayInfo.OriginModelName, relayInfo.ChannelId))
+		return tryWallet()
 	}
 
 	switch pref {

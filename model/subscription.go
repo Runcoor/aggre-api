@@ -816,6 +816,29 @@ func HasActiveUserSubscription(userId int) (bool, error) {
 	return count > 0, nil
 }
 
+// IsWalletFallbackEnabledForUser returns true if the user has at least one
+// active subscription whose plan opted in to allow_wallet_fallback. The
+// distributor uses this to decide whether to retry channel lookup against
+// the "default" group (and force wallet billing) when no channel is found
+// in the user's upgrade group. Returns false on any error or no active sub.
+func IsWalletFallbackEnabledForUser(userId int) (bool, error) {
+	if userId <= 0 {
+		return false, nil
+	}
+	now := common.GetTimestamp()
+	var count int64
+	err := DB.Table("user_subscriptions").
+		Joins("JOIN subscription_plans ON subscription_plans.id = user_subscriptions.plan_id").
+		Where("user_subscriptions.user_id = ? AND user_subscriptions.status = ? AND user_subscriptions.end_time > ?",
+			userId, "active", now).
+		Where("subscription_plans.allow_wallet_fallback = ?", true).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
 // GetAllUserSubscriptions returns all subscriptions (active and expired) for a user.
 func GetAllUserSubscriptions(userId int) ([]SubscriptionSummary, error) {
 	if userId <= 0 {

@@ -134,6 +134,30 @@ func Distribute() func(c *gin.Context) {
 						TokenGroup: usingGroup,
 						Retry:      common.GetPointer(0),
 					})
+
+					// Wallet fallback: subscribers on a plan with
+					// allow_wallet_fallback=true get a second chance against
+					// the "default" group when no channel matched the upgrade
+					// group. The matched channel will bill from wallet (via
+					// ContextKeyForceWalletBilling, honored by NewBillingSession).
+					if (err != nil || channel == nil) && tryWalletFallback(c, usingGroup) {
+						fbChannel, fbSelectGroup, fbErr := service.CacheGetRandomSatisfiedChannel(&service.RetryParam{
+							Ctx:        c,
+							ModelName:  modelRequest.Model,
+							TokenGroup: "default",
+							Retry:      common.GetPointer(0),
+						})
+						if fbErr == nil && fbChannel != nil {
+							channel = fbChannel
+							selectGroup = fbSelectGroup
+							err = nil
+							common.SetContextKey(c, constant.ContextKeyForceWalletBilling, true)
+							common.SysLog(fmt.Sprintf("[wallet-fallback] user=%d model=%s upgrade_group=%s -> default group, channel=%d (wallet billing)",
+								common.GetContextKeyInt(c, constant.ContextKeyUserId),
+								modelRequest.Model, usingGroup, fbChannel.Id))
+						}
+					}
+
 					if err != nil {
 						showGroup := usingGroup
 						if usingGroup == "auto" {
@@ -432,4 +456,26 @@ func extractModelNameFromGeminiPath(path string) string {
 
 	// 返回模型名部分
 	return path[startIndex : startIndex+colonIndex]
+}
+
+// tryWalletFallback returns true if the request is eligible to retry channel
+// lookup against the "default" group after the user's upgrade-group lookup
+// failed. Eligibility: usingGroup is not already "default", a user is logged
+// in, and the user has at least one active subscription on a plan with
+// allow_wallet_fallback=true. On match, the caller MUST set
+// ContextKeyForceWalletBilling so NewBillingSession bills from wallet.
+func tryWalletFallback(c *gin.Context, usingGroup string) bool {
+	if strings.EqualFold(usingGroup, "default") {
+		return false
+	}
+	userId := common.GetContextKeyInt(c, constant.ContextKeyUserId)
+	if userId <= 0 {
+		return false
+	}
+	enabled, err := model.IsWalletFallbackEnabledForUser(userId)
+	if err != nil {
+		common.SysError(fmt.Sprintf("[wallet-fallback] eligibility check failed: userId=%d err=%s", userId, err))
+		return false
+	}
+	return enabled
 }

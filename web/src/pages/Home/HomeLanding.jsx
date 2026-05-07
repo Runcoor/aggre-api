@@ -1174,7 +1174,7 @@ const HomeLanding = () => {
 
           {/* ===== CTA Section ===== */}
           <section
-            className='pt-20 pb-32 md:pt-32 md:pb-56 relative overflow-hidden'
+            className='pt-20 pb-32 md:pt-32 md:pb-64 relative overflow-hidden'
             style={{ background: 'var(--bg-base)' }}
           >
             <div
@@ -1265,24 +1265,24 @@ const HomeLanding = () => {
                     </Link>
                   </div>
                 </div>
-                {/* Right — keyboard with left-side fade, offset down by half its height on desktop */}
-                <div className='w-full md:w-3/5 relative overflow-hidden md:translate-y-1/2'>
+                {/* Right — keyboard with left-side fade, offset down by half its height on desktop.
+                    No overflow-hidden so the keyboard can extend slightly past
+                    the column on the right when zoom is large. */}
+                <div className='w-full md:w-3/5 relative md:translate-y-1/2'>
                   <Keyboard
                     enableSound={false}
                     showPreview={false}
-                    className='[zoom:0.7] sm:[zoom:0.95] md:[zoom:1.15] lg:[zoom:1.4] xl:[zoom:1.6]'
+                    className='[zoom:0.7] sm:[zoom:1] md:[zoom:1.25] lg:[zoom:1.6] xl:[zoom:1.85]'
                   />
-                  {/* 25% fade overlay on the keyboard's left side — text
-                      column is on the left, fade transitions the keyboard
-                      out into the section background as the eye scans
-                      from the text toward the right. */}
+                  {/* 35% fade on the keyboard's left side — pure linear bg→transparent
+                      (no opaque anchor) so it doesn't show up as a hard solid block. */}
                   <div
                     aria-hidden='true'
                     className='absolute inset-y-0 left-0 pointer-events-none'
                     style={{
-                      width: '25%',
+                      width: '35%',
                       background:
-                        'linear-gradient(to right, var(--bg-base) 0%, var(--bg-base) 30%, transparent 100%)',
+                        'linear-gradient(to right, var(--bg-base) 0%, transparent 100%)',
                       zIndex: 5,
                     }}
                   />

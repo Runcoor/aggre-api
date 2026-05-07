@@ -19,6 +19,7 @@ import TextAnimate from '../../components/animation/TextAnimate';
 import LogoLoop from '../../components/animation/LogoLoop';
 import WordRotate from '../../components/animation/WordRotate';
 import CountUp from '../../components/animation/CountUp';
+import KineticText from '../../components/animation/KineticText';
 import {
   Moonshot,
   OpenAI,
@@ -777,9 +778,10 @@ const HomeLanding = () => {
                     background: 'var(--accent-gradient)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
+                    display: 'inline-block',
                   }}
                 >
-                  {systemName}
+                  <KineticText text={systemName} />
                 </span>
                 <br />
                 {t('优质 API 管理平台')}

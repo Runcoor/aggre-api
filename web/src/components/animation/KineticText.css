@@ -1,0 +1,38 @@
+/*
+Copyright (C) 2025 QuantumNous
+*/
+
+.kinetic-text {
+  display: inline-block;
+}
+
+.kinetic-text .kt-char {
+  display: inline-block;
+  /* Anchor the scale to the baseline so chars don't appear to "drop"
+     into space when scaling */
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+
+.kinetic-text.kt-is-waving .kt-char {
+  animation: kt-wave 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation-delay: calc(var(--kt-i, 0) * 50ms);
+}
+
+@keyframes kt-wave {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  45% {
+    transform: translate3d(0, -12px, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kinetic-text.kt-is-waving .kt-char {
+    animation: none !important;
+  }
+}

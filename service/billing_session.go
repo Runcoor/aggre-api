@@ -348,8 +348,18 @@ func NewBillingSession(c *gin.Context, relayInfo *relaycommon.RelayInfo, preCons
 	// request was served via the wallet-fallback path (their plan has
 	// allow_wallet_fallback=true and the matching channel was found in
 	// the "default" group instead of the upgrade group). Bypass the
-	// user's BillingPreference and bill from wallet directly.
+	// user's BillingPreference and bill from wallet directly — UNLESS
+	// the user explicitly opted out of wallet via subscription_only,
+	// in which case user intent overrides admin's plan setting.
 	if common.GetContextKeyBool(c, constant.ContextKeyForceWalletBilling) {
+		if pref == "subscription_only" {
+			logger.LogWarn(c, fmt.Sprintf("[billing] user %d on subscription_only refuses wallet-fallback (model=%s)",
+				relayInfo.UserId, relayInfo.OriginModelName))
+			return nil, types.NewErrorWithStatusCode(
+				fmt.Errorf("用户计费偏好为「仅订阅」，套餐外模型不可用，请切换到「订阅优先」或「钱包优先」模式"),
+				types.ErrorCodeInsufficientUserQuota, http.StatusForbidden,
+				types.ErrOptionWithSkipRetry(), types.ErrOptionWithNoRecordErrorLog())
+		}
 		logger.LogInfo(c, fmt.Sprintf("[billing] user %d wallet-fallback active, billing from wallet (model=%s, channel=%d)",
 			relayInfo.UserId, relayInfo.OriginModelName, relayInfo.ChannelId))
 		relayInfo.BillingWalletFallback = true

@@ -170,6 +170,14 @@ type SubscriptionPlan struct {
 	// Upgrade user group after purchase (empty = no change)
 	UpgradeGroup string `json:"upgrade_group" gorm:"type:varchar(64);default:''"`
 
+	// AllowWalletFallback enables wallet billing for out-of-plan models.
+	// When true, if a subscriber's request can't find a channel in the
+	// plan's upgrade_group (e.g. Pro user calls gpt-5.5 not served by
+	// Package channels), distributor retries against the "default" group
+	// and forces wallet billing for that request — bypassing the user's
+	// BillingPreference. Defaults to false: out-of-plan models 503.
+	AllowWalletFallback bool `json:"allow_wallet_fallback" gorm:"default:false"`
+
 	// Total quota (amount in quota units, 0 = unlimited)
 	TotalAmount      int64  `json:"total_amount" gorm:"type:bigint;not null;default:0"`
 	QuotaDescription string `json:"quota_description" gorm:"type:varchar(255);default:''"`

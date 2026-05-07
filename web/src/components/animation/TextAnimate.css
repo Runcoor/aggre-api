@@ -9,7 +9,7 @@ Copyright (C) 2025 QuantumNous
   will-change: opacity, transform, filter;
 }
 
-/* fadeUp: blur + translateY + opacity — for headlines */
+/* fadeUp: blur + translateY + opacity — for hero headline */
 .text-animate.ta-fadeUp {
   opacity: 0;
   transform: translate3d(0, 14px, 0);
@@ -28,7 +28,7 @@ Copyright (C) 2025 QuantumNous
   filter: blur(0);
 }
 
-/* fade: opacity only — for subtitles and body */
+/* fade: opacity only — for hero subtitle */
 .text-animate.ta-fade {
   opacity: 0;
   transition: opacity var(--ta-duration, 600ms) ease-out var(--ta-delay, 0ms);
@@ -37,7 +37,7 @@ Copyright (C) 2025 QuantumNous
   opacity: 1;
 }
 
-/* blur: heavier blur, no movement — for accent / decorative text */
+/* blur: heavier blur, no movement */
 .text-animate.ta-blur {
   opacity: 0;
   filter: blur(8px);
@@ -50,8 +50,52 @@ Copyright (C) 2025 QuantumNous
   filter: blur(0);
 }
 
+/* scaleUp: scale(0.85→1) + blur + opacity, back-out easing for pop.
+   For bold section headlines that should announce themselves. */
+.text-animate.ta-scaleUp {
+  opacity: 0;
+  transform: scale(0.85);
+  filter: blur(6px);
+  transform-origin: 50% 50%;
+  transition:
+    opacity var(--ta-duration, 800ms) cubic-bezier(0.34, 1.56, 0.64, 1)
+      var(--ta-delay, 0ms),
+    transform var(--ta-duration, 800ms) cubic-bezier(0.34, 1.56, 0.64, 1)
+      var(--ta-delay, 0ms),
+    filter var(--ta-duration, 800ms) cubic-bezier(0.34, 1.56, 0.64, 1)
+      var(--ta-delay, 0ms);
+}
+.text-animate.ta-scaleUp.is-playing {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+}
+
+/* slideLeftChar: each char slides in from the right with blur + opacity,
+   staggered by --ta-stagger. Magic UI "Slide Left by Character" feel. */
+.text-animate.ta-slideLeftChar .ta-char {
+  display: inline-block;
+  white-space: pre;
+  opacity: 0;
+  transform: translate3d(18px, 0, 0);
+  filter: blur(4px);
+  transition:
+    opacity var(--ta-duration, 600ms) cubic-bezier(0.22, 1, 0.36, 1)
+      calc(var(--ta-delay, 0ms) + var(--ta-char-i, 0) * var(--ta-stagger, 30ms)),
+    transform var(--ta-duration, 600ms) cubic-bezier(0.22, 1, 0.36, 1)
+      calc(var(--ta-delay, 0ms) + var(--ta-char-i, 0) * var(--ta-stagger, 30ms)),
+    filter var(--ta-duration, 600ms) cubic-bezier(0.22, 1, 0.36, 1)
+      calc(var(--ta-delay, 0ms) + var(--ta-char-i, 0) * var(--ta-stagger, 30ms));
+}
+.text-animate.ta-slideLeftChar.is-playing .ta-char {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  filter: blur(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .text-animate {
+  .text-animate,
+  .text-animate .ta-char {
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;

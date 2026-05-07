@@ -599,8 +599,8 @@ const HomeFAQ = ({ t }) => {
           </div>
           <TextAnimate
             as='h2'
-            variant='fadeUp'
-            duration={700}
+            variant='scaleUp'
+            duration={800}
             className='text-3xl md:text-4xl lg:text-5xl font-bold mb-4'
             style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
           >
@@ -608,9 +608,10 @@ const HomeFAQ = ({ t }) => {
           </TextAnimate>
           <TextAnimate
             as='p'
-            variant='fade'
-            delay={200}
-            duration={600}
+            variant='slideLeftChar'
+            delay={300}
+            duration={550}
+            stagger={28}
             style={{ color: 'var(--text-secondary)', fontSize: '1.05rem' }}
           >
             {t('关于服务的一切，你想知道的都在这里')}
@@ -1136,8 +1137,8 @@ const HomeLanding = () => {
                 <div className='max-w-2xl'>
                   <TextAnimate
                     as='h2'
-                    variant='fadeUp'
-                    duration={700}
+                    variant='scaleUp'
+                    duration={800}
                     className='text-3xl md:text-4xl lg:text-5xl font-bold mb-4'
                     style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
                   >
@@ -1145,9 +1146,10 @@ const HomeLanding = () => {
                   </TextAnimate>
                   <TextAnimate
                     as='p'
-                    variant='fade'
-                    delay={200}
-                    duration={600}
+                    variant='slideLeftChar'
+                    delay={300}
+                    duration={550}
+                    stagger={28}
                     style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}
                   >
                     {t('企业级架构，为每一次调用保驾护航')}
@@ -1155,9 +1157,10 @@ const HomeLanding = () => {
                 </div>
                 <TextAnimate
                   as='div'
-                  variant='fade'
-                  delay={400}
+                  variant='slideLeftChar'
+                  delay={500}
                   duration={500}
+                  stagger={40}
                   className='text-xs font-semibold uppercase tracking-widest hidden md:block'
                   style={{ color: 'var(--accent)' }}
                 >
@@ -1218,8 +1221,8 @@ const HomeLanding = () => {
             <div className='max-w-3xl mx-auto px-5 text-center relative z-10'>
               <TextAnimate
                 as='h2'
-                variant='fadeUp'
-                duration={800}
+                variant='scaleUp'
+                duration={900}
                 className='text-3xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight'
                 style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
               >
@@ -1246,9 +1249,10 @@ const HomeLanding = () => {
               </TextAnimate>
               <TextAnimate
                 as='p'
-                variant='fade'
-                delay={250}
-                duration={700}
+                variant='slideLeftChar'
+                delay={350}
+                duration={550}
+                stagger={28}
                 className='text-base md:text-xl mb-10 max-w-2xl mx-auto'
                 style={{ color: 'var(--text-secondary)' }}
               >

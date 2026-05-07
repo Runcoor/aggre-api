@@ -4639,3 +4639,33 @@ html.dark .username-pill::after {
 
 /* ==================== Misc ==================== */
 .ec-dbcd0a3c01b55203 { forced-color-adjust: auto; }
+
+/* ==================== Theme toggle: circular reveal ==================== */
+/* Magic UI–style View Transition for the header theme button. Only
+   activated when html.theme-transition-active is set, so other view
+   transitions on the page (if added later) aren't hijacked. */
+html.theme-transition-active::view-transition-old(root),
+html.theme-transition-active::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html.theme-transition-active::view-transition-old(root) {
+  z-index: 0;
+}
+html.theme-transition-active::view-transition-new(root) {
+  z-index: 1;
+  animation: theme-circle-reveal 500ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes theme-circle-reveal {
+  from {
+    clip-path: circle(0 at var(--theme-toggle-x, 50%) var(--theme-toggle-y, 50%));
+  }
+  to {
+    clip-path: circle(150% at var(--theme-toggle-x, 50%) var(--theme-toggle-y, 50%));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transition-active::view-transition-new(root) {
+    animation-duration: 0ms;
+  }
+}

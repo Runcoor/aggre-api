@@ -17,7 +17,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Button, Dropdown } from '@douyinfe/semi-ui';
 import { SunMedium, MoonStar, MonitorSmartphone } from 'lucide-react';
 import { useActualTheme } from '../../../context/Theme';
@@ -30,8 +31,22 @@ const headerIconBtnStyle = {
   transition: 'background-color 150ms ease-out, color 150ms ease-out',
 };
 
+const LONG_PRESS_MS = 500;
+
+/**
+ * ThemeToggle — single-button theme switcher.
+ *
+ *   short click           → flip light ↔ dark with a circular reveal
+ *                           (View Transitions API; falls back to instant
+ *                           swap on browsers without support)
+ *   long press / right-click → opens dropdown with light / dark / auto
+ *                              for users who want to follow the system
+ */
 const ThemeToggle = ({ theme, onThemeToggle, t }) => {
   const actualTheme = useActualTheme();
+  const longPressTimerRef = useRef(null);
+  const longPressFiredRef = useRef(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const themeOptions = useMemo(
     () => [
@@ -71,8 +86,83 @@ const ThemeToggle = ({ theme, onThemeToggle, t }) => {
     return currentOption?.buttonIcon || themeOptions[2].buttonIcon;
   }, [theme, themeOptions]);
 
+  // Run a state update inside View Transition with a circular reveal
+  // anchored at (cx, cy). Falls back to a plain update where the API is
+  // unavailable. flushSync forces React to commit synchronously so the
+  // DOM update lands inside the transition snapshot window.
+  const runThemeTransition = useCallback((nextTheme, cx, cy) => {
+    const html = document.documentElement;
+    if (!document.startViewTransition) {
+      onThemeToggle(nextTheme);
+      return;
+    }
+
+    html.style.setProperty('--theme-toggle-x', `${cx}px`);
+    html.style.setProperty('--theme-toggle-y', `${cy}px`);
+    html.classList.add('theme-transition-active');
+
+    const transition = document.startViewTransition(() => {
+      flushSync(() => onThemeToggle(nextTheme));
+    });
+
+    transition.finished.finally(() => {
+      html.classList.remove('theme-transition-active');
+    });
+  }, [onThemeToggle]);
+
+  const handleButtonClick = useCallback((e) => {
+    // A long press also fires click on pointerup — swallow that one.
+    if (longPressFiredRef.current) {
+      longPressFiredRef.current = false;
+      return;
+    }
+
+    const target = actualTheme === 'dark' ? 'light' : 'dark';
+
+    // Prefer the actual click coords; fall back to button center for
+    // keyboard activation (Enter/Space) where clientX/Y are 0.
+    let cx = e.clientX;
+    let cy = e.clientY;
+    if (!cx || !cy) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      cx = rect.left + rect.width / 2;
+      cy = rect.top + rect.height / 2;
+    }
+
+    runThemeTransition(target, cx, cy);
+  }, [actualTheme, runThemeTransition]);
+
+  const handlePointerDown = useCallback(() => {
+    longPressFiredRef.current = false;
+    clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = setTimeout(() => {
+      longPressFiredRef.current = true;
+      setMenuOpen(true);
+    }, LONG_PRESS_MS);
+  }, []);
+
+  const cancelLongPress = useCallback(() => {
+    clearTimeout(longPressTimerRef.current);
+  }, []);
+
+  const handleContextMenu = useCallback((e) => {
+    e.preventDefault();
+    setMenuOpen(true);
+  }, []);
+
+  const handleMenuSelect = useCallback((key) => {
+    setMenuOpen(false);
+    // Explicit menu picks (especially `auto`) shouldn't trigger the
+    // reveal animation — auto can later flip silently when the system
+    // theme changes, so consistency means "menu pick = silent swap".
+    onThemeToggle(key);
+  }, [onThemeToggle]);
+
   return (
     <Dropdown
+      trigger='custom'
+      visible={menuOpen}
+      onVisibleChange={setMenuOpen}
       position='bottomRight'
       render={
         <Dropdown.Menu style={{ padding: 4 }}>
@@ -80,7 +170,7 @@ const ThemeToggle = ({ theme, onThemeToggle, t }) => {
             <Dropdown.Item
               key={option.key}
               icon={option.icon}
-              onClick={() => onThemeToggle(option.key)}
+              onClick={() => handleMenuSelect(option.key)}
               style={getItemStyle(theme === option.key)}
             >
               <div className='flex flex-col'>
@@ -114,6 +204,12 @@ const ThemeToggle = ({ theme, onThemeToggle, t }) => {
         aria-label={t('切换主题')}
         theme='borderless'
         type='tertiary'
+        onClick={handleButtonClick}
+        onPointerDown={handlePointerDown}
+        onPointerUp={cancelLongPress}
+        onPointerLeave={cancelLongPress}
+        onPointerCancel={cancelLongPress}
+        onContextMenu={handleContextMenu}
         className={headerIconBtnClass}
         style={headerIconBtnStyle}
       />

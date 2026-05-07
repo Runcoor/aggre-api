@@ -15,7 +15,6 @@ import {
 } from '@douyinfe/semi-icons';
 import { Link } from 'react-router-dom';
 import NoticeModal from '../../components/layout/NoticeModal';
-import SoftAurora from './components/SoftAurora';
 import {
   Moonshot,
   OpenAI,
@@ -788,7 +787,6 @@ const HomeLanding = () => {
   const [homePageContent, setHomePageContent] = useState('');
   const [noticeVisible, setNoticeVisible] = useState(false);
   const isMobile = useIsMobile();
-  const heroSectionRef = useRef(null);
   const isDemoSiteMode = statusState?.status?.demo_site_enabled || false;
   const docsLink = statusState?.status?.docs_link || '';
   // Resolve the public server address shown in the tutorial.
@@ -891,7 +889,6 @@ const HomeLanding = () => {
 
           {/* ===== Hero Section ===== */}
           <section
-            ref={heroSectionRef}
             className='relative w-full overflow-hidden'
             style={{
               background: 'var(--bg-base)',
@@ -907,63 +904,21 @@ const HomeLanding = () => {
                 opacity: 0.5,
               }}
             />
-            {isMobile ? (
-              /* Mobile: keep the lightweight static brand-blue glow blob. */
-              <div
-                className='absolute pointer-events-none'
-                style={{
-                  top: '-60px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: 800,
-                  height: 500,
-                  borderRadius: '50%',
-                  background: 'var(--accent-gradient)',
-                  filter: 'blur(100px)',
-                  opacity: 0.18,
-                }}
-              />
-            ) : (
-              /* Desktop: WebGL aurora ribbons drifting behind the hero copy.
-
-                 Theme-aware blend mode:
-                   - dark  → mix-blend-mode: plus-lighter (additive glow on
-                     a dark surface, classic neon look)
-                   - light → mix-blend-mode: normal. plus-lighter clips to
-                     white on a white surface (any color + 1 = 1) so the
-                     aurora becomes invisible — we composite directly and
-                     bump brightness/opacity so the blue actually shows.
-
-                 bandHeight raised from 0.4 → 0.55. uv.y is bottom-up, so
-                 0.55 lands the brightest band at ~45% from the top, which
-                 is right under the headline + subtitle (where the URL
-                 copy box and CTA buttons sit).
-
-                 Mouse listener attaches to the section itself
-                 (mouseTargetRef) so the canvas can stay pointer-events:
-                 none and the URL copy box / CTA buttons under it remain
-                 clickable. */
-              <div
-                className='absolute inset-0 pointer-events-none'
-                style={{
-                  opacity: actualTheme === 'dark' ? 0.65 : 0.7,
-                  mixBlendMode:
-                    actualTheme === 'dark' ? 'plus-lighter' : 'normal',
-                }}
-              >
-                <SoftAurora
-                  speed={0.4}
-                  brightness={actualTheme === 'dark' ? 0.7 : 0.85}
-                  color1={actualTheme === 'dark' ? '#0072ff' : '#5b96f5'}
-                  color2={actualTheme === 'dark' ? '#00c6ff' : '#80d8ff'}
-                  bandHeight={0.7}
-                  bandSpread={1.2}
-                  mouseInfluence={0.18}
-                  enableMouseInteraction
-                  mouseTargetRef={heroSectionRef}
-                />
-              </div>
-            )}
+            {/* Glow — positioned so it bleeds behind the fixed header */}
+            <div
+              className='absolute pointer-events-none'
+              style={{
+                top: '-60px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 800,
+                height: 500,
+                borderRadius: '50%',
+                background: 'var(--accent-gradient)',
+                filter: 'blur(100px)',
+                opacity: 0.18,
+              }}
+            />
 
             <div className='relative z-10 flex flex-col items-center justify-center text-center px-5 pt-28 pb-20 md:pt-36 md:pb-28 lg:pt-44 lg:pb-32 max-w-4xl mx-auto'>
               {/* Badge */}

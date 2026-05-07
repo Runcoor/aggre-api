@@ -1194,7 +1194,7 @@ const HomeLanding = () => {
             <div className='max-w-screen-xl mx-auto px-5 relative z-10'>
               <div className='flex flex-col md:flex-row items-center gap-10 md:gap-6'>
                 {/* Left — text + button */}
-                <div className='w-full md:w-2/5 text-center md:text-left'>
+                <div className='w-full md:w-1/3 text-center md:text-left'>
                   <TextAnimate
                     as='h2'
                     variant='scaleUp'
@@ -1270,18 +1270,18 @@ const HomeLanding = () => {
                     shows through naturally — no overlay div, no theme-color matching).
                     Translated down half its height on desktop. */}
                 <div
-                  className='w-full md:w-3/5 relative md:translate-y-1/2'
+                  className='w-full md:w-2/3 relative md:translate-y-1/2'
                   style={{
                     WebkitMaskImage:
-                      'linear-gradient(to right, transparent 0%, black 35%)',
+                      'linear-gradient(to right, transparent 0%, black 70%)',
                     maskImage:
-                      'linear-gradient(to right, transparent 0%, black 35%)',
+                      'linear-gradient(to right, transparent 0%, black 70%)',
                   }}
                 >
                   <Keyboard
                     enableSound={false}
                     showPreview={false}
-                    className='[zoom:0.65] sm:[zoom:0.85] md:[zoom:1] lg:[zoom:1.35] xl:[zoom:1.7]'
+                    className='[zoom:0.7] sm:[zoom:0.9] md:[zoom:1.1] lg:[zoom:1.5] xl:[zoom:1.9]'
                   />
                 </div>
               </div>

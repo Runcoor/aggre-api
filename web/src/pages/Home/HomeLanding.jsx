@@ -857,22 +857,34 @@ const HomeLanding = () => {
 
               {/* CTAs */}
               <div className='flex flex-row gap-3 justify-center items-center flex-wrap'>
-                <Link to='/quick-start'>
-                  <Button
-                    theme='solid'
-                    type='primary'
-                    size={isMobile ? 'default' : 'large'}
-                    icon={<IconPlay />}
+                <Link to='/quick-start' className='quick-start-btn-link'>
+                  <span
                     style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: isMobile ? '7px 14px' : '9px 18px',
                       borderRadius: 9999,
-                      padding: '0 28px',
                       background: 'var(--accent-gradient)',
-                      border: 'none',
+                      color: '#fff',
+                      fontSize: isMobile ? 13 : 14,
                       fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'box-shadow 0.3s, transform 0.2s',
+                      boxShadow: '0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.boxShadow = '0 0 18px color-mix(in srgb, var(--accent) 45%, transparent)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.boxShadow = '0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent)';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
                   >
+                    <IconPlay style={{ fontSize: isMobile ? 13 : 14 }} />
                     {t('快速开始')}
-                  </Button>
+                  </span>
                 </Link>
                 {isDemoSiteMode && statusState?.status?.version && (
                   <Button
@@ -1162,7 +1174,7 @@ const HomeLanding = () => {
 
           {/* ===== CTA Section ===== */}
           <section
-            className='py-20 md:py-32 relative overflow-hidden'
+            className='pt-20 pb-32 md:pt-32 md:pb-56 relative overflow-hidden'
             style={{ background: 'var(--bg-base)' }}
           >
             <div
@@ -1223,31 +1235,42 @@ const HomeLanding = () => {
                     {t('立刻即可开启您的下一代 AI 业务架构。')}
                   </TextAnimate>
                   <div className='flex justify-center md:justify-start'>
-                    <Link to='/quick-start'>
-                      <Button
-                        theme='solid'
-                        type='primary'
-                        size='large'
+                    <Link to='/quick-start' className='quick-start-btn-link'>
+                      <span
                         style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          padding: '13px 32px',
                           borderRadius: 9999,
-                          padding: '0 36px',
                           background: 'var(--accent-gradient)',
-                          border: 'none',
+                          color: '#fff',
+                          fontSize: 16,
                           fontWeight: 600,
-                          height: 48,
+                          cursor: 'pointer',
+                          transition: 'box-shadow 0.3s, transform 0.2s',
+                          boxShadow: '0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.boxShadow = '0 0 24px color-mix(in srgb, var(--accent) 50%, transparent)';
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.boxShadow = '0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent)';
+                          e.currentTarget.style.transform = 'translateY(0)';
                         }}
                       >
                         {t('快速开始')}
-                      </Button>
+                      </span>
                     </Link>
                   </div>
                 </div>
-                {/* Right — keyboard with left-side fade */}
-                <div className='w-full md:w-1/2 relative overflow-hidden'>
+                {/* Right — keyboard with left-side fade, offset down by half its height on desktop */}
+                <div className='w-full md:w-1/2 relative overflow-hidden md:translate-y-1/2'>
                   <Keyboard
                     enableSound={false}
                     showPreview={false}
-                    className='[zoom:0.7] sm:[zoom:0.9] md:[zoom:1] lg:[zoom:1.2] xl:[zoom:1.4]'
+                    className='[zoom:0.55] sm:[zoom:0.75] md:[zoom:0.85] lg:[zoom:1] xl:[zoom:1.1]'
                   />
                   {/* 25% fade overlay on the keyboard's left side — text
                       column is on the left, fade transitions the keyboard

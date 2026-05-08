@@ -407,8 +407,14 @@ func NewBillingSession(c *gin.Context, relayInfo *relaycommon.RelayInfo, preCons
 				types.ErrorCodeInsufficientUserQuota, http.StatusForbidden,
 				types.ErrOptionWithSkipRetry(), types.ErrOptionWithNoRecordErrorLog())
 		}
+		// NOTE: relayInfo.ChannelMeta is still nil here (InitChannelMeta runs
+		// later, inside each handler's retry loop), so we MUST NOT touch
+		// relayInfo.ChannelId — its access auto-promotes through *ChannelMeta
+		// and nil-derefs. Read the channel id directly from the gin context
+		// instead, where the distributor already stashed it.
+		channelId := common.GetContextKeyInt(c, constant.ContextKeyChannelId)
 		logger.LogInfo(c, fmt.Sprintf("[billing] user %d wallet-fallback active, billing from wallet (model=%s, channel=%d)",
-			relayInfo.UserId, relayInfo.OriginModelName, relayInfo.ChannelId))
+			relayInfo.UserId, relayInfo.OriginModelName, channelId))
 		relayInfo.BillingWalletFallback = true
 		return tryWallet()
 	}

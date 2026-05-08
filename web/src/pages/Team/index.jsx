@@ -26,6 +26,7 @@ import MyTeams from './MyTeams';
 
 // Admin tabs are admin-only and bigger payloads — lazy load so common
 // users never download them.
+const AdminTeamsList = lazy(() => import('../Admin/Teams'));
 const TeamApplicationsAdmin = lazy(() => import('../Admin/TeamApplications'));
 
 const { Text } = Typography;
@@ -54,7 +55,8 @@ const TeamPage = () => {
   }, [admin]);
 
   const requested = searchParams.get('tab') || '';
-  const activeTab = validTabs.includes(requested) ? requested : 'mine';
+  const defaultTab = admin ? 'admin-list' : 'mine';
+  const activeTab = validTabs.includes(requested) ? requested : defaultTab;
 
   const onTabChange = (key) => {
     const next = new URLSearchParams(searchParams);
@@ -86,9 +88,9 @@ const TeamPage = () => {
         </TabPane>
         {admin && (
           <TabPane tab={t('全局团队')} itemKey='admin-list'>
-            <div className='py-12 text-center' style={{ color: 'var(--text-muted)' }}>
-              <Text>{t('全局团队管理即将上线')}</Text>
-            </div>
+            <Suspense fallback={<div className='py-12 text-center'><Spin /></div>}>
+              <AdminTeamsList embedded />
+            </Suspense>
           </TabPane>
         )}
         {admin && (

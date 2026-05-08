@@ -160,6 +160,142 @@ func AdminCreateTeam(c *gin.Context) {
 	common.ApiSuccess(c, team)
 }
 
+// ─── Member management ───
+
+// AdminListTeamMembers returns the full active member roster for a team.
+func AdminListTeamMembers(c *gin.Context) {
+	teamId, ok := parseTeamIdParam(c)
+	if !ok {
+		return
+	}
+	members, err := model.AdminListTeamMembers(teamId)
+	if err != nil {
+		if errors.Is(err, model.ErrTeamNotFound) {
+			common.ApiErrorMsg(c, "团队不存在")
+			return
+		}
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, members)
+}
+
+// AdminAddTeamMemberRequest accepts user_id (required) and an optional
+// initial role. Owner cannot be set here — use transfer-owner.
+type AdminAddTeamMemberRequest struct {
+	UserId int `json:"user_id"`
+	Role   int `json:"role"`
+}
+
+// AdminAddTeamMemberHandler adds a user to a team as member (default) or
+// admin. Refuses owner role here for clarity.
+func AdminAddTeamMemberHandler(c *gin.Context) {
+	teamId, ok := parseTeamIdParam(c)
+	if !ok {
+		return
+	}
+	var req AdminAddTeamMemberRequest
+	if err := c.ShouldBindJSON(&req); err != nil || req.UserId <= 0 {
+		common.ApiErrorMsg(c, "参数错误")
+		return
+	}
+	if err := model.AdminAddTeamMember(teamId, req.UserId, req.Role); err != nil {
+		if errors.Is(err, model.ErrTeamNotFound) {
+			common.ApiErrorMsg(c, "团队不存在")
+			return
+		}
+		common.ApiErrorMsg(c, err.Error())
+		return
+	}
+	common.ApiSuccess(c, nil)
+}
+
+// AdminUpdateTeamMemberRequest carries the new role for an existing member.
+type AdminUpdateTeamMemberRequest struct {
+	Role int `json:"role"`
+}
+
+// AdminUpdateTeamMemberHandler changes a member's role between member
+// and admin. Owner role is rejected here — caller must use transfer-owner.
+func AdminUpdateTeamMemberHandler(c *gin.Context) {
+	teamId, ok := parseTeamIdParam(c)
+	if !ok {
+		return
+	}
+	userId, _ := strconv.Atoi(c.Param("user_id"))
+	if userId <= 0 {
+		common.ApiErrorMsg(c, "无效的用户ID")
+		return
+	}
+	var req AdminUpdateTeamMemberRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.ApiErrorMsg(c, "参数错误")
+		return
+	}
+	if err := model.AdminUpdateTeamMemberRole(teamId, userId, req.Role); err != nil {
+		if errors.Is(err, model.ErrTeamNotFound) {
+			common.ApiErrorMsg(c, "团队不存在")
+			return
+		}
+		common.ApiErrorMsg(c, err.Error())
+		return
+	}
+	common.ApiSuccess(c, nil)
+}
+
+// AdminRemoveTeamMemberHandler kicks a user out of a team.
+func AdminRemoveTeamMemberHandler(c *gin.Context) {
+	teamId, ok := parseTeamIdParam(c)
+	if !ok {
+		return
+	}
+	userId, _ := strconv.Atoi(c.Param("user_id"))
+	if userId <= 0 {
+		common.ApiErrorMsg(c, "无效的用户ID")
+		return
+	}
+	if err := model.AdminRemoveTeamMember(teamId, userId); err != nil {
+		if errors.Is(err, model.ErrTeamNotFound) {
+			common.ApiErrorMsg(c, "团队不存在")
+			return
+		}
+		common.ApiErrorMsg(c, err.Error())
+		return
+	}
+	common.ApiSuccess(c, nil)
+}
+
+// AdminTransferOwnerRequest names the new owner.
+type AdminTransferOwnerRequest struct {
+	ToUserId int `json:"to_user_id"`
+}
+
+// AdminTransferTeamOwnershipHandler atomically moves ownership of a team.
+// Returns 422 with a clear hint if the target user isn't already a member.
+func AdminTransferTeamOwnershipHandler(c *gin.Context) {
+	teamId, ok := parseTeamIdParam(c)
+	if !ok {
+		return
+	}
+	var req AdminTransferOwnerRequest
+	if err := c.ShouldBindJSON(&req); err != nil || req.ToUserId <= 0 {
+		common.ApiErrorMsg(c, "参数错误")
+		return
+	}
+	if err := model.TransferTeamOwnership(teamId, req.ToUserId); err != nil {
+		switch {
+		case errors.Is(err, model.ErrTeamNotFound):
+			common.ApiErrorMsg(c, "团队不存在")
+		case errors.Is(err, model.ErrTeamMustAddMemberFirst):
+			common.ApiErrorMsg(c, "目标用户尚未加入该团队，请先添加为成员")
+		default:
+			common.ApiErrorMsg(c, err.Error())
+		}
+		return
+	}
+	common.ApiSuccess(c, nil)
+}
+
 // parseTeamIdParam extracts and validates :id from the URL.
 func parseTeamIdParam(c *gin.Context) (int, bool) {
 	teamId, _ := strconv.Atoi(c.Param("id"))

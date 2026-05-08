@@ -227,6 +227,13 @@ func SetApiRouter(router *gin.Engine) {
 			teamAdminRoute.GET("/:id", controller.AdminGetTeam)
 			teamAdminRoute.PUT("/:id", controller.AdminUpdateTeam)
 			teamAdminRoute.DELETE("/:id", controller.AdminDeleteTeam)
+
+			teamAdminRoute.POST("/:id/transfer-owner", controller.AdminTransferTeamOwnershipHandler)
+
+			teamAdminRoute.GET("/:id/members", controller.AdminListTeamMembers)
+			teamAdminRoute.POST("/:id/members", controller.AdminAddTeamMemberHandler)
+			teamAdminRoute.PUT("/:id/members/:user_id", controller.AdminUpdateTeamMemberHandler)
+			teamAdminRoute.DELETE("/:id/members/:user_id", controller.AdminRemoveTeamMemberHandler)
 		}
 
 		subscriptionAdminRoute := apiRouter.Group("/subscription/admin")

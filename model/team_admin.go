@@ -476,6 +476,228 @@ func DeleteTeamCascade(teamId int, adminUserId int) error {
 	return nil
 }
 
+// ─── Member management ───
+
+// AdminListTeamMembers returns every active member of a team along with
+// the user's basic profile. Admin-side variant of GetTeamMembers; differs
+// only in that it filters out soft-deleted membership rows for clarity
+// (kicked users shouldn't reappear in the admin view).
+func AdminListTeamMembers(teamId int) ([]map[string]interface{}, error) {
+	if teamId <= 0 {
+		return nil, ErrTeamNotFound
+	}
+	var members []TeamMember
+	if err := DB.Where("team_id = ? AND status = ?", teamId, TeamStatusActive).
+		Order("role desc, joined_at asc").
+		Find(&members).Error; err != nil {
+		return nil, err
+	}
+	if len(members) == 0 {
+		return []map[string]interface{}{}, nil
+	}
+	userIds := make([]int, 0, len(members))
+	for _, m := range members {
+		userIds = append(userIds, m.UserId)
+	}
+	var users []User
+	_ = DB.Select("id, username, display_name, email, status").
+		Where("id IN ?", userIds).Find(&users).Error
+	userMap := make(map[int]User, len(users))
+	for _, u := range users {
+		userMap[u.Id] = u
+	}
+	out := make([]map[string]interface{}, 0, len(members))
+	for _, m := range members {
+		u := userMap[m.UserId]
+		out = append(out, map[string]interface{}{
+			"member":       m,
+			"user_id":      m.UserId,
+			"username":     u.Username,
+			"display_name": u.DisplayName,
+			"email":        u.Email,
+			"user_status":  u.Status,
+		})
+	}
+	return out, nil
+}
+
+// AdminAddTeamMember adds a user to a team as a regular member. Returns
+// an error if the user is already an active member or doesn't exist.
+//
+// Note: TeamMember has a unique index on (team_id, user_id), and GORM's
+// soft delete leaves the deleted row in place — so re-adding a previously
+// kicked user would normally collide. We work around this by hard-deleting
+// any existing soft-deleted row for the same (team_id, user_id) inside
+// the transaction before inserting.
+func AdminAddTeamMember(teamId int, userId int, role int) error {
+	if teamId <= 0 || userId <= 0 {
+		return errors.New("invalid args")
+	}
+	if role == 0 {
+		role = TeamRoleMember
+	}
+	if role != TeamRoleMember && role != TeamRoleAdmin {
+		// Owner is set only via TransferTeamOwnership.
+		return errors.New("invalid role")
+	}
+	return DB.Transaction(func(tx *gorm.DB) error {
+		// Verify team is alive.
+		var t Team
+		if err := tx.Where("id = ?", teamId).First(&t).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrTeamNotFound
+			}
+			return err
+		}
+		// Verify user exists.
+		var user User
+		if err := tx.Select("id").Where("id = ?", userId).First(&user).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return errors.New("user not found")
+			}
+			return err
+		}
+		// Active membership already exists?
+		var existing TeamMember
+		err := tx.Where("team_id = ? AND user_id = ?", teamId, userId).First(&existing).Error
+		if err == nil {
+			return errors.New("user already a member")
+		}
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+		// Clear any soft-deleted row to dodge the unique-index collision.
+		if err := tx.Unscoped().
+			Where("team_id = ? AND user_id = ?", teamId, userId).
+			Delete(&TeamMember{}).Error; err != nil {
+			return err
+		}
+		return tx.Create(&TeamMember{
+			TeamId:   teamId,
+			UserId:   userId,
+			Role:     role,
+			Status:   TeamStatusActive,
+			JoinedAt: common.GetTimestamp(),
+		}).Error
+	})
+}
+
+// AdminUpdateTeamMemberRole changes a member's role between member and
+// admin. Owner is set only via TransferTeamOwnership and rejected here.
+// The team's existing owner cannot be demoted via this path either —
+// transfer ownership first, then the new admin can be promoted/demoted.
+func AdminUpdateTeamMemberRole(teamId int, userId int, newRole int) error {
+	if teamId <= 0 || userId <= 0 {
+		return errors.New("invalid args")
+	}
+	if newRole != TeamRoleMember && newRole != TeamRoleAdmin {
+		return errors.New("invalid role; transfer ownership separately")
+	}
+	return DB.Transaction(func(tx *gorm.DB) error {
+		var team Team
+		if err := tx.Where("id = ?", teamId).First(&team).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrTeamNotFound
+			}
+			return err
+		}
+		if team.OwnerId == userId {
+			return errors.New("cannot change role of team owner; transfer ownership first")
+		}
+		var member TeamMember
+		if err := tx.Where("team_id = ? AND user_id = ?", teamId, userId).First(&member).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return errors.New("member not found")
+			}
+			return err
+		}
+		return tx.Model(&member).Update("role", newRole).Error
+	})
+}
+
+// AdminRemoveTeamMember soft-deletes a membership. Refuses to remove the
+// owner (transfer ownership first, then delete the team or remove the
+// new admin). Idempotent for already-removed users.
+func AdminRemoveTeamMember(teamId int, userId int) error {
+	if teamId <= 0 || userId <= 0 {
+		return errors.New("invalid args")
+	}
+	return DB.Transaction(func(tx *gorm.DB) error {
+		var team Team
+		if err := tx.Where("id = ?", teamId).First(&team).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrTeamNotFound
+			}
+			return err
+		}
+		if team.OwnerId == userId {
+			return errors.New("cannot remove team owner; transfer ownership first")
+		}
+		return tx.Where("team_id = ? AND user_id = ?", teamId, userId).
+			Delete(&TeamMember{}).Error
+	})
+}
+
+// TransferTeamOwnership atomically moves ownership of a team from the
+// current owner to a different active member. The previous owner is
+// demoted to admin (kept in the team), the new owner's role is upgraded
+// to owner, and Team.OwnerId is rewritten in the same transaction so
+// the three pieces of state never diverge.
+//
+// Validation:
+//   - new owner must be a different user than the current owner
+//   - new owner must already be an active member of the team
+//
+// Returns ErrTeamMustAddMemberFirst if the target isn't a member.
+func TransferTeamOwnership(teamId int, toUserId int) error {
+	if teamId <= 0 || toUserId <= 0 {
+		return errors.New("invalid args")
+	}
+	return DB.Transaction(func(tx *gorm.DB) error {
+		var team Team
+		if err := tx.Where("id = ?", teamId).First(&team).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrTeamNotFound
+			}
+			return err
+		}
+		if team.OwnerId == toUserId {
+			return errors.New("user is already the team owner")
+		}
+		// New owner must be an active member.
+		var newMember TeamMember
+		if err := tx.Where("team_id = ? AND user_id = ? AND status = ?",
+			teamId, toUserId, TeamStatusActive).First(&newMember).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrTeamMustAddMemberFirst
+			}
+			return err
+		}
+		now := common.GetTimestamp()
+		// Update Team.OwnerId.
+		if err := tx.Model(&Team{}).Where("id = ?", teamId).
+			Updates(map[string]interface{}{
+				"owner_id":   toUserId,
+				"updated_at": now,
+			}).Error; err != nil {
+			return err
+		}
+		// Demote the old owner to admin (keeps them in the team).
+		if err := tx.Model(&TeamMember{}).
+			Where("team_id = ? AND user_id = ?", teamId, team.OwnerId).
+			Update("role", TeamRoleAdmin).Error; err != nil {
+			return err
+		}
+		// Promote the new owner.
+		if err := tx.Model(&TeamMember{}).
+			Where("team_id = ? AND user_id = ?", teamId, toUserId).
+			Update("role", TeamRoleOwner).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 // CreateTeamForOwner is the model-side helper used by both the application
 // approve flow and the admin "create team" flow. It atomically creates the
 // team row and the owner's TeamMember row.

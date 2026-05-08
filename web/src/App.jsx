@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { lazy, Suspense, useContext, useEffect, useMemo } from 'react';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Loading from './components/common/ui/Loading';
 import User from './pages/User';
 import LoginLog from './pages/LoginLog';
@@ -76,7 +76,6 @@ const QuickStart = lazy(() => import('./pages/QuickStart'));
 const RechargePage = lazy(() => import('./pages/Recharge'));
 const TeamPage = lazy(() => import('./pages/Team'));
 const TeamDetail = lazy(() => import('./pages/Team/TeamDetail'));
-const TeamApplicationsAdmin = lazy(() => import('./pages/Admin/TeamApplications'));
 const UserDetail = lazy(() => import('./pages/User/UserDetail'));
 const JoinTeam = lazy(() => import('./pages/Team/JoinTeam'));
 const GuideIndex = lazy(() => import('./pages/Guide'));
@@ -400,15 +399,12 @@ function App() {
             </PrivateRoute>
           }
         />
+        {/* Legacy admin team-applications route folded into the team tabs.
+            Keep redirecting so existing bookmarks / sidebar history land on
+            the right tab. */}
         <Route
           path='/console/team-applications'
-          element={
-            <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <TeamApplicationsAdmin />
-              </Suspense>
-            </PrivateRoute>
-          }
+          element={<Navigate to='/console/team?tab=applications' replace />}
         />
         <Route
           path='/console/team/:id'

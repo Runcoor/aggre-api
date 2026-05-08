@@ -55,7 +55,6 @@ export const DEFAULT_ADMIN_CONFIG = {
     'login-log': true,
     user: true,
     subscription: true,
-    'team-applications': true,
     'ai-news': true,
     setting: true,
   },

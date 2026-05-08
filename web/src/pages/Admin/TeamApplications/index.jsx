@@ -5,6 +5,16 @@ This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
 published by the Free Software Foundation, either version 3 of the
 License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useCallback, useEffect, useState } from 'react';
@@ -73,7 +83,10 @@ const splitCurrency = (formatted) => {
   return { cur: m[1].trim(), val: m[2], unit: m[3].trim() };
 };
 
-const TeamApplicationsAdmin = () => {
+// embedded=true is used when this component is rendered inside the Team
+// page tabs container — the outer page already provides max-width chrome
+// and a header, so we drop ours to avoid double-nesting.
+const TeamApplicationsAdmin = ({ embedded = false }) => {
   const { t } = useTranslation();
 
   const [items, setItems] = useState([]);
@@ -246,16 +259,22 @@ const TeamApplicationsAdmin = () => {
   ];
 
   return (
-    <div className='w-full max-w-7xl mx-auto px-4 sm:px-6 py-8'>
+    <div className={embedded ? '' : 'w-full max-w-7xl mx-auto px-4 sm:px-6 py-8'}>
       <div className='flex items-center justify-between mb-6'>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-serif)', color: 'var(--text-primary)', margin: 0 }}>
-            {t('团队审批')}
-          </h1>
-          <Text style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>
+        {embedded ? (
+          <Text style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
             {t('审核用户提交的团队创建申请')}
           </Text>
-        </div>
+        ) : (
+          <div>
+            <h1 style={{ fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-serif)', color: 'var(--text-primary)', margin: 0 }}>
+              {t('团队审批')}
+            </h1>
+            <Text style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>
+              {t('审核用户提交的团队创建申请')}
+            </Text>
+          </div>
+        )}
         <div className='flex items-center gap-2'>
           <Select
             value={status}

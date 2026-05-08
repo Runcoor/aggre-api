@@ -114,7 +114,8 @@ func DiagnoseRecipients(planIds []int) (*RecipientsDiagnostic, error) {
 
 	base := func() *gorm.DB {
 		q := model.DB.Table("user_subscriptions us").
-			Joins("JOIN users u ON u.id = us.user_id")
+			Joins("JOIN users u ON u.id = us.user_id").
+			Where("us.team_id = 0")
 		if len(planIds) > 0 {
 			q = q.Where("us.plan_id IN ?", planIds)
 		}
@@ -196,6 +197,7 @@ func FindRecipientDetails(briefingId int, planIds []int, search string, page, pa
 	q := model.DB.Table("user_subscriptions us").
 		Joins("JOIN users u ON u.id = us.user_id").
 		Joins("LEFT JOIN subscription_plans sp ON sp.id = us.plan_id").
+		Where("us.team_id = 0").
 		Where("us.status = ?", "active").
 		Where("us.end_time = 0 OR us.end_time > ?", time.Now().Unix()).
 		Where("u.email <> ''").
@@ -290,6 +292,7 @@ func FindRecipientDetails(briefingId int, planIds []int, search string, page, pa
 func findEligibleUsers(planIds []int) ([]recipientUser, error) {
 	q := model.DB.Table("user_subscriptions us").
 		Joins("JOIN users u ON u.id = us.user_id").
+		Where("us.team_id = 0").
 		Where("us.status = ?", "active").
 		Where("us.end_time = 0 OR us.end_time > ?", time.Now().Unix()).
 		Where("u.email <> ''").

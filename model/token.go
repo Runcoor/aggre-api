@@ -12,8 +12,13 @@ import (
 )
 
 type Token struct {
-	Id                 int            `json:"id"`
-	UserId             int            `json:"user_id" gorm:"index"`
+	Id     int `json:"id"`
+	UserId int `json:"user_id" gorm:"index"`
+	// TeamId binds this token to a team. 0 = personal token (default).
+	// When >0, billing routes through the team's active subscription instead
+	// of the user's personal wallet/subscription. UserId still records who
+	// created/holds the key.
+	TeamId             int            `json:"team_id" gorm:"type:int;not null;default:0;index"`
 	Key                string         `json:"key" gorm:"type:char(48);uniqueIndex"`
 	Status             int            `json:"status" gorm:"default:1"`
 	Name               string         `json:"name" gorm:"index" `

@@ -245,14 +245,19 @@ func GetSubscriptionOrderByTradeNo(tradeNo string) *SubscriptionOrder {
 type UserSubscription struct {
 	Id     int `json:"id"`
 	UserId int `json:"user_id" gorm:"index;index:idx_user_sub_active,priority:1"`
+	// TeamId is the owning team when this subscription was purchased for a team.
+	// 0 = personal subscription (default; backward-compatible with existing rows).
+	// >0 = team subscription; UserId still records the buyer/admin.
+	// All personal-only queries MUST filter team_id = 0 to avoid cross-talk.
+	TeamId int `json:"team_id" gorm:"type:int;not null;default:0;index;index:idx_team_sub_active,priority:1"`
 	PlanId int `json:"plan_id" gorm:"index"`
 
 	AmountTotal int64 `json:"amount_total" gorm:"type:bigint;not null;default:0"`
 	AmountUsed  int64 `json:"amount_used" gorm:"type:bigint;not null;default:0"`
 
 	StartTime int64  `json:"start_time" gorm:"bigint"`
-	EndTime   int64  `json:"end_time" gorm:"bigint;index;index:idx_user_sub_active,priority:3"`
-	Status    string `json:"status" gorm:"type:varchar(32);index;index:idx_user_sub_active,priority:2"` // active/expired/cancelled
+	EndTime   int64  `json:"end_time" gorm:"bigint;index;index:idx_user_sub_active,priority:3;index:idx_team_sub_active,priority:3"`
+	Status    string `json:"status" gorm:"type:varchar(32);index;index:idx_user_sub_active,priority:2;index:idx_team_sub_active,priority:2"` // active/expired/cancelled
 
 	Source string `json:"source" gorm:"type:varchar(32);default:'order'"` // order/admin
 
@@ -390,7 +395,7 @@ func CountUserSubscriptionsByPlan(userId int, planId int) (int64, error) {
 	}
 	var count int64
 	if err := DB.Model(&UserSubscription{}).
-		Where("user_id = ? AND plan_id = ?", userId, planId).
+		Where("user_id = ? AND plan_id = ? AND team_id = 0", userId, planId).
 		Count(&count).Error; err != nil {
 		return 0, err
 	}
@@ -454,7 +459,7 @@ func CreateUserSubscriptionFromPlanTx(tx *gorm.DB, userId int, plan *Subscriptio
 	if plan.MaxPurchasePerUser > 0 {
 		var count int64
 		if err := tx.Model(&UserSubscription{}).
-			Where("user_id = ? AND plan_id = ?", userId, plan.Id).
+			Where("user_id = ? AND plan_id = ? AND team_id = 0", userId, plan.Id).
 			Count(&count).Error; err != nil {
 			return nil, err
 		}
@@ -671,7 +676,7 @@ func GetAllActiveUserSubscriptions(userId int) ([]SubscriptionSummary, error) {
 	}
 	now := common.GetTimestamp()
 	var subs []UserSubscription
-	err := DB.Where("user_id = ? AND status = ? AND end_time > ?", userId, "active", now).
+	err := DB.Where("user_id = ? AND team_id = 0 AND status = ? AND end_time > ?", userId, "active", now).
 		Order("end_time desc, id desc").
 		Find(&subs).Error
 	if err != nil {
@@ -770,7 +775,7 @@ func listActiveUpgradeGroupsTx(tx *gorm.DB, userId int, now int64, excludeSubId 
 	}
 	var groups []string
 	q := tx.Model(&UserSubscription{}).
-		Where("user_id = ? AND status = ? AND end_time > ? AND upgrade_group <> ''",
+		Where("user_id = ? AND team_id = 0 AND status = ? AND end_time > ? AND upgrade_group <> ''",
 			userId, "active", now)
 	if excludeSubId > 0 {
 		q = q.Where("id <> ?", excludeSubId)
@@ -791,7 +796,7 @@ func GetActiveUpgradeGroups(userId int) ([]string, error) {
 	now := common.GetTimestamp()
 	var groups []string
 	err := DB.Model(&UserSubscription{}).
-		Where("user_id = ? AND status = ? AND end_time > ? AND upgrade_group <> ''",
+		Where("user_id = ? AND team_id = 0 AND status = ? AND end_time > ? AND upgrade_group <> ''",
 			userId, "active", now).
 		Distinct("upgrade_group").
 		Pluck("upgrade_group", &groups).Error
@@ -810,7 +815,7 @@ func HasActiveUserSubscription(userId int) (bool, error) {
 	now := common.GetTimestamp()
 	var count int64
 	if err := DB.Model(&UserSubscription{}).
-		Where("user_id = ? AND status = ? AND end_time > ?", userId, "active", now).
+		Where("user_id = ? AND team_id = 0 AND status = ? AND end_time > ?", userId, "active", now).
 		Count(&count).Error; err != nil {
 		return false, err
 	}
@@ -830,7 +835,7 @@ func IsWalletFallbackEnabledForUser(userId int) (bool, error) {
 	var count int64
 	err := DB.Table("user_subscriptions").
 		Joins("JOIN subscription_plans ON subscription_plans.id = user_subscriptions.plan_id").
-		Where("user_subscriptions.user_id = ? AND user_subscriptions.status = ? AND user_subscriptions.end_time > ?",
+		Where("user_subscriptions.user_id = ? AND user_subscriptions.team_id = 0 AND user_subscriptions.status = ? AND user_subscriptions.end_time > ?",
 			userId, "active", now).
 		Where("subscription_plans.allow_wallet_fallback = ?", true).
 		Count(&count).Error
@@ -841,12 +846,13 @@ func IsWalletFallbackEnabledForUser(userId int) (bool, error) {
 }
 
 // GetAllUserSubscriptions returns all subscriptions (active and expired) for a user.
+// Personal subscriptions only — team subscriptions are excluded via team_id = 0.
 func GetAllUserSubscriptions(userId int) ([]SubscriptionSummary, error) {
 	if userId <= 0 {
 		return nil, errors.New("invalid userId")
 	}
 	var subs []UserSubscription
-	err := DB.Where("user_id = ?", userId).
+	err := DB.Where("user_id = ? AND team_id = 0", userId).
 		Order("end_time desc, id desc").
 		Find(&subs).Error
 	if err != nil {
@@ -856,6 +862,7 @@ func GetAllUserSubscriptions(userId int) ([]SubscriptionSummary, error) {
 }
 
 // HasActiveSubscriptionForPlan checks if user has an active subscription for a specific plan.
+// Personal subscriptions only — team subscriptions are excluded via team_id = 0.
 func HasActiveSubscriptionForPlan(userId int, planId int) (bool, error) {
 	if userId <= 0 || planId <= 0 {
 		return false, nil
@@ -863,21 +870,22 @@ func HasActiveSubscriptionForPlan(userId int, planId int) (bool, error) {
 	now := common.GetTimestamp()
 	var count int64
 	if err := DB.Model(&UserSubscription{}).
-		Where("user_id = ? AND plan_id = ? AND status = ? AND end_time > ?", userId, planId, "active", now).
+		Where("user_id = ? AND team_id = 0 AND plan_id = ? AND status = ? AND end_time > ?", userId, planId, "active", now).
 		Count(&count).Error; err != nil {
 		return false, err
 	}
 	return count > 0, nil
 }
 
-// GetActiveSubscriptionRemainingQuota returns the total remaining quota across all active subscriptions for a user and plan.
+// GetActiveSubscriptionRemainingQuota returns the total remaining quota across all
+// active personal subscriptions (team_id = 0) for a user and plan.
 func GetActiveSubscriptionRemainingQuota(userId int, planId int) (int64, error) {
 	if userId <= 0 || planId <= 0 {
 		return 0, nil
 	}
 	now := common.GetTimestamp()
 	var subs []UserSubscription
-	err := DB.Where("user_id = ? AND plan_id = ? AND status = ? AND end_time > ?",
+	err := DB.Where("user_id = ? AND team_id = 0 AND plan_id = ? AND status = ? AND end_time > ?",
 		userId, planId, "active", now).
 		Find(&subs).Error
 	if err != nil {
@@ -1171,7 +1179,7 @@ func PreConsumeUserSubscription(requestId string, userId int, modelName string, 
 
 		var subs []UserSubscription
 		if err := tx.Set("gorm:query_option", "FOR UPDATE").
-			Where("user_id = ? AND status = ? AND end_time > ?", userId, "active", now).
+			Where("user_id = ? AND team_id = 0 AND status = ? AND end_time > ?", userId, "active", now).
 			Order("end_time asc, id asc").
 			Find(&subs).Error; err != nil {
 			common.SysLog(fmt.Sprintf("[subscription-billing] user %d: query error: %s (now=%d)", userId, err.Error(), now))

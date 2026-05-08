@@ -153,7 +153,8 @@ func SetApiRouter(router *gin.Engine) {
 		teamRoute.Use(middleware.UserAuth())
 		{
 			teamRoute.GET("/permission", controller.GetTeamPermission)
-			teamRoute.POST("/", controller.CreateTeam)
+			// CreateTeam is admin-only; common users submit applications via /apply.
+			teamRoute.POST("/", middleware.AdminAuth(), controller.CreateTeam)
 			teamRoute.GET("/", controller.GetUserTeams)
 			teamRoute.POST("/join/:invite_code", controller.JoinTeamByInvite)
 
@@ -167,7 +168,6 @@ func SetApiRouter(router *gin.Engine) {
 			teamRoute.DELETE("/:id/member/:user_id", controller.RemoveTeamMember)
 
 			teamRoute.POST("/:id/quota", controller.TopUpTeamQuota)
-			teamRoute.POST("/:id/sync-quota", controller.SyncSubscriptionQuotaToTeam)
 
 			teamRoute.GET("/:id/available-tokens", controller.GetAvailableTokensForTeam)
 			teamRoute.GET("/:id/token", controller.GetTeamTokens)

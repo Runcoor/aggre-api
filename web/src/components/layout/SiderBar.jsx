@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { getLucideIcon } from '../../helpers/render';
 import { useSidebar } from '../../hooks/common/useSidebar';
 import { useMinimumLoadingTime } from '../../hooks/common/useMinimumLoadingTime';
-import { API, isAdmin, isRoot, showError } from '../../helpers';
+import { isAdmin, isRoot, showError } from '../../helpers';
 import SkeletonWrapper from './components/SkeletonWrapper';
 import { Tooltip } from '@douyinfe/semi-ui';
 
@@ -64,7 +64,6 @@ const SiderBar = ({ onNavigate = () => {} }) => {
 
   const [selectedKey, setSelectedKey] = useState('home');
   const [chatItems, setChatItems] = useState([]);
-  const [teamVisible, setTeamVisible] = useState(false);
   const location = useLocation();
   const [routerMapState, setRouterMapState] = useState(routerMap);
 
@@ -106,12 +105,9 @@ const SiderBar = ({ onNavigate = () => {} }) => {
       key: 'personal',
       items: [
         { text: t('钱包管理'), itemKey: 'topup' },
-        {
-          text: t('团队管理'), itemKey: 'team',
-          hidden: !teamVisible,
-        },
+        { text: t('团队管理'), itemKey: 'team' },
         { text: t('个人设置'), itemKey: 'personal' },
-      ].filter((it) => !it.hidden).filter((it) => isModuleVisible('personal', it.itemKey)),
+      ].filter((it) => isModuleVisible('personal', it.itemKey)),
     };
 
     const adminSection = {
@@ -137,29 +133,7 @@ const SiderBar = ({ onNavigate = () => {} }) => {
     return [chatSection, consoleSection, personalSection, adminSection].filter(
       (s) => s.items.length > 0 && hasSectionVisibleModules(s.key),
     );
-  }, [t, isModuleVisible, hasSectionVisibleModules, chatItems, teamVisible]);
-
-  // Check team permission
-  useEffect(() => {
-    try {
-      const s = JSON.parse(localStorage.getItem('status') || '{}');
-      if (!s.team_required_plan_id || s.team_required_plan_id === 0) {
-        setTeamVisible(false);
-        return;
-      }
-    } catch {
-      setTeamVisible(false);
-      return;
-    }
-    API.get('/api/team/permission')
-      .then((res) => {
-        if (res.data?.success) {
-          const d = res.data.data;
-          setTeamVisible(d.enabled && (d.can_create || d.is_member));
-        }
-      })
-      .catch(() => {});
-  }, []);
+  }, [t, isModuleVisible, hasSectionVisibleModules, chatItems]);
 
   // Load chat items
   useEffect(() => {

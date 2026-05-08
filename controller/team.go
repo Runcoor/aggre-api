@@ -4,37 +4,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/runcoor/aggre-api/common"
 	"github.com/runcoor/aggre-api/model"
-	"github.com/runcoor/aggre-api/setting/operation_setting"
-	"github.com/gin-gonic/gin"
 )
-
-// checkTeamFeaturePermission verifies if the user has the required subscription to manage teams.
-// Returns true if allowed, false if not (and sends error response).
-func checkTeamFeaturePermission(c *gin.Context) bool {
-	planId := operation_setting.TeamRequiredPlanId
-	if planId == 0 {
-		common.ApiErrorMsg(c, "团队功能未启用")
-		return false
-	}
-	if planId == -1 {
-		// Open to all users
-		return true
-	}
-	userId := c.GetInt("id")
-	// Admin/root users bypass subscription check
-	role := c.GetInt("role")
-	if role >= common.RoleAdminUser {
-		return true
-	}
-	has, err := model.HasActiveSubscriptionForPlan(userId, planId)
-	if err != nil || !has {
-		common.ApiErrorMsg(c, "需要订阅指定套餐才能使用团队功能")
-		return false
-	}
-	return true
-}
 
 // ─── Helpers ───
 
@@ -65,13 +38,15 @@ func getTeamAndVerifyRole(c *gin.Context, minRole int) (*model.Team, *model.Team
 // ─── Team CRUD ───
 
 type CreateTeamRequest struct {
-	Name string `json:"name"`
+	Name    string `json:"name"`
+	OwnerId int    `json:"owner_id"` // optional; admin can create on behalf of another user
 }
 
+// CreateTeam is admin-only. Common users go through the application flow
+// (POST /api/team/apply → admin reviews → AdminApproveTeamApplication
+// internally calls model.CreateTeam). Admin can directly mint a team for
+// themselves or for another user via owner_id.
 func CreateTeam(c *gin.Context) {
-	if !checkTeamFeaturePermission(c) {
-		return
-	}
 	var req CreateTeamRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.ApiErrorMsg(c, "参数错误")
@@ -82,62 +57,53 @@ func CreateTeam(c *gin.Context) {
 		common.ApiErrorMsg(c, "团队名称不能为空")
 		return
 	}
-	userId := c.GetInt("id")
+
+	ownerId := req.OwnerId
+	if ownerId <= 0 {
+		ownerId = c.GetInt("id")
+	} else {
+		// Verify the target owner exists when admin specifies one.
+		target, err := model.GetUserById(ownerId, false)
+		if err != nil || target == nil {
+			common.ApiErrorMsg(c, "目标用户不存在")
+			return
+		}
+	}
 
 	team := &model.Team{
 		Name:    name,
-		OwnerId: userId,
+		OwnerId: ownerId,
 		Status:  model.TeamStatusActive,
 	}
 	if err := model.CreateTeam(team); err != nil {
 		common.ApiError(c, err)
 		return
 	}
-	// Add creator as owner member
 	if err := model.AddTeamMember(&model.TeamMember{
 		TeamId: team.Id,
-		UserId: userId,
+		UserId: ownerId,
 		Role:   model.TeamRoleOwner,
 		Status: model.TeamStatusActive,
 	}); err != nil {
 		common.ApiError(c, err)
 		return
 	}
-	// Auto-sync subscription remaining quota to team
-	planId := operation_setting.TeamRequiredPlanId
-	if planId > 0 {
-		remaining, err := model.GetActiveSubscriptionRemainingQuota(userId, planId)
-		if err == nil && remaining > 0 {
-			_ = model.IncreaseTeamQuota(team.Id, int(remaining))
-			team.Quota = int(remaining)
-		}
-	}
 	common.ApiSuccess(c, team)
 }
 
+// GetTeamPermission reports the caller's team-related state. The legacy
+// subscription gate has been removed: every authenticated user can browse
+// the team page and submit an application. Admins can create directly.
 func GetTeamPermission(c *gin.Context) {
-	planId := operation_setting.TeamRequiredPlanId
-	if planId == 0 {
-		common.ApiSuccess(c, gin.H{"enabled": false, "can_create": false, "is_member": false})
-		return
-	}
 	userId := c.GetInt("id")
-	canCreate := false
-	if planId == -1 {
-		canCreate = true
-	} else {
-		role := c.GetInt("role")
-		if role >= common.RoleAdminUser {
-			canCreate = true
-		} else {
-			has, _ := model.HasActiveSubscriptionForPlan(userId, planId)
-			canCreate = has
-		}
-	}
-	// Check if user is a member of any team
+	role := c.GetInt("role")
 	teams, _ := model.GetUserTeams(userId)
-	isMember := len(teams) > 0
-	common.ApiSuccess(c, gin.H{"enabled": true, "can_create": canCreate, "is_member": isMember})
+	common.ApiSuccess(c, gin.H{
+		"enabled":             true,
+		"can_create_directly": role >= common.RoleAdminUser,
+		"can_apply":           true,
+		"is_member":           len(teams) > 0,
+	})
 }
 
 func GetUserTeams(c *gin.Context) {
@@ -335,37 +301,6 @@ func TopUpTeamQuota(c *gin.Context) {
 		return
 	}
 	common.ApiSuccess(c, nil)
-}
-
-func SyncSubscriptionQuotaToTeam(c *gin.Context) {
-	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleOwner)
-	if !ok {
-		return
-	}
-	userId := c.GetInt("id")
-	if team.OwnerId != userId {
-		common.ApiErrorMsg(c, "只有团队创建者可以同步订阅额度")
-		return
-	}
-	planId := operation_setting.TeamRequiredPlanId
-	if planId <= 0 {
-		common.ApiErrorMsg(c, "未配置团队所需订阅套餐")
-		return
-	}
-	remaining, err := model.GetActiveSubscriptionRemainingQuota(userId, planId)
-	if err != nil {
-		common.ApiError(c, err)
-		return
-	}
-	if remaining <= 0 {
-		common.ApiErrorMsg(c, "订阅无剩余额度可同步")
-		return
-	}
-	if err := model.IncreaseTeamQuota(team.Id, int(remaining)); err != nil {
-		common.ApiError(c, err)
-		return
-	}
-	common.ApiSuccess(c, gin.H{"synced_quota": remaining})
 }
 
 // ─── Token linking ───

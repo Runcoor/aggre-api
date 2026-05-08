@@ -5158,5 +5158,8 @@
   "查看": "View",
   "刷新": "Refresh",
   "生效中": "Active",
-  "到期": "Expires"
+  "到期": "Expires",
+  "未填写": "Not provided",
+  "操作不可撤销，请确认信息": "This action cannot be undone — please review carefully",
+  "该申请已结案": "This application has been closed"
 }

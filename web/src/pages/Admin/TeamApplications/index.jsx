@@ -15,13 +15,12 @@ import {
   Spin,
   Table,
   Tag,
-  TextArea,
   Typography,
 } from '@douyinfe/semi-ui';
 import { IconRefresh } from '@douyinfe/semi-icons';
-import { Crown, Mail, User as UserIcon, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { API, renderQuota, showError, showSuccess } from '../../../helpers';
+import './detail-modal.css';
 
 const { Text } = Typography;
 
@@ -53,7 +52,26 @@ const renderStatus = (status, t) => {
   }
 };
 
-const formatTime = (ts) => (ts ? new Date(ts * 1000).toLocaleString() : '-');
+// Format epoch seconds as "YYYY-MM-DD HH:MM:SS" — stable across locales,
+// matches the design's mono timestamp style.
+const formatStableTime = (ts) => {
+  if (!ts) return '—';
+  const d = new Date(ts * 1000);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(
+    d.getHours(),
+  )}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+};
+
+// Split a formatted currency string ("$1.23" / "¥0.00") into the leading
+// non-digit symbol and the numeric tail so the design can render the
+// currency in a smaller, dimmer style.
+const splitCurrency = (formatted) => {
+  const s = String(formatted ?? '');
+  const m = s.match(/^([^\d-]*)(-?[\d.,]+)(.*)$/);
+  if (!m) return { cur: '', val: s, unit: '' };
+  return { cur: m[1].trim(), val: m[2], unit: m[3].trim() };
+};
 
 const TeamApplicationsAdmin = () => {
   const { t } = useTranslation();
@@ -61,7 +79,7 @@ const TeamApplicationsAdmin = () => {
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState('0'); // pending by default
+  const [status, setStatus] = useState('0');
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
 
@@ -206,7 +224,7 @@ const TeamApplicationsAdmin = () => {
       width: 170,
       render: (app) => (
         <Text style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-          {formatTime(app?.created_at)}
+          {formatStableTime(app?.created_at)}
         </Text>
       ),
     },
@@ -278,17 +296,22 @@ const TeamApplicationsAdmin = () => {
         />
       </div>
 
-      {/* Detail / review modal */}
+      {/* Design-faithful detail / review modal. Semi <Modal> handles the
+          backdrop, focus trap, and ESC; we strip its chrome (header /
+          footer / close button) and render the design markup as the body. */}
       <Modal
-        title={t('申请详情')}
         visible={detailOpen}
         onCancel={() => setDetailOpen(false)}
+        header={null}
         footer={null}
-        size='large'
+        closable={false}
         centered
+        width={680}
+        className='tar-modal-wrap'
+        bodyStyle={{ padding: 0 }}
       >
         {detailLoading || !detail ? (
-          <div className='py-8 text-center'>
+          <div style={{ padding: 56, textAlign: 'center' }}>
             <Spin />
           </div>
         ) : (
@@ -299,6 +322,7 @@ const TeamApplicationsAdmin = () => {
             setReviewComment={setReviewComment}
             onApprove={handleApprove}
             onReject={handleReject}
+            onClose={() => setDetailOpen(false)}
             reviewing={reviewing}
           />
         )}
@@ -307,165 +331,322 @@ const TeamApplicationsAdmin = () => {
   );
 };
 
-const DetailBody = ({ t, detail, reviewComment, setReviewComment, onApprove, onReject, reviewing }) => {
-  const app = detail.application;
+// ---------- Icons (inlined SVG to match the design's stroke widths) ----------
+
+const IcFile = (p) => (
+  <svg width={p.size || 18} height={p.size || 18} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
+    <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' />
+    <path d='M14 2v6h6' />
+    <path d='m9 14 2 2 4-4' />
+  </svg>
+);
+const IcClose = () => (
+  <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+    <path d='M18 6 6 18' />
+    <path d='m6 6 12 12' />
+  </svg>
+);
+const IcInfo = (p) => (
+  <svg width={p.size || 11} height={p.size || 11} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'>
+    <circle cx='12' cy='12' r='9' />
+    <path d='M12 8v4' />
+    <path d='M12 16h.01' />
+  </svg>
+);
+const IcUser = (p) => (
+  <svg width={p.size || 12} height={p.size || 12} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+    <circle cx='12' cy='8' r='4' />
+    <path d='M4 21a8 8 0 0 1 16 0' />
+  </svg>
+);
+const IcMail = (p) => (
+  <svg width={p.size || 10} height={p.size || 10} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+    <rect x='3' y='5' width='18' height='14' rx='2' />
+    <path d='m3 7 9 6 9-6' />
+  </svg>
+);
+const IcText = (p) => (
+  <svg width={p.size || 10} height={p.size || 10} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+    <path d='M4 7h16' />
+    <path d='M4 12h10' />
+    <path d='M4 17h16' />
+  </svg>
+);
+const IcCard = (p) => (
+  <svg width={p.size || 10} height={p.size || 10} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+    <rect x='3' y='6' width='18' height='12' rx='2' />
+    <path d='M7 10h.01' />
+    <path d='M11 10h6' />
+    <path d='M11 14h6' />
+  </svg>
+);
+const IcWallet = (p) => (
+  <svg width={p.size || 12} height={p.size || 12} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+    <rect x='2' y='6' width='20' height='14' rx='2.5' />
+    <path d='M2 11h20' />
+  </svg>
+);
+const IcCrown = (p) => (
+  <svg width={p.size || 12} height={p.size || 12} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+    <path d='M3 8l4 3 5-6 5 6 4-3-2 11H5z' />
+  </svg>
+);
+const IcLines = (p) => (
+  <svg width={p.size || 12} height={p.size || 12} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+    <path d='M3 5h18' />
+    <path d='M3 12h18' />
+    <path d='M3 19h12' />
+  </svg>
+);
+const IcCheck = () => (
+  <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.4' strokeLinecap='round' strokeLinejoin='round'>
+    <path d='m5 12 5 5 9-11' />
+  </svg>
+);
+
+// ----------------------------- DetailBody -----------------------------
+
+const STATUS_PILL = {
+  [APP_PENDING]: { cls: 'warn', label: '待审核' },
+  [APP_APPROVED]: { cls: 'ok', label: '已通过' },
+  [APP_REJECTED]: { cls: 'err', label: '已驳回' },
+  [APP_CANCELED]: { cls: 'neut', label: '已撤回' },
+};
+
+const DetailBody = ({ t, detail, reviewComment, setReviewComment, onApprove, onReject, onClose, reviewing }) => {
+  const app = detail.application || {};
   const u = detail.user || {};
-  const isPending = app?.status === APP_PENDING;
+  const isPending = app.status === APP_PENDING;
+  const pill = STATUS_PILL[app.status] || STATUS_PILL[APP_PENDING];
+
+  const wallet = splitCurrency(renderQuota(u.quota || 0));
+  const used = splitCurrency(renderQuota(u.used_quota || 0));
+  const topUpCNY = (detail.topup_total_amount || 0).toFixed(2);
+  const subs = detail.active_subscriptions || [];
+
+  const reviewLen = (reviewComment || '').length;
+  const REVIEW_MAX = 200;
+
+  const handleReviewChange = (e) => {
+    const v = e.target.value;
+    if (v.length <= REVIEW_MAX) setReviewComment(v);
+  };
 
   return (
-    <div className='space-y-5'>
-      {/* Application meta */}
-      <div
-        className='rounded-[var(--radius-md)] p-4'
-        style={{ background: 'var(--surface-active)', border: '1px solid var(--border-default)' }}
-      >
-        <div className='flex items-center justify-between mb-2'>
-          <Text strong style={{ fontSize: 16 }}>{app?.name}</Text>
-          {renderStatus(app?.status, t)}
-        </div>
-        <Text style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-          {t('提交时间')}: {formatTime(app?.created_at)}
-          {app?.reviewed_at ? ` · ${t('审核时间')}: ${formatTime(app.reviewed_at)}` : ''}
-        </Text>
-        {app?.reason && (
-          <div className='mt-3 pt-3' style={{ borderTop: '1px solid var(--border-default)' }}>
-            <Text style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>
-              {t('申请理由')}
-            </Text>
-            <Text style={{ fontSize: 13, color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
-              {app.reason}
-            </Text>
+    <div className='tar-modal'>
+      {/* === header === */}
+      <header className='m-head'>
+        <div className='left'>
+          <div className='ic' aria-hidden='true'>
+            <IcFile size={18} />
           </div>
-        )}
-        {app?.review_comment && (
-          <div className='mt-3 pt-3' style={{ borderTop: '1px solid var(--border-default)' }}>
-            <Text style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>
-              {t('审核意见')}
-            </Text>
-            <Text style={{ fontSize: 13, color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
-              {app.review_comment}
-            </Text>
+          <div>
+            <h2>
+              {app.name || '—'}
+              <span className={`st ${pill.cls}`}>
+                <i />
+                {t(pill.label)}
+              </span>
+            </h2>
+            <p className='meta'>
+              {t('提交时间')} · <span className='mono'>{formatStableTime(app.created_at)}</span>
+              {app.reviewed_at ? (
+                <>
+                  {' '}
+                  · {t('审核时间')} <span className='mono'>{formatStableTime(app.reviewed_at)}</span>
+                </>
+              ) : null}
+            </p>
           </div>
-        )}
-      </div>
-
-      {/* Applicant profile */}
-      <div>
-        <Text strong style={{ fontSize: 14, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>
-          {t('申请人信息')}
-        </Text>
-        <div className='grid grid-cols-2 gap-3'>
-          <InfoCell icon={<UserIcon size={14} />} label={t('用户名')} value={u.username || '-'} />
-          <InfoCell icon={<Mail size={14} />} label={t('邮箱')} value={u.email || '-'} />
-          <InfoCell label={t('显示名称')} value={u.display_name || '-'} />
-          <InfoCell label={t('用户ID')} value={u.id || '-'} />
         </div>
-      </div>
+        <button className='x' aria-label={t('关闭')} onClick={onClose} type='button'>
+          <IcClose />
+        </button>
+      </header>
 
-      {/* Billing snapshot */}
-      <div>
-        <Text strong style={{ fontSize: 14, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>
-          {t('账户与计费')}
-        </Text>
-        <div className='grid grid-cols-2 gap-3'>
-          <InfoCell
-            icon={<Wallet size={14} />}
-            label={t('钱包余额')}
-            value={renderQuota(u.quota || 0)}
-          />
-          <InfoCell label={t('累计已用')} value={renderQuota(u.used_quota || 0)} />
-          <InfoCell
-            label={t('累计充值金额')}
-            value={`￥${(detail.topup_total_amount || 0).toFixed(2)}`}
-          />
-          <InfoCell
-            label={t('充值次数')}
-            value={`${detail.topup_count || 0} ${t('次')}`}
-          />
-          <InfoCell label={t('已拥有团队')} value={`${detail.owned_team_count || 0}`} />
-          <InfoCell label={t('已加入团队')} value={`${detail.joined_team_count || 0}`} />
+      {/* === body === */}
+      <div className='body'>
+        {/* reason callout — single-line ribbon */}
+        <div className='reason' title={app.reason || ''}>
+          <span className='lbl'>
+            <IcInfo size={11} />
+            {t('申请理由')}
+          </span>
+          <span className='val'>{app.reason ? app.reason : <em className='dim'>{t('未填写')}</em>}</span>
         </div>
-      </div>
 
-      {/* Active subscriptions */}
-      <div>
-        <Text strong style={{ fontSize: 14, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>
-          <Crown size={13} style={{ display: 'inline', marginRight: 4, color: 'var(--warning, #f59e0b)' }} />
-          {t('活跃订阅')}
-        </Text>
-        {detail.active_subscriptions && detail.active_subscriptions.length > 0 ? (
-          <div className='space-y-2'>
-            {detail.active_subscriptions.map((s, i) => {
-              const sub = s.subscription || s;
-              return (
-                <div
-                  key={i}
-                  className='rounded-[var(--radius-md)] p-3 flex justify-between items-center'
-                  style={{ background: 'var(--surface-active)', border: '1px solid var(--border-default)' }}
-                >
-                  <div>
-                    <Text strong style={{ fontSize: 13 }}>
-                      {sub.plan_title || sub.title || `Plan #${sub.plan_id}`}
-                    </Text>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                      {t('到期')}: {formatTime(sub.end_time)}
+        {/* applicant info — 4-col grid */}
+        <section>
+          <div className='sec-h'>
+            <IcUser size={12} />
+            <span className='t'>{t('申请人信息')}</span>
+            <span className='line' />
+          </div>
+          <div className='info-grid'>
+            <Field icon={<IcUser size={10} />} k={t('用户名')} v={u.username || '—'} />
+            <Field icon={<IcMail size={10} />} k={t('邮箱')} v={u.email || ''} placeholder={t('未填写')} />
+            <Field icon={<IcText size={10} />} k={t('显示名称')} v={u.display_name || ''} placeholder={t('未填写')} />
+            <Field
+              icon={<IcCard size={10} />}
+              k={t('用户ID')}
+              v={u.id ? <span className='mono'>#{u.id}</span> : '—'}
+            />
+          </div>
+        </section>
+
+        {/* account & billing — 6-col stat strip */}
+        <section>
+          <div className='sec-h'>
+            <IcWallet size={12} />
+            <span className='t'>{t('账户与计费')}</span>
+            <span className='line' />
+          </div>
+          <div className='stats'>
+            <Stat em label={t('钱包余额')} cur={wallet.cur} val={wallet.val} />
+            <Stat label={t('累计已用')} cur={used.cur} val={used.val} />
+            <Stat label={t('累计充值')} cur='¥' val={topUpCNY} />
+            <Stat label={t('充值次数')} val={detail.topup_count || 0} unit={t('次')} />
+            <Stat label={t('已拥有团队')} val={detail.owned_team_count || 0} />
+            <Stat label={t('已加入团队')} val={detail.joined_team_count || 0} />
+          </div>
+        </section>
+
+        {/* active subscriptions */}
+        <section>
+          <div className='sec-h'>
+            <IcCrown size={12} />
+            <span className='t'>{t('活跃订阅')}</span>
+            <span className='line' />
+          </div>
+          {subs.length === 0 ? (
+            <div className='sub-row'>
+              <div className='ic' aria-hidden='true'>
+                <IcCrown size={14} />
+              </div>
+              <span className='empty'>{t('暂无活跃订阅')}</span>
+            </div>
+          ) : (
+            <div className='sub-list'>
+              {subs.map((s, i) => {
+                const sub = s.subscription || s;
+                return (
+                  <div className='sub-row active' key={i}>
+                    <div className='ic' aria-hidden='true'>
+                      <IcCrown size={14} />
                     </div>
+                    <div className='sub-meta'>
+                      <span className='sub-title'>
+                        {sub.plan_title || sub.title || `Plan #${sub.plan_id}`}
+                      </span>
+                      <span className='sub-sub'>
+                        {t('到期')} <span className='mono'>{formatStableTime(sub.end_time)}</span>
+                      </span>
+                    </div>
+                    <span className='sub-tag'>{t('生效中')}</span>
                   </div>
-                  <Tag color='green'>{t('生效中')}</Tag>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <Text style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t('无活跃订阅')}</Text>
-        )}
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* review opinion (only when pending) */}
+        {isPending ? (
+          <section>
+            <div className='sec-h'>
+              <IcLines size={12} />
+              <span className='t'>{t('审核意见')}</span>
+              <span className='line' />
+            </div>
+            <div className='review'>
+              <textarea
+                value={reviewComment}
+                onChange={handleReviewChange}
+                placeholder={t('通过可选填，驳回必须说明原因')}
+                rows={3}
+              />
+              <span className='count'>
+                {reviewLen} / {REVIEW_MAX}
+              </span>
+            </div>
+          </section>
+        ) : app.review_comment ? (
+          <section>
+            <div className='sec-h'>
+              <IcLines size={12} />
+              <span className='t'>{t('审核意见')}</span>
+              <span className='line' />
+            </div>
+            <div className='review-static'>{app.review_comment}</div>
+          </section>
+        ) : null}
       </div>
 
-      {/* Review actions */}
-      {isPending && (
-        <div className='pt-4' style={{ borderTop: '1px solid var(--border-default)' }}>
-          <Text strong style={{ fontSize: 14, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>
-            {t('审核意见')}
-          </Text>
-          <TextArea
-            value={reviewComment}
-            onChange={setReviewComment}
-            placeholder={t('通过可选填，驳回必须说明原因')}
-            rows={3}
-            maxLength={2000}
-            showCounter
-            style={{ borderRadius: 'var(--radius-md)', marginBottom: 12 }}
-          />
-          <div className='flex justify-end gap-2'>
-            <Button onClick={onReject} loading={reviewing} type='danger' theme='light'>
-              {t('驳回')}
-            </Button>
-            <Button
-              onClick={onApprove}
-              loading={reviewing}
-              type='primary'
-              theme='solid'
-              style={{ background: 'var(--accent-gradient)', border: 'none' }}
-            >
-              {t('通过并创建团队')}
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* === footer === */}
+      <footer className='foot'>
+        {isPending ? (
+          <>
+            <span className='hint'>
+              <IcInfo size={12} />
+              {t('操作不可撤销，请确认信息')}
+            </span>
+            <div className='actions'>
+              <button
+                className='btn btn-ghost'
+                type='button'
+                onClick={onReject}
+                disabled={reviewing}
+              >
+                <IcClose />
+                {t('驳回')}
+              </button>
+              <button
+                className='btn btn-pri'
+                type='button'
+                onClick={onApprove}
+                disabled={reviewing}
+              >
+                <IcCheck />
+                {t('通过并创建团队')}
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <span className='hint'>{t('该申请已结案')}</span>
+            <div className='actions'>
+              <button className='btn btn-ghost neutral' type='button' onClick={onClose}>
+                {t('关闭')}
+              </button>
+            </div>
+          </>
+        )}
+      </footer>
     </div>
   );
 };
 
-const InfoCell = ({ icon, label, value }) => (
-  <div
-    className='rounded-[var(--radius-md)] px-3 py-2.5'
-    style={{ background: 'var(--surface)', border: '1px solid var(--border-default)' }}
-  >
-    <div className='flex items-center gap-1.5 mb-1' style={{ color: 'var(--text-muted)' }}>
-      {icon}
-      <span style={{ fontSize: 11 }}>{label}</span>
+const Field = ({ icon, k, v, placeholder }) => {
+  const empty = !v && v !== 0;
+  return (
+    <div className='field'>
+      <span className='k'>
+        {icon}
+        {k}
+      </span>
+      <span className={`v ${empty ? 'dim' : ''}`}>{empty ? placeholder || '—' : v}</span>
     </div>
-    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{value}</div>
+  );
+};
+
+const Stat = ({ em, label, cur, val, unit }) => (
+  <div className={`stat ${em ? 'em' : ''}`}>
+    <span className='k'>{label}</span>
+    <span className='v'>
+      {cur ? <span className='cur'>{cur}</span> : null}
+      {val}
+      {unit ? <span className='u'>{unit}</span> : null}
+    </span>
   </div>
 );
 

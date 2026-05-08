@@ -1,0 +1,602 @@
+/*
+  Application Review Modal — pixel-faithful port of the design handoff
+  at design/RjWWGFBkF4olDGXnUqOywg/Application Review Modal.html.
+
+  The design ships its own light palette and rounded language; we keep
+  it light-themed at all times so dark-mode users still see the same
+  structured review surface (a focused review task, not a casual page).
+  All selectors are scoped under `.tar-modal` so styling cannot leak
+  into other parts of the admin console.
+
+  Layout: 680px modal, max-height 92vh, three-band stack of head /
+  scrollable body / fixed footer.
+*/
+
+.tar-modal-wrap .semi-modal {
+  border-radius: 18px;
+  overflow: hidden;
+}
+.tar-modal-wrap .semi-modal-content {
+  padding: 0 !important;
+  background: transparent !important;
+}
+.tar-modal-wrap .semi-modal-body {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+
+.tar-modal {
+  --tarm-bg: #eef2f9;
+  --tarm-surface: #fff;
+  --tarm-ink: #0b1530;
+  --tarm-muted: #6b7596;
+  --tarm-muted-2: #97a0bc;
+  --tarm-line: #e7ecf5;
+  --tarm-line-2: #eef2f9;
+  --tarm-soft: #f4f6fb;
+  --tarm-brand-1: #0072ff;
+  --tarm-brand-2: #00c6ff;
+  --tarm-brand-grad: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
+
+  background: #fff;
+  color: var(--tarm-ink);
+  font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'cv11', 'ss01', 'ss02';
+  border-radius: 18px;
+  border: 1px solid var(--tarm-line);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 30px 80px -30px rgba(11, 21, 48, 0.3),
+    0 8px 20px -10px rgba(11, 21, 48, 0.1);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: 92vh;
+}
+.tar-modal .mono {
+  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* === header === */
+.tar-modal .m-head {
+  padding: 16px 20px 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--tarm-line-2);
+  background: linear-gradient(180deg, #fff, #fafbfe);
+}
+.tar-modal .m-head .left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+.tar-modal .m-head .ic {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  flex-shrink: 0;
+  background: var(--tarm-brand-grad);
+  box-shadow:
+    0 8px 18px -8px rgba(0, 114, 255, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.tar-modal .m-head h2 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--tarm-ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tar-modal .m-head .meta {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--tarm-muted);
+  font-weight: 500;
+}
+.tar-modal .m-head .meta .mono {
+  font-size: 11px;
+}
+.tar-modal .m-head .x {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--tarm-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: 0.15s;
+  flex-shrink: 0;
+}
+.tar-modal .m-head .x:hover {
+  background: var(--tarm-soft);
+  color: var(--tarm-ink);
+  border-color: var(--tarm-line);
+}
+
+/* status pill — variants for all four lifecycle states */
+.tar-modal .st {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+.tar-modal .st i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.tar-modal .st.warn {
+  background: rgba(217, 119, 6, 0.1);
+  color: #b45309;
+}
+.tar-modal .st.warn i {
+  background: #d97706;
+  box-shadow: 0 0 0 2.5px rgba(217, 119, 6, 0.18);
+  animation: tar-pulse 1.6s ease-in-out infinite;
+}
+.tar-modal .st.ok {
+  background: rgba(22, 163, 74, 0.1);
+  color: #15803d;
+}
+.tar-modal .st.ok i {
+  background: #16a34a;
+}
+.tar-modal .st.err {
+  background: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+}
+.tar-modal .st.err i {
+  background: #dc2626;
+}
+.tar-modal .st.neut {
+  background: rgba(107, 117, 150, 0.12);
+  color: #4b5570;
+}
+.tar-modal .st.neut i {
+  background: #97a0bc;
+}
+@keyframes tar-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2.5px rgba(217, 119, 6, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(217, 119, 6, 0.04);
+  }
+}
+
+/* === body === */
+.tar-modal .body {
+  flex: 1;
+  overflow: auto;
+  padding: 14px 20px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* reason callout */
+.tar-modal .reason {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f7faff, #fff);
+  border: 1px solid var(--tarm-line);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+}
+.tar-modal .reason .lbl {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tarm-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  padding-right: 10px;
+  border-right: 1px solid var(--tarm-line);
+}
+.tar-modal .reason .val {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--tarm-ink);
+  letter-spacing: -0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tar-modal .reason .val .dim {
+  color: var(--tarm-muted-2);
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* section header — small uppercase label + filling rule */
+.tar-modal .sec-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.tar-modal .sec-h .t {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tarm-muted);
+}
+.tar-modal .sec-h .line {
+  flex: 1;
+  height: 1px;
+  background: var(--tarm-line-2);
+}
+.tar-modal .sec-h svg {
+  color: var(--tarm-muted-2);
+  flex-shrink: 0;
+}
+
+/* applicant info — compact 4-column grid */
+.tar-modal .info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.tar-modal .field {
+  padding: 9px 11px;
+  border-radius: 10px;
+  background: var(--tarm-soft);
+  border: 1px solid var(--tarm-line-2);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.tar-modal .field .k {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--tarm-muted);
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.tar-modal .field .k svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.tar-modal .field .v {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tarm-ink);
+  letter-spacing: -0.005em;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tar-modal .field .v.dim {
+  color: var(--tarm-muted-2);
+  font-weight: 500;
+}
+.tar-modal .field .v .mono {
+  font-size: 12.5px;
+}
+
+/* account & billing — 6-column stat strip */
+.tar-modal .stats {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+.tar-modal .stat {
+  padding: 10px 11px;
+  border-radius: 10px;
+  background: var(--tarm-soft);
+  border: 1px solid var(--tarm-line-2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.tar-modal .stat .k {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--tarm-muted);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+.tar-modal .stat .v {
+  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas,
+    monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tarm-ink);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.tar-modal .stat .v .cur {
+  color: var(--tarm-muted-2);
+  font-weight: 500;
+  margin-right: 1px;
+  font-size: 12px;
+}
+.tar-modal .stat .v .u {
+  font-size: 11px;
+  color: var(--tarm-muted);
+  font-weight: 500;
+  margin-left: 2px;
+}
+.tar-modal .stat.em {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 114, 255, 0.06),
+    rgba(0, 198, 255, 0.04)
+  );
+  border-color: rgba(0, 114, 255, 0.18);
+}
+.tar-modal .stat.em .k {
+  color: #0072ff;
+}
+.tar-modal .stat.em .v {
+  color: #0072ff;
+}
+.tar-modal .stat.em .v .cur {
+  color: rgba(0, 114, 255, 0.55);
+}
+
+/* subscription row — same chrome for empty + active states */
+.tar-modal .sub-row {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px dashed var(--tarm-line);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--tarm-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: #fff;
+}
+.tar-modal .sub-row.active {
+  border-style: solid;
+  background: linear-gradient(180deg, #f7faff, #fff);
+}
+.tar-modal .sub-row .ic {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  color: #b45309;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+}
+.tar-modal .sub-row .empty {
+  color: var(--tarm-muted-2);
+}
+.tar-modal .sub-row .sub-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tar-modal .sub-row .sub-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tarm-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tar-modal .sub-row .sub-sub {
+  font-size: 11px;
+  color: var(--tarm-muted);
+}
+.tar-modal .sub-row .sub-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+  letter-spacing: 0.02em;
+}
+.tar-modal .sub-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* review textarea (live) and static (post-decision) */
+.tar-modal .review {
+  position: relative;
+}
+.tar-modal .review textarea {
+  width: 100%;
+  min-height: 64px;
+  max-height: 120px;
+  resize: vertical;
+  padding: 10px 12px;
+  border: 1px solid var(--tarm-line);
+  border-radius: 10px;
+  background: var(--tarm-soft);
+  font: inherit;
+  font-size: 13px;
+  color: var(--tarm-ink);
+  line-height: 1.55;
+  transition: 0.15s;
+  outline: none;
+}
+.tar-modal .review textarea::placeholder {
+  color: var(--tarm-muted-2);
+}
+.tar-modal .review textarea:focus {
+  background: #fff;
+  border-color: #0072ff;
+  box-shadow: 0 0 0 3px rgba(0, 114, 255, 0.1);
+}
+.tar-modal .review .count {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas,
+    monospace;
+  font-size: 10.5px;
+  color: var(--tarm-muted-2);
+  font-weight: 600;
+  pointer-events: none;
+}
+.tar-modal .review-static {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--tarm-line);
+  background: var(--tarm-soft);
+  font-size: 13px;
+  color: var(--tarm-ink);
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+/* === footer === */
+.tar-modal .foot {
+  padding: 12px 20px;
+  border-top: 1px solid var(--tarm-line-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: linear-gradient(180deg, #fafbfe, #fff);
+}
+.tar-modal .foot .hint {
+  font-size: 11.5px;
+  color: var(--tarm-muted);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tar-modal .foot .hint svg {
+  color: var(--tarm-muted-2);
+  flex-shrink: 0;
+}
+.tar-modal .actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tar-modal .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: 0.15s;
+  border: 1px solid transparent;
+}
+.tar-modal .btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.tar-modal .btn-ghost {
+  color: #b91c1c;
+  background: #fff;
+  border-color: var(--tarm-line);
+}
+.tar-modal .btn-ghost:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.06);
+  border-color: rgba(220, 38, 38, 0.3);
+  color: #b91c1c;
+}
+.tar-modal .btn-ghost.neutral {
+  color: var(--tarm-ink);
+}
+.tar-modal .btn-ghost.neutral:hover:not(:disabled) {
+  background: var(--tarm-soft);
+  border-color: var(--tarm-line);
+  color: var(--tarm-ink);
+}
+.tar-modal .btn-pri {
+  color: #fff;
+  border: none;
+  background: var(--tarm-brand-grad);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 10px 22px -10px rgba(0, 114, 255, 0.55),
+    0 2px 4px rgba(11, 21, 48, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+.tar-modal .btn-pri::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: 0.5s;
+}
+.tar-modal .btn-pri:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 14px 26px -10px rgba(0, 114, 255, 0.65),
+    0 2px 4px rgba(11, 21, 48, 0.1);
+}
+.tar-modal .btn-pri:hover:not(:disabled)::after {
+  transform: translateX(100%);
+}
+.tar-modal .btn-pri:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 640px) {
+  .tar-modal .info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .tar-modal .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .tar-modal .foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .tar-modal .actions {
+    justify-content: flex-end;
+  }
+}

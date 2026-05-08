@@ -592,6 +592,7 @@ func CompleteSubscriptionOrder(tradeNo string, providerPayload string) error {
 	}
 	if upgradeGroup != "" && logUserId > 0 {
 		_ = UpdateUserGroupCache(logUserId, upgradeGroup)
+		fireTokenGroupCleanup(logUserId)
 	}
 	if logUserId > 0 {
 		msg := fmt.Sprintf("订阅购买成功，套餐: %s，支付金额: %.2f，支付方式: %s", logPlanTitle, logMoney, logPaymentMethod)
@@ -675,6 +676,7 @@ func AdminBindSubscription(userId int, planId int, sourceNote string) (string, e
 	}
 	if strings.TrimSpace(plan.UpgradeGroup) != "" {
 		_ = UpdateUserGroupCache(userId, plan.UpgradeGroup)
+		fireTokenGroupCleanup(userId)
 		return fmt.Sprintf("用户分组将升级到 %s", plan.UpgradeGroup), nil
 	}
 	return "", nil
@@ -964,6 +966,7 @@ func AdminInvalidateUserSubscription(userSubscriptionId int) (string, error) {
 	}
 	if cacheGroup != "" && userId > 0 {
 		_ = UpdateUserGroupCache(userId, cacheGroup)
+		fireTokenGroupCleanup(userId)
 	}
 	if downgradeGroup != "" {
 		return fmt.Sprintf("用户分组将回退到 %s", downgradeGroup), nil
@@ -1005,6 +1008,7 @@ func AdminDeleteUserSubscription(userSubscriptionId int) (string, error) {
 	}
 	if cacheGroup != "" && userId > 0 {
 		_ = UpdateUserGroupCache(userId, cacheGroup)
+		fireTokenGroupCleanup(userId)
 	}
 	if downgradeGroup != "" {
 		return fmt.Sprintf("用户分组将回退到 %s", downgradeGroup), nil
@@ -1086,6 +1090,7 @@ func ExpireDueSubscriptions(limit int) (int, error) {
 		}
 		if cacheGroup != "" {
 			_ = UpdateUserGroupCache(userId, cacheGroup)
+			fireTokenGroupCleanup(userId)
 		}
 	}
 	return expiredCount, nil

@@ -15,10 +15,10 @@ import {
   Modal,
   Skeleton,
   Tag,
+  TextArea,
   Tooltip,
   Typography,
 } from '@douyinfe/semi-ui';
-import TextArea from '@douyinfe/semi-ui/lib/es/input/textArea';
 import { IconPlus, IconClock } from '@douyinfe/semi-icons';
 import { Users, Crown, Shield, User, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

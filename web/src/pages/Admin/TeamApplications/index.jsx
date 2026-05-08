@@ -15,9 +15,9 @@ import {
   Spin,
   Table,
   Tag,
+  TextArea,
   Typography,
 } from '@douyinfe/semi-ui';
-import TextArea from '@douyinfe/semi-ui/lib/es/input/textArea';
 import { IconRefresh } from '@douyinfe/semi-icons';
 import { Crown, Mail, User as UserIcon, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

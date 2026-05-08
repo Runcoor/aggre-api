@@ -18,28 +18,65 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Banner,
-  Button,
-  Input,
-  Modal,
-  Skeleton,
-  Tag,
-  TextArea,
-  Tooltip,
-  Typography,
-} from '@douyinfe/semi-ui';
-import { IconPlus, IconClock } from '@douyinfe/semi-icons';
-import { Users, Crown, Shield, User, FileText } from 'lucide-react';
+import { Modal, Skeleton } from '@douyinfe/semi-ui';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { API, isAdmin, showError, showSuccess } from '../../helpers';
-
-const { Text } = Typography;
+import { TIcon } from './teamIcons';
+import { avatarColor, initials } from './teamUiKit';
 
 const APP_PENDING = 0;
 const APP_APPROVED = 1;
 const APP_REJECTED = 2;
+const APP_CANCELED = 3;
+
+const RolePill = ({ role, t }) => {
+  if (role >= 100) {
+    return (
+      <span className='td-pill td-pill-gold'>
+        <TIcon.Crown />
+        {t('创建者')}
+      </span>
+    );
+  }
+  if (role >= 10) {
+    return (
+      <span className='td-pill td-pill-purple'>
+        <TIcon.Shield size={11} />
+        {t('管理员')}
+      </span>
+    );
+  }
+  return (
+    <span className='td-pill td-pill-info'>
+      <TIcon.Users size={11} />
+      {t('成员')}
+    </span>
+  );
+};
+
+const AppStatusPill = ({ status, t }) => {
+  if (status === APP_PENDING) {
+    return <span className='td-pill td-pill-warn'>{t('待审核')}</span>;
+  }
+  if (status === APP_APPROVED) {
+    return (
+      <span className='td-pill td-pill-ok'>
+        <TIcon.Check size={11} />
+        {t('已通过')}
+      </span>
+    );
+  }
+  if (status === APP_REJECTED) {
+    return (
+      <span className='td-pill td-pill-danger'>
+        <TIcon.X size={11} />
+        {t('已驳回')}
+      </span>
+    );
+  }
+  return <span className='td-pill td-pill-muted'>{t('已撤回')}</span>;
+};
 
 const MyTeams = () => {
   const { t } = useTranslation();
@@ -73,8 +110,8 @@ const MyTeams = () => {
       ]);
       if (tRes.data?.success) setTeams(tRes.data.data || []);
       if (aRes.data?.success) setApplications(aRes.data.data || []);
-    } catch (e) {
-      // Errors surface in the empty/loading states below.
+    } catch {
+      // surface via empty state
     }
     setLoading(false);
   };
@@ -90,8 +127,6 @@ const MyTeams = () => {
     }
     setSubmitting(true);
     try {
-      // Admins create directly through the unified admin namespace; common
-      // users still go through the application flow under /api/team/apply.
       const url = admin ? '/api/admin/teams' : '/api/team/apply';
       const payload = admin
         ? { name: teamName.trim() }
@@ -139,116 +174,116 @@ const MyTeams = () => {
         setJoinVisible(false);
         setInviteCode('');
         loadAll();
-      } else showError(res.data?.message || t('加入失败'));
+      } else {
+        showError(res.data?.message || t('加入失败'));
+      }
     } catch {
       showError(t('请求失败'));
     }
     setJoining(false);
   };
 
-  const getRoleIcon = (role) => {
-    if (role >= 100) return <Crown size={14} style={{ color: 'var(--warning, #f59e0b)' }} />;
-    if (role >= 10) return <Shield size={14} style={{ color: 'var(--accent)' }} />;
-    return <User size={14} style={{ color: 'var(--text-muted)' }} />;
-  };
-
-  const getRoleLabel = (role) => {
-    if (role >= 100) return t('创建者');
-    if (role >= 10) return t('管理员');
-    return t('成员');
-  };
-
-  const renderAppStatus = (status) => {
-    if (status === APP_PENDING)
-      return <Tag color='blue' shape='circle'>{t('待审核')}</Tag>;
-    if (status === APP_APPROVED)
-      return <Tag color='green' shape='circle'>{t('已通过')}</Tag>;
-    if (status === APP_REJECTED)
-      return <Tag color='red' shape='circle'>{t('已驳回')}</Tag>;
-    return <Tag color='grey' shape='circle'>{t('已撤回')}</Tag>;
-  };
+  const renderEmpty = () => (
+    <div className='td-empty'>
+      <div className='td-empty-icon'>
+        <TIcon.Users size={24} />
+      </div>
+      <div className='td-empty-title'>{t('还没有加入任何团队')}</div>
+      <div className='td-empty-sub'>
+        {admin
+          ? t('创建团队或通过邀请链接加入，与成员共享订阅与 API 令牌额度')
+          : t('申请创建或通过邀请链接加入团队，由管理员审核后开通')}
+      </div>
+      <div className='td-empty-actions'>
+        <button
+          type='button'
+          className='td-btn td-btn-ghost td-btn-lg'
+          onClick={() => setJoinVisible(true)}
+        >
+          <TIcon.UserPlus />
+          {t('加入团队')}
+        </button>
+        <button
+          type='button'
+          className='td-btn td-btn-primary td-btn-lg'
+          onClick={() => setApplyVisible(true)}
+          disabled={!admin && !!pendingApp}
+        >
+          <TIcon.Plus />
+          {admin ? t('新建团队') : t('申请创建团队')}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div>
-      {/* Action bar */}
-      <div className='flex items-center justify-between mb-6'>
-        <Text style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
+      {/* Toolbar */}
+      <div className='td-toolbar'>
+        <div className='td-toolbar-hint'>
           {admin
-            ? t('创建或加入团队，共享 API 额度')
+            ? t('创建或加入团队，共享 API 额度与订阅')
             : t('申请创建或加入团队，由管理员审核后开通')}
-        </Text>
-        <div className='flex gap-2'>
-          <Button theme='light' type='primary' onClick={() => setJoinVisible(true)}
-            style={{ borderRadius: 'var(--radius-md)' }}>
-            {t('加入团队')}
-          </Button>
-          <Tooltip
-            content={pendingApp && !admin ? t('已有待审核的申请') : ''}
-            trigger={pendingApp && !admin ? 'hover' : 'custom'}
+        </div>
+        <div className='td-toolbar-right'>
+          <button
+            type='button'
+            className='td-btn td-btn-ghost'
+            onClick={() => setJoinVisible(true)}
           >
-            <Button
-              theme='solid'
-              type='primary'
-              icon={<IconPlus />}
-              disabled={!admin && !!pendingApp}
-              onClick={() => setApplyVisible(true)}
-              style={{
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--accent-gradient)',
-                border: 'none',
-                fontWeight: 600,
-              }}
-            >
-              {admin ? t('创建团队') : t('申请创建团队')}
-            </Button>
-          </Tooltip>
+            <TIcon.UserPlus />
+            {t('加入团队')}
+          </button>
+          <button
+            type='button'
+            className='td-btn td-btn-primary'
+            onClick={() => setApplyVisible(true)}
+            disabled={!admin && !!pendingApp}
+            title={
+              !admin && pendingApp ? t('已有待审核的申请') : undefined
+            }
+          >
+            <TIcon.Plus />
+            {admin ? t('新建团队') : t('申请创建团队')}
+          </button>
         </div>
       </div>
 
       {pendingApp && !admin && (
-        <Banner
-          type='info'
-          icon={<IconClock />}
-          closeIcon={null}
-          fullMode={false}
-          description={
-            <div className='flex items-center justify-between gap-3 w-full'>
-              <span>
-                {t('您的团队创建申请')} <strong>「{pendingApp.name}」</strong>{' '}
-                {t('正在等待管理员审核')}
-              </span>
-              <Button size='small' type='tertiary' onClick={() => handleWithdraw(pendingApp.id)}>
-                {t('撤回申请')}
-              </Button>
-            </div>
-          }
-          style={{ marginBottom: 16, borderRadius: 'var(--radius-md)' }}
-        />
+        <div className='td-alert' style={{ marginTop: -2 }}>
+          <span className='icon'>
+            <TIcon.Clock />
+          </span>
+          <div style={{ display: 'flex', flex: 1, gap: 12, alignItems: 'center' }}>
+            <span style={{ flex: 1 }}>
+              {t('您的团队创建申请')}{' '}
+              <strong>「{pendingApp.name}」</strong>{' '}
+              {t('正在等待管理员审核')}
+            </span>
+            <button
+              type='button'
+              className='td-btn td-btn-ghost td-btn-sm'
+              onClick={() => handleWithdraw(pendingApp.id)}
+            >
+              {t('撤回申请')}
+            </button>
+          </div>
+        </div>
       )}
 
       {loading ? (
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+        <div className='td-team-grid'>
           {[1, 2].map((i) => (
-            <div key={i} className='rounded-[var(--radius-lg)] p-6' style={{ background: 'var(--surface)', border: '1px solid var(--border-default)' }}>
+            <div key={i} className='td-team-card' style={{ cursor: 'default' }}>
               <Skeleton.Title active style={{ width: '60%', marginBottom: 12 }} />
-              <Skeleton.Paragraph active rows={2} />
+              <Skeleton.Paragraph active rows={1} />
             </div>
           ))}
         </div>
       ) : teams.length === 0 ? (
-        <div className='text-center py-16' style={{ color: 'var(--text-muted)' }}>
-          <Users size={48} style={{ margin: '0 auto 16px', opacity: 0.3 }} />
-          <Text style={{ fontSize: 16, display: 'block', color: 'var(--text-muted)' }}>
-            {t('暂无团队')}
-          </Text>
-          <Text style={{ fontSize: 13, display: 'block', color: 'var(--text-muted)', marginTop: 4 }}>
-            {admin
-              ? t('创建一个团队或使用邀请码加入')
-              : t('提交申请或使用邀请码加入团队')}
-          </Text>
-        </div>
+        renderEmpty()
       ) : (
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+        <div className='td-team-grid'>
           {teams.map((item) => {
             const team = item.team;
             const role = item.role;
@@ -256,30 +291,27 @@ const MyTeams = () => {
             return (
               <div
                 key={team.id}
-                className='rounded-[var(--radius-lg)] p-5 cursor-pointer transition-all duration-200'
-                style={{
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border-default)',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
-                }}
+                className='td-team-card'
                 onClick={() => navigate(`/console/team/${team.id}`)}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.06)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.03)'; }}
               >
-                <div className='flex items-center justify-between mb-3'>
-                  <h3 className='text-lg font-bold m-0 truncate' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
-                    {team.name}
-                  </h3>
-                  <span className='inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 flex-shrink-0'
-                    style={{ borderRadius: 9999, background: role >= 100 ? 'rgba(245,158,11,0.1)' : 'var(--surface-active)', color: role >= 100 ? 'var(--warning, #f59e0b)' : 'var(--text-secondary)' }}>
-                    {getRoleIcon(role)}
-                    {getRoleLabel(role)}
-                  </span>
+                <div className='td-team-card-head'>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center', flex: 1, minWidth: 0 }}>
+                    <div className={'td-avatar lg ' + avatarColor(team.id)}>
+                      {initials(team.name)}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div className='td-team-card-name' style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {team.name}
+                      </div>
+                      <div className='td-team-card-id'>ID #{team.id}</div>
+                    </div>
+                  </div>
+                  <RolePill role={role} t={t} />
                 </div>
-                <div className='flex items-center text-xs' style={{ color: 'var(--text-muted)' }}>
-                  <span className='flex items-center gap-1'>
-                    <Users size={12} />
-                    {memberCount} {t('位成员')}
+                <div className='td-team-card-meta'>
+                  <span className='td-team-card-meta-item'>
+                    <TIcon.Users />
+                    <strong>{memberCount}</strong> {t('位成员')}
                   </span>
                 </div>
               </div>
@@ -289,107 +321,221 @@ const MyTeams = () => {
       )}
 
       {!admin && applications.length > 0 && (
-        <div className='mt-10'>
-          <div className='flex items-center gap-2 mb-3'>
-            <FileText size={16} style={{ color: 'var(--text-muted)' }} />
-            <Text style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>
-              {t('我的申请记录')}
-            </Text>
+        <div style={{ marginTop: 28 }}>
+          <div className='td-section-head'>
+            <div>
+              <div className='title'>{t('我的申请记录')}</div>
+              <div className='meta'>{t('查看历史申请的审核结果')}</div>
+            </div>
           </div>
-          <div
-            className='rounded-[var(--radius-lg)] overflow-hidden'
-            style={{ border: '1px solid var(--border-default)', background: 'var(--surface)' }}
-          >
-            {applications.map((app, i) => (
-              <div
-                key={app.id}
-                className='flex items-center justify-between px-4 py-3'
-                style={{ borderTop: i === 0 ? 'none' : '1px solid var(--border-default)' }}
-              >
-                <div className='min-w-0 flex-1'>
-                  <div className='flex items-center gap-2 mb-1'>
-                    <Text strong style={{ color: 'var(--text-primary)' }}>{app.name}</Text>
-                    {renderAppStatus(app.status)}
-                  </div>
-                  {app.review_comment && (
-                    <Text style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                      {t('审核意见')}: {app.review_comment}
-                    </Text>
-                  )}
-                </div>
-                <Text style={{ fontSize: 12, color: 'var(--text-muted)', flexShrink: 0 }}>
-                  {new Date(app.created_at * 1000).toLocaleString()}
-                </Text>
-              </div>
-            ))}
+          <div className='td-table-card'>
+            <div className='td-table-scroll'>
+              <table className='td-t'>
+                <thead>
+                  <tr>
+                    <th>{t('团队名称')}</th>
+                    <th>{t('状态')}</th>
+                    <th>{t('审核意见')}</th>
+                    <th>{t('提交时间')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {applications.map((app) => (
+                    <tr key={app.id}>
+                      <td>
+                        <strong>{app.name}</strong>
+                      </td>
+                      <td>
+                        <AppStatusPill status={app.status} t={t} />
+                      </td>
+                      <td style={{ color: 'var(--td-ink-500)' }}>
+                        {app.review_comment || (
+                          <span style={{ color: 'var(--td-ink-400)' }}>—</span>
+                        )}
+                      </td>
+                      <td className='td-mono' style={{ color: 'var(--td-ink-500)', fontSize: 12 }}>
+                        {app.created_at
+                          ? new Date(app.created_at * 1000).toLocaleString()
+                          : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
 
-      <Modal
-        title={admin ? t('创建团队') : t('申请创建团队')}
+      <CreateTeamModal
         visible={applyVisible}
-        onCancel={() => setApplyVisible(false)}
-        footer={null}
-        centered
-        size='small'
-      >
-        <div className='space-y-4 pb-2'>
-          <div>
-            <Text style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
-              {t('团队名称')}
-            </Text>
-            <Input
-              value={teamName}
-              onChange={setTeamName}
-              placeholder={t('输入团队名称')}
-              showClear
-              style={{ borderRadius: 'var(--radius-md)' }}
-            />
-          </div>
-          {!admin && (
-            <div>
-              <Text style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
-                {t('申请理由')}
-              </Text>
-              <TextArea
-                value={teamReason}
-                onChange={setTeamReason}
-                placeholder={t('简单描述团队用途，方便管理员审核')}
-                rows={4}
-                maxLength={2000}
-                showCounter
-                style={{ borderRadius: 'var(--radius-md)' }}
-              />
-            </div>
-          )}
-          <Button
-            theme='solid'
-            type='primary'
-            block
-            loading={submitting}
-            onClick={handleSubmit}
-            style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent-gradient)', border: 'none', fontWeight: 600, height: 40 }}
-          >
-            {admin ? t('创建') : t('提交申请')}
-          </Button>
-        </div>
-      </Modal>
+        admin={admin}
+        name={teamName}
+        reason={teamReason}
+        submitting={submitting}
+        onName={setTeamName}
+        onReason={setTeamReason}
+        onClose={() => setApplyVisible(false)}
+        onSubmit={handleSubmit}
+        t={t}
+      />
 
-      <Modal title={t('加入团队')} visible={joinVisible} onCancel={() => setJoinVisible(false)}
-        footer={null} centered size='small'>
-        <div className='space-y-4 pb-2'>
-          <Input value={inviteCode} onChange={setInviteCode} placeholder={t('输入邀请码')} showClear
-            style={{ borderRadius: 'var(--radius-md)' }} onEnterPress={handleJoin} />
-          <Button theme='solid' type='primary' block loading={joining} onClick={handleJoin}
-            style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent-gradient)', border: 'none', fontWeight: 600, height: 40 }}
-          >
-            {t('加入')}
-          </Button>
-        </div>
-      </Modal>
+      <JoinTeamModal
+        visible={joinVisible}
+        code={inviteCode}
+        joining={joining}
+        onCode={setInviteCode}
+        onClose={() => setJoinVisible(false)}
+        onJoin={handleJoin}
+        t={t}
+      />
     </div>
   );
 };
+
+const CreateTeamModal = ({ visible, admin, name, reason, submitting, onName, onReason, onClose, onSubmit, t }) => (
+  <Modal
+    visible={visible}
+    onCancel={onClose}
+    header={null}
+    footer={null}
+    closable={false}
+    centered
+    width={admin ? 480 : 480}
+    className='td-modal-host'
+    bodyStyle={{ padding: 0 }}
+  >
+    <div className='td-modal'>
+      <div className='td-modal-head'>
+        <div className='left'>
+          <div className='ic-wrap'>
+            <TIcon.Plus size={18} />
+          </div>
+          <div>
+            <h3>{admin ? t('新建团队') : t('申请创建团队')}</h3>
+            <p>
+              {admin
+                ? t('作为管理员，可直接为任意用户创建团队')
+                : t('提交后由管理员审核，通过后自动建立团队')}
+            </p>
+          </div>
+        </div>
+        <button type='button' className='td-modal-close' onClick={onClose}>
+          <TIcon.X />
+        </button>
+      </div>
+      <div className='td-modal-body'>
+        <div className='td-form-row'>
+          <label className='td-form-label'>
+            {t('团队名称')}
+            <span className='req'>*</span>
+          </label>
+          <input
+            className='td-form-input'
+            placeholder={t('例如：Frontier Research')}
+            value={name}
+            onChange={(e) => onName(e.target.value)}
+            maxLength={24}
+          />
+          <div className='td-form-hint'>{t('2–24 个字符，团队建立后仍可修改')}</div>
+        </div>
+        {!admin && (
+          <div className='td-form-row'>
+            <label className='td-form-label'>
+              {t('申请理由')}
+              <span className='td-form-label-aside'>{(reason || '').length}/200</span>
+            </label>
+            <textarea
+              className='td-form-textarea'
+              maxLength={200}
+              placeholder={t('简单描述团队用途、预计成员数和使用场景，便于管理员审核')}
+              value={reason}
+              onChange={(e) => onReason(e.target.value)}
+            />
+          </div>
+        )}
+      </div>
+      <div className='td-modal-foot'>
+        <button type='button' className='td-btn td-btn-ghost' onClick={onClose}>
+          {t('取消')}
+        </button>
+        <button
+          type='button'
+          className='td-btn td-btn-primary'
+          disabled={!name.trim() || submitting}
+          onClick={onSubmit}
+        >
+          <TIcon.Send />
+          {admin ? t('创建') : t('提交申请')}
+        </button>
+      </div>
+    </div>
+  </Modal>
+);
+
+const JoinTeamModal = ({ visible, code, joining, onCode, onClose, onJoin, t }) => (
+  <Modal
+    visible={visible}
+    onCancel={onClose}
+    header={null}
+    footer={null}
+    closable={false}
+    centered
+    width={480}
+    className='td-modal-host'
+    bodyStyle={{ padding: 0 }}
+  >
+    <div className='td-modal'>
+      <div className='td-modal-head'>
+        <div className='left'>
+          <div className='ic-wrap'>
+            <TIcon.UserPlus size={18} />
+          </div>
+          <div>
+            <h3>{t('加入团队')}</h3>
+            <p>{t('输入邀请码或粘贴邀请链接')}</p>
+          </div>
+        </div>
+        <button type='button' className='td-modal-close' onClick={onClose}>
+          <TIcon.X />
+        </button>
+      </div>
+      <div className='td-modal-body'>
+        <div className='td-form-row'>
+          <label className='td-form-label'>
+            {t('邀请码 / 链接')}
+            <span className='req'>*</span>
+          </label>
+          <input
+            className='td-form-input mono'
+            placeholder='HpUKS7r7  /  https://...'
+            value={code}
+            onChange={(e) => onCode(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !joining) onJoin();
+            }}
+          />
+          <div className='td-form-hint'>
+            {t('邀请码由团队所有者或管理员分享，加入后将共享团队订阅与令牌额度')}
+          </div>
+        </div>
+      </div>
+      <div className='td-modal-foot'>
+        <button type='button' className='td-btn td-btn-ghost' onClick={onClose}>
+          {t('取消')}
+        </button>
+        <button
+          type='button'
+          className='td-btn td-btn-primary'
+          disabled={!code.trim() || joining}
+          onClick={onJoin}
+        >
+          <TIcon.Check />
+          {t('加入')}
+        </button>
+      </div>
+    </div>
+  </Modal>
+);
 
 export default MyTeams;

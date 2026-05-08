@@ -18,60 +18,22 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  Button,
-  Modal,
-  Select,
-  Spin,
-  Table,
-  Tag,
-  Typography,
-} from '@douyinfe/semi-ui';
-import { IconRefresh } from '@douyinfe/semi-icons';
+import { Modal, Spin } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 import { API, renderQuota, showError, showSuccess } from '../../../helpers';
+import { TIcon } from '../../Team/teamIcons';
+import {
+  avatarColor,
+  formatStableTime,
+  initials,
+} from '../../Team/teamUiKit';
+import '../../Team/team-design.css';
 import './detail-modal.css';
-
-const { Text } = Typography;
 
 const APP_PENDING = 0;
 const APP_APPROVED = 1;
 const APP_REJECTED = 2;
 const APP_CANCELED = 3;
-
-const STATUS_OPTIONS = (t) => [
-  { value: '0', label: t('待审核') },
-  { value: '-1', label: t('全部状态') },
-  { value: '1', label: t('已通过') },
-  { value: '2', label: t('已驳回') },
-  { value: '3', label: t('已撤回') },
-];
-
-const renderStatus = (status, t) => {
-  switch (status) {
-    case APP_PENDING:
-      return <Tag color='blue'>{t('待审核')}</Tag>;
-    case APP_APPROVED:
-      return <Tag color='green'>{t('已通过')}</Tag>;
-    case APP_REJECTED:
-      return <Tag color='red'>{t('已驳回')}</Tag>;
-    case APP_CANCELED:
-      return <Tag color='grey'>{t('已撤回')}</Tag>;
-    default:
-      return <Tag>{status}</Tag>;
-  }
-};
-
-// Format epoch seconds as "YYYY-MM-DD HH:MM:SS" — stable across locales,
-// matches the design's mono timestamp style.
-const formatStableTime = (ts) => {
-  if (!ts) return '—';
-  const d = new Date(ts * 1000);
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(
-    d.getHours(),
-  )}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-};
 
 // Split a formatted currency string ("$1.23" / "¥0.00") into the leading
 // non-digit symbol and the numeric tail so the design can render the
@@ -83,9 +45,29 @@ const splitCurrency = (formatted) => {
   return { cur: m[1].trim(), val: m[2], unit: m[3].trim() };
 };
 
-// embedded=true is used when this component is rendered inside the Team
-// page tabs container — the outer page already provides max-width chrome
-// and a header, so we drop ours to avoid double-nesting.
+const StatusPill = ({ status, t }) => {
+  if (status === APP_PENDING) {
+    return <span className='td-pill td-pill-warn'>● {t('待审核')}</span>;
+  }
+  if (status === APP_APPROVED) {
+    return (
+      <span className='td-pill td-pill-ok'>
+        <TIcon.Check size={11} />
+        {t('已通过')}
+      </span>
+    );
+  }
+  if (status === APP_REJECTED) {
+    return (
+      <span className='td-pill td-pill-danger'>
+        <TIcon.X size={11} />
+        {t('已驳回')}
+      </span>
+    );
+  }
+  return <span className='td-pill td-pill-muted'>● {t('已撤回')}</span>;
+};
+
 const TeamApplicationsAdmin = ({ embedded = false }) => {
   const { t } = useTranslation();
 
@@ -96,7 +78,6 @@ const TeamApplicationsAdmin = ({ embedded = false }) => {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
 
-  // Detail modal state
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detail, setDetail] = useState(null);
@@ -110,7 +91,9 @@ const TeamApplicationsAdmin = ({ embedded = false }) => {
       params.set('p', page);
       params.set('size', pageSize);
       params.set('status', status);
-      const res = await API.get(`/api/admin/team-applications?${params.toString()}`);
+      const res = await API.get(
+        `/api/admin/team-applications?${params.toString()}`,
+      );
       if (res.data?.success) {
         setItems(res.data.data?.items || []);
         setTotal(res.data.data?.total || 0);
@@ -197,127 +180,174 @@ const TeamApplicationsAdmin = ({ embedded = false }) => {
     }
   };
 
-  const columns = [
-    {
-      title: t('申请人'),
-      dataIndex: 'username',
-      width: 180,
-      render: (text, record) => (
-        <div>
-          <Text strong style={{ fontSize: 13 }}>
-            {record.display_name || text || `#${record.application?.user_id}`}
-          </Text>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-            {text || `ID: ${record.application?.user_id}`}
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: t('团队名称'),
-      dataIndex: 'application',
-      width: 180,
-      render: (app) => <Text style={{ fontSize: 13 }}>{app?.name}</Text>,
-    },
-    {
-      title: t('钱包余额'),
-      dataIndex: 'user_quota',
-      width: 130,
-      render: (q) => <Text style={{ fontSize: 13 }}>{renderQuota(q || 0)}</Text>,
-    },
-    {
-      title: t('状态'),
-      dataIndex: 'application',
-      width: 90,
-      render: (app) => renderStatus(app?.status, t),
-    },
-    {
-      title: t('提交时间'),
-      dataIndex: 'application',
-      width: 170,
-      render: (app) => (
-        <Text style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-          {formatStableTime(app?.created_at)}
-        </Text>
-      ),
-    },
-    {
-      title: t('操作'),
-      dataIndex: 'application',
-      width: 100,
-      render: (app) => (
-        <Button
-          size='small'
-          theme='light'
-          type='primary'
-          onClick={() => openDetail(app?.id)}
-        >
-          {t('查看')}
-        </Button>
-      ),
-    },
-  ];
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeEnd = Math.min(total, page * pageSize);
 
-  return (
-    <div className={embedded ? '' : 'w-full max-w-7xl mx-auto px-4 sm:px-6 py-8'}>
-      <div className='flex items-center justify-between mb-6'>
-        {embedded ? (
-          <Text style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
-            {t('审核用户提交的团队创建申请')}
-          </Text>
-        ) : (
-          <div>
-            <h1 style={{ fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-serif)', color: 'var(--text-primary)', margin: 0 }}>
-              {t('团队审批')}
-            </h1>
-            <Text style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>
-              {t('审核用户提交的团队创建申请')}
-            </Text>
-          </div>
-        )}
-        <div className='flex items-center gap-2'>
-          <Select
-            value={status}
-            onChange={(v) => {
-              setStatus(v);
-              setPage(1);
-            }}
-            optionList={STATUS_OPTIONS(t)}
-            style={{ width: 140 }}
-          />
-          <Button icon={<IconRefresh />} theme='light' onClick={fetchList}>
-            {t('刷新')}
-          </Button>
+  const body = (
+    <>
+      <div className='td-toolbar'>
+        <div className='td-toolbar-hint'>
+          {t('审核用户提交的团队创建申请')}
         </div>
-      </div>
-
-      <div
-        className='rounded-[var(--radius-lg)]'
-        style={{ background: 'var(--surface)', border: '1px solid var(--border-default)', overflow: 'hidden' }}
-      >
-        <Table
-          columns={columns}
-          dataSource={items}
-          loading={loading}
-          rowKey={(r) => r.application?.id}
-          pagination={{
-            currentPage: page,
-            pageSize,
-            total,
-            onChange: (p) => setPage(p),
-            showSizeChanger: false,
+        <select
+          className='td-select'
+          value={status}
+          onChange={(e) => {
+            setStatus(e.target.value);
+            setPage(1);
           }}
-          empty={
-            <div className='text-center py-10' style={{ color: 'var(--text-muted)' }}>
-              {t('暂无申请')}
-            </div>
-          }
-        />
+        >
+          <option value='0'>{t('待审核')}</option>
+          <option value='-1'>{t('全部状态')}</option>
+          <option value='1'>{t('已通过')}</option>
+          <option value='2'>{t('已驳回')}</option>
+          <option value='3'>{t('已撤回')}</option>
+        </select>
+        <button
+          type='button'
+          className='td-btn td-btn-ghost'
+          onClick={fetchList}
+        >
+          <TIcon.Refresh />
+          {t('刷新')}
+        </button>
       </div>
 
-      {/* Design-faithful detail / review modal. Semi <Modal> handles the
-          backdrop, focus trap, and ESC; we strip its chrome (header /
-          footer / close button) and render the design markup as the body. */}
+      <div className='td-table-card'>
+        <div className='td-table-scroll'>
+          <table className='td-t'>
+            <thead>
+              <tr>
+                <th>{t('申请人')}</th>
+                <th>{t('团队名称')}</th>
+                <th>{t('申请理由')}</th>
+                <th className='num' style={{ width: 130 }}>
+                  {t('钱包余额')}
+                </th>
+                <th style={{ width: 110 }}>{t('状态')}</th>
+                <th style={{ width: 170 }}>{t('提交时间')}</th>
+                <th className='actions' style={{ width: 130 }}>
+                  {t('操作')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '36px 16px' }}>
+                    <Spin />
+                  </td>
+                </tr>
+              ) : items.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    style={{ textAlign: 'center', padding: '36px 16px', color: 'var(--td-ink-400)' }}
+                  >
+                    {t('暂无申请')}
+                  </td>
+                </tr>
+              ) : (
+                items.map((row) => {
+                  const app = row.application || {};
+                  const name = row.display_name || row.username || `#${app.user_id}`;
+                  const sub = row.username || `ID: ${app.user_id}`;
+                  const isPending = app.status === APP_PENDING;
+                  return (
+                    <tr key={app.id}>
+                      <td>
+                        <div className='td-user-cell'>
+                          <div className={'td-avatar ' + avatarColor(app.user_id)}>
+                            {initials(name)}
+                          </div>
+                          <div className='info'>
+                            <div className='name'>{name}</div>
+                            <div className='sub'>@{sub}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <strong>{app.name}</strong>
+                      </td>
+                      <td
+                        style={{
+                          color: 'var(--td-ink-500)',
+                          maxWidth: 240,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                        title={app.reason || ''}
+                      >
+                        {app.reason || (
+                          <span style={{ color: 'var(--td-ink-400)' }}>—</span>
+                        )}
+                      </td>
+                      <td className='num'>{renderQuota(row.user_quota || 0)}</td>
+                      <td>
+                        <StatusPill status={app.status} t={t} />
+                      </td>
+                      <td className='td-mono' style={{ color: 'var(--td-ink-500)', fontSize: 12 }}>
+                        {formatStableTime(app.created_at)}
+                      </td>
+                      <td className='actions'>
+                        {isPending ? (
+                          <div style={{ display: 'inline-flex', gap: 6 }}>
+                            <button
+                              type='button'
+                              className='td-btn td-btn-primary td-btn-sm'
+                              onClick={() => openDetail(app.id)}
+                            >
+                              <TIcon.Eye />
+                              {t('审核')}
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type='button'
+                            className='td-btn td-btn-ghost td-btn-sm'
+                            onClick={() => openDetail(app.id)}
+                          >
+                            <TIcon.Eye />
+                            {t('查看')}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className='td-table-foot'>
+          <div>
+            {t('显示第')} {rangeStart} {t('条 - 第')} {rangeEnd} {t('条，共')} {total} {t('条')}
+          </div>
+          <div className='td-pager'>
+            <button
+              type='button'
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              <TIcon.ChevronLeft />
+            </button>
+            <button type='button' className='active'>
+              {page}
+            </button>
+            <button
+              type='button'
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              <TIcon.ChevronRight />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Design-faithful detail / review modal. */}
       <Modal
         visible={detailOpen}
         onCancel={() => setDetailOpen(false)}
@@ -346,11 +376,27 @@ const TeamApplicationsAdmin = ({ embedded = false }) => {
           />
         )}
       </Modal>
+    </>
+  );
+
+  if (embedded) return body;
+  return (
+    <div className='team-design w-full max-w-[1240px] mx-auto px-7 pt-7 pb-20'>
+      <div className='td-head'>
+        <div>
+          <h1 className='td-title'>{t('团队审批')}</h1>
+          <div className='td-sub'>
+            {t('审核用户提交的团队创建申请')}
+          </div>
+        </div>
+      </div>
+      {body}
     </div>
   );
 };
 
-// ---------- Icons (inlined SVG to match the design's stroke widths) ----------
+// ---------- Detail modal icons (own scoped set, kept stylistically distinct
+//            from team-design icons because the modal has its own palette) ----
 
 const IcFile = (p) => (
   <svg width={p.size || 18} height={p.size || 18} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
@@ -423,8 +469,6 @@ const IcCheck = () => (
   </svg>
 );
 
-// ----------------------------- DetailBody -----------------------------
-
 const STATUS_PILL = {
   [APP_PENDING]: { cls: 'warn', label: '待审核' },
   [APP_APPROVED]: { cls: 'ok', label: '已通过' },
@@ -432,7 +476,16 @@ const STATUS_PILL = {
   [APP_CANCELED]: { cls: 'neut', label: '已撤回' },
 };
 
-const DetailBody = ({ t, detail, reviewComment, setReviewComment, onApprove, onReject, onClose, reviewing }) => {
+const DetailBody = ({
+  t,
+  detail,
+  reviewComment,
+  setReviewComment,
+  onApprove,
+  onReject,
+  onClose,
+  reviewing,
+}) => {
   const app = detail.application || {};
   const u = detail.user || {};
   const isPending = app.status === APP_PENDING;
@@ -453,7 +506,6 @@ const DetailBody = ({ t, detail, reviewComment, setReviewComment, onApprove, onR
 
   return (
     <div className='tar-modal'>
-      {/* === header === */}
       <header className='m-head'>
         <div className='left'>
           <div className='ic' aria-hidden='true'>
@@ -468,11 +520,13 @@ const DetailBody = ({ t, detail, reviewComment, setReviewComment, onApprove, onR
               </span>
             </h2>
             <p className='meta'>
-              {t('提交时间')} · <span className='mono'>{formatStableTime(app.created_at)}</span>
+              {t('提交时间')} ·{' '}
+              <span className='mono'>{formatStableTime(app.created_at)}</span>
               {app.reviewed_at ? (
                 <>
                   {' '}
-                  · {t('审核时间')} <span className='mono'>{formatStableTime(app.reviewed_at)}</span>
+                  · {t('审核时间')}{' '}
+                  <span className='mono'>{formatStableTime(app.reviewed_at)}</span>
                 </>
               ) : null}
             </p>
@@ -483,18 +537,17 @@ const DetailBody = ({ t, detail, reviewComment, setReviewComment, onApprove, onR
         </button>
       </header>
 
-      {/* === body === */}
       <div className='body'>
-        {/* reason callout — single-line ribbon */}
         <div className='reason' title={app.reason || ''}>
           <span className='lbl'>
             <IcInfo size={11} />
             {t('申请理由')}
           </span>
-          <span className='val'>{app.reason ? app.reason : <em className='dim'>{t('未填写')}</em>}</span>
+          <span className='val'>
+            {app.reason ? app.reason : <em className='dim'>{t('未填写')}</em>}
+          </span>
         </div>
 
-        {/* applicant info — 4-col grid */}
         <section>
           <div className='sec-h'>
             <IcUser size={12} />
@@ -513,7 +566,6 @@ const DetailBody = ({ t, detail, reviewComment, setReviewComment, onApprove, onR
           </div>
         </section>
 
-        {/* account & billing — 6-col stat strip */}
         <section>
           <div className='sec-h'>
             <IcWallet size={12} />
@@ -530,7 +582,6 @@ const DetailBody = ({ t, detail, reviewComment, setReviewComment, onApprove, onR
           </div>
         </section>
 
-        {/* active subscriptions */}
         <section>
           <div className='sec-h'>
             <IcCrown size={12} />
@@ -558,7 +609,8 @@ const DetailBody = ({ t, detail, reviewComment, setReviewComment, onApprove, onR
                         {sub.plan_title || sub.title || `Plan #${sub.plan_id}`}
                       </span>
                       <span className='sub-sub'>
-                        {t('到期')} <span className='mono'>{formatStableTime(sub.end_time)}</span>
+                        {t('到期')}{' '}
+                        <span className='mono'>{formatStableTime(sub.end_time)}</span>
                       </span>
                     </div>
                     <span className='sub-tag'>{t('生效中')}</span>
@@ -569,7 +621,6 @@ const DetailBody = ({ t, detail, reviewComment, setReviewComment, onApprove, onR
           )}
         </section>
 
-        {/* review opinion (only when pending) */}
         {isPending ? (
           <section>
             <div className='sec-h'>
@@ -601,7 +652,6 @@ const DetailBody = ({ t, detail, reviewComment, setReviewComment, onApprove, onR
         ) : null}
       </div>
 
-      {/* === footer === */}
       <footer className='foot'>
         {isPending ? (
           <>
@@ -653,7 +703,9 @@ const Field = ({ icon, k, v, placeholder }) => {
         {icon}
         {k}
       </span>
-      <span className={`v ${empty ? 'dim' : ''}`}>{empty ? placeholder || '—' : v}</span>
+      <span className={`v ${empty ? 'dim' : ''}`}>
+        {empty ? placeholder || '—' : v}
+      </span>
     </div>
   );
 };

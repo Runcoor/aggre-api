@@ -17,21 +17,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Button,
-  Input,
-  InputNumber,
-  Modal,
-  Popconfirm,
-  Select,
-  Switch,
-  Table,
-  Tag,
-  Typography,
-} from '@douyinfe/semi-ui';
-import { IconPlus, IconRefresh, IconSearch } from '@douyinfe/semi-icons';
-import { Trash2 } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Modal, Spin } from '@douyinfe/semi-ui';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -40,25 +27,20 @@ import {
   showError,
   showSuccess,
 } from '../../../helpers';
-
-const { Text } = Typography;
-
-// Format epoch seconds — same shape as elsewhere on the team admin pages.
-const formatStableTime = (ts) => {
-  if (!ts) return '—';
-  const d = new Date(ts * 1000);
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(
-    d.getHours(),
-  )}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-};
+import { TIcon } from '../../Team/teamIcons';
+import {
+  avatarColor,
+  formatStableTime,
+  initials,
+} from '../../Team/teamUiKit';
+import '../../Team/team-design.css';
 
 // AdminTeamsList renders the global team table with inline status toggle,
-// keyword search, status filter, and a delete flow that requires the
-// admin to type the team name back to confirm.
+// keyword search, status filter, and a delete flow that requires the admin
+// to type the team name back to confirm.
 //
-// embedded=true is for rendering inside the team page tabs container
-// (no max-width chrome, no own header).
+// embedded=true is for rendering inside the team page tabs container —
+// the outer wrapper supplies max-width chrome and design class.
 const AdminTeamsList = ({ embedded = false }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -73,16 +55,16 @@ const AdminTeamsList = ({ embedded = false }) => {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
 
-  // Create-team modal
   const [createOpen, setCreateOpen] = useState(false);
   const [createName, setCreateName] = useState('');
-  const [createOwnerId, setCreateOwnerId] = useState();
+  const [createOwnerId, setCreateOwnerId] = useState('');
   const [creating, setCreating] = useState(false);
 
-  // Delete-team confirm modal
-  const [deleteTarget, setDeleteTarget] = useState(null); // { id, name }
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
+
+  const [statusToggleTarget, setStatusToggleTarget] = useState(null);
 
   const fetchList = useCallback(async () => {
     setLoading(true);
@@ -116,22 +98,23 @@ const AdminTeamsList = ({ embedded = false }) => {
     fetchList();
   };
 
-  const onToggleStatus = async (row, nextActive) => {
-    const teamId = row?.team?.id;
-    if (!teamId) return;
-    const nextStatus = nextActive ? 1 : 2;
+  const onConfirmStatusToggle = async () => {
+    const target = statusToggleTarget;
+    if (!target) return;
     try {
-      const res = await API.put(`/api/admin/teams/${teamId}`, {
-        status: nextStatus,
+      const res = await API.put(`/api/admin/teams/${target.id}`, {
+        status: target.nextActive ? 1 : 2,
       });
       if (res.data?.success) {
-        showSuccess(nextActive ? t('已启用团队') : t('已禁用团队'));
+        showSuccess(target.nextActive ? t('已启用团队') : t('已禁用团队'));
         fetchList();
       } else {
         showError(res.data?.message || t('操作失败'));
       }
     } catch {
       showError(t('请求失败'));
+    } finally {
+      setStatusToggleTarget(null);
     }
   };
 
@@ -144,13 +127,16 @@ const AdminTeamsList = ({ embedded = false }) => {
     setCreating(true);
     try {
       const payload = { name };
-      if (createOwnerId && createOwnerId > 0) payload.owner_id = createOwnerId;
+      const ownerId = parseInt(createOwnerId, 10);
+      if (Number.isFinite(ownerId) && ownerId > 0) {
+        payload.owner_id = ownerId;
+      }
       const res = await API.post('/api/admin/teams', payload);
       if (res.data?.success) {
         showSuccess(t('团队创建成功'));
         setCreateOpen(false);
         setCreateName('');
-        setCreateOwnerId(undefined);
+        setCreateOwnerId('');
         fetchList();
       } else {
         showError(res.data?.message || t('创建失败'));
@@ -189,384 +175,464 @@ const AdminTeamsList = ({ embedded = false }) => {
   const renderStatusPill = (row) => {
     const team = row?.team;
     if (!team) return null;
-    if (team?.deleted_at) {
-      return <Tag color='grey'>{t('已删除')}</Tag>;
+    if (team.deleted_at) {
+      return <span className='td-pill td-pill-muted'>● {t('已删除')}</span>;
     }
-    if (team.status === 2) return <Tag color='red'>{t('已禁用')}</Tag>;
-    return <Tag color='green'>{t('正常')}</Tag>;
+    if (team.status === 2) {
+      return <span className='td-pill td-pill-muted'>● {t('已禁用')}</span>;
+    }
+    return <span className='td-pill td-pill-ok'>● {t('正常')}</span>;
   };
 
-  const columns = useMemo(
-    () => [
-      {
-        title: 'ID',
-        dataIndex: 'team',
-        width: 70,
-        render: (team) => (
-          <Text style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            #{team?.id}
-          </Text>
-        ),
-      },
-      {
-        title: t('团队名称'),
-        dataIndex: 'team',
-        width: 180,
-        render: (team) => (
-          <Text strong style={{ fontSize: 13 }}>
-            {team?.name}
-          </Text>
-        ),
-      },
-      {
-        title: t('Owner'),
-        dataIndex: 'owner',
-        width: 200,
-        render: (owner) =>
-          owner ? (
-            <div>
-              <Text style={{ fontSize: 13 }}>
-                {owner.display_name || owner.username || `#${owner.id}`}
-              </Text>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                {owner.email || `ID: ${owner.id}`}
-              </div>
-            </div>
-          ) : (
-            <Text style={{ fontSize: 12, color: 'var(--text-muted)' }}>—</Text>
-          ),
-      },
-      {
-        title: t('状态'),
-        width: 100,
-        render: (_, row) => renderStatusPill(row),
-      },
-      {
-        title: t('成员数'),
-        dataIndex: 'member_count',
-        width: 80,
-        render: (n) => <Text style={{ fontSize: 13 }}>{n || 0}</Text>,
-      },
-      {
-        title: t('活跃订阅'),
-        dataIndex: 'active_subscription_count',
-        width: 90,
-        render: (n) => <Text style={{ fontSize: 13 }}>{n || 0}</Text>,
-      },
-      {
-        title: t('今日消费'),
-        dataIndex: 'today_quota',
-        width: 110,
-        render: (q) => (
-          <Text style={{ fontSize: 13 }}>{renderQuota(q || 0)}</Text>
-        ),
-      },
-      {
-        title: t('创建时间'),
-        dataIndex: 'team',
-        width: 160,
-        render: (team) => (
-          <Text style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            {formatStableTime(team?.created_at)}
-          </Text>
-        ),
-      },
-      {
-        title: t('操作'),
-        width: 220,
-        render: (_, row) => {
-          const team = row?.team;
-          const isDeleted = !!team?.deleted_at;
-          const isActive = team?.status === 1;
-          return (
-            <div className='flex items-center gap-2'>
-              <Button
-                size='small'
-                theme='light'
-                type='primary'
-                onClick={() => navigate(`/console/admin/teams/${team.id}`)}
-              >
-                {t('查看')}
-              </Button>
-              {!isDeleted && (
-                <Popconfirm
-                  title={
-                    isActive ? t('确定禁用该团队？') : t('确定启用该团队？')
-                  }
-                  content={
-                    isActive
-                      ? t('禁用后该团队所有 token 将立即失效')
-                      : t('启用后该团队的 token 将恢复可用')
-                  }
-                  onConfirm={() => onToggleStatus(row, !isActive)}
-                >
-                  <Switch
-                    checked={isActive}
-                    size='small'
-                    aria-label={t('启用/禁用')}
-                  />
-                </Popconfirm>
-              )}
-              {!isDeleted && (
-                <Button
-                  size='small'
-                  type='danger'
-                  theme='light'
-                  icon={<Trash2 size={14} />}
-                  onClick={() =>
-                    setDeleteTarget({ id: team.id, name: team.name })
-                  }
-                />
-              )}
-            </div>
-          );
-        },
-      },
-    ],
-    [t, navigate],
-  );
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeEnd = Math.min(total, page * pageSize);
 
-  return (
-    <div className={embedded ? '' : 'w-full max-w-7xl mx-auto px-4 sm:px-6 py-8'}>
-      {!embedded && (
-        <div className='mb-6'>
-          <h1
-            style={{
-              fontSize: 24,
-              fontWeight: 800,
-              fontFamily: 'var(--font-serif)',
-              color: 'var(--text-primary)',
-              margin: 0,
-            }}
-          >
-            {t('全局团队管理')}
-          </h1>
-          <Text
-            style={{
-              color: 'var(--text-secondary)',
-              fontSize: 13,
-              marginTop: 4,
-            }}
-          >
-            {t('管理系统中所有团队，包括成员、订阅、用量与启停')}
-          </Text>
-        </div>
-      )}
-
-      {/* Toolbar */}
-      <div className='flex items-center justify-between gap-3 mb-4 flex-wrap'>
-        <div className='flex items-center gap-2 flex-wrap'>
-          <Input
+  const body = (
+    <>
+      <div className='td-toolbar'>
+        <div className='td-search'>
+          <TIcon.Search />
+          <input
+            placeholder={t('搜索 团队名 / Owner / 邮箱')}
             value={keyword}
-            onChange={setKeyword}
-            placeholder={t('团队名 / Owner / 邮箱')}
-            prefix={<IconSearch />}
-            onEnterPress={onSearchSubmit}
-            showClear
-            style={{ width: 280 }}
-          />
-          <Select
-            value={statusFilter}
-            onChange={(v) => {
-              setStatusFilter(v);
-              setPage(1);
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') onSearchSubmit();
             }}
-            optionList={[
-              { value: 'all', label: t('全部状态') },
-              { value: 'active', label: t('正常') },
-              { value: 'disabled', label: t('已禁用') },
-            ]}
-            style={{ width: 130 }}
           />
-          <div className='flex items-center gap-1'>
-            <Switch
-              checked={includeDeleted}
-              onChange={(v) => {
-                setIncludeDeleted(v);
-                setPage(1);
-              }}
-              size='small'
-              aria-label={t('包含已删除')}
-            />
-            <Text style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-              {t('包含已删除')}
-            </Text>
-          </div>
-          <Button icon={<IconRefresh />} theme='light' onClick={fetchList}>
-            {t('刷新')}
-          </Button>
         </div>
-        <Button
-          theme='solid'
-          type='primary'
-          icon={<IconPlus />}
-          onClick={() => setCreateOpen(true)}
-          style={{
-            borderRadius: 'var(--radius-md)',
-            background: 'var(--accent-gradient)',
-            border: 'none',
-            fontWeight: 600,
+        <select
+          className='td-select'
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setPage(1);
           }}
         >
-          {t('新建团队')}
-        </Button>
+          <option value='all'>{t('全部状态')}</option>
+          <option value='active'>{t('正常')}</option>
+          <option value='disabled'>{t('已禁用')}</option>
+        </select>
+        <label className='td-toggle-row'>
+          <button
+            type='button'
+            className={'td-switch' + (includeDeleted ? ' on' : '')}
+            onClick={() => {
+              setIncludeDeleted((v) => !v);
+              setPage(1);
+            }}
+            aria-label={t('包含已删除')}
+          />
+          {t('包含已删除')}
+        </label>
+        <button
+          type='button'
+          className='td-btn td-btn-ghost'
+          onClick={fetchList}
+        >
+          <TIcon.Refresh />
+          {t('刷新')}
+        </button>
+        <div className='td-toolbar-right'>
+          <button
+            type='button'
+            className='td-btn td-btn-primary'
+            onClick={() => setCreateOpen(true)}
+          >
+            <TIcon.Plus />
+            {t('新建团队')}
+          </button>
+        </div>
       </div>
 
-      {/* Table */}
-      <div
-        className='rounded-[var(--radius-lg)]'
-        style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--border-default)',
-          overflow: 'hidden',
-        }}
-      >
-        <Table
-          dataSource={items}
-          columns={columns}
-          loading={loading}
-          rowKey={(r) => r?.team?.id}
-          pagination={{
-            currentPage: page,
-            pageSize,
-            total,
-            onPageChange: (p) => setPage(p),
-          }}
-          empty={
-            <div
-              className='py-12 text-center'
-              style={{ color: 'var(--text-muted)' }}
-            >
-              {t('暂无数据')}
-            </div>
-          }
-        />
-      </div>
-
-      {/* Create modal */}
-      <Modal
-        title={t('新建团队')}
-        visible={createOpen}
-        onCancel={() => setCreateOpen(false)}
-        onOk={onCreate}
-        confirmLoading={creating}
-        okText={t('创建')}
-        cancelText={t('取消')}
-        centered
-      >
-        <div className='space-y-4 py-2'>
+      <div className='td-table-card'>
+        <div className='td-table-scroll'>
+          <table className='td-t'>
+            <thead>
+              <tr>
+                <th style={{ width: 70 }}>ID</th>
+                <th>{t('团队')}</th>
+                <th>{t('Owner')}</th>
+                <th>{t('状态')}</th>
+                <th className='num'>{t('成员')}</th>
+                <th className='num'>{t('活跃订阅')}</th>
+                <th className='num'>{t('今日消费')}</th>
+                <th>{t('创建时间')}</th>
+                <th className='actions'>{t('操作')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: '36px 16px' }}>
+                    <Spin />
+                  </td>
+                </tr>
+              ) : items.length === 0 ? (
+                <tr>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: '36px 16px', color: 'var(--td-ink-400)' }}>
+                    {t('暂无数据')}
+                  </td>
+                </tr>
+              ) : (
+                items.map((row) => {
+                  const team = row?.team || {};
+                  const owner = row?.owner;
+                  const isDeleted = !!team.deleted_at;
+                  const isActive = team.status === 1;
+                  return (
+                    <tr key={team.id}>
+                      <td className='id-cell'>#{team.id}</td>
+                      <td>
+                        <div className='td-user-cell'>
+                          <div className={'td-avatar ' + avatarColor(team.id)}>
+                            {initials(team.name)}
+                          </div>
+                          <div className='info'>
+                            <div className='name'>{team.name}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        {owner ? (
+                          <div style={{ lineHeight: 1.35 }}>
+                            <div style={{ fontWeight: 500 }}>
+                              {owner.display_name || owner.username || `#${owner.id}`}
+                            </div>
+                            <div
+                              style={{ fontSize: 11.5, color: 'var(--td-ink-400)' }}
+                              className={owner.email ? '' : 'td-mono'}
+                            >
+                              {owner.email || `ID: ${owner.id}`}
+                            </div>
+                          </div>
+                        ) : (
+                          <span style={{ color: 'var(--td-ink-400)' }}>—</span>
+                        )}
+                      </td>
+                      <td>{renderStatusPill(row)}</td>
+                      <td className='num'>{row.member_count || 0}</td>
+                      <td className='num'>{row.active_subscription_count || 0}</td>
+                      <td className='num'>{renderQuota(row.today_quota || 0)}</td>
+                      <td className='td-mono' style={{ color: 'var(--td-ink-500)', fontSize: 12 }}>
+                        {formatStableTime(team.created_at)}
+                      </td>
+                      <td className='actions'>
+                        <div style={{ display: 'inline-flex', gap: 6 }}>
+                          <button
+                            type='button'
+                            className='td-btn td-btn-ghost td-btn-sm'
+                            onClick={() => navigate(`/console/admin/teams/${team.id}`)}
+                          >
+                            <TIcon.Eye />
+                            {t('查看')}
+                          </button>
+                          {!isDeleted && (
+                            <button
+                              type='button'
+                              className='td-icon-btn'
+                              title={isActive ? t('禁用') : t('启用')}
+                              onClick={() =>
+                                setStatusToggleTarget({
+                                  id: team.id,
+                                  name: team.name,
+                                  isActive,
+                                  nextActive: !isActive,
+                                })
+                              }
+                            >
+                              <TIcon.Power />
+                            </button>
+                          )}
+                          {!isDeleted && (
+                            <button
+                              type='button'
+                              className='td-icon-btn danger'
+                              title={t('删除')}
+                              onClick={() =>
+                                setDeleteTarget({ id: team.id, name: team.name })
+                              }
+                            >
+                              <TIcon.Trash />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className='td-table-foot'>
           <div>
-            <Text
-              style={{
-                fontSize: 13,
-                color: 'var(--text-secondary)',
-                display: 'block',
-                marginBottom: 6,
-              }}
-            >
-              {t('团队名称')}
-            </Text>
-            <Input
-              value={createName}
-              onChange={setCreateName}
-              placeholder={t('输入团队名称')}
-              showClear
-            />
+            {t('显示第')} {rangeStart} {t('条 - 第')} {rangeEnd} {t('条，共')} {total} {t('条')}
           </div>
-          <div>
-            <Text
-              style={{
-                fontSize: 13,
-                color: 'var(--text-secondary)',
-                display: 'block',
-                marginBottom: 6,
-              }}
+          <div className='td-pager'>
+            <button
+              type='button'
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
-              {t('Owner 用户 ID（留空则你自己）')}
-            </Text>
-            <InputNumber
-              value={createOwnerId}
-              onChange={setCreateOwnerId}
-              min={1}
-              placeholder={t('用户 ID')}
-              style={{ width: '100%' }}
-            />
+              <TIcon.ChevronLeft />
+            </button>
+            <button type='button' className='active'>
+              {page}
+            </button>
+            <button
+              type='button'
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              <TIcon.ChevronRight />
+            </button>
           </div>
         </div>
-      </Modal>
+      </div>
 
-      {/* Delete confirm modal */}
-      <Modal
-        title={t('删除团队')}
-        visible={!!deleteTarget}
-        onCancel={() => {
+      <CreateTeamModal
+        visible={createOpen}
+        name={createName}
+        ownerId={createOwnerId}
+        creating={creating}
+        onName={setCreateName}
+        onOwnerId={setCreateOwnerId}
+        onClose={() => setCreateOpen(false)}
+        onCreate={onCreate}
+        t={t}
+      />
+
+      <DeleteTeamModal
+        target={deleteTarget}
+        confirm={deleteConfirmText}
+        deleting={deleting}
+        onConfirm={setDeleteConfirmText}
+        onClose={() => {
           setDeleteTarget(null);
           setDeleteConfirmText('');
         }}
-        footer={
-          <div className='flex justify-end gap-2'>
-            <Button
-              theme='light'
-              onClick={() => {
-                setDeleteTarget(null);
-                setDeleteConfirmText('');
-              }}
-            >
-              {t('取消')}
-            </Button>
-            <Button
-              type='danger'
-              theme='solid'
-              loading={deleting}
-              onClick={onDelete}
-              disabled={
-                !deleteTarget ||
-                deleteConfirmText.trim() !== deleteTarget?.name
-              }
-            >
-              {t('确认删除')}
-            </Button>
+        onDelete={onDelete}
+        t={t}
+      />
+
+      <StatusToggleModal
+        target={statusToggleTarget}
+        onClose={() => setStatusToggleTarget(null)}
+        onConfirm={onConfirmStatusToggle}
+        t={t}
+      />
+    </>
+  );
+
+  if (embedded) return body;
+  return (
+    <div className='team-design w-full max-w-[1240px] mx-auto px-7 pt-7 pb-20'>
+      <div className='td-head'>
+        <div>
+          <h1 className='td-title'>{t('全局团队管理')}</h1>
+          <div className='td-sub'>
+            {t('管理系统中所有团队，包括成员、订阅、用量与启停')}
           </div>
-        }
-        centered
-      >
-        {deleteTarget && (
-          <div className='space-y-3 py-2'>
-            <div
-              className='rounded-md p-3 text-sm'
-              style={{
-                background: 'rgba(220, 38, 38, 0.06)',
-                color: 'var(--danger, #dc2626)',
-                border: '1px solid rgba(220, 38, 38, 0.18)',
-              }}
-            >
-              {t(
-                '该操作会软删团队及其成员、令牌，并终止所有活跃订阅（不退款）',
-              )}
-            </div>
-            <div>
-              <Text
-                style={{
-                  fontSize: 13,
-                  color: 'var(--text-secondary)',
-                  display: 'block',
-                  marginBottom: 6,
-                }}
-              >
-                {t('请输入团队名称')} <strong>「{deleteTarget.name}」</strong>{' '}
-                {t('以确认')}
-              </Text>
-              <Input
-                value={deleteConfirmText}
-                onChange={setDeleteConfirmText}
-                placeholder={deleteTarget.name}
-              />
-            </div>
-          </div>
-        )}
-      </Modal>
+        </div>
+      </div>
+      {body}
     </div>
   );
 };
+
+const CreateTeamModal = ({ visible, name, ownerId, creating, onName, onOwnerId, onClose, onCreate, t }) => (
+  <Modal
+    visible={visible}
+    onCancel={onClose}
+    header={null}
+    footer={null}
+    closable={false}
+    centered
+    width={480}
+    className='td-modal-host'
+    bodyStyle={{ padding: 0 }}
+  >
+    <div className='td-modal'>
+      <div className='td-modal-head'>
+        <div className='left'>
+          <div className='ic-wrap'>
+            <TIcon.Plus size={18} />
+          </div>
+          <div>
+            <h3>{t('新建团队')}</h3>
+            <p>{t('作为管理员，可直接为任意用户创建团队')}</p>
+          </div>
+        </div>
+        <button type='button' className='td-modal-close' onClick={onClose}>
+          <TIcon.X />
+        </button>
+      </div>
+      <div className='td-modal-body'>
+        <div className='td-form-row'>
+          <label className='td-form-label'>
+            {t('团队名称')}
+            <span className='req'>*</span>
+          </label>
+          <input
+            className='td-form-input'
+            placeholder={t('输入团队名称')}
+            value={name}
+            onChange={(e) => onName(e.target.value)}
+            maxLength={24}
+          />
+        </div>
+        <div className='td-form-row'>
+          <label className='td-form-label'>
+            {t('Owner 用户 ID')}
+            <span className='td-form-label-aside'>{t('留空则为你自己')}</span>
+          </label>
+          <input
+            className='td-form-input mono'
+            type='number'
+            placeholder={t('用户 ID')}
+            value={ownerId}
+            onChange={(e) => onOwnerId(e.target.value)}
+            min={1}
+          />
+          <div className='td-form-hint'>
+            {t('指定后该团队将归属此用户，可在创建后再次转让')}
+          </div>
+        </div>
+      </div>
+      <div className='td-modal-foot'>
+        <button type='button' className='td-btn td-btn-ghost' onClick={onClose}>
+          {t('取消')}
+        </button>
+        <button
+          type='button'
+          className='td-btn td-btn-primary'
+          disabled={!name.trim() || creating}
+          onClick={onCreate}
+        >
+          <TIcon.Check />
+          {t('创建')}
+        </button>
+      </div>
+    </div>
+  </Modal>
+);
+
+const DeleteTeamModal = ({ target, confirm, deleting, onConfirm, onClose, onDelete, t }) => (
+  <Modal
+    visible={!!target}
+    onCancel={onClose}
+    header={null}
+    footer={null}
+    closable={false}
+    centered
+    width={480}
+    className='td-modal-host'
+    bodyStyle={{ padding: 0 }}
+  >
+    {target && (
+      <div className='td-modal'>
+        <div className='td-modal-head'>
+          <div className='left'>
+            <div className='ic-wrap danger'>
+              <TIcon.Trash size={18} />
+            </div>
+            <div>
+              <h3>{t('删除团队？')}</h3>
+              <p>
+                {t('删除后无法恢复，所有团队令牌、订阅与用量记录会一并移除。')}
+              </p>
+            </div>
+          </div>
+          <button type='button' className='td-modal-close' onClick={onClose}>
+            <TIcon.X />
+          </button>
+        </div>
+        <div className='td-modal-body'>
+          <div className='td-form-row'>
+            <label className='td-form-label'>
+              {t('输入团队名称以确认')}
+              <span className='td-form-label-aside'>{t('不可恢复')}</span>
+            </label>
+            <input
+              className='td-form-input mono'
+              placeholder={target.name}
+              value={confirm}
+              onChange={(e) => onConfirm(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className='td-modal-foot'>
+          <button type='button' className='td-btn td-btn-ghost' onClick={onClose}>
+            {t('取消')}
+          </button>
+          <button
+            type='button'
+            className='td-btn td-btn-danger-ghost'
+            disabled={confirm.trim() !== target.name || deleting}
+            onClick={onDelete}
+          >
+            <TIcon.Trash />
+            {t('永久删除')}
+          </button>
+        </div>
+      </div>
+    )}
+  </Modal>
+);
+
+const StatusToggleModal = ({ target, onClose, onConfirm, t }) => (
+  <Modal
+    visible={!!target}
+    onCancel={onClose}
+    header={null}
+    footer={null}
+    closable={false}
+    centered
+    width={440}
+    className='td-modal-host'
+    bodyStyle={{ padding: 0 }}
+  >
+    {target && (
+      <div className='td-modal'>
+        <div className='td-modal-head'>
+          <div className='left'>
+            <div className={'ic-wrap' + (target.isActive ? ' warn' : '')}>
+              <TIcon.Power size={18} />
+            </div>
+            <div>
+              <h3>
+                {target.isActive ? t('禁用团队？') : t('启用团队？')}
+              </h3>
+              <p>
+                {target.isActive
+                  ? t('禁用后该团队的所有令牌将立即返回 401，可随时启用。')
+                  : t('启用后该团队的令牌将恢复可用。')}
+              </p>
+            </div>
+          </div>
+          <button type='button' className='td-modal-close' onClick={onClose}>
+            <TIcon.X />
+          </button>
+        </div>
+        <div className='td-modal-foot'>
+          <button type='button' className='td-btn td-btn-ghost' onClick={onClose}>
+            {t('取消')}
+          </button>
+          <button
+            type='button'
+            className={
+              target.isActive ? 'td-btn td-btn-warn-ghost' : 'td-btn td-btn-primary'
+            }
+            onClick={onConfirm}
+          >
+            {target.isActive ? t('确认禁用') : t('确认启用')}
+          </button>
+        </div>
+      </div>
+    )}
+  </Modal>
+);
 
 export default AdminTeamsList;

@@ -18,26 +18,22 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { lazy, Suspense, useMemo } from 'react';
-import { Spin, Tabs, TabPane, Typography } from '@douyinfe/semi-ui';
+import { Spin } from '@douyinfe/semi-ui';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isAdmin } from '../../helpers';
 import MyTeams from './MyTeams';
+import './team-design.css';
 
 // Admin tabs are admin-only and bigger payloads — lazy load so common
 // users never download them.
 const AdminTeamsList = lazy(() => import('../Admin/Teams'));
 const TeamApplicationsAdmin = lazy(() => import('../Admin/TeamApplications'));
 
-const { Text } = Typography;
-
 // Container page for /console/team. Hosts up to three tabs:
 //   - "我的团队" (everyone): the user's own teams + apply/join flow
 //   - "全局团队" (admin): admin control plane over every team in the system
 //   - "审批申请" (admin): review queue for team-creation applications
-//
-// Tab is synced to ?tab= so deep-links keep working — that's also how the
-// legacy /console/team-applications redirect lands here.
 const TeamPage = () => {
   const { t } = useTranslation();
   const admin = isAdmin();
@@ -46,8 +42,6 @@ const TeamPage = () => {
   const validTabs = useMemo(() => {
     const tabs = ['mine'];
     if (admin) {
-      // 'admin-list' will be enabled in the next commit — keep the key
-      // recognized so deep-links don't bounce when it ships.
       tabs.push('admin-list');
       tabs.push('applications');
     }
@@ -65,42 +59,59 @@ const TeamPage = () => {
   };
 
   return (
-    <div className='w-full max-w-7xl mx-auto px-4 sm:px-6 py-8'>
-      <div className='mb-6'>
-        <h1 style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-serif)', color: 'var(--text-primary)', margin: 0 }}>
-          {t('团队管理')}
-        </h1>
-        <Text style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
-          {admin
-            ? t('管理你加入的团队，并审核所有团队申请')
-            : t('管理你加入的团队，或申请创建新团队')}
-        </Text>
+    <div className='team-design w-full max-w-[1240px] mx-auto px-7 pt-7 pb-20'>
+      <div className='td-head'>
+        <div>
+          <h1 className='td-title'>{t('团队管理')}</h1>
+          <div className='td-sub'>
+            {admin
+              ? t('审核全平台团队申请，管理你加入的团队')
+              : t('管理你加入的团队，与成员共享订阅与令牌额度')}
+          </div>
+        </div>
       </div>
 
-      <Tabs
-        type='line'
-        activeKey={activeTab}
-        onChange={onTabChange}
-        size='large'
-      >
-        <TabPane tab={t('我的团队')} itemKey='mine'>
-          <MyTeams />
-        </TabPane>
+      <div className='td-tab-bar'>
+        <button
+          type='button'
+          className={'td-tab' + (activeTab === 'mine' ? ' active' : '')}
+          onClick={() => onTabChange('mine')}
+        >
+          {t('我的团队')}
+        </button>
         {admin && (
-          <TabPane tab={t('全局团队')} itemKey='admin-list'>
-            <Suspense fallback={<div className='py-12 text-center'><Spin /></div>}>
-              <AdminTeamsList embedded />
-            </Suspense>
-          </TabPane>
+          <button
+            type='button'
+            className={'td-tab' + (activeTab === 'admin-list' ? ' active' : '')}
+            onClick={() => onTabChange('admin-list')}
+          >
+            {t('全局团队')}
+          </button>
         )}
         {admin && (
-          <TabPane tab={t('审批申请')} itemKey='applications'>
-            <Suspense fallback={<div className='py-12 text-center'><Spin /></div>}>
-              <TeamApplicationsAdmin embedded />
-            </Suspense>
-          </TabPane>
+          <button
+            type='button'
+            className={'td-tab' + (activeTab === 'applications' ? ' active' : '')}
+            onClick={() => onTabChange('applications')}
+          >
+            {t('审批申请')}
+          </button>
         )}
-      </Tabs>
+      </div>
+
+      {activeTab === 'mine' && <MyTeams />}
+
+      {activeTab === 'admin-list' && admin && (
+        <Suspense fallback={<div className='py-12 text-center'><Spin /></div>}>
+          <AdminTeamsList embedded />
+        </Suspense>
+      )}
+
+      {activeTab === 'applications' && admin && (
+        <Suspense fallback={<div className='py-12 text-center'><Spin /></div>}>
+          <TeamApplicationsAdmin embedded />
+        </Suspense>
+      )}
     </div>
   );
 };

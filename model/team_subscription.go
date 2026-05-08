@@ -330,6 +330,38 @@ func AdminBindTeamSubscription(teamId int, buyerUserId int, planId int, sourceNo
 	})
 }
 
+// AdminTerminateTeamSubscriptionForTeam cancels an active subscription for
+// a specific team, validating that the subscription actually belongs to
+// that team. The admin id and an optional reason are recorded on the
+// source field for audit. Refuses to terminate already-cancelled rows.
+func AdminTerminateTeamSubscriptionForTeam(teamId int, userSubscriptionId int, adminUserId int, reason string) error {
+	if teamId <= 0 || userSubscriptionId <= 0 {
+		return errors.New("invalid args")
+	}
+	if reason == "" {
+		reason = "admin_terminated"
+	}
+	now := common.GetTimestamp()
+	return DB.Transaction(func(tx *gorm.DB) error {
+		var sub UserSubscription
+		err := tx.Set("gorm:query_option", "FOR UPDATE").
+			Where("id = ? AND team_id = ?", userSubscriptionId, teamId).
+			First(&sub).Error
+		if err != nil {
+			return err
+		}
+		if sub.Status != "active" {
+			return errors.New("subscription is not active")
+		}
+		return tx.Model(&sub).Updates(map[string]interface{}{
+			"status":     "cancelled",
+			"end_time":   now,
+			"source":     fmt.Sprintf("admin:%d:%s", adminUserId, reason),
+			"updated_at": now,
+		}).Error
+	})
+}
+
 // AdminInvalidateTeamSubscription cancels a team subscription immediately.
 // Unlike the personal counterpart it doesn't touch User.group because team
 // subscriptions never elevated it.

@@ -296,6 +296,108 @@ func AdminTransferTeamOwnershipHandler(c *gin.Context) {
 	common.ApiSuccess(c, nil)
 }
 
+// ─── Team-bound tokens ───
+
+// AdminListTeamTokens returns the tokens bound to a team. Keys are masked.
+func AdminListTeamTokens(c *gin.Context) {
+	teamId, ok := parseTeamIdParam(c)
+	if !ok {
+		return
+	}
+	tokens, err := model.ListTeamOwnedTokens(teamId)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, tokens)
+}
+
+// AdminDeleteTeamToken soft-deletes a single team-bound token.
+func AdminDeleteTeamToken(c *gin.Context) {
+	teamId, ok := parseTeamIdParam(c)
+	if !ok {
+		return
+	}
+	tokenId, _ := strconv.Atoi(c.Param("token_id"))
+	if tokenId <= 0 {
+		common.ApiErrorMsg(c, "无效的令牌ID")
+		return
+	}
+	if err := model.DeleteTeamOwnedToken(teamId, tokenId); err != nil {
+		common.ApiErrorMsg(c, err.Error())
+		return
+	}
+	common.ApiSuccess(c, nil)
+}
+
+// ─── Subscriptions ───
+
+// AdminListTeamSubscriptions returns active + historical team subscriptions.
+func AdminListTeamSubscriptions(c *gin.Context) {
+	teamId, ok := parseTeamIdParam(c)
+	if !ok {
+		return
+	}
+	active, err := model.GetAllActiveTeamSubscriptions(teamId)
+	if err != nil {
+		active = []model.SubscriptionSummary{}
+	}
+	all, err := model.GetAllTeamSubscriptions(teamId)
+	if err != nil {
+		all = []model.SubscriptionSummary{}
+	}
+	common.ApiSuccess(c, gin.H{
+		"team_id":            teamId,
+		"active":             active,
+		"all_subscriptions":  all,
+	})
+}
+
+// AdminTerminateTeamSubscriptionRequest carries the optional admin reason.
+type AdminTerminateTeamSubscriptionRequest struct {
+	Reason string `json:"reason"`
+}
+
+// AdminTerminateTeamSubscription cancels one active subscription owned by
+// the team. The admin id and reason are stamped on the audit source field.
+// Refunds are NOT performed — termination is a billing-stop signal only.
+func AdminTerminateTeamSubscription(c *gin.Context) {
+	teamId, ok := parseTeamIdParam(c)
+	if !ok {
+		return
+	}
+	subId, _ := strconv.Atoi(c.Param("sub_id"))
+	if subId <= 0 {
+		common.ApiErrorMsg(c, "无效的订阅ID")
+		return
+	}
+	var req AdminTerminateTeamSubscriptionRequest
+	_ = c.ShouldBindJSON(&req)
+	adminId := c.GetInt("id")
+	if err := model.AdminTerminateTeamSubscriptionForTeam(teamId, subId, adminId, strings.TrimSpace(req.Reason)); err != nil {
+		common.ApiErrorMsg(c, err.Error())
+		return
+	}
+	common.ApiSuccess(c, nil)
+}
+
+// ─── Usage ───
+
+// AdminGetTeamUsage returns the full usage report for a team.
+func AdminGetTeamUsage(c *gin.Context) {
+	teamId, ok := parseTeamIdParam(c)
+	if !ok {
+		return
+	}
+	days, _ := strconv.Atoi(c.DefaultQuery("days", "30"))
+	report, err := model.GetTeamUsageReport(teamId, days)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, report)
+}
+
 // parseTeamIdParam extracts and validates :id from the URL.
 func parseTeamIdParam(c *gin.Context) (int, bool) {
 	teamId, _ := strconv.Atoi(c.Param("id"))

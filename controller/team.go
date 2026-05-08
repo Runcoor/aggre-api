@@ -218,32 +218,6 @@ func GetTeamMembers(c *gin.Context) {
 	common.ApiSuccess(c, members)
 }
 
-type UpdateMemberRequest struct {
-	QuotaLimit int `json:"quota_limit"`
-}
-
-func UpdateTeamMember(c *gin.Context) {
-	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleOwner)
-	if !ok {
-		return
-	}
-	targetUserId, _ := strconv.Atoi(c.Param("user_id"))
-	if targetUserId <= 0 {
-		common.ApiErrorMsg(c, "无效的用户ID")
-		return
-	}
-	var req UpdateMemberRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.ApiErrorMsg(c, "参数错误")
-		return
-	}
-	if err := model.UpdateTeamMemberQuotaLimit(team.Id, targetUserId, req.QuotaLimit); err != nil {
-		common.ApiError(c, err)
-		return
-	}
-	common.ApiSuccess(c, nil)
-}
-
 func RemoveTeamMember(c *gin.Context) {
 	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleOwner)
 	if !ok {
@@ -263,111 +237,6 @@ func RemoveTeamMember(c *gin.Context) {
 		return
 	}
 	common.ApiSuccess(c, nil)
-}
-
-// ─── Quota ───
-
-type TopUpTeamQuotaRequest struct {
-	Quota int `json:"quota"`
-}
-
-func TopUpTeamQuota(c *gin.Context) {
-	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleOwner)
-	if !ok {
-		return
-	}
-	var req TopUpTeamQuotaRequest
-	if err := c.ShouldBindJSON(&req); err != nil || req.Quota <= 0 {
-		common.ApiErrorMsg(c, "充值额度必须大于0")
-		return
-	}
-	userId := c.GetInt("id")
-	// Deduct from owner's personal quota
-	userQuota, err := model.GetUserQuota(userId, true)
-	if err != nil {
-		common.ApiError(c, err)
-		return
-	}
-	if userQuota < req.Quota {
-		common.ApiErrorMsg(c, "个人额度不足")
-		return
-	}
-	if err := model.DecreaseUserQuota(userId, req.Quota); err != nil {
-		common.ApiError(c, err)
-		return
-	}
-	if err := model.IncreaseTeamQuota(team.Id, req.Quota); err != nil {
-		// Rollback
-		_ = model.IncreaseUserQuota(userId, req.Quota, true)
-		common.ApiError(c, err)
-		return
-	}
-	common.ApiSuccess(c, nil)
-}
-
-// ─── Token linking ───
-
-func GetAvailableTokensForTeam(c *gin.Context) {
-	_, _, ok := getTeamAndVerifyRole(c, model.TeamRoleMember)
-	if !ok {
-		return
-	}
-	userId := c.GetInt("id")
-	tokens, err := model.GetUserAvailableTokensForTeam(userId)
-	if err != nil {
-		common.ApiError(c, err)
-		return
-	}
-	common.ApiSuccess(c, tokens)
-}
-
-func LinkTokenToTeam(c *gin.Context) {
-	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleMember)
-	if !ok {
-		return
-	}
-	tokenId, _ := strconv.Atoi(c.Param("token_id"))
-	if tokenId <= 0 {
-		common.ApiErrorMsg(c, "无效的令牌ID")
-		return
-	}
-	userId := c.GetInt("id")
-	if err := model.LinkTokenToTeam(tokenId, team.Id, userId); err != nil {
-		common.ApiErrorMsg(c, err.Error())
-		return
-	}
-	common.ApiSuccess(c, nil)
-}
-
-func UnlinkTokenFromTeam(c *gin.Context) {
-	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleMember)
-	if !ok {
-		return
-	}
-	tokenId, _ := strconv.Atoi(c.Param("token_id"))
-	if tokenId <= 0 {
-		common.ApiErrorMsg(c, "无效的令牌ID")
-		return
-	}
-	userId := c.GetInt("id")
-	if err := model.UnlinkTokenFromTeam(tokenId, team.Id, userId); err != nil {
-		common.ApiError(c, err)
-		return
-	}
-	common.ApiSuccess(c, nil)
-}
-
-func GetTeamTokens(c *gin.Context) {
-	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleMember)
-	if !ok {
-		return
-	}
-	tokens, err := model.GetTeamTokens(team.Id)
-	if err != nil {
-		common.ApiError(c, err)
-		return
-	}
-	common.ApiSuccess(c, tokens)
 }
 
 // ─── Usage ───
@@ -465,7 +334,6 @@ func CreateTeamToken(c *gin.Context) {
 }
 
 // ListTeamOwnedTokens returns the team-bound tokens (Token.TeamId = teamId).
-// Distinct from GetTeamTokens which returns the legacy team_tokens link rows.
 func ListTeamOwnedTokens(c *gin.Context) {
 	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleMember)
 	if !ok {

@@ -282,7 +282,6 @@ func migrateDB() error {
 		&UserOAuthBinding{},
 		&Team{},
 		&TeamMember{},
-		&TeamToken{},
 		&TeamApplication{},
 		&LoginLog{},
 		&AINewsSource{},
@@ -342,7 +341,6 @@ func migrateDBFast() error {
 		{&UserOAuthBinding{}, "UserOAuthBinding"},
 		{&Team{}, "Team"},
 		{&TeamMember{}, "TeamMember"},
-		{&TeamToken{}, "TeamToken"},
 		{&TeamApplication{}, "TeamApplication"},
 	}
 	// 动态计算migration数量，确保errChan缓冲区足够大

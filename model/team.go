@@ -1,9 +1,6 @@
 package model
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/runcoor/aggre-api/common"
 	"gorm.io/gorm"
 )
@@ -22,19 +19,23 @@ const (
 )
 
 // ─── Team ───
+//
+// Quota / UsedQuota / RequestCount are intentionally not in the struct
+// even though the columns may still exist in old DBs from the legacy
+// "team quota pool" model. Billing now routes through team subscriptions
+// (see model/team_subscription.go + service/funding_source.go's
+// TeamSubscriptionFunding). GORM does not drop columns on AutoMigrate
+// so existing data is left in place; nothing reads it.
 
 type Team struct {
-	Id           int            `json:"id" gorm:"primaryKey"`
-	Name         string         `json:"name" gorm:"type:varchar(128);not null"`
-	OwnerId      int            `json:"owner_id" gorm:"index;not null"`
-	Quota        int            `json:"quota" gorm:"type:int;default:0"`
-	UsedQuota    int            `json:"used_quota" gorm:"type:int;default:0"`
-	RequestCount int            `json:"request_count" gorm:"type:int;default:0"`
-	Status       int            `json:"status" gorm:"type:int;default:1"`
-	InviteCode   string         `json:"invite_code" gorm:"type:varchar(32);uniqueIndex"`
-	CreatedAt    int64          `json:"created_at" gorm:"bigint"`
-	UpdatedAt    int64          `json:"updated_at" gorm:"bigint"`
-	DeletedAt    gorm.DeletedAt `json:"-" gorm:"index"`
+	Id         int            `json:"id" gorm:"primaryKey"`
+	Name       string         `json:"name" gorm:"type:varchar(128);not null"`
+	OwnerId    int            `json:"owner_id" gorm:"index;not null"`
+	Status     int            `json:"status" gorm:"type:int;default:1"`
+	InviteCode string         `json:"invite_code" gorm:"type:varchar(32);uniqueIndex"`
+	CreatedAt  int64          `json:"created_at" gorm:"bigint"`
+	UpdatedAt  int64          `json:"updated_at" gorm:"bigint"`
+	DeletedAt  gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
 func (t *Team) BeforeCreate(tx *gorm.DB) error {
@@ -112,9 +113,6 @@ func DeleteTeam(id int) error {
 		if err := tx.Where("team_id = ?", id).Delete(&TeamMember{}).Error; err != nil {
 			return err
 		}
-		if err := tx.Where("team_id = ?", id).Delete(&TeamToken{}).Error; err != nil {
-			return err
-		}
 		return tx.Delete(&Team{}, id).Error
 	})
 }
@@ -137,73 +135,20 @@ func RegenerateTeamInviteCode(teamId int) (string, error) {
 	return code, err
 }
 
-// ─── Team Quota ───
-
-func GetTeamQuota(teamId int) (int, error) {
-	var team Team
-	err := DB.Select("quota").Where("id = ?", teamId).First(&team).Error
-	return team.Quota, err
-}
-
-func IncreaseTeamQuota(teamId int, quota int) error {
-	if quota < 0 {
-		return errors.New("quota 不能为负数")
-	}
-	if common.BatchUpdateEnabled {
-		addNewRecord(BatchUpdateTypeTeamQuota, teamId, quota)
-		return nil
-	}
-	return increaseTeamQuota(teamId, quota)
-}
-
-func increaseTeamQuota(teamId int, quota int) error {
-	return DB.Model(&Team{}).Where("id = ?", teamId).Update("quota", gorm.Expr("quota + ?", quota)).Error
-}
-
-func DecreaseTeamQuota(teamId int, quota int) error {
-	if quota < 0 {
-		return errors.New("quota 不能为负数")
-	}
-	if common.BatchUpdateEnabled {
-		addNewRecord(BatchUpdateTypeTeamQuota, teamId, -quota)
-		return nil
-	}
-	return decreaseTeamQuota(teamId, quota)
-}
-
-func decreaseTeamQuota(teamId int, quota int) error {
-	return DB.Model(&Team{}).Where("id = ?", teamId).Update("quota", gorm.Expr("quota - ?", quota)).Error
-}
-
-func UpdateTeamUsedQuotaAndRequestCount(teamId int, quota int) {
-	if common.BatchUpdateEnabled {
-		addNewRecord(BatchUpdateTypeTeamUsedQuota, teamId, quota)
-		addNewRecord(BatchUpdateTypeTeamRequestCount, teamId, 1)
-		return
-	}
-	updateTeamUsedQuotaAndRequestCount(teamId, quota, 1)
-}
-
-func updateTeamUsedQuotaAndRequestCount(teamId int, quota int, count int) {
-	DB.Model(&Team{}).Where("id = ?", teamId).Updates(map[string]interface{}{
-		"used_quota":    gorm.Expr("used_quota + ?", quota),
-		"request_count": gorm.Expr("request_count + ?", count),
-	})
-}
-
 // ─── TeamMember ───
+//
+// QuotaLimit / UsedQuota / RequestCount removed alongside the team-quota
+// pool. Per-member billing accounting lives in user logs now (the token
+// records who made the call and team subscriptions handle aggregation).
 
 type TeamMember struct {
-	Id           int            `json:"id" gorm:"primaryKey"`
-	TeamId       int            `json:"team_id" gorm:"uniqueIndex:idx_team_user;not null"`
-	UserId       int            `json:"user_id" gorm:"uniqueIndex:idx_team_user;not null;index"`
-	Role         int            `json:"role" gorm:"type:int;default:1"`
-	QuotaLimit   int            `json:"quota_limit" gorm:"type:int;default:-1"`
-	UsedQuota    int            `json:"used_quota" gorm:"type:int;default:0"`
-	RequestCount int            `json:"request_count" gorm:"type:int;default:0"`
-	Status       int            `json:"status" gorm:"type:int;default:1"`
-	JoinedAt     int64          `json:"joined_at" gorm:"bigint"`
-	DeletedAt    gorm.DeletedAt `json:"-" gorm:"index"`
+	Id        int            `json:"id" gorm:"primaryKey"`
+	TeamId    int            `json:"team_id" gorm:"uniqueIndex:idx_team_user;not null"`
+	UserId    int            `json:"user_id" gorm:"uniqueIndex:idx_team_user;not null;index"`
+	Role      int            `json:"role" gorm:"type:int;default:1"`
+	Status    int            `json:"status" gorm:"type:int;default:1"`
+	JoinedAt  int64          `json:"joined_at" gorm:"bigint"`
+	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
 func AddTeamMember(member *TeamMember) error {
@@ -263,147 +208,5 @@ func GetTeamMemberCount(teamId int) (int64, error) {
 }
 
 func RemoveTeamMember(teamId int, userId int) error {
-	return DB.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("team_id = ? AND user_id = ?", teamId, userId).Delete(&TeamMember{}).Error; err != nil {
-			return err
-		}
-		return tx.Where("team_id = ? AND user_id = ?", teamId, userId).Delete(&TeamToken{}).Error
-	})
-}
-
-func UpdateTeamMemberQuotaLimit(teamId int, userId int, quotaLimit int) error {
-	return DB.Model(&TeamMember{}).Where("team_id = ? AND user_id = ?", teamId, userId).Update("quota_limit", quotaLimit).Error
-}
-
-func GetTeamMemberUsedQuota(memberId int) (int, error) {
-	var member TeamMember
-	err := DB.Select("used_quota").Where("id = ?", memberId).First(&member).Error
-	return member.UsedQuota, err
-}
-
-func UpdateTeamMemberUsedQuotaAndRequestCount(memberId int, quota int) {
-	if common.BatchUpdateEnabled {
-		addNewRecord(BatchUpdateTypeMemberUsedQuota, memberId, quota)
-		addNewRecord(BatchUpdateTypeMemberRequestCount, memberId, 1)
-		return
-	}
-	updateTeamMemberUsedQuotaAndRequestCount(memberId, quota, 1)
-}
-
-func updateTeamMemberUsedQuotaAndRequestCount(memberId int, quota int, count int) {
-	DB.Model(&TeamMember{}).Where("id = ?", memberId).Updates(map[string]interface{}{
-		"used_quota":    gorm.Expr("used_quota + ?", quota),
-		"request_count": gorm.Expr("request_count + ?", count),
-	})
-}
-
-// ─── TeamToken ───
-
-type TeamToken struct {
-	Id      int `json:"id" gorm:"primaryKey"`
-	TokenId int `json:"token_id" gorm:"uniqueIndex;not null"`
-	TeamId  int `json:"team_id" gorm:"index;not null"`
-	UserId  int `json:"user_id" gorm:"index;not null"`
-}
-
-func LinkTokenToTeam(tokenId int, teamId int, userId int) error {
-	// Verify token belongs to user
-	var token Token
-	if err := DB.Select("id, user_id").Where("id = ?", tokenId).First(&token).Error; err != nil {
-		return fmt.Errorf("令牌不存在")
-	}
-	if token.UserId != userId {
-		return fmt.Errorf("只能关联自己的令牌")
-	}
-	// Check not already linked
-	var existing TeamToken
-	if err := DB.Where("token_id = ?", tokenId).First(&existing).Error; err == nil {
-		if existing.TeamId == teamId {
-			return nil // already linked to this team
-		}
-		return fmt.Errorf("该令牌已关联到其他团队")
-	}
-	return DB.Create(&TeamToken{
-		TokenId: tokenId,
-		TeamId:  teamId,
-		UserId:  userId,
-	}).Error
-}
-
-func UnlinkTokenFromTeam(tokenId int, teamId int, userId int) error {
-	return DB.Where("token_id = ? AND team_id = ? AND user_id = ?", tokenId, teamId, userId).Delete(&TeamToken{}).Error
-}
-
-func GetTeamByTokenId(tokenId int) (*TeamToken, error) {
-	var tt TeamToken
-	err := DB.Where("token_id = ?", tokenId).First(&tt).Error
-	if err != nil {
-		return nil, err
-	}
-	return &tt, nil
-}
-
-func GetTeamTokens(teamId int) ([]map[string]interface{}, error) {
-	var teamTokens []TeamToken
-	if err := DB.Where("team_id = ?", teamId).Find(&teamTokens).Error; err != nil {
-		return nil, err
-	}
-	if len(teamTokens) == 0 {
-		return []map[string]interface{}{}, nil
-	}
-
-	tokenIds := make([]int, 0, len(teamTokens))
-	for _, tt := range teamTokens {
-		tokenIds = append(tokenIds, tt.TokenId)
-	}
-
-	var tokens []Token
-	DB.Select("id, name, status, user_id, remain_quota, unlimited_quota, used_quota").
-		Where("id IN ?", tokenIds).Find(&tokens)
-	tokenMap := make(map[int]Token)
-	for _, t := range tokens {
-		tokenMap[t.Id] = t
-	}
-
-	// Get usernames
-	userIds := make(map[int]bool)
-	for _, tt := range teamTokens {
-		userIds[tt.UserId] = true
-	}
-	userIdList := make([]int, 0, len(userIds))
-	for uid := range userIds {
-		userIdList = append(userIdList, uid)
-	}
-	var users []User
-	if len(userIdList) > 0 {
-		DB.Select("id, username, display_name").Where("id IN ?", userIdList).Find(&users)
-	}
-	userMap := make(map[int]User)
-	for _, u := range users {
-		userMap[u.Id] = u
-	}
-
-	result := make([]map[string]interface{}, 0, len(teamTokens))
-	for _, tt := range teamTokens {
-		t := tokenMap[tt.TokenId]
-		u := userMap[tt.UserId]
-		result = append(result, map[string]interface{}{
-			"team_token":   tt,
-			"token_name":   t.Name,
-			"token_status": t.Status,
-			"token_used":   t.UsedQuota,
-			"username":     u.Username,
-			"display_name": u.DisplayName,
-		})
-	}
-	return result, nil
-}
-
-func GetUserAvailableTokensForTeam(userId int) ([]Token, error) {
-	var tokens []Token
-	err := DB.Select("id, name, status, "+commonGroupCol+", remain_quota, used_quota, unlimited_quota").
-		Where("user_id = ? AND id NOT IN (SELECT token_id FROM team_tokens)", userId).
-		Order("id desc").
-		Find(&tokens).Error
-	return tokens, err
+	return DB.Where("team_id = ? AND user_id = ?", teamId, userId).Delete(&TeamMember{}).Error
 }

@@ -23,7 +23,7 @@ import { IconPlus, IconClock } from '@douyinfe/semi-icons';
 import { Users, Crown, Shield, User, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { API, isAdmin, renderQuota, showError, showSuccess } from '../../helpers';
+import { API, isAdmin, showError, showSuccess } from '../../helpers';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
 
 const { Text } = Typography;
@@ -255,7 +255,6 @@ const TeamPage = () => {
             const team = item.team;
             const role = item.role;
             const memberCount = item.member_count;
-            const usedPercent = team.quota > 0 ? Math.min(100, Math.round((team.used_quota / team.quota) * 100)) : 0;
 
             return (
               <div
@@ -281,31 +280,11 @@ const TeamPage = () => {
                   </span>
                 </div>
 
-                {/* Quota progress */}
-                <div className='mb-3'>
-                  <div className='flex justify-between text-xs mb-1.5'>
-                    <span style={{ color: 'var(--text-muted)' }}>
-                      {renderQuota(team.used_quota)} / {team.quota > 0 ? renderQuota(team.quota) : t('未分配')}
-                    </span>
-                    {team.quota > 0 && (
-                      <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{usedPercent}%</span>
-                    )}
-                  </div>
-                  <div style={{ width: '100%', height: 6, borderRadius: 9999, background: 'var(--surface-active)', overflow: 'hidden' }}>
-                    <div style={{
-                      height: '100%', width: `${usedPercent}%`,
-                      background: 'var(--accent-gradient)', borderRadius: 9999,
-                      transition: 'width 0.6s ease',
-                    }} />
-                  </div>
-                </div>
-
-                <div className='flex items-center justify-between text-xs' style={{ color: 'var(--text-muted)' }}>
+                <div className='flex items-center text-xs' style={{ color: 'var(--text-muted)' }}>
                   <span className='flex items-center gap-1'>
                     <Users size={12} />
                     {memberCount} {t('位成员')}
                   </span>
-                  <span>{t('请求')} {team.request_count || 0}</span>
                 </div>
               </div>
             );

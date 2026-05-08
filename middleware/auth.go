@@ -379,6 +379,17 @@ func SetupContextForToken(c *gin.Context, token *model.Token, parts ...string) e
 	c.Set("token_name", token.Name)
 	c.Set("token_unlimited_quota", token.UnlimitedQuota)
 	common.SetContextKey(c, constant.ContextKeyTokenTeamId, token.TeamId)
+	// If this token is bound to a team, the team must be active. Disabled or
+	// deleted teams cause the relay request to abort with 401, matching the
+	// hard-block semantics agreed in the admin team management design.
+	// Read goes through GetTeamStatusCached so the hot path stays cheap.
+	if token.TeamId > 0 {
+		status, err := model.GetTeamStatusCached(token.TeamId)
+		if err != nil || status != model.TeamStatusActive {
+			abortWithOpenAiMessage(c, http.StatusUnauthorized, "团队已被禁用或不存在")
+			return fmt.Errorf("team disabled or not found: team_id=%d", token.TeamId)
+		}
+	}
 	if !token.UnlimitedQuota {
 		c.Set("token_quota", token.RemainQuota)
 	}

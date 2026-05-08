@@ -153,8 +153,8 @@ func SetApiRouter(router *gin.Engine) {
 		teamRoute.Use(middleware.UserAuth())
 		{
 			teamRoute.GET("/permission", controller.GetTeamPermission)
-			// CreateTeam is admin-only; common users submit applications via /apply.
-			teamRoute.POST("/", middleware.AdminAuth(), controller.CreateTeam)
+			// Direct team creation moved to /api/admin/teams (admin namespace).
+			// Common users submit applications via /apply.
 			teamRoute.GET("/", controller.GetUserTeams)
 			teamRoute.POST("/join/:invite_code", controller.JoinTeamByInvite)
 
@@ -215,6 +215,18 @@ func SetApiRouter(router *gin.Engine) {
 			teamAppAdminRoute.GET("/:id", controller.AdminGetTeamApplicationDetail)
 			teamAppAdminRoute.POST("/:id/approve", controller.AdminApproveTeamApplication)
 			teamAppAdminRoute.POST("/:id/reject", controller.AdminRejectTeamApplication)
+		}
+
+		// Admin global team management — owner-equivalent control over any team
+		// plus list/detail/usage views. AdminAuth gates the entire group.
+		teamAdminRoute := apiRouter.Group("/admin/teams")
+		teamAdminRoute.Use(middleware.AdminAuth())
+		{
+			teamAdminRoute.GET("", controller.AdminListTeams)
+			teamAdminRoute.POST("", controller.AdminCreateTeam)
+			teamAdminRoute.GET("/:id", controller.AdminGetTeam)
+			teamAdminRoute.PUT("/:id", controller.AdminUpdateTeam)
+			teamAdminRoute.DELETE("/:id", controller.AdminDeleteTeam)
 		}
 
 		subscriptionAdminRoute := apiRouter.Group("/subscription/admin")

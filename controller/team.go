@@ -37,58 +37,11 @@ func getTeamAndVerifyRole(c *gin.Context, minRole int) (*model.Team, *model.Team
 
 // ─── Team CRUD ───
 
+// CreateTeam moved to controller/admin_team.go::AdminCreateTeam; mounted at
+// POST /api/admin/teams under the unified admin namespace.
+
 type CreateTeamRequest struct {
-	Name    string `json:"name"`
-	OwnerId int    `json:"owner_id"` // optional; admin can create on behalf of another user
-}
-
-// CreateTeam is admin-only. Common users go through the application flow
-// (POST /api/team/apply → admin reviews → AdminApproveTeamApplication
-// internally calls model.CreateTeam). Admin can directly mint a team for
-// themselves or for another user via owner_id.
-func CreateTeam(c *gin.Context) {
-	var req CreateTeamRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.ApiErrorMsg(c, "参数错误")
-		return
-	}
-	name := strings.TrimSpace(req.Name)
-	if name == "" {
-		common.ApiErrorMsg(c, "团队名称不能为空")
-		return
-	}
-
-	ownerId := req.OwnerId
-	if ownerId <= 0 {
-		ownerId = c.GetInt("id")
-	} else {
-		// Verify the target owner exists when admin specifies one.
-		target, err := model.GetUserById(ownerId, false)
-		if err != nil || target == nil {
-			common.ApiErrorMsg(c, "目标用户不存在")
-			return
-		}
-	}
-
-	team := &model.Team{
-		Name:    name,
-		OwnerId: ownerId,
-		Status:  model.TeamStatusActive,
-	}
-	if err := model.CreateTeam(team); err != nil {
-		common.ApiError(c, err)
-		return
-	}
-	if err := model.AddTeamMember(&model.TeamMember{
-		TeamId: team.Id,
-		UserId: ownerId,
-		Role:   model.TeamRoleOwner,
-		Status: model.TeamStatusActive,
-	}); err != nil {
-		common.ApiError(c, err)
-		return
-	}
-	common.ApiSuccess(c, team)
+	Name string `json:"name"`
 }
 
 // GetTeamPermission reports the caller's team-related state. The legacy

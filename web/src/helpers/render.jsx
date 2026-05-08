@@ -70,6 +70,7 @@ import {
   Layers,
   Gift,
   User,
+  Users,
   Settings,
   CircleUser,
   Package,
@@ -78,6 +79,8 @@ import {
   DollarSign,
   ChartPie,
   Newspaper,
+  FileCheck,
+  History,
 } from 'lucide-react';
 import {
   SiAtlassian,
@@ -144,6 +147,12 @@ export function getLucideIcon(key, selected = false) {
     case 'user':
     case 'personal':
       return <User {...commonProps} color={iconColor} />;
+    case 'team':
+      return <Users {...commonProps} color={iconColor} />;
+    case 'team-applications':
+      return <FileCheck {...commonProps} color={iconColor} />;
+    case 'login-log':
+      return <History {...commonProps} color={iconColor} />;
     case 'models':
       return <Package {...commonProps} color={iconColor} />;
     case 'deployment':

@@ -3063,13 +3063,17 @@ html.dark * {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   width: 52px;
-  /* Allow tooltip to escape horizontally; vertical scroll only when truly needed */
-  overflow: visible;
+  /* Tooltip is rendered via Semi portal — safe to scroll the rail itself
+     when the admin menu has too many items to fit (~19 icons exceed
+     viewport on most laptops). Scrollbar hidden, wheel/trackpad work. */
+  overflow-y: auto;
   max-height: 100%;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Prevent the rail from shrinking under flex pressure */
+  flex-shrink: 0;
 }
 .pill-sidebar-nav::-webkit-scrollbar { display: none; }
 
@@ -3079,9 +3083,9 @@ html.dark * {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 8px 6px;
-  border-radius: 22px;
+  gap: 4px;
+  padding: 6px 6px;
+  border-radius: 20px;
   background: var(--bg-subtle);
   overflow: visible;
   position: relative;

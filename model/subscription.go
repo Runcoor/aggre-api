@@ -175,8 +175,9 @@ type SubscriptionPlan struct {
 	// plan's upgrade_group (e.g. Pro user calls gpt-5.5 not served by
 	// Package channels), distributor retries against the "default" group
 	// and forces wallet billing for that request — bypassing the user's
-	// BillingPreference. Defaults to false: out-of-plan models 503.
-	AllowWalletFallback bool `json:"allow_wallet_fallback" gorm:"default:false"`
+	// BillingPreference. Defaults to true so subscribers don't hit 503
+	// on long-tail models out of the box; admins can disable per plan.
+	AllowWalletFallback bool `json:"allow_wallet_fallback" gorm:"default:true"`
 
 	// Total quota (amount in quota units, 0 = unlimited)
 	TotalAmount      int64  `json:"total_amount" gorm:"type:bigint;not null;default:0"`

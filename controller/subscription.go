@@ -248,6 +248,7 @@ func AdminUpdateSubscriptionPlan(c *gin.Context) {
 			"total_amount":               req.Plan.TotalAmount,
 			"quota_description":          req.Plan.QuotaDescription,
 			"upgrade_group":              req.Plan.UpgradeGroup,
+			"allow_wallet_fallback":      req.Plan.AllowWalletFallback,
 			"quota_reset_period":         req.Plan.QuotaResetPeriod,
 			"quota_reset_custom_seconds": req.Plan.QuotaResetCustomSeconds,
 			"updated_at":                 common.GetTimestamp(),

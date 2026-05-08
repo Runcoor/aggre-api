@@ -96,7 +96,7 @@ const AddEditSubscriptionModal = ({
     total_amount: 0,
     quota_description: '',
     upgrade_group: '',
-    allow_wallet_fallback: false,
+    allow_wallet_fallback: true,
     stripe_price_id: '',
     creem_product_id: '',
     dodo_product_id: '',

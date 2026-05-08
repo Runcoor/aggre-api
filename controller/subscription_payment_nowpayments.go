@@ -19,6 +19,7 @@ import (
 // SubscriptionNowPaymentsPayRequest 订阅购买请求体
 type SubscriptionNowPaymentsPayRequest struct {
 	PlanId      int    `json:"plan_id"`
+	TeamId      int    `json:"team_id"`
 	PayCurrency string `json:"pay_currency,omitempty"`
 }
 
@@ -57,17 +58,9 @@ func SubscriptionRequestNowPaymentsPay(c *gin.Context) {
 		return
 	}
 
-	// 复用与 Stripe / Creem 相同的购买上限逻辑
-	if plan.MaxPurchasePerUser > 0 {
-		count, err := model.CountUserSubscriptionsByPlan(userId, plan.Id)
-		if err != nil {
-			common.ApiError(c, err)
-			return
-		}
-		if count >= int64(plan.MaxPurchasePerUser) {
-			common.ApiErrorMsg(c, "已达到该套餐购买上限")
-			return
-		}
+	if err := resolveSubscriptionPurchaseScope(userId, req.TeamId, plan); err != nil {
+		common.ApiErrorMsg(c, err.Error())
+		return
 	}
 
 	// 套餐价格直接以 USD 报价（NowPayments 是加密货币网关，不需要按 Price/USDExchangeRate 换算）
@@ -83,6 +76,7 @@ func SubscriptionRequestNowPaymentsPay(c *gin.Context) {
 
 	order := &model.SubscriptionOrder{
 		UserId:        userId,
+		TeamId:        req.TeamId,
 		PlanId:        plan.Id,
 		Money:         payMoney,
 		TradeNo:       tradeNo,

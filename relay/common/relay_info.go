@@ -83,7 +83,11 @@ type TokenCountMeta struct {
 }
 
 type RelayInfo struct {
-	TokenId           int
+	TokenId int
+	// TokenTeamId is the team this token is bound to; 0 = personal token.
+	// When >0, billing routes through the team's active subscription instead
+	// of the user's personal wallet/subscription.
+	TokenTeamId       int
 	TokenKey          string
 	TokenGroup        string
 	UserId            int
@@ -462,6 +466,7 @@ func genBaseRelayInfo(c *gin.Context, request dto.Request) *RelayInfo {
 		OriginModelName: common.GetContextKeyString(c, constant.ContextKeyOriginalModel),
 
 		TokenId:        common.GetContextKeyInt(c, constant.ContextKeyTokenId),
+		TokenTeamId:    common.GetContextKeyInt(c, constant.ContextKeyTokenTeamId),
 		TokenKey:       common.GetContextKeyString(c, constant.ContextKeyTokenKey),
 		TokenUnlimited: common.GetContextKeyBool(c, constant.ContextKeyTokenUnlimited),
 		TokenGroup:     tokenGroup,

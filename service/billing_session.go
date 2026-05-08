@@ -70,6 +70,7 @@ func (s *BillingSession) Settle(actualQuota int) error {
 		}
 	}
 	// 3) 更新 relayInfo 上的订阅 PostDelta（用于日志）
+	// 个人订阅和团队订阅的 Source() 都是 "subscription"，统一处理
 	if s.funding.Source() == BillingSourceSubscription {
 		s.relayInfo.SubscriptionPostDelta += int64(delta)
 	}
@@ -234,7 +235,8 @@ func (s *BillingSession) syncRelayInfo() {
 	info.FinalPreConsumedQuota = s.preConsumedQuota
 	info.BillingSource = s.funding.Source()
 
-	if sub, ok := s.funding.(*SubscriptionFunding); ok {
+	switch sub := s.funding.(type) {
+	case *SubscriptionFunding:
 		info.SubscriptionId = sub.subscriptionId
 		info.SubscriptionPreConsumed = sub.preConsumed
 		info.SubscriptionPostDelta = 0
@@ -242,7 +244,15 @@ func (s *BillingSession) syncRelayInfo() {
 		info.SubscriptionAmountUsedAfterPreConsume = sub.AmountUsedAfter
 		info.SubscriptionPlanId = sub.PlanId
 		info.SubscriptionPlanTitle = sub.PlanTitle
-	} else {
+	case *TeamSubscriptionFunding:
+		info.SubscriptionId = sub.subscriptionId
+		info.SubscriptionPreConsumed = sub.preConsumed
+		info.SubscriptionPostDelta = 0
+		info.SubscriptionAmountTotal = sub.AmountTotal
+		info.SubscriptionAmountUsedAfterPreConsume = sub.AmountUsedAfter
+		info.SubscriptionPlanId = sub.PlanId
+		info.SubscriptionPlanTitle = sub.PlanTitle
+	default:
 		info.SubscriptionId = 0
 		info.SubscriptionPreConsumed = 0
 	}
@@ -260,8 +270,45 @@ func NewBillingSession(c *gin.Context, relayInfo *relaycommon.RelayInfo, preCons
 
 	pref := common.NormalizeBillingPreference(relayInfo.UserSetting.BillingPreference)
 
-	// ─── Team billing check ───
-	// If the token is linked to a team, use team pool instead of personal billing.
+	// ─── Team subscription check (P1: subscription-native team plans) ───
+	// If the token is bound to a team via Token.TeamId, route billing through
+	// the team's active subscription. The token's user_id still records who
+	// holds the key; the team owns the funding.
+	if relayInfo.TokenTeamId > 0 {
+		teamId := relayInfo.TokenTeamId
+		hasSub, err := model.HasActiveTeamSubscription(teamId)
+		if err != nil {
+			return nil, types.NewError(err, types.ErrorCodeQueryDataError, types.ErrOptionWithSkipRetry())
+		}
+		if !hasSub {
+			return nil, types.NewErrorWithStatusCode(
+				fmt.Errorf("团队订阅不存在或已过期 (team_id=%d)", teamId),
+				types.ErrorCodeInsufficientUserQuota, http.StatusForbidden,
+				types.ErrOptionWithSkipRetry(), types.ErrOptionWithNoRecordErrorLog())
+		}
+		subConsume := int64(preConsumedQuota)
+		if subConsume <= 0 {
+			subConsume = 1
+		}
+		session := &BillingSession{
+			relayInfo: relayInfo,
+			funding: &TeamSubscriptionFunding{
+				requestId:   relayInfo.RequestId,
+				teamId:      teamId,
+				buyerUserId: relayInfo.UserId,
+				modelName:   relayInfo.OriginModelName,
+				amount:      subConsume,
+			},
+		}
+		if apiErr := session.preConsume(c, int(subConsume)); apiErr != nil {
+			return nil, apiErr
+		}
+		return session, nil
+	}
+
+	// ─── Legacy team-token pool check ───
+	// Pre-P1 link table (team_tokens). Kept for backward-compat; will be
+	// removed once token.TeamId migration completes.
 	if teamToken, err := model.GetTeamByTokenId(relayInfo.TokenId); err == nil && teamToken != nil {
 		member, memberErr := model.GetTeamMemberByUserAndTeam(relayInfo.UserId, teamToken.TeamId)
 		if memberErr == nil && member != nil && member.Status == model.TeamStatusActive {

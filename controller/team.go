@@ -451,6 +451,115 @@ func GetTeamUsageStats(c *gin.Context) {
 	})
 }
 
+// ─── Team subscription (P1: subscription-native team plans) ───
+
+// GetTeamSubscriptions returns the team's active and historical subscriptions.
+// Visible to any team member; for the team admin/owner UI.
+func GetTeamSubscriptions(c *gin.Context) {
+	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleMember)
+	if !ok {
+		return
+	}
+	active, err := model.GetAllActiveTeamSubscriptions(team.Id)
+	if err != nil {
+		active = []model.SubscriptionSummary{}
+	}
+	all, err := model.GetAllTeamSubscriptions(team.Id)
+	if err != nil {
+		all = []model.SubscriptionSummary{}
+	}
+	common.ApiSuccess(c, gin.H{
+		"team_id":            team.Id,
+		"subscriptions":      active,
+		"all_subscriptions":  all,
+	})
+}
+
+// ─── Team-bound tokens (P1: team-owned API keys) ───
+
+type CreateTeamTokenRequest struct {
+	Name string `json:"name"`
+}
+
+// CreateTeamToken issues a new team-bound API key. team owner/admin only.
+// The token's UserId records the creator (audit), TeamId binds it to the team
+// so billing routes through the team's active subscription instead of personal.
+func CreateTeamToken(c *gin.Context) {
+	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleAdmin)
+	if !ok {
+		return
+	}
+	var req CreateTeamTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.ApiErrorMsg(c, "参数错误")
+		return
+	}
+	name := strings.TrimSpace(req.Name)
+	if name == "" {
+		name = "team-key"
+	}
+	if len(name) > 50 {
+		common.ApiErrorMsg(c, "令牌名称过长")
+		return
+	}
+	key, err := common.GenerateKey()
+	if err != nil {
+		common.ApiErrorMsg(c, "生成令牌失败")
+		return
+	}
+	tok := &model.Token{
+		UserId:         c.GetInt("id"),
+		TeamId:         team.Id,
+		Name:           name,
+		Key:            key,
+		CreatedTime:    common.GetTimestamp(),
+		AccessedTime:   common.GetTimestamp(),
+		ExpiredTime:    -1,
+		UnlimitedQuota: true,
+	}
+	if err := tok.Insert(); err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, gin.H{
+		"id":  tok.Id,
+		"key": key,
+	})
+}
+
+// ListTeamOwnedTokens returns the team-bound tokens (Token.TeamId = teamId).
+// Distinct from GetTeamTokens which returns the legacy team_tokens link rows.
+func ListTeamOwnedTokens(c *gin.Context) {
+	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleMember)
+	if !ok {
+		return
+	}
+	tokens, err := model.ListTeamOwnedTokens(team.Id)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, tokens)
+}
+
+// DeleteTeamOwnedToken hard-deletes a team-bound token. owner/admin only.
+func DeleteTeamOwnedToken(c *gin.Context) {
+	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleAdmin)
+	if !ok {
+		return
+	}
+	tokenId, _ := strconv.Atoi(c.Param("token_id"))
+	if tokenId <= 0 {
+		common.ApiErrorMsg(c, "无效的令牌ID")
+		return
+	}
+	if err := model.DeleteTeamOwnedToken(team.Id, tokenId); err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, nil)
+}
+
 // ─── Invite ───
 
 func RegenerateInviteCode(c *gin.Context) {

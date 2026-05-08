@@ -17,6 +17,7 @@ import (
 
 type SubscriptionCreemPayRequest struct {
 	PlanId int `json:"plan_id"`
+	TeamId int `json:"team_id"`
 }
 
 func SubscriptionRequestCreemPay(c *gin.Context) {
@@ -65,16 +66,9 @@ func SubscriptionRequestCreemPay(c *gin.Context) {
 		return
 	}
 
-	if plan.MaxPurchasePerUser > 0 {
-		count, err := model.CountUserSubscriptionsByPlan(userId, plan.Id)
-		if err != nil {
-			common.ApiError(c, err)
-			return
-		}
-		if count >= int64(plan.MaxPurchasePerUser) {
-			common.ApiErrorMsg(c, "已达到该套餐购买上限")
-			return
-		}
+	if err := resolveSubscriptionPurchaseScope(userId, req.TeamId, plan); err != nil {
+		common.ApiErrorMsg(c, err.Error())
+		return
 	}
 
 	reference := "sub-creem-ref-" + randstr.String(6)
@@ -88,6 +82,7 @@ func SubscriptionRequestCreemPay(c *gin.Context) {
 	// create pending order first
 	order := &model.SubscriptionOrder{
 		UserId:        userId,
+		TeamId:        req.TeamId,
 		PlanId:        plan.Id,
 		Money:         payMoney,
 		TradeNo:       referenceId,

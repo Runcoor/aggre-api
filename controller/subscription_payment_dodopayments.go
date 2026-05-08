@@ -18,6 +18,7 @@ import (
 // SubscriptionDodoPaymentsPayRequest 订阅购买请求体
 type SubscriptionDodoPaymentsPayRequest struct {
 	PlanId int `json:"plan_id"`
+	TeamId int `json:"team_id"`
 }
 
 // SubscriptionRequestDodoPaymentsPay POST /api/subscription/dodopayments/pay
@@ -57,16 +58,9 @@ func SubscriptionRequestDodoPaymentsPay(c *gin.Context) {
 		return
 	}
 
-	if plan.MaxPurchasePerUser > 0 {
-		count, err := model.CountUserSubscriptionsByPlan(userId, plan.Id)
-		if err != nil {
-			common.ApiError(c, err)
-			return
-		}
-		if count >= int64(plan.MaxPurchasePerUser) {
-			common.ApiErrorMsg(c, "已达到该套餐购买上限")
-			return
-		}
+	if err := resolveSubscriptionPurchaseScope(userId, req.TeamId, plan); err != nil {
+		common.ApiErrorMsg(c, err.Error())
+		return
 	}
 
 	payMoney := plan.PriceAmount
@@ -76,6 +70,7 @@ func SubscriptionRequestDodoPaymentsPay(c *gin.Context) {
 
 	order := &model.SubscriptionOrder{
 		UserId:        userId,
+		TeamId:        req.TeamId,
 		PlanId:        plan.Id,
 		Money:         payMoney,
 		TradeNo:       tradeNo,

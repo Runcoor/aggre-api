@@ -5094,5 +5094,19 @@
   "确认发送给所有匹配的活跃订阅用户?": "Send to all eligible active subscribers?",
   "发送给用户": "Send to users",
   "来源": "Sources",
-  "请填写值": "Please enter a value"
+  "请填写值": "Please enter a value",
+  "团队订阅": "Team subscription",
+  "购买团队订阅": "Buy team subscription",
+  "团队订阅独立于个人订阅，订阅周期内团队令牌的所有请求会从该订阅扣额度，到期或额度耗尽后自动停用。": "Team subscriptions are independent of personal subscriptions. While active, all team-token requests are billed against this subscription; service stops when it expires or runs out of quota.",
+  "暂无团队订阅": "No team subscription",
+  "结束于": "Ends on",
+  "团队令牌": "Team API keys",
+  "创建团队令牌": "Create team key",
+  "由团队签发的 API 令牌，请求会直接走团队订阅扣费。无需关联个人令牌。": "API keys issued by the team. Requests are billed directly against the team subscription — no need to link personal tokens.",
+  "暂无团队令牌": "No team API keys",
+  "团队令牌已创建": "Team key created",
+  "请立即复制密钥，关闭后将无法再次查看完整密钥。": "Copy the key now — you won't be able to see the full key after closing this dialog.",
+  "令牌名称（可选）": "Key name (optional)",
+  "该令牌将绑定到当前团队，API 请求会从团队订阅扣费。": "This key will be bound to the team. API requests will be billed against the team subscription.",
+  "删除后该团队令牌将立即失效，且无法恢复。": "Once deleted, this team key takes effect immediately and cannot be recovered."
 }

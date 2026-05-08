@@ -521,6 +521,39 @@ func DeleteTokenById(id int, userId int) (err error) {
 	return token.Delete()
 }
 
+// ListTeamOwnedTokens returns tokens whose Token.TeamId equals teamId.
+// Returned tokens have their Key masked for safety.
+func ListTeamOwnedTokens(teamId int) ([]*Token, error) {
+	if teamId <= 0 {
+		return nil, errors.New("invalid teamId")
+	}
+	var tokens []*Token
+	if err := DB.Where("team_id = ?", teamId).Order("id desc").Find(&tokens).Error; err != nil {
+		return nil, err
+	}
+	for _, t := range tokens {
+		t.Key = MaskTokenKey(t.Key)
+	}
+	return tokens, nil
+}
+
+// DeleteTeamOwnedToken hard-deletes a token bound to teamId by token id.
+// Refuses to delete personal tokens; the team_id guard prevents misuse from
+// the team-scoped admin endpoint.
+func DeleteTeamOwnedToken(teamId int, tokenId int) error {
+	if teamId <= 0 || tokenId <= 0 {
+		return errors.New("invalid teamId or tokenId")
+	}
+	res := DB.Where("id = ? AND team_id = ?", tokenId, teamId).Delete(&Token{})
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return errors.New("令牌不存在或不属于该团队")
+	}
+	return nil
+}
+
 func IncreaseTokenQuota(tokenId int, key string, quota int) (err error) {
 	if quota < 0 {
 		return errors.New("quota 不能为负数！")

@@ -754,6 +754,14 @@ const PlansPage = () => {
     }
   }, [loading, plans, isLoggedIn, searchParams, setSearchParams, openBuyForPlan]);
 
+  // When ?team_id=N is present, the purchase is on behalf of a team. The
+  // backend gates this (only the team owner may buy) and creates a team
+  // subscription on completion instead of a personal one.
+  const purchaseTeamId = (() => {
+    const v = parseInt(searchParams.get('team_id') || '0', 10);
+    return Number.isFinite(v) && v > 0 ? v : 0;
+  })();
+
   const payStripe = async () => {
     const plan = selectedPlan?.plan;
     if (!plan?.stripe_price_id) {
@@ -762,7 +770,7 @@ const PlansPage = () => {
     }
     setPaying(true);
     try {
-      const res = await API.post('/api/subscription/stripe/pay', { plan_id: plan.id });
+      const res = await API.post('/api/subscription/stripe/pay', { plan_id: plan.id, team_id: purchaseTeamId });
       if (res.data?.message === 'success') {
         window.open(res.data.data?.pay_link, '_blank');
         showSuccess(t('已打开支付页面'));
@@ -787,7 +795,7 @@ const PlansPage = () => {
     }
     setPaying(true);
     try {
-      const res = await API.post('/api/subscription/creem/pay', { plan_id: plan.id });
+      const res = await API.post('/api/subscription/creem/pay', { plan_id: plan.id, team_id: purchaseTeamId });
       if (res.data?.message === 'success') {
         window.open(res.data.data?.checkout_url, '_blank');
         showSuccess(t('已打开支付页面'));
@@ -809,7 +817,7 @@ const PlansPage = () => {
     if (!plan?.id) return;
     setPaying(true);
     try {
-      const res = await API.post('/api/subscription/nowpayments/pay', { plan_id: plan.id });
+      const res = await API.post('/api/subscription/nowpayments/pay', { plan_id: plan.id, team_id: purchaseTeamId });
       if (res.data?.message === 'success' && res.data.data?.pay_link) {
         window.open(res.data.data.pay_link, '_blank');
         showSuccess(t('已打开支付页面'));
@@ -837,6 +845,7 @@ const PlansPage = () => {
     try {
       const res = await API.post('/api/subscription/epay/pay', {
         plan_id: plan.id,
+        team_id: purchaseTeamId,
         payment_method: selectedEpayMethod,
       });
       if (res.data?.message === 'success') {

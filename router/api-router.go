@@ -174,6 +174,13 @@ func SetApiRouter(router *gin.Engine) {
 			teamRoute.POST("/:id/token/:token_id", controller.LinkTokenToTeam)
 			teamRoute.DELETE("/:id/token/:token_id", controller.UnlinkTokenFromTeam)
 
+			// P1: team-owned tokens (Token.team_id) and team subscriptions.
+			teamRoute.GET("/:id/team-token", controller.ListTeamOwnedTokens)
+			teamRoute.POST("/:id/team-token", controller.CreateTeamToken)
+			teamRoute.DELETE("/:id/team-token/:token_id", controller.DeleteTeamOwnedToken)
+
+			teamRoute.GET("/:id/subscription", controller.GetTeamSubscriptions)
+
 			teamRoute.GET("/:id/usage", controller.GetTeamUsageStats)
 			teamRoute.POST("/:id/invite", controller.RegenerateInviteCode)
 		}

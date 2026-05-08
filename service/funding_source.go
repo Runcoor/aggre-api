@@ -119,7 +119,64 @@ func (s *SubscriptionFunding) Refund() error {
 }
 
 // ---------------------------------------------------------------------------
-// TeamFunding — 团队额度池资金来源实现
+// TeamSubscriptionFunding — 团队订阅资金来源实现
+// ---------------------------------------------------------------------------
+
+// TeamSubscriptionFunding 用于"团队订阅 = 团队主体的 UserSubscription"模型。
+// 与 SubscriptionFunding 几乎对称，区别仅在于 PreConsume 走的是
+// PreConsumeTeamSubscription（按 team_id 解析订阅），而 Settle/Refund 走的是
+// 共享的 PostConsume/Refund 函数（按 user_subscriptions.id 唯一标识订阅行）。
+type TeamSubscriptionFunding struct {
+	requestId      string
+	teamId         int
+	buyerUserId    int // 仅用于日志/上下文，扣费按订阅 id 进行
+	modelName      string
+	amount         int64
+	subscriptionId int
+	preConsumed    int64
+	// 以下字段在 PreConsume 成功后填充，供 RelayInfo 同步使用
+	AmountTotal     int64
+	AmountUsedAfter int64
+	PlanId          int
+	PlanTitle       string
+}
+
+func (s *TeamSubscriptionFunding) Source() string { return BillingSourceSubscription }
+
+func (s *TeamSubscriptionFunding) PreConsume(_ int) error {
+	res, err := model.PreConsumeTeamSubscription(s.requestId, s.teamId, s.modelName, 0, s.amount)
+	if err != nil {
+		return err
+	}
+	s.subscriptionId = res.UserSubscriptionId
+	s.preConsumed = res.PreConsumed
+	s.AmountTotal = res.AmountTotal
+	s.AmountUsedAfter = res.AmountUsedAfter
+	if planInfo, err := model.GetSubscriptionPlanInfoByUserSubscriptionId(res.UserSubscriptionId); err == nil && planInfo != nil {
+		s.PlanId = planInfo.PlanId
+		s.PlanTitle = planInfo.PlanTitle
+	}
+	return nil
+}
+
+func (s *TeamSubscriptionFunding) Settle(delta int) error {
+	if delta == 0 {
+		return nil
+	}
+	return model.PostConsumeUserSubscriptionDelta(s.subscriptionId, int64(delta))
+}
+
+func (s *TeamSubscriptionFunding) Refund() error {
+	if s.preConsumed <= 0 {
+		return nil
+	}
+	return refundWithRetry(func() error {
+		return model.RefundSubscriptionPreConsume(s.requestId)
+	})
+}
+
+// ---------------------------------------------------------------------------
+// TeamFunding — 团队额度池资金来源实现 (legacy)
 // ---------------------------------------------------------------------------
 
 type TeamFunding struct {

@@ -43,7 +43,15 @@ const TeamDetail = () => {
   const [myRole, setMyRole] = useState(0);
   const [members, setMembers] = useState([]);
   const [tokens, setTokens] = useState([]);
+  const [teamTokens, setTeamTokens] = useState([]);
+  const [teamSubs, setTeamSubs] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Team-owned token modal
+  const [teamTokenModalVisible, setTeamTokenModalVisible] = useState(false);
+  const [teamTokenName, setTeamTokenName] = useState('');
+  const [creatingTeamToken, setCreatingTeamToken] = useState(false);
+  const [createdTeamTokenKey, setCreatedTeamTokenKey] = useState('');
 
   // Modals
   const [addMemberVisible, setAddMemberVisible] = useState(false);
@@ -98,11 +106,27 @@ const TeamDetail = () => {
     } catch {}
   };
 
+  const loadTeamTokens = async () => {
+    try {
+      const res = await API.get(`/api/team/${id}/team-token`);
+      if (res.data?.success) setTeamTokens(res.data.data || []);
+    } catch {}
+  };
+
+  const loadTeamSubs = async () => {
+    try {
+      const res = await API.get(`/api/team/${id}/subscription`);
+      if (res.data?.success) setTeamSubs(res.data.data?.subscriptions || []);
+    } catch {}
+  };
+
   useEffect(() => {
     loadTeam();
     loadMembers();
     loadTokens();
     loadAvailableTokens();
+    loadTeamTokens();
+    loadTeamSubs();
   }, [id]);
 
   const handleAddMember = async () => {
@@ -200,6 +224,41 @@ const TeamDetail = () => {
       if (res.data?.success) { showSuccess(t('已解除关联')); loadTokens(); }
       else showError(res.data?.message || t('操作失败'));
     } catch { showError(t('请求失败')); }
+  };
+
+  const handleCreateTeamToken = async () => {
+    setCreatingTeamToken(true);
+    try {
+      const res = await API.post(`/api/team/${id}/team-token`, { name: teamTokenName.trim() });
+      if (res.data?.success) {
+        const key = res.data.data?.key || '';
+        setCreatedTeamTokenKey(key);
+        setTeamTokenName('');
+        loadTeamTokens();
+      } else {
+        showError(res.data?.message || t('创建失败'));
+      }
+    } catch { showError(t('请求失败')); }
+    setCreatingTeamToken(false);
+  };
+
+  const handleDeleteTeamToken = (tokenId) => {
+    Modal.confirm({
+      title: t('确认删除'),
+      content: t('删除后该团队令牌将立即失效，且无法恢复。'),
+      centered: true,
+      onOk: async () => {
+        try {
+          const res = await API.delete(`/api/team/${id}/team-token/${tokenId}`);
+          if (res.data?.success) { showSuccess(t('已删除')); loadTeamTokens(); }
+          else showError(res.data?.message || t('删除失败'));
+        } catch { showError(t('请求失败')); }
+      },
+    });
+  };
+
+  const handleBuyTeamSubscription = () => {
+    navigate(`/plans?team_id=${id}`);
   };
 
   if (loading || !team) {
@@ -358,7 +417,127 @@ const TeamDetail = () => {
         />
       </div>
 
-      {/* Team tokens */}
+      {/* Team subscriptions (P1: subscription-native team plans) */}
+      <div>
+        <div className='flex items-center justify-between mb-4'>
+          <h2 className='text-lg font-bold m-0' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
+            {t('团队订阅')}
+          </h2>
+          {isOwner && (
+            <Button size='small' theme='solid' type='primary' icon={<IconPlus />}
+              onClick={handleBuyTeamSubscription}
+              style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent-gradient)', border: 'none', fontWeight: 600 }}
+            >
+              {t('购买团队订阅')}
+            </Button>
+          )}
+        </div>
+        <Banner
+          type='info' closeIcon={null}
+          description={t('团队订阅独立于个人订阅，订阅周期内团队令牌的所有请求会从该订阅扣额度，到期或额度耗尽后自动停用。')}
+          style={{ borderRadius: 'var(--radius-md)', marginBottom: 12 }}
+        />
+        {teamSubs.length === 0 ? (
+          <div className='text-center py-8 rounded-[var(--radius-lg)]'
+            style={{ background: 'var(--surface)', border: '1px solid var(--border-default)', color: 'var(--text-muted)' }}>
+            <Crown size={32} style={{ margin: '0 auto 8px', opacity: 0.3 }} />
+            <Text style={{ fontSize: 13 }}>{t('暂无团队订阅')}</Text>
+          </div>
+        ) : (
+          <div className='space-y-2'>
+            {teamSubs.map((item) => {
+              const sub = item.subscription || {};
+              const total = Number(sub.amount_total || 0);
+              const used = Number(sub.amount_used || 0);
+              const remain = Math.max(0, total - used);
+              const pct = total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0;
+              return (
+                <div key={sub.id} className='p-3 rounded-[var(--radius-md)]'
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border-default)' }}>
+                  <div className='flex items-center gap-3'>
+                    <Crown size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                    <div className='flex-1 min-w-0'>
+                      <Text strong className='truncate block' style={{ fontSize: 13 }}>
+                        {`Plan #${sub.plan_id}`}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                        {t('结束于')} {sub.end_time ? new Date(sub.end_time * 1000).toLocaleString() : '—'}
+                      </Text>
+                    </div>
+                    <Tag size='small' color={sub.status === 'active' ? 'green' : 'grey'}>
+                      {sub.status}
+                    </Tag>
+                  </div>
+                  {total > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <div style={{ width: '100%', height: 4, borderRadius: 9999, background: 'var(--border-subtle)', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: 'var(--accent)' }} />
+                      </div>
+                      <Text style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
+                        {t('剩余')} {renderQuota(remain)} / {renderQuota(total)}
+                      </Text>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Team-owned tokens (P1: Token.team_id) */}
+      <div>
+        <div className='flex items-center justify-between mb-4'>
+          <h2 className='text-lg font-bold m-0' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
+            {t('团队令牌')}
+          </h2>
+          {isAdmin && (
+            <Button size='small' theme='light' type='primary' icon={<IconPlus />}
+              onClick={() => { setCreatedTeamTokenKey(''); setTeamTokenName(''); setTeamTokenModalVisible(true); }}
+              style={{ borderRadius: 'var(--radius-md)' }}
+            >
+              {t('创建团队令牌')}
+            </Button>
+          )}
+        </div>
+        <Banner
+          type='info' closeIcon={null}
+          description={t('由团队签发的 API 令牌，请求会直接走团队订阅扣费。无需关联个人令牌。')}
+          style={{ borderRadius: 'var(--radius-md)', marginBottom: 12 }}
+        />
+        {teamTokens.length === 0 ? (
+          <div className='text-center py-8 rounded-[var(--radius-lg)]'
+            style={{ background: 'var(--surface)', border: '1px solid var(--border-default)', color: 'var(--text-muted)' }}>
+            <Key size={32} style={{ margin: '0 auto 8px', opacity: 0.3 }} />
+            <Text style={{ fontSize: 13 }}>{t('暂无团队令牌')}</Text>
+          </div>
+        ) : (
+          <div className='space-y-2'>
+            {teamTokens.map((tk) => (
+              <div key={tk.id} className='flex items-center gap-3 p-3 rounded-[var(--radius-md)]'
+                style={{ background: 'var(--surface)', border: '1px solid var(--border-default)' }}>
+                <Key size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                <div className='flex-1 min-w-0'>
+                  <Text strong className='truncate block' style={{ fontSize: 13 }}>{tk.name || `Token #${tk.id}`}</Text>
+                  <Text style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                    {tk.key || '****'}
+                  </Text>
+                </div>
+                <Tag size='small' color={tk.status === 1 ? 'green' : 'grey'}>
+                  {tk.status === 1 ? t('启用') : t('禁用')}
+                </Tag>
+                {isAdmin && (
+                  <Button size='small' theme='borderless' type='danger' icon={<IconDelete />}
+                    onClick={() => handleDeleteTeamToken(tk.id)}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Legacy linked tokens (kept for back-compat with team_tokens link table) */}
       <div>
         <div className='flex items-center justify-between mb-4'>
           <h2 className='text-lg font-bold m-0' style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}>
@@ -442,6 +621,52 @@ const TeamDetail = () => {
             {t('保存')}
           </Button>
         </div>
+      </Modal>
+
+      <Modal
+        title={createdTeamTokenKey ? t('团队令牌已创建') : t('创建团队令牌')}
+        visible={teamTokenModalVisible}
+        onCancel={() => { setTeamTokenModalVisible(false); setCreatedTeamTokenKey(''); setTeamTokenName(''); }}
+        footer={null} centered size='small'
+      >
+        {createdTeamTokenKey ? (
+          <div className='space-y-4 pb-2'>
+            <Banner
+              type='warning' closeIcon={null}
+              description={t('请立即复制密钥，关闭后将无法再次查看完整密钥。')}
+              style={{ borderRadius: 'var(--radius-md)' }}
+            />
+            <div className='flex items-center gap-2 p-3 rounded-[var(--radius-md)]'
+              style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-default)' }}>
+              <code className='flex-1 truncate' style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                sk-{createdTeamTokenKey}
+              </code>
+              <Button size='small' theme='borderless' type='primary' icon={<IconCopy />}
+                onClick={() => { copy(`sk-${createdTeamTokenKey}`); showSuccess(t('已复制')); }}
+              />
+            </div>
+            <Button theme='solid' type='primary' block
+              onClick={() => { setTeamTokenModalVisible(false); setCreatedTeamTokenKey(''); }}
+              style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent-gradient)', border: 'none', fontWeight: 600, height: 40 }}
+            >
+              {t('完成')}
+            </Button>
+          </div>
+        ) : (
+          <div className='space-y-4 pb-2'>
+            <Input value={teamTokenName} onChange={setTeamTokenName} placeholder={t('令牌名称（可选）')} showClear
+              style={{ borderRadius: 'var(--radius-md)' }} onEnterPress={handleCreateTeamToken} />
+            <Banner type='info' closeIcon={null}
+              description={t('该令牌将绑定到当前团队，API 请求会从团队订阅扣费。')}
+              style={{ borderRadius: 'var(--radius-md)' }}
+            />
+            <Button theme='solid' type='primary' block loading={creatingTeamToken} onClick={handleCreateTeamToken}
+              style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent-gradient)', border: 'none', fontWeight: 600, height: 40 }}
+            >
+              {t('创建')}
+            </Button>
+          </div>
+        )}
       </Modal>
 
       <Modal title={t('关联令牌')} visible={linkTokenVisible} onCancel={() => { setLinkTokenVisible(false); setLinkTokenId(null); }} footer={null} centered size='small'>

@@ -21,6 +21,10 @@ import (
 
 type SubscriptionStripePayRequest struct {
 	PlanId int `json:"plan_id"`
+	// TeamId is optional. When >0 the order is placed on behalf of a team
+	// the caller owns; completion creates a team subscription instead of
+	// elevating the buyer's personal account.
+	TeamId int `json:"team_id"`
 }
 
 func SubscriptionRequestStripePay(c *gin.Context) {
@@ -63,16 +67,9 @@ func SubscriptionRequestStripePay(c *gin.Context) {
 		return
 	}
 
-	if plan.MaxPurchasePerUser > 0 {
-		count, err := model.CountUserSubscriptionsByPlan(userId, plan.Id)
-		if err != nil {
-			common.ApiError(c, err)
-			return
-		}
-		if count >= int64(plan.MaxPurchasePerUser) {
-			common.ApiErrorMsg(c, "已达到该套餐购买上限")
-			return
-		}
+	if err := resolveSubscriptionPurchaseScope(userId, req.TeamId, plan); err != nil {
+		common.ApiErrorMsg(c, err.Error())
+		return
 	}
 
 	reference := fmt.Sprintf("sub-stripe-ref-%d-%d-%s", user.Id, time.Now().UnixMilli(), randstr.String(4))
@@ -92,6 +89,7 @@ func SubscriptionRequestStripePay(c *gin.Context) {
 
 	order := &model.SubscriptionOrder{
 		UserId:        userId,
+		TeamId:        req.TeamId,
 		PlanId:        plan.Id,
 		Money:         payMoney,
 		TradeNo:       referenceId,

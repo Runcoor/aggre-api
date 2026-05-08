@@ -207,6 +207,10 @@ func (p *SubscriptionPlan) BeforeUpdate(tx *gorm.DB) error {
 type SubscriptionOrder struct {
 	Id     int     `json:"id"`
 	UserId int     `json:"user_id" gorm:"index"`
+	// TeamId records the team this order was placed for. 0 = personal purchase
+	// (default; backward-compatible). >0 = team purchase, completion creates a
+	// team subscription instead of a personal one.
+	TeamId int     `json:"team_id" gorm:"type:int;not null;default:0;index"`
 	PlanId int     `json:"plan_id" gorm:"index"`
 	Money  float64 `json:"money"`
 
@@ -555,7 +559,14 @@ func CompleteSubscriptionOrder(tradeNo string, providerPayload string) error {
 			// still allow completion for already purchased orders
 		}
 		upgradeGroup = strings.TrimSpace(plan.UpgradeGroup)
-		_, err = CreateUserSubscriptionFromPlanTx(tx, order.UserId, plan, "order")
+		if order.TeamId > 0 {
+			_, err = CreateTeamSubscriptionFromPlanTx(tx, order.TeamId, order.UserId, plan, "order")
+			// Team purchases never elevate the buyer's personal user.group;
+			// suppress the upgradeGroup cache update below by clearing it.
+			upgradeGroup = ""
+		} else {
+			_, err = CreateUserSubscriptionFromPlanTx(tx, order.UserId, plan, "order")
+		}
 		if err != nil {
 			return err
 		}

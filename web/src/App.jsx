@@ -76,6 +76,7 @@ const QuickStart = lazy(() => import('./pages/QuickStart'));
 const RechargePage = lazy(() => import('./pages/Recharge'));
 const TeamPage = lazy(() => import('./pages/Team'));
 const TeamDetail = lazy(() => import('./pages/Team/TeamDetail'));
+const TeamApplicationsAdmin = lazy(() => import('./pages/Admin/TeamApplications'));
 const UserDetail = lazy(() => import('./pages/User/UserDetail'));
 const JoinTeam = lazy(() => import('./pages/Team/JoinTeam'));
 const GuideIndex = lazy(() => import('./pages/Guide'));
@@ -395,6 +396,16 @@ function App() {
             <PrivateRoute>
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                 <JoinTeam />
+              </Suspense>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path='/console/team-applications'
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <TeamApplicationsAdmin />
               </Suspense>
             </PrivateRoute>
           }

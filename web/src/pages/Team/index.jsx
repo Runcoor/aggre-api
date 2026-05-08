@@ -7,70 +7,125 @@ published by the Free Software Foundation, either version 3 of the
 License, or (at your option) any later version.
 */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Banner,
   Button,
   Input,
-  Typography,
   Modal,
   Skeleton,
   Tag,
   Tooltip,
+  Typography,
 } from '@douyinfe/semi-ui';
-import { IconPlus, IconCopy } from '@douyinfe/semi-icons';
-import { Users, Crown, Shield, User, Zap } from 'lucide-react';
+import TextArea from '@douyinfe/semi-ui/lib/es/input/textArea';
+import { IconPlus, IconClock } from '@douyinfe/semi-icons';
+import { Users, Crown, Shield, User, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { API, showError, showSuccess, renderQuota } from '../../helpers';
-import { copy } from '../../helpers/utils';
+import { API, isAdmin, renderQuota, showError, showSuccess } from '../../helpers';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
 
 const { Text } = Typography;
 
+// Status constants kept in sync with model/team_application.go.
+const APP_PENDING = 0;
+const APP_APPROVED = 1;
+const APP_REJECTED = 2;
+const APP_CANCELED = 3;
+
 const TeamPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  const _isMobile = useIsMobile();
+  const admin = isAdmin();
 
   const [teams, setTeams] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [createVisible, setCreateVisible] = useState(false);
+
+  // Apply / direct-create modal (label switches by role).
+  const [applyVisible, setApplyVisible] = useState(false);
   const [teamName, setTeamName] = useState('');
-  const [creating, setCreating] = useState(false);
+  const [teamReason, setTeamReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   // Join by invite code
   const [joinVisible, setJoinVisible] = useState(false);
   const [inviteCode, setInviteCode] = useState('');
   const [joining, setJoining] = useState(false);
 
-  const loadTeams = async () => {
+  const pendingApp = useMemo(
+    () => applications.find((a) => a.status === APP_PENDING),
+    [applications],
+  );
+
+  const loadAll = async () => {
     setLoading(true);
     try {
-      const res = await API.get('/api/team');
-      if (res.data?.success) setTeams(res.data.data || []);
-    } catch {}
+      const [tRes, aRes] = await Promise.all([
+        API.get('/api/team'),
+        API.get('/api/team/apply/self'),
+      ]);
+      if (tRes.data?.success) setTeams(tRes.data.data || []);
+      if (aRes.data?.success) setApplications(aRes.data.data || []);
+    } catch (e) {
+      // Network failures handled below in individual UI states.
+    }
     setLoading(false);
   };
 
-  useEffect(() => { loadTeams(); }, []);
+  useEffect(() => {
+    loadAll();
+  }, []);
 
-  const handleCreate = async () => {
-    if (!teamName.trim()) { showError(t('团队名称不能为空')); return; }
-    setCreating(true);
+  const handleSubmit = async () => {
+    if (!teamName.trim()) {
+      showError(t('团队名称不能为空'));
+      return;
+    }
+    setSubmitting(true);
     try {
-      const res = await API.post('/api/team', { name: teamName.trim() });
+      // Admins create directly; common users go through approval.
+      const url = admin ? '/api/team' : '/api/team/apply';
+      const payload = admin
+        ? { name: teamName.trim() }
+        : { name: teamName.trim(), reason: teamReason.trim() };
+      const res = await API.post(url, payload);
       if (res.data?.success) {
-        showSuccess(t('团队创建成功'));
-        setCreateVisible(false);
+        showSuccess(admin ? t('团队创建成功') : t('申请已提交，等待管理员审核'));
+        setApplyVisible(false);
         setTeamName('');
-        loadTeams();
-      } else showError(res.data?.message || t('创建失败'));
-    } catch { showError(t('请求失败')); }
-    setCreating(false);
+        setTeamReason('');
+        loadAll();
+      } else {
+        showError(res.data?.message || t('提交失败'));
+      }
+    } catch {
+      showError(t('请求失败'));
+    }
+    setSubmitting(false);
+  };
+
+  const handleWithdraw = async (appId) => {
+    try {
+      const res = await API.delete(`/api/team/apply/${appId}`);
+      if (res.data?.success) {
+        showSuccess(t('已撤回申请'));
+        loadAll();
+      } else {
+        showError(res.data?.message || t('撤回失败'));
+      }
+    } catch {
+      showError(t('请求失败'));
+    }
   };
 
   const handleJoin = async () => {
-    if (!inviteCode.trim()) { showError(t('请输入邀请码')); return; }
+    if (!inviteCode.trim()) {
+      showError(t('请输入邀请码'));
+      return;
+    }
     setJoining(true);
     try {
       const res = await API.post(`/api/team/join/${inviteCode.trim()}`);
@@ -78,9 +133,11 @@ const TeamPage = () => {
         showSuccess(`${t('已加入团队')}: ${res.data.data?.team_name || ''}`);
         setJoinVisible(false);
         setInviteCode('');
-        loadTeams();
+        loadAll();
       } else showError(res.data?.message || t('加入失败'));
-    } catch { showError(t('请求失败')); }
+    } catch {
+      showError(t('请求失败'));
+    }
     setJoining(false);
   };
 
@@ -96,6 +153,16 @@ const TeamPage = () => {
     return t('成员');
   };
 
+  const renderAppStatus = (status) => {
+    if (status === APP_PENDING)
+      return <Tag color='blue' shape='circle'>{t('待审核')}</Tag>;
+    if (status === APP_APPROVED)
+      return <Tag color='green' shape='circle'>{t('已通过')}</Tag>;
+    if (status === APP_REJECTED)
+      return <Tag color='red' shape='circle'>{t('已驳回')}</Tag>;
+    return <Tag color='grey' shape='circle'>{t('已撤回')}</Tag>;
+  };
+
   return (
     <div className='w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12'>
       {/* Header */}
@@ -105,22 +172,60 @@ const TeamPage = () => {
             {t('团队管理')}
           </h1>
           <Text style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
-            {t('创建或加入团队，共享 API 额度')}
+            {admin
+              ? t('创建或加入团队，共享 API 额度')
+              : t('申请创建或加入团队，由管理员审核后开通')}
           </Text>
         </div>
         <div className='flex gap-2'>
           <Button theme='light' type='primary' onClick={() => setJoinVisible(true)}
-            style={{ borderRadius: 'var(--radius-md)' }}
-          >
+            style={{ borderRadius: 'var(--radius-md)' }}>
             {t('加入团队')}
           </Button>
-          <Button theme='solid' type='primary' icon={<IconPlus />} onClick={() => setCreateVisible(true)}
-            style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent-gradient)', border: 'none', fontWeight: 600 }}
+          <Tooltip
+            content={pendingApp && !admin ? t('已有待审核的申请') : ''}
+            trigger={pendingApp && !admin ? 'hover' : 'custom'}
           >
-            {t('创建团队')}
-          </Button>
+            <Button
+              theme='solid'
+              type='primary'
+              icon={<IconPlus />}
+              disabled={!admin && !!pendingApp}
+              onClick={() => setApplyVisible(true)}
+              style={{
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--accent-gradient)',
+                border: 'none',
+                fontWeight: 600,
+              }}
+            >
+              {admin ? t('创建团队') : t('申请创建团队')}
+            </Button>
+          </Tooltip>
         </div>
       </div>
+
+      {/* Pending application banner */}
+      {pendingApp && !admin && (
+        <Banner
+          type='info'
+          icon={<IconClock />}
+          closeIcon={null}
+          fullMode={false}
+          description={
+            <div className='flex items-center justify-between gap-3 w-full'>
+              <span>
+                {t('您的团队创建申请')} <strong>「{pendingApp.name}」</strong>{' '}
+                {t('正在等待管理员审核')}
+              </span>
+              <Button size='small' type='tertiary' onClick={() => handleWithdraw(pendingApp.id)}>
+                {t('撤回申请')}
+              </Button>
+            </div>
+          }
+          style={{ marginBottom: 16, borderRadius: 'var(--radius-md)' }}
+        />
+      )}
 
       {/* Teams list */}
       {loading ? (
@@ -139,7 +244,9 @@ const TeamPage = () => {
             {t('暂无团队')}
           </Text>
           <Text style={{ fontSize: 13, display: 'block', color: 'var(--text-muted)', marginTop: 4 }}>
-            {t('创建一个团队或使用邀请码加入')}
+            {admin
+              ? t('创建一个团队或使用邀请码加入')
+              : t('提交申请或使用邀请码加入团队')}
           </Text>
         </div>
       ) : (
@@ -206,16 +313,94 @@ const TeamPage = () => {
         </div>
       )}
 
-      {/* Create modal */}
-      <Modal title={t('创建团队')} visible={createVisible} onCancel={() => setCreateVisible(false)}
-        footer={null} centered size='small'>
+      {/* Application history (non-admin only — admins see review list separately) */}
+      {!admin && applications.length > 0 && (
+        <div className='mt-10'>
+          <div className='flex items-center gap-2 mb-3'>
+            <FileText size={16} style={{ color: 'var(--text-muted)' }} />
+            <Text style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>
+              {t('我的申请记录')}
+            </Text>
+          </div>
+          <div
+            className='rounded-[var(--radius-lg)] overflow-hidden'
+            style={{ border: '1px solid var(--border-default)', background: 'var(--surface)' }}
+          >
+            {applications.map((app, i) => (
+              <div
+                key={app.id}
+                className='flex items-center justify-between px-4 py-3'
+                style={{
+                  borderTop: i === 0 ? 'none' : '1px solid var(--border-default)',
+                }}
+              >
+                <div className='min-w-0 flex-1'>
+                  <div className='flex items-center gap-2 mb-1'>
+                    <Text strong style={{ color: 'var(--text-primary)' }}>{app.name}</Text>
+                    {renderAppStatus(app.status)}
+                  </div>
+                  {app.review_comment && (
+                    <Text style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                      {t('审核意见')}: {app.review_comment}
+                    </Text>
+                  )}
+                </div>
+                <Text style={{ fontSize: 12, color: 'var(--text-muted)', flexShrink: 0 }}>
+                  {new Date(app.created_at * 1000).toLocaleString()}
+                </Text>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Apply / Create modal */}
+      <Modal
+        title={admin ? t('创建团队') : t('申请创建团队')}
+        visible={applyVisible}
+        onCancel={() => setApplyVisible(false)}
+        footer={null}
+        centered
+        size='small'
+      >
         <div className='space-y-4 pb-2'>
-          <Input value={teamName} onChange={setTeamName} placeholder={t('输入团队名称')} showClear
-            style={{ borderRadius: 'var(--radius-md)' }} onEnterPress={handleCreate} />
-          <Button theme='solid' type='primary' block loading={creating} onClick={handleCreate}
+          <div>
+            <Text style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+              {t('团队名称')}
+            </Text>
+            <Input
+              value={teamName}
+              onChange={setTeamName}
+              placeholder={t('输入团队名称')}
+              showClear
+              style={{ borderRadius: 'var(--radius-md)' }}
+            />
+          </div>
+          {!admin && (
+            <div>
+              <Text style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+                {t('申请理由')}
+              </Text>
+              <TextArea
+                value={teamReason}
+                onChange={setTeamReason}
+                placeholder={t('简单描述团队用途，方便管理员审核')}
+                rows={4}
+                maxLength={2000}
+                showCounter
+                style={{ borderRadius: 'var(--radius-md)' }}
+              />
+            </div>
+          )}
+          <Button
+            theme='solid'
+            type='primary'
+            block
+            loading={submitting}
+            onClick={handleSubmit}
             style={{ borderRadius: 'var(--radius-md)', background: 'var(--accent-gradient)', border: 'none', fontWeight: 600, height: 40 }}
           >
-            {t('创建')}
+            {admin ? t('创建') : t('提交申请')}
           </Button>
         </div>
       </Modal>

@@ -98,11 +98,13 @@ func GetTeamPermission(c *gin.Context) {
 	userId := c.GetInt("id")
 	role := c.GetInt("role")
 	teams, _ := model.GetUserTeams(userId)
+	hasPending, _ := model.HasPendingTeamApplication(userId)
 	common.ApiSuccess(c, gin.H{
-		"enabled":             true,
-		"can_create_directly": role >= common.RoleAdminUser,
-		"can_apply":           true,
-		"is_member":           len(teams) > 0,
+		"enabled":                 true,
+		"can_create_directly":     role >= common.RoleAdminUser,
+		"can_apply":               true,
+		"is_member":               len(teams) > 0,
+		"has_pending_application": hasPending,
 	})
 }
 

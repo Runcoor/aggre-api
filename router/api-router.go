@@ -158,6 +158,11 @@ func SetApiRouter(router *gin.Engine) {
 			teamRoute.GET("/", controller.GetUserTeams)
 			teamRoute.POST("/join/:invite_code", controller.JoinTeamByInvite)
 
+			// Team-creation applications (user-side).
+			teamRoute.POST("/apply", controller.ApplyForTeam)
+			teamRoute.GET("/apply/self", controller.GetSelfTeamApplications)
+			teamRoute.DELETE("/apply/:id", controller.WithdrawTeamApplication)
+
 			teamRoute.GET("/:id", controller.GetTeam)
 			teamRoute.PUT("/:id", controller.UpdateTeam)
 			teamRoute.DELETE("/:id", controller.DeleteTeam)
@@ -208,6 +213,16 @@ func SetApiRouter(router *gin.Engine) {
 		financeRoute.Use(middleware.AdminAuth())
 		{
 			financeRoute.GET("/summary", controller.FinanceSummary)
+		}
+
+		// Team applications (admin review)
+		teamAppAdminRoute := apiRouter.Group("/admin/team-applications")
+		teamAppAdminRoute.Use(middleware.AdminAuth())
+		{
+			teamAppAdminRoute.GET("", controller.AdminListTeamApplications)
+			teamAppAdminRoute.GET("/:id", controller.AdminGetTeamApplicationDetail)
+			teamAppAdminRoute.POST("/:id/approve", controller.AdminApproveTeamApplication)
+			teamAppAdminRoute.POST("/:id/reject", controller.AdminRejectTeamApplication)
 		}
 
 		subscriptionAdminRoute := apiRouter.Group("/subscription/admin")

@@ -167,6 +167,21 @@ func main() {
 			},
 		})
 	}))
+	// Real-client-IP resolution must run BEFORE every other middleware so
+	// the request logger, login-log writer, rate-limiter, turnstile etc.
+	// all see the corrected RemoteAddr via c.ClientIP(). Gin's own
+	// trusted-proxy list is also aligned to the same CIDRs so its native
+	// machinery agrees with the middleware.
+	server.Use(middleware.RealIP())
+	if cidrs := middleware.TrustedCIDRs(); len(cidrs) > 0 {
+		proxies := make([]string, 0, len(cidrs))
+		for _, n := range cidrs {
+			proxies = append(proxies, n.String())
+		}
+		if err := server.SetTrustedProxies(proxies); err != nil {
+			common.SysError(fmt.Sprintf("SetTrustedProxies failed: %v", err))
+		}
+	}
 	// This will cause SSE not to work!!!
 	//server.Use(gzip.Gzip(gzip.DefaultCompression))
 	server.Use(middleware.RequestId())

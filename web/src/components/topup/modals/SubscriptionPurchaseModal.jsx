@@ -306,12 +306,16 @@ const SubscriptionPurchaseModal = ({
   enableStripeTopUp = false,
   enableCreemTopUp = false,
   purchaseLimitInfo = null,
+  purchaseTeamId = 0,
+  teamName = '',
   onPayStripe,
   onPayCreem,
   onPayEpay,
   onPayNowPayments,
   onPayDodoPayments,
 }) => {
+  const isTeamPurchase = Number(purchaseTeamId) > 0;
+  const teamLabel = teamName ? `「${teamName}」` : `#${purchaseTeamId}`;
   const plan = selectedPlan?.plan;
   const { symbol, rate } = getCurrencyConfig();
   const price = plan ? Number(plan.price_amount || 0) : 0;
@@ -421,8 +425,16 @@ const SubscriptionPurchaseModal = ({
                 <Crown size={20} strokeWidth={1.8} />
               </div>
               <div>
-                <h2>{t('购买订阅套餐')}</h2>
-                <p className='spm-sub'>{t('确认订单详情后完成支付')}</p>
+                <h2>
+                  {isTeamPurchase
+                    ? `${t('为团队')} ${teamLabel} ${t('订阅')}`
+                    : t('购买订阅套餐')}
+                </h2>
+                <p className='spm-sub'>
+                  {isTeamPurchase
+                    ? t('该订阅独立于个人，不会升级你的个人会员等级')
+                    : t('确认订单详情后完成支付')}
+                </p>
               </div>
             </div>
             <button
@@ -586,7 +598,11 @@ const SubscriptionPurchaseModal = ({
                 purchaseLimitReached
               }
             >
-              {paying ? t('处理中...') : t('确认支付')}
+              {paying
+                ? t('处理中...')
+                : isTeamPurchase
+                  ? `${t('为团队支付')} ${teamLabel}`
+                  : t('确认支付')}
               {!paying && <ArrowRight size={14} strokeWidth={2.4} />}
             </button>
           </footer>

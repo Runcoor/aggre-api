@@ -31,6 +31,7 @@ import {
   ArrowRight,
   Star,
   MessageSquare,
+  Users,
 } from 'lucide-react';
 
 const PENDING_PLAN_KEY = 'pending_subscription_plan_id';
@@ -757,10 +758,40 @@ const PlansPage = () => {
   // When ?team_id=N is present, the purchase is on behalf of a team. The
   // backend gates this (only the team owner may buy) and creates a team
   // subscription on completion instead of a personal one.
-  const purchaseTeamId = (() => {
+  const purchaseTeamId = useMemo(() => {
     const v = parseInt(searchParams.get('team_id') || '0', 10);
     return Number.isFinite(v) && v > 0 ? v : 0;
-  })();
+  }, [searchParams]);
+
+  // Fetch team meta so the banner + buy modal can show the team's actual
+  // name. Falls back silently if the user can't read the team (e.g., URL
+  // tampered with a foreign team id) — banner then renders with a generic
+  // label so the team-purchase signal is still visible.
+  const [teamMeta, setTeamMeta] = useState(null);
+  useEffect(() => {
+    if (!purchaseTeamId || !isLoggedIn) {
+      setTeamMeta(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await API.get(`/api/team/${purchaseTeamId}`);
+        if (cancelled) return;
+        if (res.data?.success) setTeamMeta(res.data.data?.team || null);
+        else setTeamMeta({ id: purchaseTeamId, name: '' });
+      } catch {
+        if (!cancelled) setTeamMeta({ id: purchaseTeamId, name: '' });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [purchaseTeamId, isLoggedIn]);
+
+  const switchToPersonalPurchase = useCallback(() => {
+    const next = new URLSearchParams(searchParams);
+    next.delete('team_id');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const payStripe = async () => {
     const plan = selectedPlan?.plan;
@@ -879,6 +910,37 @@ const PlansPage = () => {
       <div className='cy-blob cy-blob-b' aria-hidden style={blobBStyle} />
 
       <div style={{ maxWidth: 1180, margin: '0 auto', position: 'relative' }}>
+        {/* Team-purchase context banner — surfaces that the user is buying
+            on behalf of a team (URL has ?team_id=N) and offers a one-click
+            switch back to personal purchase. */}
+        {purchaseTeamId > 0 && (
+          <div className='cy-team-banner' role='status'>
+            <div className='cy-team-banner-icon' aria-hidden='true'>
+              <Users size={16} strokeWidth={2} />
+            </div>
+            <div className='cy-team-banner-text'>
+              <div className='cy-team-banner-title'>
+                {t('正在为团队')}{' '}
+                <strong>
+                  {teamMeta?.name ? `「${teamMeta.name}」` : `#${purchaseTeamId}`}
+                </strong>{' '}
+                {t('购买订阅')}
+              </div>
+              <div className='cy-team-banner-sub'>
+                {t('该订阅独立于个人订阅，团队令牌将走此订阅扣费，不会升级你的个人会员等级。')}
+              </div>
+            </div>
+            <button
+              type='button'
+              className='cy-team-banner-switch'
+              onClick={switchToPersonalPurchase}
+            >
+              {t('切换为个人购买')}
+              <ArrowRight size={12} strokeWidth={2.4} />
+            </button>
+          </div>
+        )}
+
         {/* Hero */}
         <div
           style={{
@@ -1117,6 +1179,8 @@ const PlansPage = () => {
         visible={modalOpen}
         onCancel={closeBuyModal}
         selectedPlan={selectedPlan}
+        purchaseTeamId={purchaseTeamId}
+        teamName={teamMeta?.name || ''}
         paying={paying}
         selectedEpayMethod={selectedEpayMethod}
         setSelectedEpayMethod={setSelectedEpayMethod}
@@ -1133,6 +1197,70 @@ const PlansPage = () => {
 
       {/* Page-scoped CSS for blob drift, badge shimmer, and table responsiveness. */}
       <style>{`
+        .cy-team-banner {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 12px 16px 12px 14px;
+          margin: 0 auto 28px;
+          max-width: 980px;
+          border-radius: 14px;
+          background: linear-gradient(135deg, rgba(0,114,255,0.08), rgba(0,198,255,0.08));
+          border: 1px solid rgba(0,114,255,0.20);
+          box-shadow: 0 10px 24px -16px rgba(0,114,255,0.30);
+          color: var(--text-primary);
+        }
+        .cy-team-banner-icon {
+          flex-shrink: 0;
+          width: 32px; height: 32px;
+          border-radius: 9px;
+          display: grid; place-items: center;
+          color: #fff;
+          background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
+          box-shadow: 0 6px 14px -6px rgba(0,114,255,0.55), inset 0 1px 0 rgba(255,255,255,0.35);
+        }
+        .cy-team-banner-text { flex: 1; min-width: 0; }
+        .cy-team-banner-title {
+          font-size: 13.5px;
+          font-weight: 600;
+          color: var(--text-primary);
+          letter-spacing: -0.005em;
+        }
+        .cy-team-banner-title strong {
+          font-weight: 700;
+          color: #0072ff;
+        }
+        .cy-team-banner-sub {
+          margin-top: 2px;
+          font-size: 12px;
+          color: var(--text-secondary);
+          line-height: 1.55;
+        }
+        .cy-team-banner-switch {
+          flex-shrink: 0;
+          display: inline-flex; align-items: center; gap: 4px;
+          padding: 7px 12px;
+          border-radius: 8px;
+          background: #fff;
+          border: 1px solid rgba(0,114,255,0.22);
+          color: #0072ff;
+          font: inherit;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+        }
+        .cy-team-banner-switch:hover {
+          background: linear-gradient(135deg, rgba(0,114,255,0.06), rgba(0,198,255,0.06));
+          transform: translateY(-1px);
+          box-shadow: 0 8px 16px -10px rgba(0,114,255,0.35);
+        }
+        .cy-team-banner-switch:active { transform: translateY(0); }
+        @media (max-width: 640px) {
+          .cy-team-banner { flex-wrap: wrap; }
+          .cy-team-banner-switch { width: 100%; justify-content: center; }
+        }
+
         @keyframes cy-drift-a {
           0%   { transform: translate(0, 0) scale(1); }
           50%  { transform: translate(40px, 30px) scale(1.06); }

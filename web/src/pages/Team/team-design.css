@@ -1219,3 +1219,184 @@
     width: 100%;
   }
 }
+
+/* ============================================================================
+   DARK MODE
+   The base styles above target light theme. Most rules read color from the
+   --td-* tokens, so flipping the tokens covers ~80% of the surface. The few
+   rules that hard-code `white` / `#fafbfd` / amber hex bypass the tokens and
+   need explicit overrides — those follow the token block below. Brand
+   gradients (--td-grad) are intentionally unchanged: they remain readable on
+   the dark surface and preserve the brand identity across themes.
+   ============================================================================ */
+
+html.dark .team-design {
+  --td-ink-900: rgba(255, 255, 255, 0.95);
+  --td-ink-700: rgba(255, 255, 255, 0.78);
+  --td-ink-500: rgba(255, 255, 255, 0.55);
+  --td-ink-400: rgba(255, 255, 255, 0.42);
+  --td-ink-300: rgba(255, 255, 255, 0.3);
+  --td-line: rgba(255, 255, 255, 0.08);
+  --td-line-soft: rgba(255, 255, 255, 0.05);
+  --td-bg: #0f1426;
+  --td-card: #161c30;
+  --td-grad-soft: linear-gradient(135deg, rgba(0, 198, 255, 0.18) 0%, rgba(0, 114, 255, 0.18) 100%);
+  --td-grad-softer: linear-gradient(135deg, rgba(0, 198, 255, 0.1) 0%, rgba(0, 114, 255, 0.1) 100%);
+  /* Status colors stay vivid; chip text uses lighter shades below. */
+}
+
+/* --- selectors that hard-code light backgrounds --- */
+html.dark .team-design .td-switch::after {
+  background: #e6ebf5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+html.dark .team-design table.td-t thead th {
+  background: rgba(255, 255, 255, 0.04);
+}
+html.dark .team-design table.td-t tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+html.dark .team-design .td-table-foot {
+  background: rgba(255, 255, 255, 0.03);
+}
+html.dark .team-design .td-pager button {
+  background: var(--td-card);
+  color: var(--td-ink-700);
+}
+html.dark .team-design .td-pager button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* The select dropdown caret is baked into a data: URL with a hex-encoded
+   stroke color — re-bake it for dark mode so the chevron stays visible. */
+html.dark .team-design .td-select {
+  background: var(--td-card)
+    url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a8b3c7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")
+    no-repeat right 10px center;
+  color: var(--td-ink-700);
+}
+
+/* Status pills — keep the hue, lift the text contrast for dark surfaces. */
+html.dark .team-design .td-pill-ok {
+  background: rgba(20, 184, 108, 0.18);
+  color: #4ade80;
+}
+html.dark .team-design .td-pill-warn {
+  background: rgba(245, 166, 35, 0.2);
+  color: #fbbf24;
+}
+html.dark .team-design .td-pill-danger {
+  background: rgba(239, 91, 91, 0.2);
+  color: #f87171;
+}
+html.dark .team-design .td-pill-info {
+  background: rgba(0, 198, 255, 0.16);
+  color: #60a5fa;
+}
+html.dark .team-design .td-pill-gold {
+  background: linear-gradient(135deg, rgba(255, 216, 107, 0.22), rgba(247, 168, 62, 0.18));
+  color: #fcd34d;
+}
+html.dark .team-design .td-pill-purple {
+  background: rgba(167, 139, 250, 0.2);
+  color: #c4b5fd;
+}
+
+/* Alerts */
+html.dark .team-design .td-alert.warn {
+  background: rgba(245, 166, 35, 0.12);
+  border-color: rgba(245, 166, 35, 0.32);
+  color: #fcd34d;
+}
+html.dark .team-design .td-alert.warn strong {
+  color: #fde68a;
+}
+html.dark .team-design .td-alert.danger {
+  background: rgba(239, 91, 91, 0.12);
+  border-color: rgba(239, 91, 91, 0.32);
+}
+
+/* Buttons — ghost variants point at hard `white` */
+html.dark .team-design .td-btn-ghost,
+html.dark .td-modal .td-btn-ghost {
+  background: var(--td-card);
+  color: var(--td-ink-700);
+  border-color: var(--td-line);
+}
+html.dark .team-design .td-btn-ghost:hover:not(:disabled),
+html.dark .td-modal .td-btn-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--td-blue-2);
+}
+html.dark .team-design .td-btn-danger-ghost,
+html.dark .td-modal .td-btn-danger-ghost {
+  background: rgba(239, 91, 91, 0.08);
+  color: #f87171;
+}
+html.dark .team-design .td-btn-warn-ghost,
+html.dark .td-modal .td-btn-warn-ghost {
+  background: rgba(245, 166, 35, 0.08);
+  color: #fbbf24;
+}
+
+/* Modal — .td-modal lives outside .team-design (Semi UI portals it to body)
+   and re-declares its own tokens. Flip them here. */
+html.dark .td-modal {
+  --td-ink-900: rgba(255, 255, 255, 0.95);
+  --td-ink-700: rgba(255, 255, 255, 0.78);
+  --td-ink-500: rgba(255, 255, 255, 0.55);
+  --td-ink-400: rgba(255, 255, 255, 0.42);
+  --td-ink-300: rgba(255, 255, 255, 0.3);
+  --td-line: rgba(255, 255, 255, 0.08);
+  --td-line-soft: rgba(255, 255, 255, 0.05);
+  --td-bg: #0f1426;
+  --td-grad-soft: linear-gradient(135deg, rgba(0, 198, 255, 0.18) 0%, rgba(0, 114, 255, 0.18) 100%);
+  background: #161c30;
+  color: var(--td-ink-900);
+  border: 1px solid var(--td-line);
+}
+html.dark .td-modal .td-modal-foot {
+  background: rgba(255, 255, 255, 0.03);
+  border-top-color: var(--td-line);
+}
+html.dark .td-modal .td-form-input,
+html.dark .td-modal .td-form-textarea {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--td-ink-900);
+  border-color: var(--td-line);
+}
+html.dark .td-modal .td-form-input::placeholder,
+html.dark .td-modal .td-form-textarea::placeholder {
+  color: var(--td-ink-400);
+}
+html.dark .td-modal .td-modal-alert.warn {
+  background: rgba(245, 166, 35, 0.12);
+  border-color: rgba(245, 166, 35, 0.32);
+  color: #fcd34d;
+}
+
+/* Cards & rows hover — the navy-tinted shadow needs to be much darker. */
+html.dark .team-design .td-table-card:hover,
+html.dark .team-design .td-invite-card:hover,
+html.dark .team-design .td-empty:hover {
+  box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.55);
+}
+
+/* Tab-bar underline reads the gradient — works in dark, but the unselected
+   tab text needs a small bump or it disappears on darker surfaces. */
+html.dark .team-design .td-tab {
+  color: var(--td-ink-500);
+}
+html.dark .team-design .td-tab:hover {
+  color: var(--td-ink-900);
+}
+html.dark .team-design .td-tab.active {
+  color: var(--td-blue-2);
+}
+
+/* Empty-state illustration uses a light tint — dim it for the dark surface. */
+html.dark .team-design .td-empty-icon {
+  background: var(--td-grad-soft);
+  color: var(--td-blue-2);
+}

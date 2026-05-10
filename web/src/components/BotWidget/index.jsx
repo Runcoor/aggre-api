@@ -6,6 +6,21 @@ const CSS_HREF = 'https://wiki.aggretoken.com/widget-bot.css';
 const JS_SRC = 'https://wiki.aggretoken.com/widget-bot.js';
 const CSS_ID = 'aggre-bot-widget-css';
 const JS_ID = 'aggre-bot-widget-js';
+const POSITION_CSS_ID = 'aggre-bot-widget-position';
+
+// Pin the FAB to the bottom-right regardless of whatever btn_position
+// the PandaWiki backend hands down. The widget JS writes top/right/etc.
+// as inline styles, so we need !important to outrank that. 24px is a
+// standard corner offset that matches the third-party widget's own
+// defaults closely enough that users won't notice the swap.
+const POSITION_OVERRIDE_CSS = `
+.widget-bot-button {
+  top: auto !important;
+  left: auto !important;
+  right: 24px !important;
+  bottom: 24px !important;
+}
+`;
 
 // BotWidget injects the PandaWiki AI customer-service script tags
 // (wiki.aggretoken.com) into the document head/body when the admin's
@@ -51,6 +66,13 @@ const BotWidget = () => {
     link.rel = 'stylesheet';
     link.href = CSS_HREF;
     document.head.appendChild(link);
+
+    // Inject the position override AFTER the third-party stylesheet so it
+    // wins on cascade order in addition to !important specificity.
+    const positionStyle = document.createElement('style');
+    positionStyle.id = POSITION_CSS_ID;
+    positionStyle.textContent = POSITION_OVERRIDE_CSS;
+    document.head.appendChild(positionStyle);
 
     const script = document.createElement('script');
     script.id = JS_ID;

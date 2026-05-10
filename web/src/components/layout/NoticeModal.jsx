@@ -26,6 +26,7 @@ import React, {
   useLayoutEffect,
   useCallback,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { marked } from 'marked';
 import { API, showError, getRelativeTime } from '../../helpers';
@@ -247,6 +248,7 @@ const NoticeModal = ({
   };
 
   if (!visible) return null;
+  if (typeof document === 'undefined') return null;
 
   const renderEmpty = (text) => (
     <div className='aggre-notice-modal__empty'>
@@ -337,7 +339,13 @@ const NoticeModal = ({
     );
   };
 
-  return (
+  // Portal the modal out to document.body so it escapes any ancestor that
+  // creates a containing block for fixed-positioned descendants. The
+  // app-header-glass element above us applies `backdrop-filter: blur(80px)`,
+  // which (per CSS spec, alongside `transform`/`filter`/`perspective`)
+  // re-roots `position: fixed` to that ancestor — without this portal, the
+  // modal would be clipped to the ~64px-tall header strip.
+  return createPortal(
     <div
       className='aggre-notice-modal'
       role='dialog'
@@ -457,7 +465,8 @@ const NoticeModal = ({
           </div>
         </footer>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

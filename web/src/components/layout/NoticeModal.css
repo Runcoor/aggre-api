@@ -54,7 +54,7 @@ html.dark .aggre-notice-modal {
 .aggre-notice-modal {
   position: fixed;
   inset: 0;
-  z-index: 1100;
+  z-index: 99999;
   background: rgba(11, 21, 48, 0.32);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);

@@ -24,15 +24,22 @@ const BotWidget = () => {
   const [statusState] = useContext(StatusContext);
   const [userState] = useContext(UserContext);
 
-  const visibility = String(
-    statusState?.status?.bot_widget_visibility || 'all',
-  ).toLowerCase();
-  const role = Number(userState?.user?.role || 0);
+  // CRITICAL: only proceed once /api/status has actually populated the
+  // visibility field. Defaulting to "all" while the request is in flight
+  // would race the third-party script onto the page for non-eligible
+  // users — and because the script attaches its own DOM nodes that we
+  // can't reliably tear down, that mistake would persist for the entire
+  // session even after the real value comes back.
+  const rawVisibility = statusState?.status?.bot_widget_visibility;
 
   let shouldShow = false;
-  if (visibility === 'all') shouldShow = true;
-  else if (visibility === 'admin') shouldShow = role >= 10;
-  // 'none' or unknown → false
+  if (typeof rawVisibility === 'string' && rawVisibility) {
+    const visibility = rawVisibility.toLowerCase();
+    const role = Number(userState?.user?.role || 0);
+    if (visibility === 'all') shouldShow = true;
+    else if (visibility === 'admin') shouldShow = role >= 10;
+    // 'none' or unknown → false
+  }
 
   useEffect(() => {
     if (!shouldShow) return;

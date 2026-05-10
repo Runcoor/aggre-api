@@ -288,7 +288,7 @@ export default function GeneralSettings(props) {
                   initValue={''}
                   placeholder={t('逗号分隔，例如 Ultra,Pro')}
                   extraText={t(
-                    '顺序敏感：靠前的等级更高。决定订阅购买时的"只升不降"逻辑、过期时的回退分组，以及右下角 QQ 群按钮的可见性。留空则关闭该功能。',
+                    '顺序敏感：靠前的等级更高。决定订阅购买时的"只升不降"逻辑，以及订阅过期时的回退分组。留空则关闭该功能。',
                   )}
                   onChange={handleFieldChange('PremiumGroups')}
                   showClear

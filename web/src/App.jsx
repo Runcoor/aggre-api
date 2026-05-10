@@ -29,6 +29,7 @@ import NotFound from './pages/NotFound';
 import Forbidden from './pages/Forbidden';
 import Setting from './pages/Setting';
 import { StatusContext } from './context/Status';
+import BotWidget from './components/BotWidget';
 
 import PasswordResetForm from './components/auth/PasswordResetForm';
 import PasswordResetConfirm from './components/auth/PasswordResetConfirm';
@@ -135,6 +136,7 @@ function App() {
 
   return (
     <SetupCheck>
+      <BotWidget />
       <div key={location.pathname} className='mv-fade-in'>
       <Routes>
         <Route

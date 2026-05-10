@@ -19,13 +19,15 @@ var TopUpLink = ""
 var TGGroupLink = ""
 // Comma-separated, ORDER-SENSITIVE list of group names (matches the
 // user.group / plan.upgrade_group values). First element is the highest
-// priority. Drives two things:
-//   1. user.group resolution: on subscription buy, only-up; on expire, the
-//      highest-ranked remaining active sub wins.
-//   2. UI gating: members of any listed group see the premium-only QQ
-//      group floating button on the dashboard.
-// Empty disables both.
+// priority. Drives user.group resolution: on subscription buy, only-up;
+// on expire, the highest-ranked remaining active sub wins. Empty disables.
 var PremiumGroups = "Ultra,Pro"
+
+// BotWidgetVisibility controls who sees the floating AI customer-service
+// widget injected from wiki.aggretoken.com/widget-bot.{js,css}. Valid
+// values: "all" (everyone, default), "admin" (admins/root only), "none"
+// (hidden). Read by frontend BotWidget component via /api/status.
+var BotWidgetVisibility = "all"
 
 // var ChatLink = ""
 // var ChatLink2 = ""

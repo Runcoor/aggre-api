@@ -178,6 +178,7 @@ func InitOptionMap() {
 	common.OptionMap["TopUpLink"] = common.TopUpLink
 	common.OptionMap["TGGroupLink"] = common.TGGroupLink
 	common.OptionMap["PremiumGroups"] = common.PremiumGroups
+	common.OptionMap["BotWidgetVisibility"] = common.BotWidgetVisibility
 	//common.OptionMap["ChatLink"] = common.ChatLink
 	//common.OptionMap["ChatLink2"] = common.ChatLink2
 	common.OptionMap["QuotaPerUnit"] = strconv.FormatFloat(common.QuotaPerUnit, 'f', -1, 64)
@@ -608,6 +609,12 @@ func updateOptionMap(key string, value string) (err error) {
 		common.TGGroupLink = value
 	case "PremiumGroups":
 		common.PremiumGroups = value
+	case "BotWidgetVisibility":
+		v := strings.ToLower(strings.TrimSpace(value))
+		if v != "all" && v != "admin" && v != "none" {
+			v = "all"
+		}
+		common.BotWidgetVisibility = v
 	//case "ChatLink":
 	//	common.ChatLink = value
 	//case "ChatLink2":

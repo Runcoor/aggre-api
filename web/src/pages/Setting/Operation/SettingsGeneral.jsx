@@ -48,6 +48,7 @@ export default function GeneralSettings(props) {
     TopUpLink: '',
     TGGroupLink: '',
     PremiumGroups: '',
+    BotWidgetVisibility: 'all',
     'general_setting.docs_link': '',
     'general_setting.quota_display_type': 'USD',
     'general_setting.custom_currency_symbol': '¤',
@@ -293,6 +294,28 @@ export default function GeneralSettings(props) {
                   onChange={handleFieldChange('PremiumGroups')}
                   showClear
                 />
+              </Col>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                <Form.Select
+                  field={'BotWidgetVisibility'}
+                  label={t('悬浮客服按钮可见性')}
+                  initValue={'all'}
+                  extraText={t(
+                    '控制右下角 AI 客服悬浮按钮对哪些用户可见。修改后需刷新页面生效。',
+                  )}
+                  onChange={handleFieldChange('BotWidgetVisibility')}
+                  style={{ width: '100%' }}
+                >
+                  <Form.Select.Option value='all'>
+                    {t('所有人可见')}
+                  </Form.Select.Option>
+                  <Form.Select.Option value='admin'>
+                    {t('仅管理员可见')}
+                  </Form.Select.Option>
+                  <Form.Select.Option value='none'>
+                    {t('全部不可见')}
+                  </Form.Select.Option>
+                </Form.Select>
               </Col>
               {/* 单位美元额度已合入汇率组合控件（TOKENS 模式下编辑），不再单独展示 */}
               <Col xs={24} sm={12} md={8} lg={8} xl={8}>

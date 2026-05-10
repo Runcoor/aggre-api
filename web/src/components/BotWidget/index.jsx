@@ -61,24 +61,46 @@ const BotWidget = () => {
     if (document.getElementById(CSS_ID) || document.getElementById(JS_ID)) {
       return;
     }
+
+    // We must load CSS BEFORE the JS runs. The widget script appends its
+    // modal + FAB DOM into <body> as soon as it executes, and the CSS is
+    // what hides the modal (display:none) and pins the FAB (position:
+    // fixed; opacity: 0). If JS wins the race, those nodes briefly
+    // render as un-styled block elements at the bottom of the page —
+    // exactly the FOUC users have been reporting.
     const link = document.createElement('link');
     link.id = CSS_ID;
     link.rel = 'stylesheet';
     link.href = CSS_HREF;
-    document.head.appendChild(link);
 
-    // Inject the position override AFTER the third-party stylesheet so it
-    // wins on cascade order in addition to !important specificity.
     const positionStyle = document.createElement('style');
     positionStyle.id = POSITION_CSS_ID;
     positionStyle.textContent = POSITION_OVERRIDE_CSS;
-    document.head.appendChild(positionStyle);
 
-    const script = document.createElement('script');
-    script.id = JS_ID;
-    script.src = JS_SRC;
-    script.defer = true;
-    document.body.appendChild(script);
+    const injectScript = () => {
+      if (document.getElementById(JS_ID)) return;
+      // Position override must outrank the third-party CSS, so append it
+      // AFTER the link has resolved.
+      if (!document.getElementById(POSITION_CSS_ID)) {
+        document.head.appendChild(positionStyle);
+      }
+      const script = document.createElement('script');
+      script.id = JS_ID;
+      script.src = JS_SRC;
+      script.defer = true;
+      document.body.appendChild(script);
+    };
+
+    link.onload = injectScript;
+    // Even if the stylesheet 404s or the user is blocking the CDN, still
+    // try to load the JS — better a positionally-broken FAB than no FAB.
+    link.onerror = injectScript;
+    document.head.appendChild(link);
+
+    // Safety net: some browsers / proxies / ad-blockers can swallow the
+    // onload event. After 5 s, force the script in regardless.
+    const fallback = setTimeout(injectScript, 5000);
+    return () => clearTimeout(fallback);
   }, [shouldShow]);
 
   return null;

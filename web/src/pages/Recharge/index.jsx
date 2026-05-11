@@ -431,11 +431,41 @@ const RechargePage = () => {
     }
   };
 
+  // openCheckoutPopup must be called synchronously inside the click handler
+  // (before any await). Browsers grant popup permission only while the user
+  // gesture is still on the call stack — once a Promise resolves, that grant
+  // is gone and window.open is blocked. We open about:blank up-front and
+  // navigate it once the backend returns the real checkout URL.
+  const openCheckoutPopup = () => {
+    try {
+      return window.open('about:blank', '_blank');
+    } catch {
+      return null;
+    }
+  };
+
+  const navigateCheckoutPopup = (popup, url) => {
+    if (popup && !popup.closed) {
+      try {
+        popup.location.href = url;
+        return;
+      } catch {
+        popup.close();
+      }
+    }
+    // Popup never opened (extreme blocker) — fall back to a direct call,
+    // which will likely be blocked too, but at least surfaces the URL.
+    window.open(url, '_blank');
+  };
+
   const onlineTopUp = async () => {
     if (topUpCount < minTopUp) {
       showError(t('充值数量不能小于') + minTopUp);
       return;
     }
+    // Stripe goes to a hosted page (new window). Epay-style methods submit
+    // a form to the gateway, which is its own navigation — no popup needed.
+    const popup = payWay === 'stripe' ? openCheckoutPopup() : null;
     setConfirmLoading(true);
     try {
       let res;
@@ -452,14 +482,16 @@ const RechargePage = () => {
       }
       if (res?.data?.message === 'success') {
         if (payWay === 'stripe') {
-          window.open(res.data.data.pay_link, '_blank');
+          navigateCheckoutPopup(popup, res.data.data.pay_link);
         } else {
           submitEpayForm({ url: res.data.url, params: res.data.data });
         }
       } else {
+        popup?.close();
         showError(res?.data?.data || res?.data?.message || t('支付失败'));
       }
     } catch {
+      popup?.close();
       showError(t('支付请求失败'));
     } finally {
       setOpen(false);
@@ -503,17 +535,20 @@ const RechargePage = () => {
       showError(t('充值数量不能小于') + min);
       return;
     }
+    const popup = openCheckoutPopup();
     setPaymentLoading(true);
     try {
       const res = await API.post('/api/user/cryptomus/pay', {
         amount: parseInt(topUpCount),
       });
       if (res.data?.message === 'success' && res.data.data?.pay_link) {
-        window.open(res.data.data.pay_link, '_blank');
+        navigateCheckoutPopup(popup, res.data.data.pay_link);
       } else {
+        popup?.close();
         showError(res.data?.data || res.data?.message || t('支付请求失败'));
       }
     } catch {
+      popup?.close();
       showError(t('支付请求失败'));
     } finally {
       setPaymentLoading(false);
@@ -526,17 +561,20 @@ const RechargePage = () => {
       showError(t('充值数量不能小于') + min);
       return;
     }
+    const popup = openCheckoutPopup();
     setPaymentLoading(true);
     try {
       const res = await API.post('/api/user/nowpayments/pay', {
         amount: parseInt(topUpCount),
       });
       if (res.data?.message === 'success' && res.data.data?.pay_link) {
-        window.open(res.data.data.pay_link, '_blank');
+        navigateCheckoutPopup(popup, res.data.data.pay_link);
       } else {
+        popup?.close();
         showError(res.data?.data || res.data?.message || t('支付请求失败'));
       }
     } catch {
+      popup?.close();
       showError(t('支付请求失败'));
     } finally {
       setPaymentLoading(false);
@@ -549,17 +587,20 @@ const RechargePage = () => {
       showError(t('充值数量不能小于') + min);
       return;
     }
+    const popup = openCheckoutPopup();
     setPaymentLoading(true);
     try {
       const res = await API.post('/api/user/dodopayments/pay', {
         amount: parseInt(topUpCount),
       });
       if (res.data?.message === 'success' && res.data.data?.pay_link) {
-        window.open(res.data.data.pay_link, '_blank');
+        navigateCheckoutPopup(popup, res.data.data.pay_link);
       } else {
+        popup?.close();
         showError(res.data?.data || res.data?.message || t('支付请求失败'));
       }
     } catch {
+      popup?.close();
       showError(t('支付请求失败'));
     } finally {
       setPaymentLoading(false);
@@ -572,17 +613,20 @@ const RechargePage = () => {
       showError(t('充值数量不能小于') + min);
       return;
     }
+    const popup = openCheckoutPopup();
     setPaymentLoading(true);
     try {
       const res = await API.post('/api/user/waffo-pancake/pay', {
         amount: parseInt(topUpCount),
       });
       if (res.data?.message === 'success' && res.data.data?.payment_url) {
-        window.open(res.data.data.payment_url, '_blank');
+        navigateCheckoutPopup(popup, res.data.data.payment_url);
       } else {
+        popup?.close();
         showError(res.data?.data || res.data?.message || t('支付请求失败'));
       }
     } catch {
+      popup?.close();
       showError(t('支付请求失败'));
     } finally {
       setPaymentLoading(false);
@@ -594,15 +638,20 @@ const RechargePage = () => {
       showError(t('充值数量不能小于') + waffoMinTopUp);
       return;
     }
+    const popup = openCheckoutPopup();
     setPaymentLoading(true);
     try {
       const body = { amount: parseInt(topUpCount) };
       if (idx != null) body.pay_method_index = idx;
       const res = await API.post('/api/user/waffo/pay', body);
-      if (res.data?.message === 'success' && res.data.data?.payment_url)
-        window.open(res.data.data.payment_url, '_blank');
-      else showError(res.data?.data || t('支付请求失败'));
+      if (res.data?.message === 'success' && res.data.data?.payment_url) {
+        navigateCheckoutPopup(popup, res.data.data.payment_url);
+      } else {
+        popup?.close();
+        showError(res.data?.data || t('支付请求失败'));
+      }
     } catch {
+      popup?.close();
       showError(t('支付请求失败'));
     } finally {
       setPaymentLoading(false);
@@ -618,15 +667,19 @@ const RechargePage = () => {
       showError(t('产品配置错误，请联系管理员'));
       return;
     }
+    const popup = openCheckoutPopup();
     setConfirmLoading(true);
     try {
       const res = await API.post('/api/user/creem/pay', {
         product_id: selectedCreemProduct.productId,
         payment_method: 'creem',
       });
-      if (res.data?.message === 'success')
-        window.open(res.data.data.checkout_url, '_blank');
-      else showError(res.data?.data || res.data?.message || t('支付失败'));
+      if (res.data?.message === 'success') {
+        navigateCheckoutPopup(popup, res.data.data.checkout_url);
+      } else {
+        popup?.close();
+        showError(res.data?.data || res.data?.message || t('支付失败'));
+      }
     } catch {
       showError(t('支付请求失败'));
     } finally {

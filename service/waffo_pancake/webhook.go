@@ -38,14 +38,20 @@ type WebhookEnvelope struct {
 
 // OrderCompletedData covers what we actually need from order.completed.
 // Pancake includes more (buyer, billing, line items) — add fields as needed.
+//
+// Note: the metadata map we POST as `metadata` on create-session is echoed
+// back here under the key `orderMetadata`. Pancake also exposes
+// `productMetadata` separately, which is the merchant-level metadata
+// attached to the product definition — that's not what we want.
 type OrderCompletedData struct {
-	OrderId      string `json:"orderId"`
-	Amount       string `json:"amount"`       // display format, e.g. "10.00"
-	Currency     string `json:"currency"`
-	BuyerEmail   string `json:"buyerEmail"`
-	ProductName  string `json:"productName"`
-	// Metadata round-trips the map we sent at session creation.
-	Metadata map[string]string `json:"metadata"`
+	OrderId     string            `json:"orderId"`
+	PaymentId   string            `json:"paymentId"`
+	Amount      string            `json:"amount"` // display format, e.g. "10.00"
+	Currency    string            `json:"currency"`
+	BuyerEmail  string            `json:"buyerEmail"`
+	ProductName string            `json:"productName"`
+	OrderStatus string            `json:"orderStatus"` // "completed" on success
+	Metadata    map[string]string `json:"orderMetadata"`
 }
 
 // VerifyWebhookSignature validates the X-Waffo-Signature header against the

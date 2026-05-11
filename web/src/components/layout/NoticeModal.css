@@ -58,8 +58,9 @@ html.dark .aggre-notice-modal {
   background: rgba(11, 21, 48, 0.32);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 24px;
   animation: aggre-na-fadeIn 0.25s ease both;
   font-family:
@@ -83,8 +84,8 @@ html.dark .aggre-notice-modal {
 }
 
 .aggre-notice-modal__panel {
-  width: 640px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 640px;
   max-height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;

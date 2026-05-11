@@ -14,6 +14,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/runcoor/aggre-api/common"
@@ -151,19 +152,44 @@ func signCanonicalRequest(method, path, timestamp string, body []byte, privateKe
 	return base64.StdEncoding.EncodeToString(sig), nil
 }
 
-// parseRSAPrivateKey accepts either PKCS#1 ("RSA PRIVATE KEY") or PKCS#8
-// ("PRIVATE KEY") PEM blocks — Pancake dashboard exports vary by browser.
-func parseRSAPrivateKey(pemStr string) (*rsa.PrivateKey, error) {
-	block, _ := pem.Decode([]byte(pemStr))
-	if block == nil {
-		return nil, errors.New("invalid PEM: no block found")
+// keyDER decodes the on-disk representation of a key into raw DER bytes.
+// Accepts:
+//   - PEM-wrapped: "-----BEGIN ...-----\n<base64>\n-----END ...-----"
+//   - Headerless base64 (Pancake's dashboard hands these out as raw base64
+//     when you click "copy key"). Whitespace / line breaks are tolerated.
+func keyDER(raw string) ([]byte, error) {
+	s := strings.TrimSpace(raw)
+	if s == "" {
+		return nil, errors.New("empty key")
 	}
-	if k, err := x509.ParsePKCS1PrivateKey(block.Bytes); err == nil {
+	if strings.HasPrefix(s, "-----BEGIN") {
+		block, _ := pem.Decode([]byte(s))
+		if block == nil {
+			return nil, errors.New("invalid PEM: no block found")
+		}
+		return block.Bytes, nil
+	}
+	cleaned := strings.NewReplacer("\n", "", "\r", "", " ", "", "\t", "").Replace(s)
+	der, err := base64.StdEncoding.DecodeString(cleaned)
+	if err != nil {
+		return nil, fmt.Errorf("decode base64 key: %w", err)
+	}
+	return der, nil
+}
+
+// parseRSAPrivateKey accepts either PEM-wrapped or headerless-base64 keys,
+// in either PKCS#1 ("RSA PRIVATE KEY") or PKCS#8 ("PRIVATE KEY") encoding.
+func parseRSAPrivateKey(raw string) (*rsa.PrivateKey, error) {
+	der, err := keyDER(raw)
+	if err != nil {
+		return nil, err
+	}
+	if k, err := x509.ParsePKCS1PrivateKey(der); err == nil {
 		return k, nil
 	}
-	parsed, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	parsed, err := x509.ParsePKCS8PrivateKey(der)
 	if err != nil {
-		return nil, fmt.Errorf("parse private key: %w", err)
+		return nil, fmt.Errorf("parse private key (PKCS#1 and PKCS#8 both failed): %w", err)
 	}
 	rsaKey, ok := parsed.(*rsa.PrivateKey)
 	if !ok {
@@ -172,24 +198,22 @@ func parseRSAPrivateKey(pemStr string) (*rsa.PrivateKey, error) {
 	return rsaKey, nil
 }
 
-// parseRSAPublicKey accepts a PEM "PUBLIC KEY" block (PKIX/SPKI format),
-// which is what the Pancake dashboard hands out for webhook verification.
-func parseRSAPublicKey(pemStr string) (*rsa.PublicKey, error) {
-	block, _ := pem.Decode([]byte(pemStr))
-	if block == nil {
-		return nil, errors.New("invalid PEM: no block found")
-	}
-	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+// parseRSAPublicKey accepts either PEM-wrapped or headerless-base64 keys,
+// in either PKIX/SPKI ("PUBLIC KEY") or PKCS#1 ("RSA PUBLIC KEY") encoding.
+func parseRSAPublicKey(raw string) (*rsa.PublicKey, error) {
+	der, err := keyDER(raw)
 	if err != nil {
-		// Some dashboards export PKCS#1 "RSA PUBLIC KEY" — try that too.
-		if k, e2 := x509.ParsePKCS1PublicKey(block.Bytes); e2 == nil {
-			return k, nil
+		return nil, err
+	}
+	if pub, err := x509.ParsePKIXPublicKey(der); err == nil {
+		rsaPub, ok := pub.(*rsa.PublicKey)
+		if !ok {
+			return nil, errors.New("public key is not RSA")
 		}
-		return nil, fmt.Errorf("parse public key: %w", err)
+		return rsaPub, nil
 	}
-	rsaPub, ok := pub.(*rsa.PublicKey)
-	if !ok {
-		return nil, errors.New("public key is not RSA")
+	if k, err := x509.ParsePKCS1PublicKey(der); err == nil {
+		return k, nil
 	}
-	return rsaPub, nil
+	return nil, errors.New("parse public key: not PKIX or PKCS#1 RSA")
 }

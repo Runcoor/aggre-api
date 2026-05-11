@@ -23,6 +23,7 @@ import SettingsPaymentGateway from '../../pages/Setting/Payment/SettingsPaymentG
 import SettingsPaymentGatewayStripe from '../../pages/Setting/Payment/SettingsPaymentGatewayStripe';
 import SettingsPaymentGatewayCreem from '../../pages/Setting/Payment/SettingsPaymentGatewayCreem';
 import SettingsPaymentGatewayWaffo from '../../pages/Setting/Payment/SettingsPaymentGatewayWaffo';
+import SettingsPaymentGatewayWaffoPancake from '../../pages/Setting/Payment/SettingsPaymentGatewayWaffoPancake';
 import SettingsPaymentGatewayCryptomus from '../../pages/Setting/Payment/SettingsPaymentGatewayCryptomus';
 import SettingsPaymentGatewayNowPayments from '../../pages/Setting/Payment/SettingsPaymentGatewayNowPayments';
 import SettingsPaymentGatewayDodoPayments from '../../pages/Setting/Payment/SettingsPaymentGatewayDodoPayments';
@@ -153,6 +154,12 @@ const PaymentSetting = () => {
           </div>
           <div className='mv-settings-section'>
             <SettingsPaymentGatewayWaffo options={inputs} refresh={onRefresh} />
+          </div>
+          <div className='mv-settings-section'>
+            <SettingsPaymentGatewayWaffoPancake
+              options={inputs}
+              refresh={onRefresh}
+            />
           </div>
           <div className='mv-settings-section'>
             <SettingsPaymentGatewayCryptomus

@@ -107,6 +107,21 @@ func InitOptionMap() {
 	common.OptionMap["WaffoUnitPrice"] = strconv.FormatFloat(setting.WaffoUnitPrice, 'f', -1, 64)
 	common.OptionMap["WaffoMinTopUp"] = strconv.Itoa(setting.WaffoMinTopUp)
 	common.OptionMap["WaffoPayMethods"] = setting.WaffoPayMethods2JsonString()
+	common.OptionMap["WaffoPancakeEnabled"] = strconv.FormatBool(setting.WaffoPancakeEnabled)
+	common.OptionMap["WaffoPancakeSandbox"] = strconv.FormatBool(setting.WaffoPancakeSandbox)
+	common.OptionMap["WaffoPancakeMerchantId"] = setting.WaffoPancakeMerchantId
+	common.OptionMap["WaffoPancakePrivateKey"] = setting.WaffoPancakePrivateKey
+	common.OptionMap["WaffoPancakeSandboxPrivateKey"] = setting.WaffoPancakeSandboxPrivateKey
+	common.OptionMap["WaffoPancakeWebhookPublicKey"] = setting.WaffoPancakeWebhookPublicKey
+	common.OptionMap["WaffoPancakeSandboxWebhookPublicKey"] = setting.WaffoPancakeSandboxWebhookPublicKey
+	common.OptionMap["WaffoPancakeStoreId"] = setting.WaffoPancakeStoreId
+	common.OptionMap["WaffoPancakeSandboxStoreId"] = setting.WaffoPancakeSandboxStoreId
+	common.OptionMap["WaffoPancakeProductId"] = setting.WaffoPancakeProductId
+	common.OptionMap["WaffoPancakeSandboxProductId"] = setting.WaffoPancakeSandboxProductId
+	common.OptionMap["WaffoPancakeCurrency"] = setting.WaffoPancakeCurrency
+	common.OptionMap["WaffoPancakeMinTopUp"] = strconv.Itoa(setting.WaffoPancakeMinTopUp)
+	common.OptionMap["WaffoPancakeUnitPrice"] = strconv.FormatFloat(setting.WaffoPancakeUnitPrice, 'f', -1, 64)
+	common.OptionMap["WaffoPancakeReturnUrl"] = setting.WaffoPancakeReturnUrl
 	common.OptionMap["CryptomusEnabled"] = strconv.FormatBool(setting.CryptomusEnabled)
 	common.OptionMap["CryptomusMerchantId"] = setting.CryptomusMerchantId
 	common.OptionMap["CryptomusPaymentApiKey"] = setting.CryptomusPaymentApiKey
@@ -454,6 +469,36 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.WaffoUnitPrice, _ = strconv.ParseFloat(value, 64)
 	case "WaffoMinTopUp":
 		setting.WaffoMinTopUp, _ = strconv.Atoi(value)
+	case "WaffoPancakeEnabled":
+		setting.WaffoPancakeEnabled = value == "true"
+	case "WaffoPancakeSandbox":
+		setting.WaffoPancakeSandbox = value == "true"
+	case "WaffoPancakeMerchantId":
+		setting.WaffoPancakeMerchantId = value
+	case "WaffoPancakePrivateKey":
+		setting.WaffoPancakePrivateKey = value
+	case "WaffoPancakeSandboxPrivateKey":
+		setting.WaffoPancakeSandboxPrivateKey = value
+	case "WaffoPancakeWebhookPublicKey":
+		setting.WaffoPancakeWebhookPublicKey = value
+	case "WaffoPancakeSandboxWebhookPublicKey":
+		setting.WaffoPancakeSandboxWebhookPublicKey = value
+	case "WaffoPancakeStoreId":
+		setting.WaffoPancakeStoreId = value
+	case "WaffoPancakeSandboxStoreId":
+		setting.WaffoPancakeSandboxStoreId = value
+	case "WaffoPancakeProductId":
+		setting.WaffoPancakeProductId = value
+	case "WaffoPancakeSandboxProductId":
+		setting.WaffoPancakeSandboxProductId = value
+	case "WaffoPancakeCurrency":
+		setting.WaffoPancakeCurrency = value
+	case "WaffoPancakeMinTopUp":
+		setting.WaffoPancakeMinTopUp, _ = strconv.Atoi(value)
+	case "WaffoPancakeUnitPrice":
+		setting.WaffoPancakeUnitPrice, _ = strconv.ParseFloat(value, 64)
+	case "WaffoPancakeReturnUrl":
+		setting.WaffoPancakeReturnUrl = value
 	case "CryptomusEnabled":
 		setting.CryptomusEnabled = value == "true"
 	case "CryptomusMerchantId":

@@ -201,6 +201,8 @@ const RechargePage = () => {
   const [nowpaymentsMinTopUp, setNowpaymentsMinTopUp] = useState(1);
   const [enableDodoPaymentsTopUp, setEnableDodoPaymentsTopUp] = useState(false);
   const [dodopaymentsMinTopUp, setDodopaymentsMinTopUp] = useState(1);
+  const [enableWaffoPancakeTopUp, setEnableWaffoPancakeTopUp] = useState(false);
+  const [waffoPancakeMinTopUp, setWaffoPancakeMinTopUp] = useState(10);
   const [priceRatio, setPriceRatio] = useState(statusState?.status?.price || 1);
   const [minTopUp, setMinTopUp] = useState(1);
   const [topUpCount, setTopUpCount] = useState(1);
@@ -338,6 +340,8 @@ const RechargePage = () => {
         setNowpaymentsMinTopUp(data.nowpayments_min_topup || 1);
         setEnableDodoPaymentsTopUp(!!data.enable_dodopayments_topup);
         setDodopaymentsMinTopUp(data.dodopayments_min_topup || 1);
+        setEnableWaffoPancakeTopUp(!!data.enable_waffo_pancake_topup);
+        setWaffoPancakeMinTopUp(data.waffo_pancake_min_topup || 10);
         const min = data.enable_online_topup
           ? data.min_topup
           : data.enable_stripe_topup
@@ -562,6 +566,29 @@ const RechargePage = () => {
     }
   };
 
+  const waffoPancakeTopUp = async () => {
+    const min = Math.max(waffoPancakeMinTopUp || 10, minTopUp || 1);
+    if (topUpCount < min) {
+      showError(t('充值数量不能小于') + min);
+      return;
+    }
+    setPaymentLoading(true);
+    try {
+      const res = await API.post('/api/user/waffo-pancake/pay', {
+        amount: parseInt(topUpCount),
+      });
+      if (res.data?.message === 'success' && res.data.data?.payment_url) {
+        window.open(res.data.data.payment_url, '_blank');
+      } else {
+        showError(res.data?.data || res.data?.message || t('支付请求失败'));
+      }
+    } catch {
+      showError(t('支付请求失败'));
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
   const waffoTopUp = async (idx) => {
     if (topUpCount < waffoMinTopUp) {
       showError(t('充值数量不能小于') + waffoMinTopUp);
@@ -621,6 +648,7 @@ const RechargePage = () => {
       m.type !== 'stripe' &&
       m.type !== 'creem' &&
       m.type !== 'waffo' &&
+      m.type !== 'waffo-pancake' &&
       m.type !== 'cryptomus' &&
       m.type !== 'nowpayments' &&
       m.type !== 'dodopayments',
@@ -629,6 +657,7 @@ const RechargePage = () => {
     enableOnlineTopUp ||
     enableStripeTopUp ||
     enableWaffoTopUp ||
+    enableWaffoPancakeTopUp ||
     enableCryptomusTopUp ||
     enableNowPaymentsTopUp ||
     enableDodoPaymentsTopUp;
@@ -1327,6 +1356,67 @@ const RechargePage = () => {
                               )}
                             </button>
                           )}
+                          {/* Waffo Pancake — 独立结账系统，与旧 Waffo SDK 分离 */}
+                          {enableWaffoPancakeTopUp && (
+                            <button
+                              key='waffo-pancake'
+                              className={`rc-pay-method${selectedPayMethod === 'waffo-pancake' ? ' selected' : ''}`}
+                              onClick={() =>
+                                setSelectedPayMethod('waffo-pancake')
+                              }
+                            >
+                              <div
+                                style={{
+                                  width: 44,
+                                  height: 44,
+                                  borderRadius: '50%',
+                                  background: 'rgba(0,184,217,0.10)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  marginRight: 14,
+                                  flexShrink: 0,
+                                  color: '#00B8D9',
+                                }}
+                              >
+                                <CreditCard size={22} />
+                              </div>
+                              <div style={{ flex: 1, textAlign: 'left' }}>
+                                <div
+                                  style={{
+                                    fontSize: 15,
+                                    fontWeight: 700,
+                                    color: 'var(--text-primary)',
+                                  }}
+                                >
+                                  {t('信用卡支付')}
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: 12,
+                                    color: 'var(--text-muted)',
+                                  }}
+                                >
+                                  {t('Visa / Mastercard / Apple Pay, 按 USD 结算')}
+                                </div>
+                              </div>
+                              {selectedPayMethod === 'waffo-pancake' && (
+                                <div
+                                  style={{
+                                    width: 22,
+                                    height: 22,
+                                    borderRadius: '50%',
+                                    background: 'var(--accent)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                  }}
+                                >
+                                  <Check size={12} color='#fff' />
+                                </div>
+                              )}
+                            </button>
+                          )}
                         </div>
                       </section>
                     )}
@@ -1419,7 +1509,8 @@ const RechargePage = () => {
                           const isCrypto =
                             selectedPayMethod === 'nowpayments' ||
                             selectedPayMethod === 'cryptomus' ||
-                            selectedPayMethod === 'dodopayments';
+                            selectedPayMethod === 'dodopayments' ||
+                            selectedPayMethod === 'waffo-pancake';
                           const symbol = isCrypto ? '$' : '¥';
                           const rate = isCrypto ? 1 : priceRatio;
                           const discountPart =
@@ -1532,6 +1623,8 @@ const RechargePage = () => {
                                 nowpaymentsTopUp();
                               } else if (selectedPayMethod === 'dodopayments') {
                                 dodopaymentsTopUp();
+                              } else if (selectedPayMethod === 'waffo-pancake') {
+                                waffoPancakeTopUp();
                               } else {
                                 preTopUp(selectedPayMethod);
                               }

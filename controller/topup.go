@@ -112,6 +112,29 @@ func GetTopUpInfo(c *gin.Context) {
 		}
 	}
 
+	// 如果启用了 Waffo Pancake 支付（独立于旧 Waffo SDK 集成），添加到支付方法列表
+	enableWaffoPancake := setting.WaffoPancakeEnabled &&
+		setting.WaffoPancakeMerchantId != "" &&
+		setting.GetWaffoPancakePrivateKey() != "" &&
+		setting.GetWaffoPancakeProductId() != ""
+	if enableWaffoPancake {
+		hasWaffoPancake := false
+		for _, method := range payMethods {
+			if method["type"] == "waffo-pancake" {
+				hasWaffoPancake = true
+				break
+			}
+		}
+		if !hasWaffoPancake {
+			payMethods = append(payMethods, map[string]string{
+				"name":      "Waffo Pancake",
+				"type":      "waffo-pancake",
+				"color":     "rgba(var(--semi-cyan-5), 1)",
+				"min_topup": strconv.Itoa(setting.WaffoPancakeMinTopUp),
+			})
+		}
+	}
+
 	// 如果启用了 Waffo 支付，添加到支付方法列表
 	enableWaffo := setting.WaffoEnabled &&
 		((!setting.WaffoSandbox &&
@@ -153,6 +176,9 @@ func GetTopUpInfo(c *gin.Context) {
 		"enable_stripe_topup": setting.StripeApiSecret != "" && setting.StripeWebhookSecret != "" && setting.StripePriceId != "",
 		"enable_creem_topup":  setting.CreemApiKey != "" && setting.CreemProducts != "[]",
 		"enable_waffo_topup":       enableWaffo,
+		"enable_waffo_pancake_topup": enableWaffoPancake,
+		"waffo_pancake_min_topup":    setting.WaffoPancakeMinTopUp,
+		"waffo_pancake_unit_price":   setting.WaffoPancakeUnitPrice,
 		"enable_cryptomus_topup":   enableCryptomus,
 		"cryptomus_min_topup":      setting.CryptomusMinTopUp,
 		"enable_nowpayments_topup": enableNowPayments,

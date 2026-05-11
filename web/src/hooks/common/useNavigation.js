@@ -116,7 +116,7 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
         return modules.docs !== false;
       }
       if (link.itemKey === 'tools') {
-        return true; // always visible
+        return false; // hidden from top menu (routes remain accessible)
       }
       if (link.itemKey === 'plans') {
         return true; // always visible

@@ -6,8 +6,18 @@ import { useIsMobile } from '../../hooks/common/useIsMobile';
 /*
  * Category data — each entry becomes a card on the guide index page.
  * `tools` are rendered as sub-links inside the detail pages (phase 2).
+ *
+ * Visibility is gated by `VISIBLE_CATEGORY_IDS` below — to surface a
+ * hidden category, add its `id` to that list.
  */
-const CATEGORIES = [
+const VISIBLE_CATEGORY_IDS = new Set([
+  'prerequisites',
+  'coding-assistants',
+  'chat-clients',
+  'code-integration',
+]);
+
+const ALL_CATEGORIES = [
   {
     id: 'prerequisites',
     icon: (
@@ -131,6 +141,8 @@ const CATEGORIES = [
     count: 2,
   },
 ];
+
+const CATEGORIES = ALL_CATEGORIES.filter((cat) => VISIBLE_CATEGORY_IDS.has(cat.id));
 
 export default function GuideIndex() {
   const { t } = useTranslation();

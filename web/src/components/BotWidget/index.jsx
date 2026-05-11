@@ -1,4 +1,5 @@
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { StatusContext } from '../../context/Status';
 import { UserContext } from '../../context/User';
 
@@ -103,7 +104,97 @@ const BotWidget = () => {
     return () => clearTimeout(fallback);
   }, [shouldShow]);
 
-  return null;
+  // Mobile fallback close button.
+  //
+  // The chat UI's close button lives inside an iframe served from
+  // wiki.aggretoken.com — we cannot touch it. The widget's own escape
+  // hatches are (1) the Esc key and (2) a postMessage from the iframe;
+  // mobile has no Esc key, and the in-iframe React close has been
+  // unreliable on touch devices. The widget script does expose
+  // `window.hideWidgetModal`, and toggles `body.widget-bot-modal-open`,
+  // so we mount a host-side ✕ button that piggybacks on both.
+  const [modalOpen, setModalOpen] = useState(false);
+  const [isNarrow, setIsNarrow] = useState(false);
+
+  useEffect(() => {
+    if (!shouldShow) return undefined;
+    const OPEN_CLASS = 'widget-bot-modal-open';
+    const sync = () =>
+      setModalOpen(document.body.classList.contains(OPEN_CLASS));
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+    return () => observer.disconnect();
+  }, [shouldShow]);
+
+  // Match widget-bot.js's `isMobileViewport()` (<= 640) — only at that
+  // width does the chat panel go full-screen, putting top-right of the
+  // viewport over the modal's corner. Wider viewports use the bottom-
+  // right-anchored desktop panel where a top-right button would dangle.
+  useEffect(() => {
+    if (!shouldShow) return undefined;
+    const mql = window.matchMedia('(max-width: 640px)');
+    const sync = () => setIsNarrow(mql.matches);
+    sync();
+    mql.addEventListener('change', sync);
+    return () => mql.removeEventListener('change', sync);
+  }, [shouldShow]);
+
+  if (!shouldShow || !modalOpen || !isNarrow) return null;
+
+  const handleClose = () => {
+    if (typeof window.hideWidgetModal === 'function') {
+      window.hideWidgetModal();
+    } else {
+      document.body.classList.remove('widget-bot-modal-open');
+    }
+  };
+
+  return createPortal(
+    <button
+      type='button'
+      aria-label='关闭客服'
+      onClick={handleClose}
+      style={{
+        position: 'fixed',
+        top: 'calc(env(safe-area-inset-top, 0px) + 20px)',
+        right: 20,
+        zIndex: 10002,
+        width: 36,
+        height: 36,
+        borderRadius: '50%',
+        border: '1px solid rgba(11, 21, 48, 0.12)',
+        background: 'rgba(255, 255, 255, 0.95)',
+        color: '#0b1530',
+        cursor: 'pointer',
+        display: 'grid',
+        placeItems: 'center',
+        boxShadow:
+          '0 4px 16px -4px rgba(11, 21, 48, 0.18), 0 1px 0 rgba(255, 255, 255, 0.6) inset',
+        WebkitTapHighlightColor: 'transparent',
+        padding: 0,
+      }}
+    >
+      <svg
+        width='16'
+        height='16'
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='currentColor'
+        strokeWidth='2.4'
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        aria-hidden='true'
+      >
+        <path d='M18 6 6 18' />
+        <path d='m6 6 12 12' />
+      </svg>
+    </button>,
+    document.body,
+  );
 };
 
 export default BotWidget;

@@ -188,6 +188,19 @@ func SubscriptionEpayReturn(c *gin.Context) {
 		}, map[string]string{})
 	}
 
+	// Fast path: if the s2s notify already completed this order, treat
+	// the browser return as success regardless of whether the gateway
+	// preserved the signed params on the 302 redirect. Some EPay-style
+	// gateways drop or reorder query params when redirecting the user's
+	// browser, which makes signature verification fail here even though
+	// notify just succeeded with the same trade_no.
+	if outTradeNo := params["out_trade_no"]; outTradeNo != "" {
+		if order := model.GetSubscriptionOrderByTradeNo(outTradeNo); order != nil && order.Status == common.TopUpStatusSuccess {
+			c.Redirect(http.StatusFound, system_setting.ServerAddress+"/console/topup?pay=success")
+			return
+		}
+	}
+
 	if len(params) == 0 {
 		c.Redirect(http.StatusFound, system_setting.ServerAddress+"/console/topup?pay=fail")
 		return

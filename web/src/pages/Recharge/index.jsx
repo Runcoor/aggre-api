@@ -27,17 +27,7 @@ import {
   renderQuotaWithAmount,
   getQuotaPerUnit,
 } from '../../helpers';
-import {
-  Modal,
-  Toast,
-  Skeleton,
-  InputNumber,
-  Input,
-  Button,
-  Banner,
-  Tooltip,
-} from '@douyinfe/semi-ui';
-import { IconTick } from '@douyinfe/semi-icons';
+import { Modal, Skeleton, Tooltip } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from '../../context/User';
 import { StatusContext } from '../../context/Status';
@@ -49,106 +39,274 @@ import {
   Plus,
   Check,
   ArrowLeft,
+  ArrowRight,
+  ShieldCheck,
+  Search,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
 import SubscriptionPlansCard from '../../components/topup/SubscriptionPlansCard';
 import PaymentConfirmModal from '../../components/topup/modals/PaymentConfirmModal';
 
-/* ─── Scoped styles ─── */
+/* ─── Scoped styles (theme-aware, dark-mode via CSS vars, mobile responsive) ─── */
 const STYLES = `
-@keyframes rc-fade-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* Theme tokens for this page (light defaults). Re-declared per scope so we
+   don't fight with global Semi tokens or accidentally bleed elsewhere. */
+.rcv2 {
+  --rcv2-line:        var(--border-default);
+  --rcv2-line-2:      var(--border-subtle);
+  --rcv2-soft:        var(--surface-active);
+  --rcv2-ink:         var(--text-primary);
+  --rcv2-ink-2:       var(--text-secondary);
+  --rcv2-muted:       var(--text-secondary);
+  --rcv2-muted-2:     var(--text-muted);
+  --rcv2-success:     #10b981;
+  --rcv2-success-fg:  #0f9d6e;
+  --rcv2-brand-grad:  var(--accent-gradient);
+  --rcv2-brand-soft:  linear-gradient(135deg, rgba(0,114,255,0.08), rgba(0,198,255,0.08));
+  --rcv2-grid-stroke: rgba(0,114,255,0.06);
+  --rcv2-trust-bg:    linear-gradient(135deg, rgba(0,114,255,0.05), rgba(0,198,255,0.05)), var(--surface);
+  --rcv2-trust-border:rgba(0,114,255,0.18);
+  --rcv2-sub-card-bg: linear-gradient(180deg, rgba(0,114,255,0.03), var(--surface));
+  --rcv2-shadow-card: 0 8px 20px -12px rgba(11,21,48,0.10);
+  --rcv2-shadow-summary: 0 20px 40px -24px rgba(11,21,48,0.20);
+  --rcv2-shadow-pay-btn: 0 14px 28px -10px rgba(0,114,255,0.55), inset 0 1px 0 rgba(255,255,255,0.30);
+  --rcv2-shadow-pill: 0 8px 18px -6px rgba(0,114,255,0.55), inset 0 1px 0 rgba(255,255,255,0.30);
+  --rcv2-shadow-card-hover: 0 14px 30px -16px rgba(0,114,255,0.40);
 }
-.rc-animate { animation: rc-fade-up 0.4s cubic-bezier(0.22,1,0.36,1) both; }
-
-.rc-preset-card {
-  position: relative;
-  text-align: left;
-  padding: 20px;
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  border: 1px solid var(--border-default);
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.22,1,0.36,1);
-  overflow: hidden;
-  outline: none;
-}
-.rc-preset-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
-  transform: translateY(-2px);
-}
-.rc-preset-card.selected {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-light), 0 8px 24px rgba(0,0,0,0.04);
-}
-.rc-preset-card.selected::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--accent-gradient);
-  opacity: 0.04;
-}
-
-.rc-pay-method {
-  display: flex;
-  align-items: center;
-  padding: 16px 20px;
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  border: 1px solid var(--border-default);
-  cursor: pointer;
-  transition: all 0.2s;
-  outline: none;
-  width: 100%;
-}
-.rc-pay-method:hover { border-color: var(--accent); }
-.rc-pay-method.selected {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-light);
+html.dark .rcv2 {
+  --rcv2-line:        rgba(255,255,255,0.07);
+  --rcv2-line-2:      rgba(255,255,255,0.04);
+  --rcv2-soft:        rgba(255,255,255,0.05);
+  --rcv2-grid-stroke: rgba(56,182,255,0.08);
+  --rcv2-trust-bg:    linear-gradient(135deg, rgba(56,182,255,0.07), rgba(0,198,255,0.05)), var(--surface);
+  --rcv2-trust-border:rgba(56,182,255,0.24);
+  --rcv2-sub-card-bg: linear-gradient(180deg, rgba(56,182,255,0.05), var(--surface));
+  --rcv2-shadow-card: 0 8px 20px -12px rgba(0,0,0,0.40);
+  --rcv2-shadow-summary: 0 20px 40px -24px rgba(0,0,0,0.55);
+  --rcv2-shadow-card-hover: 0 14px 30px -16px rgba(56,182,255,0.30);
 }
 
-.rc-tab {
-  flex: 1;
-  text-align: center;
-  padding: 12px 0;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 9999px;
-  transition: all 0.3s cubic-bezier(0.22,1,0.36,1);
-  border: none;
-  outline: none;
-  position: relative;
-  z-index: 1;
-}
-.rc-tab.active {
-  background: var(--accent-gradient);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(0,114,255,0.2);
-}
-.rc-tab:not(.active) {
-  background: transparent;
-  color: var(--text-secondary);
-}
-.rc-tab:not(.active):hover { color: var(--text-primary); }
+@keyframes rcv2-fade-up { from {opacity:0; transform:translateY(8px)} to {opacity:1; transform:translateY(0)} }
+@keyframes rcv2-rise    { from {opacity:0; transform:translateY(12px)} to {opacity:1; transform:translateY(0)} }
+@keyframes rcv2-shield  { 0%,100% {transform:scale(1)} 50% {transform:scale(1.06)} }
+@keyframes rcv2-sweep   { 0%,100% {left:-80%} 50% {left:120%} }
 
-/* Hide Semi InputNumber native stepper buttons */
-.rc-custom-amount .semi-input-number-suffix { display: none !important; }
-.rc-custom-amount input[type=number]::-webkit-inner-spin-button,
-.rc-custom-amount input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.rc-custom-amount input[type=number] { -moz-appearance: textfield; }
+/* ============== top tabs ============== */
+.rcv2-top-tabs { display:flex; justify-content:center; margin-bottom:18px;
+  animation: rcv2-fade-up .45s cubic-bezier(.2,.9,.25,1.2) both; }
+.rcv2-top-tabs .group { position:relative; display:inline-flex; padding:5px; border-radius:14px;
+  background: var(--surface); border:1px solid var(--rcv2-line); box-shadow: var(--rcv2-shadow-card); }
+.rcv2-top-tabs .pill { position:absolute; top:5px; left:5px; height:calc(100% - 10px);
+  background: var(--rcv2-brand-grad); border-radius:10px;
+  box-shadow: var(--rcv2-shadow-pill);
+  transition: left .35s cubic-bezier(.5,1.5,.5,1), width .35s cubic-bezier(.5,1.5,.5,1); z-index:0; }
+.rcv2-top-tabs button { position:relative; z-index:1; border:none; background:transparent; cursor:pointer;
+  padding:10px 28px; border-radius:10px; font:inherit; font-size:14px; font-weight:700;
+  color: var(--rcv2-muted); letter-spacing:.02em; transition:color .25s; }
+.rcv2-top-tabs button.active { color:#fff; }
 
-.rc-summary {
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  background: var(--surface);
-  border: 1px solid var(--border-subtle);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 12px 32px rgba(0,0,0,0.04);
+/* ============== trust banner ============== */
+.rcv2-trust { position:relative; border-radius:18px; padding:20px 22px;
+  background: var(--rcv2-trust-bg); border:1px solid var(--rcv2-trust-border);
+  overflow:hidden; margin-bottom:18px;
+  animation: rcv2-fade-up .5s cubic-bezier(.2,.9,.25,1.2) .05s both; }
+.rcv2-trust .grid-bg { position:absolute; inset:0; opacity:.5; pointer-events:none;
+  background-image:
+    linear-gradient(var(--rcv2-grid-stroke) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rcv2-grid-stroke) 1px, transparent 1px);
+  background-size:32px 32px;
+  -webkit-mask-image: radial-gradient(500px 200px at 95% 50%, #000 0%, transparent 70%);
+  mask-image: radial-gradient(500px 200px at 95% 50%, #000 0%, transparent 70%); }
+.rcv2-trust .row { position:relative; z-index:1; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+.rcv2-trust .icon { width:44px; height:44px; border-radius:12px; flex-shrink:0;
+  background: var(--rcv2-brand-grad); color:#fff; display:grid; place-items:center;
+  box-shadow: var(--rcv2-shadow-pill); }
+.rcv2-trust .icon svg { animation: rcv2-shield 3s ease-in-out infinite; }
+.rcv2-trust h3 { margin:0; font-size:15px; font-weight:800; letter-spacing:-.005em;
+  color: var(--rcv2-ink); display:flex; align-items:center; gap:8px; }
+.rcv2-trust h3 .new { font-size:9.5px; font-weight:800; letter-spacing:.10em;
+  padding:2px 7px; border-radius:5px; background: var(--rcv2-brand-grad); color:#fff; }
+.rcv2-trust p { margin:4px 0 0; font-size:12.5px; color: var(--rcv2-ink-2); line-height:1.65; max-width:680px; }
+.rcv2-trust p b { color: var(--accent); font-weight:700; }
+.rcv2-trust .ctas { margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; }
+.rcv2-tbtn { height:36px; padding:0 14px; border-radius:10px; border:1px solid transparent;
+  font:inherit; font-size:12.5px; font-weight:700; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px; transition:.18s; white-space:nowrap; }
+.rcv2-tbtn.primary { background: var(--rcv2-brand-grad); color:#fff;
+  box-shadow: 0 10px 18px -8px rgba(0,114,255,.55), inset 0 1px 0 rgba(255,255,255,.3); }
+.rcv2-tbtn.primary:hover { transform:translateY(-1px); }
+.rcv2-tbtn.primary[disabled] { background: var(--surface-active); color: var(--text-muted);
+  box-shadow:none; cursor:not-allowed; transform:none; }
+.rcv2-tbtn.primary[disabled]:hover { transform:none; }
+.rcv2-tbtn.primary .p { font-family: var(--font-mono); padding:1px 6px; border-radius:5px;
+  background: rgba(255,255,255,.22); margin-right:2px; font-weight:800; }
+.rcv2-tbtn.primary[disabled] .p { background: rgba(0,0,0,0.06); color: var(--text-muted); }
+html.dark .rcv2-tbtn.primary[disabled] .p { background: rgba(255,255,255,.08); }
+.rcv2-tbtn.ghost { background: var(--surface); border-color: var(--rcv2-line); color: var(--rcv2-ink-2); }
+.rcv2-tbtn.ghost:hover { border-color: rgba(0,114,255,.35); color: var(--accent); background: var(--rcv2-brand-soft); }
+
+.rcv2-trust .badges { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+.rcv2-trust .badges .b { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700;
+  padding:4px 9px; border-radius:99px; background: var(--surface);
+  border:1px solid var(--rcv2-line); color: var(--rcv2-ink-2); }
+.rcv2-trust .badges .b svg { color: var(--rcv2-success); }
+
+/* ============== layout ============== */
+.rcv2-page { animation: rcv2-fade-up .4s cubic-bezier(.2,.9,.25,1.2) both; }
+.rcv2-lay  { display:grid; grid-template-columns:1fr 340px; gap:18px; align-items:flex-start; }
+
+.rcv2-sec-title { margin:0 0 12px; font-size:14px; font-weight:800; color: var(--rcv2-ink);
+  letter-spacing:-.005em; display:flex; align-items:center; gap:8px; }
+.rcv2-sec-title small { font-size:11px; font-weight:600; color: var(--rcv2-muted); letter-spacing:0; }
+
+/* ============== amount grid ============== */
+.rcv2-amounts { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
+.rcv2-amt-card { position:relative; border-radius:14px; padding:18px 16px; cursor:pointer;
+  background: var(--surface); border:1px solid var(--rcv2-line); transition:.18s;
+  text-align:left; outline:none; font:inherit;
+  animation: rcv2-rise .45s cubic-bezier(.2,.9,.25,1.2) both; }
+.rcv2-amt-card:nth-child(1){animation-delay:.10s}
+.rcv2-amt-card:nth-child(2){animation-delay:.15s}
+.rcv2-amt-card:nth-child(3){animation-delay:.20s}
+.rcv2-amt-card:nth-child(4){animation-delay:.25s}
+.rcv2-amt-card:nth-child(5){animation-delay:.30s}
+.rcv2-amt-card:nth-child(6){animation-delay:.35s}
+.rcv2-amt-card:hover { border-color: rgba(0,114,255,.30); transform:translateY(-2px);
+  box-shadow: var(--rcv2-shadow-card-hover); }
+.rcv2-amt-card.sel { border-color: var(--accent);
+  background: linear-gradient(180deg, var(--surface), rgba(0,114,255,.04));
+  box-shadow: 0 0 0 3px var(--accent-light), var(--rcv2-shadow-card-hover); }
+.rcv2-amt-card .v { font-family: var(--font-mono); font-size:26px; font-weight:800;
+  color: var(--rcv2-ink); letter-spacing:-.01em; }
+.rcv2-amt-card .rmb { font-size:12.5px; color: var(--rcv2-muted-2);
+  text-decoration:line-through; margin-top:4px; font-family: var(--font-mono); }
+.rcv2-amt-card .rmb.plain { text-decoration:none; }
+.rcv2-amt-card .disc { position:absolute; top:10px; right:10px; font-size:10.5px; font-weight:800;
+  padding:3px 8px; border-radius:7px; background: var(--rcv2-brand-grad); color:#fff;
+  box-shadow:0 4px 10px -3px rgba(0,114,255,.55); }
+.rcv2-amt-card .check { position:absolute; top:10px; right:10px; width:22px; height:22px; border-radius:50%;
+  background: var(--rcv2-brand-grad); color:#fff; display:grid; place-items:center;
+  transform:scale(0); opacity:0; transition:.2s;
+  box-shadow:0 4px 10px -3px rgba(0,114,255,.55); }
+.rcv2-amt-card.sel .check { transform:scale(1); opacity:1; }
+.rcv2-amt-card.sel .disc { display:none; }
+
+/* ============== custom amount ============== */
+.rcv2-custom { margin-top:16px; border-radius:14px; padding:14px;
+  background: var(--surface); border:1px solid var(--rcv2-line);
+  display:flex; align-items:center; gap:10px;
+  animation: rcv2-rise .45s cubic-bezier(.2,.9,.25,1.2) .40s both; }
+.rcv2-custom .ipt { flex:1; display:flex; align-items:center; gap:8px;
+  padding:0 14px; height:46px; border-radius:11px;
+  background: var(--rcv2-soft); border:1px solid transparent; transition:.15s; }
+.rcv2-custom .ipt:focus-within { background: var(--surface); border-color: var(--accent);
+  box-shadow:0 0 0 3px var(--accent-light); }
+.rcv2-custom .ipt .pre { color: var(--rcv2-muted); font-family: var(--font-mono); font-size:16px; font-weight:700; }
+.rcv2-custom .ipt input { flex:1; border:none; outline:none; background:transparent;
+  font:inherit; font-family: var(--font-mono); font-size:16px; font-weight:700; color: var(--rcv2-ink);
+  width:100%; min-width:0; }
+.rcv2-stepper { display:flex; gap:6px; }
+.rcv2-stepper button { width:38px; height:38px; border-radius:10px; border:1px solid var(--rcv2-line);
+  background: var(--surface); color: var(--rcv2-ink-2); cursor:pointer; display:grid; place-items:center;
+  transition:.15s; }
+.rcv2-stepper button:hover { background: var(--rcv2-brand-soft); border-color: rgba(0,114,255,.25); color: var(--accent); }
+
+/* ============== payment methods ============== */
+.rcv2-pays { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.rcv2-pay { cursor:pointer; border-radius:14px; padding:14px 16px;
+  background: var(--surface); border:1px solid var(--rcv2-line);
+  display:flex; align-items:center; gap:12px; transition:.18s; position:relative;
+  text-align:left; outline:none; font:inherit; width:100%; }
+.rcv2-pay:hover { border-color: rgba(0,114,255,.30); transform:translateY(-1px); }
+.rcv2-pay.sel  { border-color: var(--accent);
+  background: linear-gradient(180deg, var(--surface), rgba(0,114,255,.03));
+  box-shadow: 0 0 0 3px var(--accent-light); }
+.rcv2-pay .pi { width:38px; height:38px; border-radius:10px; display:grid; place-items:center; flex-shrink:0; }
+.rcv2-pay b  { display:block; font-size:13.5px; font-weight:700; color: var(--rcv2-ink); margin-bottom:2px; }
+.rcv2-pay .desc { font-size:11.5px; color: var(--rcv2-muted); font-weight:500; }
+.rcv2-pay .rd { position:absolute; top:14px; right:14px; width:16px; height:16px; border-radius:50%;
+  border:1.5px solid var(--rcv2-line); transition:.15s; }
+.rcv2-pay.sel .rd { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 3px var(--surface); }
+.rcv2-pay .body { flex:1; min-width:0; padding-right:18px; }
+
+/* ============== redemption code row ============== */
+.rcv2-code-row { display:flex; gap:8px;
+  animation: rcv2-rise .45s cubic-bezier(.2,.9,.25,1.2) .55s both; }
+.rcv2-code-row .ipt { flex:1; display:flex; align-items:center; gap:8px;
+  padding:0 14px; height:46px; border-radius:11px;
+  background: var(--surface); border:1px solid var(--rcv2-line); transition:.15s; }
+.rcv2-code-row .ipt:focus-within { border-color: var(--accent); box-shadow:0 0 0 3px var(--accent-light); }
+.rcv2-code-row .ipt svg { color: var(--rcv2-muted-2); }
+.rcv2-code-row .ipt input { flex:1; border:none; outline:none; background:transparent;
+  font:inherit; font-size:13.5px; color: var(--rcv2-ink); min-width:0; width:100%; }
+.rcv2-code-row .ipt input::placeholder { color: var(--rcv2-muted-2); }
+.rcv2-code-row button { height:46px; padding:0 22px; border-radius:11px; border:none; cursor:pointer;
+  background: var(--rcv2-brand-grad); color:#fff; font:inherit; font-size:13.5px; font-weight:700;
+  box-shadow:0 10px 18px -8px rgba(0,114,255,.55), inset 0 1px 0 rgba(255,255,255,.30); transition:.18s; }
+.rcv2-code-row button:hover { transform:translateY(-1px); }
+.rcv2-code-row button[disabled] { opacity:.6; cursor:not-allowed; transform:none; }
+
+/* ============== summary ============== */
+.rcv2-summary { position:sticky; top:24px; border-radius:18px; padding:22px;
+  background: var(--surface); border:1px solid var(--rcv2-line);
+  box-shadow: var(--rcv2-shadow-summary);
+  animation: rcv2-rise .5s cubic-bezier(.2,.9,.25,1.2) .15s both; }
+.rcv2-summary h3  { margin:0 0 4px; font-size:15px; font-weight:800; color: var(--rcv2-ink); }
+.rcv2-summary .sub{ margin:0 0 16px; font-size:12px; color: var(--rcv2-muted); }
+.rcv2-summary .row{ display:flex; justify-content:space-between; align-items:center;
+  padding:8px 0; border-bottom:1px dashed var(--rcv2-line-2); font-size:13px; color: var(--rcv2-ink-2); }
+.rcv2-summary .row:last-of-type { border-bottom:none; }
+.rcv2-summary .row b { font-family: var(--font-mono); font-weight:700; color: var(--rcv2-ink); }
+.rcv2-summary .row.disc b { color: var(--rcv2-success); }
+.rcv2-summary .total { margin-top:14px; padding-top:14px; border-top:2px solid var(--rcv2-line);
+  display:flex; justify-content:space-between; align-items:baseline; }
+.rcv2-summary .total .lbl { font-size:13px; font-weight:700; color: var(--rcv2-ink-2); }
+.rcv2-summary .total .price { font-family: var(--font-mono); font-size:28px; font-weight:800;
+  letter-spacing:-.01em; background: var(--rcv2-brand-grad);
+  -webkit-background-clip:text; background-clip:text; color:transparent; }
+.rcv2-summary .pay-btn { margin-top:16px; width:100%; height:48px; border:none; border-radius:13px;
+  cursor:pointer; background: var(--rcv2-brand-grad); color:#fff;
+  font:inherit; font-size:14.5px; font-weight:800; letter-spacing:.02em;
+  box-shadow: var(--rcv2-shadow-pay-btn);
+  transition:.18s; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  position:relative; overflow:hidden; }
+.rcv2-summary .pay-btn::before { content:""; position:absolute; top:0; left:-80%; width:60%; height:100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+  animation: rcv2-sweep 3.5s ease-in-out infinite; }
+.rcv2-summary .pay-btn:hover { transform:translateY(-1px);
+  box-shadow:0 20px 36px -12px rgba(0,114,255,.65), inset 0 1px 0 rgba(255,255,255,.3); }
+.rcv2-summary .pay-btn[disabled] { opacity:.55; cursor:not-allowed; transform:none; }
+.rcv2-summary .pay-btn[disabled]::before { animation:none; }
+
+/* ============== back link ============== */
+.rcv2-back { display:inline-flex; align-items:center; gap:6px;
+  margin-bottom:14px; padding:6px 12px 6px 8px; border-radius:9px;
+  border:1px solid transparent; background:transparent; cursor:pointer;
+  font:inherit; font-size:13px; font-weight:600; color: var(--rcv2-muted);
+  transition:.18s; }
+.rcv2-back:hover { color: var(--accent); background: var(--surface); border-color: var(--rcv2-line); }
+
+/* ============== mobile (≤980px) ============== */
+@media (max-width: 980px) {
+  .rcv2-lay { grid-template-columns:1fr; }
+  .rcv2-summary { position:static; }
+  .rcv2-amounts { grid-template-columns:repeat(2, 1fr); }
+  .rcv2-pays { grid-template-columns:1fr; }
+  .rcv2-trust .ctas { margin-left:0; width:100%; }
+  .rcv2-trust .ctas .rcv2-tbtn { flex:1; justify-content:center; }
 }
+@media (max-width: 480px) {
+  .rcv2-top-tabs button { padding:9px 18px; font-size:13px; }
+  .rcv2-trust { padding:18px 16px; }
+  .rcv2-trust .row { gap:14px; }
+}
+
+/* ============== Semi adjustments — hide stray InputNumber chrome ============== */
+.rcv2 .semi-input-number-suffix { display:none !important; }
+.rcv2 input[type=number]::-webkit-inner-spin-button,
+.rcv2 input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+.rcv2 input[type=number] { -moz-appearance: textfield; }
 `;
 
 /* ─── Epay form submit ─── */
@@ -219,6 +377,14 @@ const RechargePage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [topUpLink, setTopUpLink] = useState('');
   const [statusLoading, setStatusLoading] = useState(true);
+  // Dynamic min top-up from backend — reflects first-topup eligibility.
+  // <=1 means user is in their first-time window (eligible for $1 trial pack).
+  const [firstTimeMinTopUp, setFirstTimeMinTopUp] = useState(1);
+
+  /* ─── Top-tab sliding pill (refs and pos; effect runs below after all state) ─── */
+  const topupBtnRef = useRef(null);
+  const subBtnRef = useRef(null);
+  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0 });
 
   /* ─── Subscription state ─── */
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
@@ -231,6 +397,19 @@ const RechargePage = () => {
   /* ─── Creem modal ─── */
   const [creemOpen, setCreemOpen] = useState(false);
   const [selectedCreemProduct, setSelectedCreemProduct] = useState(null);
+
+  /* ─── Pill position effect — declared after all state to avoid TDZ ─── */
+  useEffect(() => {
+    const updatePill = () => {
+      const active =
+        activeTab === 'topup' ? topupBtnRef.current : subBtnRef.current;
+      if (active)
+        setPillStyle({ left: active.offsetLeft, width: active.offsetWidth });
+    };
+    updatePill();
+    window.addEventListener('resize', updatePill);
+    return () => window.removeEventListener('resize', updatePill);
+  }, [activeTab, topupLoading, subscriptionLoading]);
 
   /* ─── Data loading ─── */
   useEffect(() => {
@@ -351,6 +530,10 @@ const RechargePage = () => {
               : 1;
         setMinTopUp(min);
         setTopUpCount(min);
+        // Capture the dynamic min — `data.min_topup` already accounts for
+        // HasSuccessTopUp on the backend (1 for first-time users, 10 or
+        // MinTopUpAfterFirst after their first successful top-up).
+        setFirstTimeMinTopUp(Number(data.min_topup) || 1);
         try {
           setCreemProducts(JSON.parse(data.creem_products || '[]'));
         } catch {
@@ -720,92 +903,193 @@ const RechargePage = () => {
   const showSubscriptionTab =
     !subscriptionLoading && subscriptionPlans.length > 0;
 
+  // $1 trial pack: only first-time users qualify. The backend's
+  // `data.min_topup` already reflects HasSuccessTopUp — a value of 1 means
+  // the user hasn't completed a successful top-up yet.
+  const isTrialEligible = firstTimeMinTopUp <= 1 && hasOnlinePay;
+
+  // Pick the first sensible pay method when none is selected — used by the
+  // $1 trial CTA so a one-tap purchase is possible from the banner.
+  const firstAvailablePayMethod = () => {
+    if (enableOnlineTopUp && epayMethods.length > 0)
+      return epayMethods[0].type;
+    if (enableStripeTopUp) return 'stripe';
+    if (enableWaffoPancakeTopUp) return 'waffo-pancake';
+    if (enableDodoPaymentsTopUp) return 'dodopayments';
+    if (enableCryptomusTopUp) return 'cryptomus';
+    if (enableNowPaymentsTopUp) return 'nowpayments';
+    return '';
+  };
+
+  const onClickTrial = () => {
+    if (!isTrialEligible) return;
+    if (showSubscriptionTab) setActiveTab('topup');
+    setTopUpCount(1);
+    setSelectedPreset(null);
+    getAmountFn(1);
+    if (!selectedPayMethod) {
+      const next = firstAvailablePayMethod();
+      if (next) setSelectedPayMethod(next);
+    }
+    // Smooth-scroll to the summary so the user can confirm and pay in one tap.
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 0);
+  };
+
+  // Single dispatch for the summary "确认支付" button — routes by selected rail.
+  const handleConfirmPay = () => {
+    if (!selectedPayMethod) return;
+    if (selectedPayMethod === 'cryptomus') return cryptomusTopUp();
+    if (selectedPayMethod === 'nowpayments') return nowpaymentsTopUp();
+    if (selectedPayMethod === 'dodopayments') return dodopaymentsTopUp();
+    if (selectedPayMethod === 'waffo-pancake') return waffoPancakeTopUp();
+    return preTopUp(selectedPayMethod);
+  };
+
   return (
     <>
       <style>{STYLES}</style>
       <div
+        className='rcv2'
         style={{
           minHeight: 'calc(100vh - var(--header-height))',
-          background: 'var(--bg-base)',
-          padding: isMobile ? '24px 16px 48px' : '40px 24px 80px',
+          padding: isMobile ? '24px 16px 48px' : '32px 24px 64px',
+          background:
+            'radial-gradient(1200px 600px at 80% -10%, rgba(0,198,255,0.16), transparent 60%), radial-gradient(1000px 500px at 0% 110%, rgba(0,114,255,0.16), transparent 55%), var(--bg-base)',
         }}
       >
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          {/* ─── Header ─── */}
-          <div className='rc-animate' style={{ marginBottom: 32 }}>
-            <Button
-              theme='borderless'
-              type='tertiary'
-              icon={<ArrowLeft size={16} />}
-              onClick={() => navigate('/console/topup')}
-              style={{ marginBottom: 16, borderRadius: 'var(--radius-md)' }}
-            >
-              {t('返回钱包')}
-            </Button>
-            <h1
-              style={{
-                fontSize: isMobile ? 32 : 42,
-                fontWeight: 800,
-                margin: 0,
-                lineHeight: 1.1,
-                fontFamily: 'var(--font-serif)',
-                color: 'var(--text-primary)',
-              }}
-            >
-              {t('升级体验')}
-            </h1>
-            <p
-              style={{
-                fontSize: 16,
-                color: 'var(--text-secondary)',
-                marginTop: 8,
-                maxWidth: 600,
-              }}
-            >
-              {t('选择适合你的套餐，或充值余额按需使用。')}
-            </p>
-          </div>
+        <div style={{ maxWidth: 1240, margin: '0 auto' }}>
+          {/* ─── Back link ─── */}
+          <button
+            className='rcv2-back'
+            onClick={() => navigate('/console/topup')}
+          >
+            <ArrowLeft size={14} />
+            {t('返回钱包')}
+          </button>
 
-          {/* ─── Tab switcher (design-doc style pill) ─── */}
+          {/* ─── Top tabs (sliding pill) ─── */}
           {showSubscriptionTab && (
-            <div
-              className='rc-animate'
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                marginBottom: 40,
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  gap: 4,
-                  padding: 5,
-                  background: 'var(--surface-active)',
-                  borderRadius: 9999,
-                  maxWidth: 400,
-                  width: '100%',
-                }}
-              >
+            <div className='rcv2-top-tabs'>
+              <div className='group'>
+                <span
+                  className='pill'
+                  style={{ left: pillStyle.left, width: pillStyle.width }}
+                />
                 <button
-                  className={`rc-tab${activeTab === 'subscription' ? ' active' : ''}`}
-                  onClick={() => setActiveTab('subscription')}
-                >
-                  {t('订阅套餐')}
-                </button>
-                <button
-                  className={`rc-tab${activeTab === 'topup' ? ' active' : ''}`}
+                  ref={topupBtnRef}
+                  className={activeTab === 'topup' ? 'active' : ''}
                   onClick={() => setActiveTab('topup')}
                 >
                   {t('额度充值')}
+                </button>
+                <button
+                  ref={subBtnRef}
+                  className={activeTab === 'subscription' ? 'active' : ''}
+                  onClick={() => setActiveTab('subscription')}
+                >
+                  {t('订阅套餐')}
                 </button>
               </div>
             </div>
           )}
 
-          {/* ─── Tab content ─── */}
-          {activeTab === 'subscription' && showSubscriptionTab ? (
-            <div className='rc-animate' key='sub'>
+          {/* ─── Trust banner ─── */}
+          <section className='rcv2-trust'>
+            <div className='grid-bg' />
+            <div className='row'>
+              <div className='icon' aria-hidden='true'>
+                <ShieldCheck size={22} />
+              </div>
+              <div style={{ minWidth: 0, flex: '1 1 320px' }}>
+                <h3>
+                  {t('为什么可以放心充值？')}
+                  <span className='new'>{t('放心计费')}</span>
+                </h3>
+                <p>
+                  {t('首次使用？建议先购买')}{' '}
+                  <b>{t('$1 试用包')}</b>
+                  {t('，完成 API 接入测试后再继续充值。所有模型采用')}
+                  <b>{t('公开价格')}</b>
+                  {t(
+                    '展示，站内不设置复杂倍率，不存在隐藏扣费公式 —— 你看到的模型价格，就是实际计费依据。',
+                  )}
+                </p>
+                <div className='badges'>
+                  <span className='b'>
+                    <Check size={11} strokeWidth={3} />
+                    {t('低门槛体验')}
+                  </span>
+                  <span className='b'>
+                    <Check size={11} strokeWidth={3} />
+                    {t('透明计费')}
+                  </span>
+                  <span className='b'>
+                    <Check size={11} strokeWidth={3} />
+                    {t('按量扣费')}
+                  </span>
+                  <span className='b'>
+                    <Check size={11} strokeWidth={3} />
+                    {t('价格公开')}
+                  </span>
+                </div>
+              </div>
+              <div className='ctas'>
+                {topupLoading ? (
+                  <button
+                    className='rcv2-tbtn primary'
+                    disabled
+                    type='button'
+                  >
+                    <span className='p'>$1</span>
+                    {t('购买试用包')}
+                  </button>
+                ) : (
+                  <Tooltip
+                    content={
+                      isTrialEligible
+                        ? t('立即体验 $1 试用包')
+                        : t('你已使用过 $1 试用包，无法重复购买')
+                    }
+                  >
+                    <span style={{ display: 'inline-flex' }}>
+                      <button
+                        className='rcv2-tbtn primary'
+                        disabled={!isTrialEligible}
+                        onClick={onClickTrial}
+                        type='button'
+                      >
+                        <span className='p'>$1</span>
+                        {isTrialEligible
+                          ? t('购买试用包')
+                          : t('您已试用')}
+                        {isTrialEligible && (
+                          <ArrowRight size={13} strokeWidth={2.4} />
+                        )}
+                      </button>
+                    </span>
+                  </Tooltip>
+                )}
+                <button
+                  className='rcv2-tbtn ghost'
+                  onClick={() => navigate('/pricing')}
+                  type='button'
+                >
+                  <Search size={13} strokeWidth={2.2} />
+                  {t('查看模型价格')}
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* ─── Page content ─── */}
+          {topupLoading ? (
+            <div style={{ padding: '12px 4px' }}>
+              <Skeleton.Paragraph active rows={6} />
+            </div>
+          ) : activeTab === 'subscription' && showSubscriptionTab ? (
+            <div className='rcv2-page' key='sub'>
               <SubscriptionPlansCard
                 t={t}
                 loading={subscriptionLoading}
@@ -823,887 +1107,430 @@ const RechargePage = () => {
               />
             </div>
           ) : (
-            <div className='rc-animate' key='topup'>
-              {topupLoading ? (
-                <Skeleton.Paragraph active rows={6} />
-              ) : (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr' : '1fr 340px',
-                    gap: 32,
-                    alignItems: 'start',
-                  }}
-                >
-                  {/* ─── Left: presets + custom + payment ─── */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 40,
-                    }}
-                  >
-                    {/* Preset grid */}
-                    {hasOnlinePay && (
-                      <section>
-                        <h2
-                          style={{
-                            fontSize: 20,
-                            fontWeight: 700,
-                            fontFamily: 'var(--font-serif)',
-                            color: 'var(--text-primary)',
-                            marginBottom: 16,
-                          }}
-                        >
-                          {t('选择充值额度')}
-                        </h2>
-                        <div
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns: isMobile
-                              ? 'repeat(2, 1fr)'
-                              : 'repeat(3, 1fr)',
-                            gap: 12,
-                          }}
-                        >
-                          {presetAmounts.map((p) => {
-                            const disc =
-                              p.discount ||
-                              topupInfo?.discount?.[p.value] ||
-                              1.0;
-                            const origPay = p.value * priceRatio;
-                            const actPay = origPay * disc;
-                            const hasDsc = disc < 1.0;
-                            const isSelected = selectedPreset === p.value;
-                            return (
+            <div className='rcv2-page' key='topup'>
+              <div className='rcv2-lay'>
+                <div>
+                  {/* ─── Amount grid ─── */}
+                  {hasOnlinePay && (
+                    <>
+                      <h3 className='rcv2-sec-title'>
+                        {t('选择充值金额')}
+                        <small>
+                          · {t('美元单位，等值人民币结算')}
+                        </small>
+                      </h3>
+                      <div className='rcv2-amounts'>
+                        {presetAmounts.map((p) => {
+                          const disc =
+                            p.discount ||
+                            topupInfo?.discount?.[p.value] ||
+                            1.0;
+                          const origCny = p.value * priceRatio;
+                          const actCny = origCny * disc;
+                          const hasDsc = disc < 1.0;
+                          const isSelected = selectedPreset === p.value;
+                          return (
+                            <button
+                              key={p.value}
+                              type='button'
+                              className={`rcv2-amt-card${isSelected ? ' sel' : ''}`}
+                              onClick={() => selectPresetAmount(p)}
+                            >
+                              <div className='v'>${p.value}</div>
+                              <div
+                                className={`rmb${hasDsc ? '' : ' plain'}`}
+                              >
+                                ¥{(hasDsc ? origCny : actCny).toFixed(0)}
+                              </div>
+                              {hasDsc && (
+                                <span className='disc'>
+                                  {(disc * 10).toFixed(1)}
+                                  {t('折')}
+                                </span>
+                              )}
+                              <span className='check'>
+                                <Check size={11} strokeWidth={3.4} />
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Custom amount + stepper */}
+                      <div className='rcv2-custom'>
+                        <div className='ipt'>
+                          <span className='pre'>$</span>
+                          <input
+                            type='number'
+                            inputMode='numeric'
+                            min={minTopUp}
+                            step={1}
+                            value={topUpCount}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              const v =
+                                raw === '' ? 0 : Math.max(0, parseInt(raw, 10) || 0);
+                              setTopUpCount(v);
+                              setSelectedPreset(null);
+                              getAmountFn(v);
+                            }}
+                            aria-label={t('自定义充值金额')}
+                          />
+                        </div>
+                        <div className='rcv2-stepper'>
+                          <button
+                            type='button'
+                            aria-label={t('减少')}
+                            onClick={() => {
+                              const v = Math.max(minTopUp, topUpCount - 1);
+                              setTopUpCount(v);
+                              setSelectedPreset(null);
+                              getAmountFn(v);
+                            }}
+                          >
+                            <Minus size={14} strokeWidth={2.4} />
+                          </button>
+                          <button
+                            type='button'
+                            aria-label={t('增加')}
+                            onClick={() => {
+                              const v = topUpCount + 1;
+                              setTopUpCount(v);
+                              setSelectedPreset(null);
+                              getAmountFn(v);
+                            }}
+                          >
+                            <Plus size={14} strokeWidth={2.4} />
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* ─── Payment methods ─── */}
+                  {hasOnlinePay && (
+                    <>
+                      <h3
+                        className='rcv2-sec-title'
+                        style={{ marginTop: 26 }}
+                      >
+                        {t('选择支付方式')}
+                      </h3>
+                      <div className='rcv2-pays'>
+                        {/* Stripe */}
+                        {enableStripeTopUp &&
+                          payMethods
+                            .filter((m) => m.type === 'stripe')
+                            .map(() => (
                               <button
-                                key={p.value}
-                                className={`rc-preset-card${isSelected ? ' selected' : ''}`}
-                                onClick={() => selectPresetAmount(p)}
+                                key='stripe'
+                                type='button'
+                                className={`rcv2-pay${selectedPayMethod === 'stripe' ? ' sel' : ''}`}
+                                onClick={() => setSelectedPayMethod('stripe')}
                               >
                                 <div
-                                  style={{ position: 'relative', zIndex: 1 }}
-                                >
-                                  <div
-                                    style={{
-                                      fontSize: 26,
-                                      fontWeight: 800,
-                                      fontFamily: 'var(--font-serif)',
-                                      color: isSelected
-                                        ? 'var(--accent)'
-                                        : 'var(--text-primary)',
-                                      marginBottom: 4,
-                                    }}
-                                  >
-                                    ${p.value}
-                                  </div>
-                                  {hasDsc && (
-                                    <div
-                                      style={{
-                                        fontSize: 13,
-                                        color: 'var(--text-muted)',
-                                        textDecoration: 'line-through',
-                                      }}
-                                    >
-                                      ¥{origPay.toFixed(0)}
-                                    </div>
-                                  )}
-                                  {!hasDsc && (
-                                    <div
-                                      style={{
-                                        fontSize: 13,
-                                        color: 'var(--text-muted)',
-                                      }}
-                                    >
-                                      ¥{actPay.toFixed(0)}
-                                    </div>
-                                  )}
-                                </div>
-                                {hasDsc && (
-                                  <span
-                                    style={{
-                                      position: 'absolute',
-                                      top: 12,
-                                      right: 12,
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      padding: '2px 8px',
-                                      borderRadius: 9999,
-                                      fontSize: 11,
-                                      fontWeight: 700,
-                                      background: 'var(--accent-gradient)',
-                                      color: '#fff',
-                                    }}
-                                  >
-                                    {(disc * 10).toFixed(1)}
-                                    {t('折')}
-                                  </span>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </section>
-                    )}
-
-                    {/* Custom amount */}
-                    {hasOnlinePay && (
-                      <section>
-                        <h2
-                          style={{
-                            fontSize: 20,
-                            fontWeight: 700,
-                            fontFamily: 'var(--font-serif)',
-                            color: 'var(--text-primary)',
-                            marginBottom: 16,
-                          }}
-                        >
-                          {t('自定义金额')}
-                        </h2>
-                        <div
-                          className='rc-custom-amount'
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 16,
-                            padding: 24,
-                            borderRadius: 'var(--radius-lg)',
-                            background: 'var(--surface-active)',
-                          }}
-                        >
-                          <div style={{ flex: 1, position: 'relative' }}>
-                            <span
-                              style={{
-                                position: 'absolute',
-                                left: 20,
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                fontSize: 28,
-                                fontWeight: 700,
-                                fontFamily: 'var(--font-serif)',
-                                color: 'var(--text-muted)',
-                              }}
-                            >
-                              $
-                            </span>
-                            <InputNumber
-                              value={topUpCount}
-                              onChange={(v) => {
-                                setTopUpCount(v || 0);
-                                setSelectedPreset(null);
-                                getAmountFn(v || 0);
-                              }}
-                              min={minTopUp}
-                              max={999999999}
-                              step={1}
-                              precision={0}
-                              style={{
-                                width: '100%',
-                                borderRadius: 'var(--radius-lg)',
-                                height: 64,
-                                fontSize: 28,
-                                fontWeight: 700,
-                                paddingLeft: 48,
-                              }}
-                              innerButtons={false}
-                            />
-                          </div>
-                          <div style={{ display: 'flex', gap: 8 }}>
-                            <button
-                              onClick={() => {
-                                const v = Math.max(minTopUp, topUpCount - 1);
-                                setTopUpCount(v);
-                                setSelectedPreset(null);
-                                getAmountFn(v);
-                              }}
-                              style={{
-                                width: 48,
-                                height: 48,
-                                borderRadius: '50%',
-                                border: 'none',
-                                background: 'var(--surface)',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'var(--text-secondary)',
-                                transition: 'all 0.2s',
-                              }}
-                            >
-                              <Minus size={18} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                const v = topUpCount + 1;
-                                setTopUpCount(v);
-                                setSelectedPreset(null);
-                                getAmountFn(v);
-                              }}
-                              style={{
-                                width: 48,
-                                height: 48,
-                                borderRadius: '50%',
-                                border: 'none',
-                                background: 'var(--surface)',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'var(--text-secondary)',
-                                transition: 'all 0.2s',
-                              }}
-                            >
-                              <Plus size={18} />
-                            </button>
-                          </div>
-                        </div>
-                      </section>
-                    )}
-
-                    {/* Payment methods */}
-                    {hasOnlinePay && (
-                      <section>
-                        <h2
-                          style={{
-                            fontSize: 20,
-                            fontWeight: 700,
-                            fontFamily: 'var(--font-serif)',
-                            color: 'var(--text-primary)',
-                            marginBottom: 16,
-                          }}
-                        >
-                          {t('选择支付方式')}
-                        </h2>
-                        <div
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns: isMobile
-                              ? '1fr'
-                              : 'repeat(2, 1fr)',
-                            gap: 12,
-                          }}
-                        >
-                          {/* Stripe */}
-                          {enableStripeTopUp &&
-                            payMethods
-                              .filter((m) => m.type === 'stripe')
-                              .map((m) => (
-                                <button
-                                  key='stripe'
-                                  className={`rc-pay-method${selectedPayMethod === 'stripe' ? ' selected' : ''}`}
-                                  onClick={() => setSelectedPayMethod('stripe')}
-                                >
-                                  <div
-                                    style={{
-                                      width: 44,
-                                      height: 44,
-                                      borderRadius: '50%',
-                                      background: 'rgba(99,91,255,0.08)',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      marginRight: 14,
-                                      flexShrink: 0,
-                                    }}
-                                  >
-                                    <SiStripe size={22} color='#635BFF' />
-                                  </div>
-                                  <div style={{ flex: 1, textAlign: 'left' }}>
-                                    <div
-                                      style={{
-                                        fontSize: 15,
-                                        fontWeight: 700,
-                                        color: 'var(--text-primary)',
-                                      }}
-                                    >
-                                      Stripe
-                                    </div>
-                                    <div
-                                      style={{
-                                        fontSize: 12,
-                                        color: 'var(--text-muted)',
-                                      }}
-                                    >
-                                      {t('国际支付')}
-                                    </div>
-                                  </div>
-                                  {selectedPayMethod === 'stripe' && (
-                                    <div
-                                      style={{
-                                        width: 22,
-                                        height: 22,
-                                        borderRadius: '50%',
-                                        background: 'var(--accent)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                      }}
-                                    >
-                                      <Check size={12} color='#fff' />
-                                    </div>
-                                  )}
-                                </button>
-                              ))}
-                          {/* Epay methods */}
-                          {enableOnlineTopUp &&
-                            epayMethods.map((m) => (
-                              <button
-                                key={m.type}
-                                className={`rc-pay-method${selectedPayMethod === m.type ? ' selected' : ''}`}
-                                onClick={() => setSelectedPayMethod(m.type)}
-                              >
-                                <div
+                                  className='pi'
                                   style={{
-                                    width: 44,
-                                    height: 44,
-                                    borderRadius: '50%',
-                                    background:
-                                      m.type === 'alipay'
-                                        ? 'rgba(22,119,255,0.08)'
-                                        : m.type === 'wxpay'
-                                          ? 'rgba(7,193,96,0.08)'
-                                          : 'var(--surface-active)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    marginRight: 14,
-                                    flexShrink: 0,
+                                    background: 'rgba(99,91,255,0.10)',
+                                    color: '#635BFF',
                                   }}
                                 >
-                                  {m.type === 'alipay' ? (
-                                    <SiAlipay size={22} color='#1677FF' />
-                                  ) : m.type === 'wxpay' ? (
-                                    <SiWechat size={22} color='#07C160' />
-                                  ) : (
-                                    <CreditCard
-                                      size={20}
-                                      style={{ color: 'var(--text-muted)' }}
-                                    />
-                                  )}
+                                  <SiStripe size={20} />
                                 </div>
-                                <div style={{ flex: 1, textAlign: 'left' }}>
-                                  <div
-                                    style={{
-                                      fontSize: 15,
-                                      fontWeight: 700,
-                                      color: 'var(--text-primary)',
-                                    }}
-                                  >
-                                    {m.name ? t(m.name) : ''}
-                                  </div>
-                                  <div
-                                    style={{
-                                      fontSize: 12,
-                                      color: 'var(--text-muted)',
-                                    }}
-                                  >
-                                    {t('即时到账')}
-                                  </div>
+                                <div className='body'>
+                                  <b>Stripe</b>
+                                  <span className='desc'>{t('国际支付')}</span>
                                 </div>
-                                {selectedPayMethod === m.type && (
-                                  <div
-                                    style={{
-                                      width: 22,
-                                      height: 22,
-                                      borderRadius: '50%',
-                                      background: 'var(--accent)',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                    }}
-                                  >
-                                    <Check size={12} color='#fff' />
-                                  </div>
-                                )}
+                                <span className='rd' />
                               </button>
                             ))}
-                          {/* Cryptomus */}
-                          {enableCryptomusTopUp && (
+                        {/* EPay-style: wxpay / alipay / generic */}
+                        {enableOnlineTopUp &&
+                          epayMethods.map((m) => (
                             <button
-                              key='cryptomus'
-                              className={`rc-pay-method${selectedPayMethod === 'cryptomus' ? ' selected' : ''}`}
-                              onClick={() => setSelectedPayMethod('cryptomus')}
+                              key={m.type}
+                              type='button'
+                              className={`rcv2-pay${selectedPayMethod === m.type ? ' sel' : ''}`}
+                              onClick={() => setSelectedPayMethod(m.type)}
                             >
                               <div
-                                style={{
-                                  width: 44,
-                                  height: 44,
-                                  borderRadius: '50%',
-                                  background: 'rgba(247,147,26,0.10)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  marginRight: 14,
-                                  flexShrink: 0,
-                                  fontSize: 18,
-                                  fontWeight: 800,
-                                  color: '#F7931A',
-                                  fontFamily: 'var(--font-mono)',
-                                }}
+                                className='pi'
+                                style={
+                                  m.type === 'alipay'
+                                    ? {
+                                        background: 'rgba(22,119,255,0.10)',
+                                        color: '#1677FF',
+                                      }
+                                    : m.type === 'wxpay'
+                                      ? {
+                                          background: 'rgba(22,163,74,0.10)',
+                                          color: '#15803d',
+                                        }
+                                      : {
+                                          background: 'var(--surface-active)',
+                                          color: 'var(--text-secondary)',
+                                        }
+                                }
                               >
-                                ₮
+                                {m.type === 'alipay' ? (
+                                  <SiAlipay size={20} />
+                                ) : m.type === 'wxpay' ? (
+                                  <SiWechat size={20} />
+                                ) : (
+                                  <CreditCard size={18} />
+                                )}
                               </div>
-                              <div style={{ flex: 1, textAlign: 'left' }}>
-                                <div
-                                  style={{
-                                    fontSize: 15,
-                                    fontWeight: 700,
-                                    color: 'var(--text-primary)',
-                                  }}
-                                >
-                                  {t('USDT / 加密货币')}
-                                </div>
-                                <div
-                                  style={{
-                                    fontSize: 12,
-                                    color: 'var(--text-muted)',
-                                  }}
-                                >
-                                  {t('链上到账，低手续费')}
-                                </div>
+                              <div className='body'>
+                                <b>{m.name ? t(m.name) : ''}</b>
+                                <span className='desc'>{t('即时到账')}</span>
                               </div>
-                              {selectedPayMethod === 'cryptomus' && (
-                                <div
-                                  style={{
-                                    width: 22,
-                                    height: 22,
-                                    borderRadius: '50%',
-                                    background: 'var(--accent)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                  }}
-                                >
-                                  <Check size={12} color='#fff' />
-                                </div>
-                              )}
+                              <span className='rd' />
                             </button>
-                          )}
-                          {/* 加密货币支付（NowPayments） — 不暴露第三方品牌名 */}
-                          {enableNowPaymentsTopUp && (
-                            <button
-                              key='nowpayments'
-                              className={`rc-pay-method${selectedPayMethod === 'nowpayments' ? ' selected' : ''}`}
-                              onClick={() =>
-                                setSelectedPayMethod('nowpayments')
-                              }
-                            >
-                              <div
-                                style={{
-                                  width: 44,
-                                  height: 44,
-                                  borderRadius: '50%',
-                                  background: 'rgba(38,178,168,0.12)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  marginRight: 14,
-                                  flexShrink: 0,
-                                  fontSize: 18,
-                                  fontWeight: 800,
-                                  color: '#26B2A8',
-                                  fontFamily: 'var(--font-mono)',
-                                }}
-                              >
-                                ₮
-                              </div>
-                              <div style={{ flex: 1, textAlign: 'left' }}>
-                                <div
-                                  style={{
-                                    fontSize: 15,
-                                    fontWeight: 700,
-                                    color: 'var(--text-primary)',
-                                  }}
-                                >
-                                  {t('加密货币支付')}
-                                </div>
-                                <div
-                                  style={{
-                                    fontSize: 12,
-                                    color: 'var(--text-muted)',
-                                  }}
-                                >
-                                  {t('链上到账，多链支持')}
-                                </div>
-                              </div>
-                              {selectedPayMethod === 'nowpayments' && (
-                                <div
-                                  style={{
-                                    width: 22,
-                                    height: 22,
-                                    borderRadius: '50%',
-                                    background: 'var(--accent)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                  }}
-                                >
-                                  <Check size={12} color='#fff' />
-                                </div>
-                              )}
-                            </button>
-                          )}
-                          {/* 信用卡 / 全球支付（Dodo Payments） — 不暴露第三方品牌名 */}
-                          {enableDodoPaymentsTopUp && (
-                            <button
-                              key='dodopayments'
-                              className={`rc-pay-method${selectedPayMethod === 'dodopayments' ? ' selected' : ''}`}
-                              onClick={() =>
-                                setSelectedPayMethod('dodopayments')
-                              }
-                            >
-                              <div
-                                style={{
-                                  width: 44,
-                                  height: 44,
-                                  borderRadius: '50%',
-                                  background: 'rgba(122,90,248,0.12)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  marginRight: 14,
-                                  flexShrink: 0,
-                                  fontSize: 18,
-                                  fontWeight: 800,
-                                  color: '#7A5AF8',
-                                  fontFamily: 'var(--font-mono)',
-                                }}
-                              >
-                                $
-                              </div>
-                              <div style={{ flex: 1, textAlign: 'left' }}>
-                                <div
-                                  style={{
-                                    fontSize: 15,
-                                    fontWeight: 700,
-                                    color: 'var(--text-primary)',
-                                  }}
-                                >
-                                  {t('信用卡 / 全球支付')}
-                                </div>
-                                <div
-                                  style={{
-                                    fontSize: 12,
-                                    color: 'var(--text-muted)',
-                                  }}
-                                >
-                                  {t(
-                                    'Visa / Mastercard / 本地支付，按 USD 结算',
-                                  )}
-                                </div>
-                              </div>
-                              {selectedPayMethod === 'dodopayments' && (
-                                <div
-                                  style={{
-                                    width: 22,
-                                    height: 22,
-                                    borderRadius: '50%',
-                                    background: 'var(--accent)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                  }}
-                                >
-                                  <Check size={12} color='#fff' />
-                                </div>
-                              )}
-                            </button>
-                          )}
-                          {/* Waffo Pancake — 独立结账系统，与旧 Waffo SDK 分离 */}
-                          {enableWaffoPancakeTopUp && (
-                            <button
-                              key='waffo-pancake'
-                              className={`rc-pay-method${selectedPayMethod === 'waffo-pancake' ? ' selected' : ''}`}
-                              onClick={() =>
-                                setSelectedPayMethod('waffo-pancake')
-                              }
-                            >
-                              <div
-                                style={{
-                                  width: 44,
-                                  height: 44,
-                                  borderRadius: '50%',
-                                  background: 'rgba(0,184,217,0.10)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  marginRight: 14,
-                                  flexShrink: 0,
-                                  color: '#00B8D9',
-                                }}
-                              >
-                                <CreditCard size={22} />
-                              </div>
-                              <div style={{ flex: 1, textAlign: 'left' }}>
-                                <div
-                                  style={{
-                                    fontSize: 15,
-                                    fontWeight: 700,
-                                    color: 'var(--text-primary)',
-                                  }}
-                                >
-                                  {t('信用卡支付')}
-                                </div>
-                                <div
-                                  style={{
-                                    fontSize: 12,
-                                    color: 'var(--text-muted)',
-                                  }}
-                                >
-                                  {t('Visa / Mastercard / Apple Pay, 按 USD 结算')}
-                                </div>
-                              </div>
-                              {selectedPayMethod === 'waffo-pancake' && (
-                                <div
-                                  style={{
-                                    width: 22,
-                                    height: 22,
-                                    borderRadius: '50%',
-                                    background: 'var(--accent)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                  }}
-                                >
-                                  <Check size={12} color='#fff' />
-                                </div>
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      </section>
-                    )}
-
-                    {/* Redemption code */}
-                    <section>
-                      <h2
-                        style={{
-                          fontSize: 20,
-                          fontWeight: 700,
-                          fontFamily: 'var(--font-serif)',
-                          color: 'var(--text-primary)',
-                          marginBottom: 16,
-                        }}
-                      >
-                        {t('兑换充值码')}
-                      </h2>
-                      <div style={{ display: 'flex', gap: 10 }}>
-                        <Input
-                          value={redemptionCode}
-                          onChange={setRedemptionCode}
-                          placeholder={t('输入充值码')}
-                          prefix={
-                            <TicketCheck
-                              size={14}
-                              style={{
-                                color: 'var(--text-muted)',
-                                marginLeft: 4,
-                                marginRight: 4,
-                              }}
-                            />
-                          }
-                          showClear
-                          style={{
-                            flex: 1,
-                            borderRadius: 'var(--radius-lg)',
-                            height: 44,
-                          }}
-                          onEnterPress={topUp}
-                        />
-                        <Button
-                          theme='solid'
-                          type='primary'
-                          loading={isSubmitting}
-                          onClick={topUp}
-                          style={{
-                            borderRadius: 'var(--radius-lg)',
-                            background: 'var(--accent-gradient)',
-                            border: 'none',
-                            fontWeight: 600,
-                            height: 44,
-                            padding: '0 24px',
-                          }}
-                        >
-                          {t('兑换')}
-                        </Button>
-                      </div>
-                    </section>
-                  </div>
-
-                  {/* ─── Right: Summary panel (sticky, aligned with preset grid) ─── */}
-                  {hasOnlinePay && (
-                    <div style={{ position: 'sticky', top: 80, marginTop: 40 }}>
-                      <div className='rc-summary'>
-                        <div style={{ marginBottom: 16 }}>
-                          <h3
-                            style={{
-                              fontSize: 18,
-                              fontWeight: 700,
-                              fontFamily: 'var(--font-serif)',
-                              color: 'var(--text-primary)',
-                              margin: 0,
-                            }}
+                          ))}
+                        {/* Cryptomus (USDT) */}
+                        {enableCryptomusTopUp && (
+                          <button
+                            type='button'
+                            className={`rcv2-pay${selectedPayMethod === 'cryptomus' ? ' sel' : ''}`}
+                            onClick={() => setSelectedPayMethod('cryptomus')}
                           >
-                            {t('订单摘要')}
-                          </h3>
-                          <p
-                            style={{
-                              fontSize: 13,
-                              color: 'var(--text-muted)',
-                              marginTop: 4,
-                            }}
-                          >
-                            {t('确认你的充值详情')}
-                          </p>
-                        </div>
-                        {(() => {
-                          // USD-settled rails (NowPayments / Cryptomus / Dodo Payments) skip
-                          // the CNY conversion so the user sees the actual USD price.
-                          const isCrypto =
-                            selectedPayMethod === 'nowpayments' ||
-                            selectedPayMethod === 'cryptomus' ||
-                            selectedPayMethod === 'dodopayments' ||
-                            selectedPayMethod === 'waffo-pancake';
-                          const symbol = isCrypto ? '$' : '¥';
-                          const rate = isCrypto ? 1 : priceRatio;
-                          const discountPart =
-                            topUpCount * rate * (1 - currentDiscount);
-                          const settlement =
-                            topUpCount * rate * currentDiscount;
-                          return (
                             <div
+                              className='pi'
                               style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 12,
-                                fontSize: 14,
+                                background: 'rgba(247,147,26,0.10)',
+                                color: '#F7931A',
+                                fontFamily: 'var(--font-mono)',
+                                fontSize: 16,
+                                fontWeight: 800,
                               }}
                             >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                }}
-                              >
-                                <span
-                                  style={{ color: 'var(--text-secondary)' }}
-                                >
-                                  {t('充值数量')}
-                                </span>
-                                <span
-                                  style={{
-                                    fontWeight: 500,
-                                    color: 'var(--text-primary)',
-                                  }}
-                                >
-                                  ${topUpCount}
-                                </span>
-                              </div>
-                              {hasDiscount && (
-                                <div
-                                  style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                  }}
-                                >
-                                  <span
-                                    style={{ color: 'var(--text-secondary)' }}
-                                  >
-                                    {t('折扣')} (
-                                    {(currentDiscount * 10).toFixed(1)}
-                                    {t('折')})
-                                  </span>
-                                  <span
-                                    style={{
-                                      fontWeight: 500,
-                                      color: 'var(--error)',
-                                    }}
-                                  >
-                                    -{symbol}
-                                    {discountPart.toFixed(2)}
-                                  </span>
-                                </div>
-                              )}
-                              <div
-                                style={{
-                                  borderTop: '1px solid var(--border-subtle)',
-                                  paddingTop: 16,
-                                  marginTop: 4,
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'flex-end',
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    fontSize: 15,
-                                    fontWeight: 700,
-                                    fontFamily: 'var(--font-serif)',
-                                    color: 'var(--text-primary)',
-                                  }}
-                                >
-                                  {t('实付金额')}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: 32,
-                                    fontWeight: 800,
-                                    fontFamily: 'var(--font-serif)',
-                                    color: 'var(--accent)',
-                                  }}
-                                >
-                                  {symbol}
-                                  {(isCrypto ? settlement : actualPay).toFixed(
-                                    2,
-                                  )}
-                                </span>
-                              </div>
+                              ₮
                             </div>
-                          );
-                        })()}
-                        {selectedPayMethod && (
-                          <Button
-                            theme='solid'
-                            type='primary'
-                            block
-                            loading={paymentLoading}
-                            onClick={() => {
-                              if (selectedPayMethod === 'cryptomus') {
-                                cryptomusTopUp();
-                              } else if (selectedPayMethod === 'nowpayments') {
-                                nowpaymentsTopUp();
-                              } else if (selectedPayMethod === 'dodopayments') {
-                                dodopaymentsTopUp();
-                              } else if (selectedPayMethod === 'waffo-pancake') {
-                                waffoPancakeTopUp();
-                              } else {
-                                preTopUp(selectedPayMethod);
-                              }
-                            }}
-                            style={{
-                              marginTop: 20,
-                              height: 48,
-                              borderRadius: 'var(--radius-lg)',
-                              background: 'var(--accent-gradient)',
-                              border: 'none',
-                              fontWeight: 700,
-                              fontSize: 15,
-                            }}
+                            <div className='body'>
+                              <b>{t('USDT / 加密货币')}</b>
+                              <span className='desc'>
+                                {t('链上到账，低手续费')}
+                              </span>
+                            </div>
+                            <span className='rd' />
+                          </button>
+                        )}
+                        {/* NowPayments (multi-chain crypto) */}
+                        {enableNowPaymentsTopUp && (
+                          <button
+                            type='button'
+                            className={`rcv2-pay${selectedPayMethod === 'nowpayments' ? ' sel' : ''}`}
+                            onClick={() => setSelectedPayMethod('nowpayments')}
                           >
-                            {t('确认充值')}
-                          </Button>
+                            <div
+                              className='pi'
+                              style={{
+                                background: 'rgba(245,158,11,0.10)',
+                                color: '#b45309',
+                              }}
+                            >
+                              <svg
+                                width='18'
+                                height='18'
+                                viewBox='0 0 24 24'
+                                fill='none'
+                                stroke='currentColor'
+                                strokeWidth='2.2'
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                              >
+                                <path d='M11.767 19.089c4.924.868 6.14-6.025 1.216-6.894m-1.216 6.894L5.86 18.047m5.908 1.042-.347 1.97m1.563-8.864c4.924.869 6.14-6.025 1.215-6.893m-1.215 6.893-3.94-.694m5.155-6.2L8.29 4.26m5.908 1.042.348-1.97M7.48 20.364l3.126-17.727' />
+                              </svg>
+                            </div>
+                            <div className='body'>
+                              <b>{t('加密货币支付')}</b>
+                              <span className='desc'>
+                                {t('链上到账，多链支持')}
+                              </span>
+                            </div>
+                            <span className='rd' />
+                          </button>
+                        )}
+                        {/* DodoPayments (cards / global) */}
+                        {enableDodoPaymentsTopUp && (
+                          <button
+                            type='button'
+                            className={`rcv2-pay${selectedPayMethod === 'dodopayments' ? ' sel' : ''}`}
+                            onClick={() => setSelectedPayMethod('dodopayments')}
+                          >
+                            <div
+                              className='pi'
+                              style={{
+                                background: 'rgba(122,90,248,0.12)',
+                                color: '#7A5AF8',
+                              }}
+                            >
+                              <CreditCard size={18} />
+                            </div>
+                            <div className='body'>
+                              <b>{t('信用卡 / 全球支付')}</b>
+                              <span className='desc'>
+                                {t('Visa / Mastercard / 本地支付，按 USD 结算')}
+                              </span>
+                            </div>
+                            <span className='rd' />
+                          </button>
+                        )}
+                        {/* Waffo Pancake — Stripe-style hosted checkout */}
+                        {enableWaffoPancakeTopUp && (
+                          <button
+                            type='button'
+                            className={`rcv2-pay${selectedPayMethod === 'waffo-pancake' ? ' sel' : ''}`}
+                            onClick={() =>
+                              setSelectedPayMethod('waffo-pancake')
+                            }
+                          >
+                            <div
+                              className='pi'
+                              style={{
+                                background: 'rgba(0,184,217,0.10)',
+                                color: '#00B8D9',
+                              }}
+                            >
+                              <CreditCard size={18} />
+                            </div>
+                            <div className='body'>
+                              <b>{t('信用卡支付')}</b>
+                              <span className='desc'>
+                                {t('Visa / Mastercard / Apple Pay, 按 USD 结算')}
+                              </span>
+                            </div>
+                            <span className='rd' />
+                          </button>
                         )}
                       </div>
-                    </div>
+                    </>
                   )}
+
+                  {/* ─── Redemption code ─── */}
+                  <h3
+                    className='rcv2-sec-title'
+                    style={{ marginTop: 26 }}
+                  >
+                    {t('兑换充值码')}
+                  </h3>
+                  <div className='rcv2-code-row'>
+                    <div className='ipt'>
+                      <TicketCheck size={14} strokeWidth={2.2} />
+                      <input
+                        value={redemptionCode}
+                        onChange={(e) =>
+                          setRedemptionCode(e.target.value)
+                        }
+                        placeholder={t('输入充值码')}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') topUp();
+                        }}
+                      />
+                    </div>
+                    <button
+                      type='button'
+                      onClick={topUp}
+                      disabled={isSubmitting}
+                    >
+                      {t('兑换')}
+                    </button>
+                  </div>
                 </div>
-              )}
+
+                {/* ─── Right: Order summary (sticky) ─── */}
+                {hasOnlinePay && (
+                  <aside className='rcv2-summary'>
+                    <h3>{t('订单摘要')}</h3>
+                    <p className='sub'>{t('确认你的充值详情')}</p>
+                    {(() => {
+                      // USD-settled rails skip the CNY conversion.
+                      const isCryptoRail =
+                        selectedPayMethod === 'cryptomus' ||
+                        selectedPayMethod === 'nowpayments' ||
+                        selectedPayMethod === 'dodopayments' ||
+                        selectedPayMethod === 'waffo-pancake';
+                      const symbol = isCryptoRail ? '$' : '¥';
+                      const rate = isCryptoRail ? 1 : priceRatio;
+                      const baseTotal = topUpCount * rate;
+                      const discountPart = baseTotal * (1 - currentDiscount);
+                      const settlement = baseTotal * currentDiscount;
+                      const payMethodLabel = (() => {
+                        if (!selectedPayMethod) return t('未选择');
+                        if (selectedPayMethod === 'stripe') return 'Stripe';
+                        if (selectedPayMethod === 'cryptomus')
+                          return t('USDT / 加密货币');
+                        if (selectedPayMethod === 'nowpayments')
+                          return t('加密货币支付');
+                        if (selectedPayMethod === 'dodopayments')
+                          return t('信用卡 / 全球支付');
+                        if (selectedPayMethod === 'waffo-pancake')
+                          return t('信用卡支付');
+                        const m = epayMethods.find(
+                          (x) => x.type === selectedPayMethod,
+                        );
+                        return m?.name ? t(m.name) : selectedPayMethod;
+                      })();
+                      return (
+                        <>
+                          <div className='row'>
+                            <span>{t('充值金额')}</span>
+                            <b>${Number(topUpCount).toFixed(2)}</b>
+                          </div>
+                          {!isCryptoRail && (
+                            <div className='row'>
+                              <span>{t('等值人民币')}</span>
+                              <b>¥{(topUpCount * priceRatio).toFixed(2)}</b>
+                            </div>
+                          )}
+                          {hasDiscount && (
+                            <div className='row disc'>
+                              <span>
+                                {t('优惠折扣')}（
+                                {(currentDiscount * 10).toFixed(1)}
+                                {t('折')}）
+                              </span>
+                              <b>
+                                − {symbol}
+                                {discountPart.toFixed(2)}
+                              </b>
+                            </div>
+                          )}
+                          <div className='row'>
+                            <span>{t('支付方式')}</span>
+                            <b>{payMethodLabel}</b>
+                          </div>
+                          <div className='total'>
+                            <span className='lbl'>{t('实付金额')}</span>
+                            <span className='price'>
+                              {symbol}
+                              {settlement.toFixed(2)}
+                            </span>
+                          </div>
+                          <button
+                            type='button'
+                            className='pay-btn'
+                            disabled={
+                              !selectedPayMethod || paymentLoading
+                            }
+                            onClick={handleConfirmPay}
+                          >
+                            {paymentLoading
+                              ? t('处理中…')
+                              : t('确认支付')}
+                            <ArrowRight size={15} strokeWidth={2.4} />
+                          </button>
+                        </>
+                      );
+                    })()}
+                  </aside>
+                )}
+              </div>
             </div>
           )}
         </div>
       </div>
+
 
       {/* ─── Modals ─── */}
       <PaymentConfirmModal

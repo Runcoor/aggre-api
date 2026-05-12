@@ -248,7 +248,7 @@ html.dark .rcv2-tbtn.primary[disabled] .p { background: rgba(255,255,255,.08); }
 .rcv2-code-row button[disabled] { opacity:.6; cursor:not-allowed; transform:none; }
 
 /* ============== summary ============== */
-.rcv2-summary { position:sticky; top:24px; border-radius:18px; padding:22px;
+.rcv2-summary { position:sticky; top:24px; margin-top:33px; border-radius:18px; padding:22px;
   background: var(--surface); border:1px solid var(--rcv2-line);
   box-shadow: var(--rcv2-shadow-summary);
   animation: rcv2-rise .5s cubic-bezier(.2,.9,.25,1.2) .15s both; }
@@ -290,7 +290,7 @@ html.dark .rcv2-tbtn.primary[disabled] .p { background: rgba(255,255,255,.08); }
 /* ============== mobile (≤980px) ============== */
 @media (max-width: 980px) {
   .rcv2-lay { grid-template-columns:1fr; }
-  .rcv2-summary { position:static; }
+  .rcv2-summary { position:static; margin-top:0; }
   .rcv2-amounts { grid-template-columns:repeat(2, 1fr); }
   .rcv2-pays { grid-template-columns:1fr; }
   .rcv2-trust .ctas { margin-left:0; width:100%; }

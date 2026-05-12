@@ -88,9 +88,10 @@ html.dark .tpkg {
 @keyframes tpkg-sweep   { 0%,100% {left:-80%} 50% {left:120%} }
 @keyframes tpkg-drift   { 0%,100% {transform:translate(0,0)} 50% {transform:translate(-16px,10px)} }
 
+.tpkg-back-row { margin-bottom:18px; }
 .tpkg-back {
   display:inline-flex; align-items:center; gap:6px;
-  padding:7px 12px; margin-bottom:14px; border-radius:10px;
+  padding:7px 12px; border-radius:10px;
   background: transparent; border:1px solid var(--tpkg-line);
   color: var(--tpkg-ink-2); font:inherit; font-size:12.5px; font-weight:600;
   cursor:pointer; transition:.18s;
@@ -508,14 +509,16 @@ const TrialPackagePage = () => {
         }}
       >
         <div style={{ maxWidth: 880, margin: '0 auto' }}>
-          <button
-            type='button'
-            className='tpkg-back'
-            onClick={() => navigate('/console/recharge')}
-          >
-            <ArrowLeft size={14} />
-            {t('返回充值')}
-          </button>
+          <div className='tpkg-back-row'>
+            <button
+              type='button'
+              className='tpkg-back'
+              onClick={() => navigate('/console/recharge')}
+            >
+              <ArrowLeft size={14} />
+              {t('返回充值')}
+            </button>
+          </div>
 
           <span className='tpkg-eyebrow'>
             <i />

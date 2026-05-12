@@ -12,6 +12,8 @@ import {
   IconPlay,
 } from '@douyinfe/semi-icons';
 import { Link } from 'react-router-dom';
+import { Sparkles, ArrowRight as LucideArrowRight } from 'lucide-react';
+import { isAdmin } from '../../helpers/utils';
 import NoticeModal from '../../components/layout/NoticeModal';
 import TextAnimate from '../../components/animation/TextAnimate';
 import LogoLoop from '../../components/animation/LogoLoop';
@@ -630,6 +632,9 @@ const HomeLanding = () => {
   const [endpointIndex, setEndpointIndex] = useState(0);
   const isChinese = i18n.language.startsWith('zh');
   const systemName = statusState?.status?.system_name || 'AGGRETOKEN';
+  // Admin-only "Why Trust" promo button at the top-right of the hero —
+  // surfaced for admins to QA the page without bumping into other users yet.
+  const showTrustPromo = isAdmin();
 
   const displayHomePageContent = async () => {
     setHomePageContent(localStorage.getItem('home_page_content') || '');
@@ -719,6 +724,53 @@ const HomeLanding = () => {
               borderBottom: '1px solid var(--border-subtle)',
             }}
           >
+            {/* Admin-only promo chip → "Why you can trust us" page */}
+            {showTrustPromo && (
+              <>
+                <style>{`
+                  @keyframes htp-shimmer { 0%,100% {left:-80%} 50% {left:120%} }
+                  @keyframes htp-bob { 0%,100% {transform:translateY(0)} 50% {transform:translateY(-3px)} }
+                  .htp-chip {
+                    position:absolute; z-index:30;
+                    top:88px; right:24px;
+                    display:inline-flex; align-items:center; gap:8px;
+                    padding:9px 14px; border-radius:99px;
+                    background: var(--accent-gradient); color:#fff;
+                    font-size:12.5px; font-weight:700; letter-spacing:.01em;
+                    text-decoration:none;
+                    box-shadow: 0 12px 24px -10px rgba(0,114,255,.55), inset 0 1px 0 rgba(255,255,255,.30);
+                    overflow:hidden; cursor:pointer; transition:.2s;
+                    animation: htp-bob 2.4s ease-in-out infinite;
+                  }
+                  .htp-chip::before {
+                    content:""; position:absolute; top:0; left:-80%; width:55%; height:100%;
+                    background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+                    animation: htp-shimmer 3.6s ease-in-out infinite;
+                    pointer-events:none;
+                  }
+                  .htp-chip:hover { transform: translateY(-2px);
+                    box-shadow: 0 18px 30px -10px rgba(0,114,255,.65), inset 0 1px 0 rgba(255,255,255,.30); }
+                  .htp-chip svg { flex-shrink:0; }
+                  .htp-chip .badge {
+                    font-family: var(--font-mono);
+                    font-size:10.5px; font-weight:800;
+                    padding:2px 7px; border-radius:6px;
+                    background: rgba(255,255,255,.22); letter-spacing:.05em;
+                  }
+                  @media (max-width:640px) {
+                    .htp-chip { top:72px; right:12px; padding:7px 11px; font-size:11.5px; gap:6px; }
+                    .htp-chip .label-long { display:none; }
+                    .htp-chip .badge { display:none; }
+                  }
+                `}</style>
+                <Link to='/why-trust' className='htp-chip'>
+                  <Sparkles size={14} strokeWidth={2.4} />
+                  <span className='badge'>NEW</span>
+                  <span className='label-long'>{t('为什么可以放心充值')}</span>
+                  <LucideArrowRight size={14} strokeWidth={2.4} />
+                </Link>
+              </>
+            )}
             {/* Subtle grid overlay */}
             <div
               className='absolute inset-0 pointer-events-none'

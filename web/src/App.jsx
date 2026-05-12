@@ -76,6 +76,7 @@ const PlansPage = lazy(() => import('./pages/Plans'));
 const QuickStart = lazy(() => import('./pages/QuickStart'));
 const RechargePage = lazy(() => import('./pages/Recharge'));
 const TrialPackagePage = lazy(() => import('./pages/Recharge/Trial'));
+const WhyTrustPage = lazy(() => import('./pages/WhyTrust'));
 const TeamPage = lazy(() => import('./pages/Team'));
 const TeamDetail = lazy(() => import('./pages/Team/TeamDetail'));
 const AdminTeamDetail = lazy(() => import('./pages/Admin/Teams/Detail'));
@@ -165,6 +166,14 @@ function App() {
           }
         />
         <Route path='/forbidden' element={<Forbidden />} />
+        <Route
+          path='/why-trust'
+          element={
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <WhyTrustPage />
+            </Suspense>
+          }
+        />
         <Route
           path='/console/models'
           element={

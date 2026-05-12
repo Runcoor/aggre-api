@@ -137,7 +137,7 @@ func RequestWaffoPancakePay(c *gin.Context) {
 		return
 	}
 
-	successUrl := system_setting.ServerAddress + "/console/topup?show_history=true"
+	successUrl := system_setting.ServerAddress + "/console/topup?pay=success"
 	if setting.WaffoPancakeReturnUrl != "" {
 		successUrl = setting.WaffoPancakeReturnUrl
 	}

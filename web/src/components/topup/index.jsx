@@ -34,6 +34,7 @@ import { StatusContext } from '../../context/Status';
 import InvitationCard from './InvitationCard';
 import TransferModal from './modals/TransferModal';
 import TopupHistoryModal from './modals/TopupHistoryModal';
+import PaymentSuccessModal from './modals/PaymentSuccessModal';
 
 import BalanceHero from './parts/BalanceHero';
 import HealthCard from './parts/HealthCard';
@@ -69,6 +70,7 @@ const TopUp = () => {
   const [openTransfer, setOpenTransfer] = useState(false);
   const [transferAmount, setTransferAmount] = useState(0);
   const [openHistory, setOpenHistory] = useState(false);
+  const [openPaymentSuccess, setOpenPaymentSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const [affLink, setAffLink] = useState('');
@@ -300,9 +302,21 @@ const TopUp = () => {
   // ---- effects ----
 
   useEffect(() => {
-    if (searchParams.get('show_history') === 'true') {
-      setOpenHistory(true);
-      searchParams.delete('show_history');
+    // Post-payment landing — open the celebratory success modal instead of
+    // the bill history (which used to be the implicit "你充值好了" cue but
+    // dumped the user straight into invoice land before they'd even read
+    // "成功"). Two query keys trigger it:
+    //   - ?pay=success   — explicit, set by the EPay subscription return
+    //                      handler and the new Pancake default return URL
+    //   - ?show_history=true — legacy Pancake default; keep honoring it so
+    //                      pre-existing admin-configured return URLs still
+    //                      hit the right modal after this change ships
+    const payParam = searchParams.get('pay');
+    const showHistoryParam = searchParams.get('show_history');
+    if (payParam === 'success' || showHistoryParam === 'true') {
+      setOpenPaymentSuccess(true);
+      if (payParam) searchParams.delete('pay');
+      if (showHistoryParam) searchParams.delete('show_history');
       setSearchParams(searchParams, { replace: true });
     }
   }, []);
@@ -380,6 +394,19 @@ const TopUp = () => {
         onCancel={() => setOpenHistory(false)}
         t={t}
         userInfo={userState?.user}
+      />
+
+      <PaymentSuccessModal
+        visible={openPaymentSuccess}
+        onClose={() => setOpenPaymentSuccess(false)}
+        onViewDetails={() => {
+          setOpenPaymentSuccess(false);
+          setOpenHistory(true);
+        }}
+        onGetStarted={() => {
+          setOpenPaymentSuccess(false);
+          navigate('/console');
+        }}
       />
 
       <div className='wal-page'>

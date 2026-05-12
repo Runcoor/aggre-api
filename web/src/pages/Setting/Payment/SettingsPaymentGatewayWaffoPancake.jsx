@@ -349,7 +349,7 @@ export default function SettingsPaymentGatewayWaffoPancake(props) {
                   field='WaffoPancakeReturnUrl'
                   label={t('支付返回地址')}
                   placeholder={t('例如 https://example.com/console/topup')}
-                  extraText={t('留空则用 服务器地址 + /console/topup?show_history=true')}
+                  extraText={t('留空则用 服务器地址 + /console/topup?pay=success')}
                 />
               </Col>
             </Row>

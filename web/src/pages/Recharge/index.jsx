@@ -908,33 +908,12 @@ const RechargePage = () => {
   // the user hasn't completed a successful top-up yet.
   const isTrialEligible = firstTimeMinTopUp <= 1 && hasOnlinePay;
 
-  // Pick the first sensible pay method when none is selected — used by the
-  // $1 trial CTA so a one-tap purchase is possible from the banner.
-  const firstAvailablePayMethod = () => {
-    if (enableOnlineTopUp && epayMethods.length > 0)
-      return epayMethods[0].type;
-    if (enableStripeTopUp) return 'stripe';
-    if (enableWaffoPancakeTopUp) return 'waffo-pancake';
-    if (enableDodoPaymentsTopUp) return 'dodopayments';
-    if (enableCryptomusTopUp) return 'cryptomus';
-    if (enableNowPaymentsTopUp) return 'nowpayments';
-    return '';
-  };
-
   const onClickTrial = () => {
     if (!isTrialEligible) return;
-    if (showSubscriptionTab) setActiveTab('topup');
-    setTopUpCount(1);
-    setSelectedPreset(null);
-    getAmountFn(1);
-    if (!selectedPayMethod) {
-      const next = firstAvailablePayMethod();
-      if (next) setSelectedPayMethod(next);
-    }
-    // Smooth-scroll to the summary so the user can confirm and pay in one tap.
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 0);
+    // Hand off to the dedicated trial detail page where the user can
+    // confirm and pay. The dedicated page handles its own eligibility
+    // check and payment-method dispatch.
+    navigate('/console/recharge/trial');
   };
 
   // Single dispatch for the summary "确认支付" button — routes by selected rail.

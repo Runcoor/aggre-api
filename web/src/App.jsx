@@ -75,6 +75,7 @@ const CacheCalculator = lazy(() => import('./pages/Tools/CacheCalculator'));
 const PlansPage = lazy(() => import('./pages/Plans'));
 const QuickStart = lazy(() => import('./pages/QuickStart'));
 const RechargePage = lazy(() => import('./pages/Recharge'));
+const TrialPackagePage = lazy(() => import('./pages/Recharge/Trial'));
 const TeamPage = lazy(() => import('./pages/Team'));
 const TeamDetail = lazy(() => import('./pages/Team/TeamDetail'));
 const AdminTeamDetail = lazy(() => import('./pages/Admin/Teams/Detail'));
@@ -378,6 +379,16 @@ function App() {
             <PrivateRoute>
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                 <RechargePage />
+              </Suspense>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path='/console/recharge/trial'
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <TrialPackagePage />
               </Suspense>
             </PrivateRoute>
           }

@@ -99,6 +99,7 @@ const SkillsAdminConsole = lazy(
 );
 const SkillsAdminImport = lazy(() => import('./pages/Skills/admin/ImportPage'));
 const SkillsAdminReview = lazy(() => import('./pages/Skills/admin/ReviewPage'));
+const SkillsMyCenter = lazy(() => import('./pages/Skills/MyCenter'));
 
 // Shared shell for standalone tool pages — centered column, top padding,
 // auto dark mode. Wraps CurlGenerator and LatencyTester.
@@ -630,20 +631,24 @@ function App() {
               </Suspense>
             }
           />
-          {/* SKILLS 广场 — phase 1 is admin-only. Public detail/plaza routes
-            still 200 for the admin viewing experience; phase 2 will drop
-            AdminRoute. */}
+          {/* SKILLS 广场 — Phase 2 opens Plaza + Detail to all visitors.
+              The /api/skill-plaza/* endpoints stay behind a feature-flag
+              gate (skillPlazaGate) so admins can still preview before the
+              module is publicly enabled; /skills/admin/** stays AdminRoute. */}
           <Route
             path='/skills'
             element={
-              <AdminRoute>
-                <Suspense
-                  fallback={<Loading></Loading>}
-                  key={location.pathname}
-                >
-                  <SkillsPlaza />
-                </Suspense>
-              </AdminRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <SkillsPlaza />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/skills/me'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <SkillsMyCenter />
+              </Suspense>
             }
           />
           <Route
@@ -688,14 +693,9 @@ function App() {
           <Route
             path='/skills/:slug'
             element={
-              <AdminRoute>
-                <Suspense
-                  fallback={<Loading></Loading>}
-                  key={location.pathname}
-                >
-                  <SkillsDetail />
-                </Suspense>
-              </AdminRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <SkillsDetail />
+              </Suspense>
             }
           />
           <Route

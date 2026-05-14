@@ -29,12 +29,11 @@ import {
   ExternalLink,
   Github,
   Star,
-  MessageSquare,
-  Bookmark,
   Share2,
 } from 'lucide-react';
-import { API, showError } from '../../helpers';
+import { API, showError, showSuccess } from '../../helpers';
 import { SKILL_PLAZA_STYLES, SourceBadge } from './styles';
+import DetailSocial, { FavoriteButton } from './DetailSocial';
 
 // Minimal Markdown → HTML — keeps the bundle small and avoids
 // pulling in a Markdown library just for this page. Handles headings,
@@ -387,60 +386,28 @@ const SkillsDetail = () => {
                 dangerouslySetInnerHTML={{ __html: bodyHtml }}
               />
 
-              {/* Phase 2 tab placeholders */}
-              <div
-                style={{
-                  marginTop: 40,
-                  paddingTop: 24,
-                  borderTop: '1px solid var(--border-default)',
+              <DetailSocial
+                slug={slug}
+                onSkillRefreshed={(s) => {
+                  if (s) {
+                    // Bottom RatingForm gave us the fresh Skill row;
+                    // splice it into our local state so the sidebar
+                    // reflects the new aggregates without a full reload.
+                    setData((prev) => (prev ? { ...prev, skill: s } : prev));
+                  } else {
+                    // Comments don't return the Skill — re-fetch detail
+                    // so comment_count on the sidebar stays accurate.
+                    API.get(
+                      `/api/skill-plaza/skills/${encodeURIComponent(slug)}`,
+                      { params: { language } },
+                    )
+                      .then((res) => {
+                        if (res.data?.success) setData(res.data.data);
+                      })
+                      .catch(() => {});
+                  }
                 }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: 6,
-                    borderBottom: '1px solid var(--border-default)',
-                    marginBottom: 16,
-                  }}
-                >
-                  <button
-                    className='skp-pill active'
-                    style={{
-                      borderRadius: 0,
-                      border: 0,
-                      borderBottom: '2px solid #0072ff',
-                      background: 'transparent',
-                      color: '#0072ff',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {t('评论与评分')}
-                  </button>
-                  <button
-                    className='skp-pill'
-                    style={{
-                      borderRadius: 0,
-                      border: 0,
-                      background: 'transparent',
-                      color: 'var(--text-secondary)',
-                    }}
-                  >
-                    {t('使用案例')}
-                  </button>
-                </div>
-                <div
-                  style={{
-                    padding: 20,
-                    textAlign: 'center',
-                    color: 'var(--text-muted)',
-                    background: 'var(--bg-base)',
-                    border: '1px dashed var(--border-default)',
-                    borderRadius: 10,
-                  }}
-                >
-                  {t('评分、评论、案例分享功能将在下一阶段开放。敬请期待。')}
-                </div>
-              </div>
+              />
             </main>
 
             {/* Sidebar */}
@@ -497,29 +464,55 @@ const SkillsDetail = () => {
               </div>
 
               <div className='skp-side-card'>
-                <h4>{t('操作')}</h4>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <button className='skp-pill'>
-                    <Bookmark size={12} /> {t('收藏')}
-                  </button>
-                  <button className='skp-pill'>
-                    <Star size={12} /> {t('评分')}
-                  </button>
-                  <button className='skp-pill'>
-                    <Share2 size={12} /> {t('分享')}
-                  </button>
-                  <button className='skp-pill'>
-                    <MessageSquare size={12} /> {t('评论')}
-                  </button>
-                </div>
+                <h4>{t('数据')}</h4>
                 <div
                   style={{
-                    marginTop: 12,
-                    fontSize: 12,
-                    color: 'var(--text-muted)',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3,1fr)',
+                    gap: 8,
+                    marginBottom: 12,
                   }}
                 >
-                  {t('暂未开放,敬请期待')}
+                  <SideStat
+                    icon={<Star size={14} color='#f59e0b' fill='#f59e0b' />}
+                    value={(skill.rating_average || 0).toFixed(1)}
+                    label={`${skill.rating_count || 0} ${t('评分')}`}
+                  />
+                  <SideStat
+                    value={skill.favorite_count || 0}
+                    label={t('收藏')}
+                  />
+                  <SideStat
+                    value={skill.comment_count || 0}
+                    label={t('评论')}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <FavoriteButton
+                    slug={slug}
+                    onCountChange={(n) =>
+                      setData((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              skill: { ...prev.skill, favorite_count: n },
+                            }
+                          : prev,
+                      )
+                    }
+                  />
+                  <button
+                    className='skp-pill'
+                    onClick={() => {
+                      const url = window.location.href;
+                      navigator.clipboard
+                        ?.writeText(url)
+                        .then(() => showSuccess(t('链接已复制')))
+                        .catch(() => {});
+                    }}
+                  >
+                    <Share2 size={12} /> {t('分享')}
+                  </button>
                 </div>
               </div>
             </aside>
@@ -531,5 +524,34 @@ const SkillsDetail = () => {
     </>
   );
 };
+
+function SideStat({ icon, value, label }) {
+  return (
+    <div
+      style={{
+        padding: '8px 6px',
+        background: 'var(--bg-base)',
+        borderRadius: 8,
+        textAlign: 'center',
+      }}
+    >
+      <div
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 3,
+          fontSize: 14,
+          fontWeight: 600,
+          color: 'var(--text-primary)',
+        }}
+      >
+        {icon} <span>{value}</span>
+      </div>
+      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+        {label}
+      </div>
+    </div>
+  );
+}
 
 export default SkillsDetail;

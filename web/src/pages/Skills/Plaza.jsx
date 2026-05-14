@@ -33,8 +33,14 @@ import {
   Settings,
   ArrowRight,
   SlidersHorizontal,
+  User,
 } from 'lucide-react';
-import { API, isAdmin, showError } from '../../helpers';
+import {
+  API,
+  isAdmin,
+  showError,
+  getUserIdFromLocalStorage,
+} from '../../helpers';
 import { SKILL_PLAZA_STYLES, ProceduralCover } from './styles';
 
 // Categories are user-facing — keep them concrete and broad so common
@@ -102,9 +108,16 @@ const SkillsPlaza = () => {
     [category, sort, language, search],
   );
 
+  // moduleDisabled is true when the gated /api/skill-plaza/* path returns
+  // 404 — i.e. the module hasn't been enabled in admin settings yet.
+  // We render a placeholder hero instead of dumping the user into a
+  // broken toast so the page degrades gracefully for visitors.
+  const [moduleDisabled, setModuleDisabled] = useState(false);
+
   useEffect(() => {
     let aborted = false;
     setLoading(true);
+    setModuleDisabled(false);
     API.get('/api/skill-plaza/skills', { params })
       .then((res) => {
         if (aborted) return;
@@ -116,7 +129,16 @@ const SkillsPlaza = () => {
         }
       })
       .catch((e) => {
-        if (!aborted) showError(e?.message || '加载失败');
+        if (aborted) return;
+        // 404 means the feature flag is off for non-admins; that's a
+        // soft state, not a failure worth toasting.
+        if (e?.response?.status === 404) {
+          setModuleDisabled(true);
+          setItems([]);
+          setTotal(0);
+        } else {
+          showError(e?.message || '加载失败');
+        }
       })
       .finally(() => {
         if (!aborted) setLoading(false);
@@ -127,6 +149,7 @@ const SkillsPlaza = () => {
   }, [params]);
 
   const admin = isAdmin();
+  const loggedIn = getUserIdFromLocalStorage() > 0;
 
   return (
     <>
@@ -178,28 +201,18 @@ const SkillsPlaza = () => {
               <div className='skp-stat'>
                 <Globe size={13} /> <span>{t('中英双语')}</span>
               </div>
-              {admin && (
-                <span
-                  style={{
-                    marginLeft: 'auto',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 14,
-                  }}
-                >
+              <span
+                style={{
+                  marginLeft: 'auto',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 14,
+                  flexWrap: 'wrap',
+                }}
+              >
+                {loggedIn && (
                   <Link
-                    to='/skills/admin'
-                    className='skp-stat'
-                    style={{
-                      textDecoration: 'none',
-                      color: '#0072ff',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Settings size={14} /> {t('管理员工作台')}
-                  </Link>
-                  <Link
-                    to='/console/setting?tab=skill-plaza'
+                    to='/skills/me'
                     className='skp-stat'
                     style={{
                       textDecoration: 'none',
@@ -207,10 +220,36 @@ const SkillsPlaza = () => {
                       cursor: 'pointer',
                     }}
                   >
-                    <SlidersHorizontal size={13} /> {t('模块设置')}
+                    <User size={13} /> {t('我的中心')}
                   </Link>
-                </span>
-              )}
+                )}
+                {admin && (
+                  <>
+                    <Link
+                      to='/skills/admin'
+                      className='skp-stat'
+                      style={{
+                        textDecoration: 'none',
+                        color: '#0072ff',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Settings size={14} /> {t('管理员工作台')}
+                    </Link>
+                    <Link
+                      to='/console/setting?tab=skill-plaza'
+                      className='skp-stat'
+                      style={{
+                        textDecoration: 'none',
+                        color: 'var(--text-secondary)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <SlidersHorizontal size={13} /> {t('模块设置')}
+                    </Link>
+                  </>
+                )}
+              </span>
             </div>
           </section>
 
@@ -269,8 +308,33 @@ const SkillsPlaza = () => {
               : `${t('共')} ${items.length} ${t('个结果')}`}
           </div>
 
+          {/* Disabled banner — only shown to visitors when the module
+              hasn't been enabled yet. Admins bypass the gate and see
+              real content instead. */}
+          {moduleDisabled && (
+            <div
+              style={{
+                padding: 24,
+                background: 'var(--bg-base)',
+                border: '1px dashed var(--border-default)',
+                borderRadius: 12,
+                textAlign: 'center',
+                color: 'var(--text-muted)',
+                marginBottom: 20,
+              }}
+            >
+              <Inbox
+                size={22}
+                style={{ opacity: 0.5, marginBottom: 8, verticalAlign: 'middle' }}
+              />
+              <div style={{ fontSize: 14 }}>
+                {t('SKILLS 广场正在筹备中,敬请期待')}
+              </div>
+            </div>
+          )}
+
           {/* Grid */}
-          {items.length === 0 && !loading ? (
+          {items.length === 0 && !loading && !moduleDisabled ? (
             <div
               style={{
                 textAlign: 'center',

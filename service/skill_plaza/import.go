@@ -28,7 +28,6 @@ import (
 
 	"github.com/runcoor/aggre-api/common"
 	"github.com/runcoor/aggre-api/model"
-	"github.com/runcoor/aggre-api/setting/operation_setting"
 	"gorm.io/gorm"
 )
 
@@ -65,9 +64,11 @@ func StartImportAsync(jobID int, repoURL, branch string, adminID int) {
 }
 
 func runImport(ctx context.Context, jobID int, repoURL, branch string, adminID int) error {
-	if !operation_setting.IsSkillPlazaEnabled() {
-		return errors.New("SKILLS 广场 is disabled")
-	}
+	// Note: we don't gate on IsSkillPlazaEnabled here. The user-facing
+	// switch controls whether the Plaza is visible to non-admin users,
+	// not whether admins can prepare content. Otherwise admins can't
+	// stage content before opening the module to the public — chicken
+	// and egg. AdminAuth on the route is the real gate.
 
 	// ───── Parse URL ─────
 	ref, err := ParseGitHubURL(repoURL)

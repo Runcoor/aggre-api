@@ -311,3 +311,65 @@ GitHub 抓取部分需要特别小心(用户的 PRD 已经强调):
 - 推送到 main 触发 GH Actions 构建
 - 上线后管理员在后台启用模块,粘第一个 GitHub URL 试跑
 - 如果生成质量不好,在后台调整 system prompt 模板;模型可以随时切换
+
+### 2026-05-14 — Session 3(Phase 2 起步)
+
+**设计稿重新落地:**
+- 用户给了新 URL `https://api.anthropic.com/v1/design/h/CROW353s8PyemDIly9ko3w?open_file=SKILLS-Plaza.html`
+- WebFetch 返回 48.4KB gzip,解到 **`.design-tmp/skills-mart/`(已加入 .gitignore,完成 Phase 2 全部交付后删除)**
+- 文件清单:
+  - `README.md`(handoff 说明)、`chats/chat1.md`(386 行 PRD 来源对话)
+  - `project/PRD.md` v1.0(269 行,SKILLS 广场完整产品需求)
+  - `project/SKILLS-Plaza.html`(主入口)、`styles.css`(27KB,完整 CSS token)
+  - `project/page-plaza.jsx` / `page-detail.jsx` / `page-import-review.jsx` / `page-editor-me-admin.jsx`
+  - `project/components.jsx`(共享组件)、`data.js`(模拟数据)、`tweaks-panel.jsx`(设计稿用)、`app.jsx`(路由)
+- 关键决策来自 PRD §10 MVP 范围:✅ 评分 / 评论 / 收藏 是 MVP,✅ 中英双语切换是 MVP,⏳ 案例瀑布流 / 对比评测 / 标签订阅 / 版本过期 是 V1.1+
+
+**Phase 2 完整工单(本 Session 起步,可能分多个 Session 落地):**
+
+后端:
+- [ ] 表 `skill_ratings`(user_id × skill_id 唯一,5 维评分 + 总分 + verified_used + comment 文本)
+- [ ] 表 `skill_comments`(skill_id + user_id + parent_id 一层嵌套 + content + likes + status)
+- [ ] 表 `skill_favorites`(user_id × skill_id 唯一,纯关系表)
+- [ ] (V1.1)表 `skill_showcases`(用户案例分享:title / description / images / prompt / skill_ids)
+- [ ] (V1.1)表 `skill_user_articles`(用户投稿教程:type/title/summary/content/cover_image/tags/status/author_id)
+- [ ] (V1.1)表 `skill_reports`(举报:user_id / target_type / target_id / reason / status)
+- [ ] 公开 endpoints:
+  - `POST /api/skill-plaza/skills/:id/rate`(登录,UserAuth)— upsert 五维评分
+  - `GET /api/skill-plaza/skills/:id/ratings`— 评分统计 + 我的评分回显
+  - `POST /api/skill-plaza/skills/:id/comments`(登录)— 发评论
+  - `GET /api/skill-plaza/skills/:id/comments`— 列表(嵌套一层)
+  - `POST /api/skill-plaza/comments/:id/like`(登录)— 点赞 toggle
+  - `POST /api/skill-plaza/skills/:id/favorite-toggle`(登录)— 收藏切换
+- [ ] 聚合维护:Rating insert/update/delete 后 → 重算 skill.rating_average / rating_count;Comment 后 → 更新 comment_count;Favorite 后 → 更新 favorite_count
+- [ ] 设置接口:**新增 `PUT /api/skill-plaza/admin/settings`**(AdminAuth)— 让 admin 也能保存 skill_plaza_setting.*,绕开 RootAuth 限制
+- [ ] 服务层修复:移除 `runImport` / `GenerateBilingualArticles` 里的 `IsSkillPlazaEnabled` 检查(AdminRoute 已经守住了,这个检查只是用户向开关)
+
+前端:
+- [ ] Detail 页底部接通:
+  - 评分控件(5 个星 + 五维滑杆 + 我已使用 checkbox + 提交)
+  - **多维评分雷达图**(5 维 SVG 五边形,半径 120px,中心 + 5 角)
+  - 评论列表 + 写评论框 + 点赞 + 回复一层
+  - 收藏按钮(顶部 + 侧栏两个入口)
+- [ ] 我的中心 `/skills/me`(登录用户)— 收藏 / 我的评分 / 我的评论(V1.1 加 我的发布 / 草稿 / 案例)
+- [ ] Plaza 卡片:卡片右下角 ⭐ ⭐ 🔖 💬 数字接通真实 API 数据(目前是死的 0)
+- [ ] 顶层导航:已登录用户能看到 SKILLS 广场入口(目前只对管理员可见 —— **需要把 useNavigation.js 的 adminOnly 改成 loggedInOnly 或者完全公开**)
+- [ ] 路由:`/skills` 树移出 `<AdminRoute>` 包裹,公开;`/skills/admin/**` 仍然在 `<AdminRoute>` 下
+- [ ] 设置页 `SettingSkillPlaza.jsx`:改 `saveOne` 调用从 `/api/option/` 改成 `/api/skill-plaza/admin/settings`
+
+V1.1(本 Session 不做,登记在此):
+- [ ] 用户文章编辑器 `/skills/editor`(Markdown + 富文本预览 + 类型 6 选 1)
+- [ ] 案例分享 `/skills/showcase/new`(图片 + Prompt + 输出 + 关联 skill)
+- [ ] 用户文章审核流(管理员 review queue)
+- [ ] 敏感词检查 + 举报队列
+
+V1.2(留存):
+- [ ] commit hash 比对 + 过期 Badge
+- [ ] 标签订阅 / 作者主页 / SEO sitemap
+
+**关键设计决策(Session 3):**
+- 评分 5 维和评论分开两张表 — 让用户能"只评分不评论"或"只评论不评分"
+- 评论一层嵌套(parent_id 指向顶层评论)不做无限嵌套 — 设计稿就是这么画的,实现简单
+- Favorite 用 toggle 接口而非 add+remove 两个 — RESTful 折中,前端更省事
+- 全部聚合字段都在 skills 表里冗余存(rating_average / rating_count / favorite_count / comment_count),写时更新 — 读性能优先,Plaza 列表不需要 JOIN
+- 设置接口拆出来 `/skill-plaza/admin/settings` — 不动 /api/option/ 的 root-only 边界,只放宽本模块自己的设置

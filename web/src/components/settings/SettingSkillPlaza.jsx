@@ -48,23 +48,39 @@ const SettingSkillPlaza = () => {
   const [values, setValues] = useState(DEFAULTS);
   const [loading, setLoading] = useState(false);
 
+  // We hit the dedicated /api/skill-plaza/admin/settings endpoint instead
+  // of the generic /api/option/. The former is AdminAuth-gated; the latter
+  // is RootAuth (super-admin only). Without this split a regular admin
+  // can read the settings page but every save silently 401s.
   const load = async () => {
     try {
-      const res = await API.get('/api/option/');
+      const res = await API.get('/api/skill-plaza/admin/settings');
       const { success, data } = res.data || {};
-      if (!success) return;
-      const next = { ...DEFAULTS };
-      for (const opt of data || []) {
-        if (Object.prototype.hasOwnProperty.call(DEFAULTS, opt.key)) {
-          if (typeof DEFAULTS[opt.key] === 'boolean') {
-            next[opt.key] = String(opt.value).toLowerCase() === 'true';
-          } else if (typeof DEFAULTS[opt.key] === 'number') {
-            next[opt.key] = Number(opt.value) || DEFAULTS[opt.key];
-          } else {
-            next[opt.key] = opt.value;
-          }
-        }
+      if (!success) {
+        showError(res.data?.message || 'load failed');
+        return;
       }
+      // Translate the backend struct (snake_case keys) into the flat
+      // dotted keys the form uses, so the rest of the form code doesn't
+      // need to change.
+      const next = { ...DEFAULTS };
+      next['skill_plaza_setting.enabled'] = !!data.enabled;
+      next['skill_plaza_setting.generation_model'] = data.generation_model || '';
+      next['skill_plaza_setting.server_token'] = data.server_token || '';
+      next['skill_plaza_setting.server_base_url'] = data.server_base_url || '';
+      next['skill_plaza_setting.gen_system_prompt_zh'] = data.gen_system_prompt_zh || '';
+      next['skill_plaza_setting.gen_system_prompt_en'] = data.gen_system_prompt_en || '';
+      next['skill_plaza_setting.gen_temperature'] =
+        typeof data.gen_temperature === 'number' ? data.gen_temperature : 0.3;
+      next['skill_plaza_setting.gen_max_tokens'] =
+        Number(data.gen_max_tokens) || 4096;
+      next['skill_plaza_setting.github_pat'] = data.github_pat || '';
+      next['skill_plaza_setting.max_repo_size_mb'] =
+        Number(data.max_repo_size_mb) || 200;
+      next['skill_plaza_setting.max_file_size_kb'] =
+        Number(data.max_file_size_kb) || 1024;
+      next['skill_plaza_setting.max_file_count'] =
+        Number(data.max_file_count) || 200;
       setValues(next);
     } catch (e) {
       showError(e?.message || 'load failed');
@@ -75,26 +91,31 @@ const SettingSkillPlaza = () => {
     load();
   }, []);
 
-  const saveOne = async (key, value) => {
-    try {
-      const res = await API.put('/api/option/', { key, value: String(value) });
-      if (res.data?.success) return true;
-      showError(res.data?.message);
-      return false;
-    } catch (e) {
-      showError(e?.message);
-      return false;
-    }
-  };
-
   const saveAll = async () => {
     setLoading(true);
     try {
-      let ok = true;
-      for (const k of Object.keys(values)) {
-        ok = (await saveOne(k, values[k])) && ok;
+      const payload = {
+        enabled: !!values['skill_plaza_setting.enabled'],
+        generation_model: values['skill_plaza_setting.generation_model'],
+        server_token: values['skill_plaza_setting.server_token'],
+        server_base_url: values['skill_plaza_setting.server_base_url'],
+        gen_system_prompt_zh: values['skill_plaza_setting.gen_system_prompt_zh'],
+        gen_system_prompt_en: values['skill_plaza_setting.gen_system_prompt_en'],
+        gen_temperature: Number(values['skill_plaza_setting.gen_temperature']),
+        gen_max_tokens: Number(values['skill_plaza_setting.gen_max_tokens']),
+        github_pat: values['skill_plaza_setting.github_pat'],
+        max_repo_size_mb: Number(values['skill_plaza_setting.max_repo_size_mb']),
+        max_file_size_kb: Number(values['skill_plaza_setting.max_file_size_kb']),
+        max_file_count: Number(values['skill_plaza_setting.max_file_count']),
+      };
+      const res = await API.put('/api/skill-plaza/admin/settings', payload);
+      if (res.data?.success) {
+        showSuccess(t('已保存所有设置'));
+      } else {
+        showError(res.data?.message);
       }
-      if (ok) showSuccess(t('已保存所有设置'));
+    } catch (e) {
+      showError(e?.message);
     } finally {
       setLoading(false);
     }

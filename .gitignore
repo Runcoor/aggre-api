@@ -31,3 +31,5 @@ data/
 .gocache-temp
 .gopath
 .gstack/
+.design-tmp/
+backups/

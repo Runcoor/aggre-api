@@ -35,6 +35,11 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.GET("/skill-plaza/status", controller.GetSkillPlazaStatus)
 		apiRouter.GET("/skill-plaza/skills", controller.ListSkillPlazaPublic)
 		apiRouter.GET("/skill-plaza/skills/:slug", controller.GetSkillPlazaPublic)
+		// Public read-only social info — TryUserAuth so the caller's own
+		// rating / favorite state piggybacks the same call if logged in.
+		apiRouter.GET("/skill-plaza/skills/:slug/ratings", middleware.TryUserAuth(), controller.GetSkillRatingSummary)
+		apiRouter.GET("/skill-plaza/skills/:slug/comments", controller.GetSkillComments)
+		apiRouter.GET("/skill-plaza/skills/:slug/favorite-state", middleware.TryUserAuth(), controller.GetSkillFavoriteState)
 		apiRouter.POST("/tool/balance", middleware.CriticalRateLimit(), controller.ToolCheckBalance)
 		apiRouter.GET("/pricing", middleware.TryUserAuth(), controller.GetPricing)
 		apiRouter.GET("/verification", middleware.EmailVerificationRateLimit(), middleware.TurnstileCheck(), controller.SendEmailVerification)
@@ -267,6 +272,21 @@ func SetApiRouter(router *gin.Engine) {
 			subscriptionAdminRoute.DELETE("/user_subscriptions/:id", controller.AdminDeleteUserSubscription)
 		}
 
+		// SKILLS 广场 — user-auth endpoints (rate / comment / favorite +
+		// "my center" aggregates). Public Plaza listing and detail pages
+		// remain unauthenticated; only the social mutations require login.
+		skillPlazaUserRoute := apiRouter.Group("/skill-plaza")
+		skillPlazaUserRoute.Use(middleware.UserAuth())
+		{
+			skillPlazaUserRoute.POST("/skills/:slug/rate", controller.PostSkillRate)
+			skillPlazaUserRoute.POST("/skills/:slug/comments", controller.PostSkillComment)
+			skillPlazaUserRoute.POST("/skills/:slug/favorite-toggle", controller.PostSkillFavoriteToggle)
+			skillPlazaUserRoute.DELETE("/comments/:id", controller.DeleteSkillCommentUser)
+			skillPlazaUserRoute.GET("/me/favorites", controller.GetMySkillFavorites)
+			skillPlazaUserRoute.GET("/me/ratings", controller.GetMySkillRatings)
+			skillPlazaUserRoute.GET("/me/comments", controller.GetMySkillComments)
+		}
+
 		// SKILLS 广场 — admin endpoints (AdminAuth gated).
 		skillPlazaAdminRoute := apiRouter.Group("/skill-plaza/admin")
 		skillPlazaAdminRoute.Use(middleware.AdminAuth())
@@ -286,6 +306,12 @@ func SetApiRouter(router *gin.Engine) {
 			skillPlazaAdminRoute.PUT("/articles/:id", controller.PutSkillPlazaArticle)
 			skillPlazaAdminRoute.POST("/articles/:id/publish", controller.PostSkillPlazaArticlePublish)
 			skillPlazaAdminRoute.POST("/articles/:id/unpublish", controller.PostSkillPlazaArticleUnpublish)
+
+			// Module settings — kept off /api/option/ (which is RootAuth)
+			// so a regular admin can configure the module without needing
+			// the super-admin password.
+			skillPlazaAdminRoute.GET("/settings", controller.GetSkillPlazaAdminSettings)
+			skillPlazaAdminRoute.PUT("/settings", controller.PutSkillPlazaAdminSettings)
 		}
 
 		aiNewsAdminRoute := apiRouter.Group("/ai-news/admin")

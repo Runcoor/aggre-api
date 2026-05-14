@@ -144,16 +144,18 @@ func ListSkillPlazaPublic(c *gin.Context) {
 			CoverSeed:     s.CoverSeed,
 			Tags:          s.Tags(),
 			RepoUpdatedAt: s.RepoUpdatedAt,
+			// Aggregates live on the Skill itself (a rating applies to the
+			// skill, not the language-specific translation).
+			RatingAverage: s.RatingAverage,
+			RatingCount:   s.RatingCount,
+			FavoriteCount: s.FavoriteCount,
+			CommentCount:  s.CommentCount,
 		}
 		article, err := model.GetPublishedArticleForSkill(s.Id, lang)
 		if err == nil && article != nil {
 			card.Title = article.Title
 			card.Summary = article.Summary
 			card.Language = article.Language
-			card.RatingAverage = article.RatingAverage
-			card.RatingCount = article.RatingCount
-			card.FavoriteCount = article.FavoriteCount
-			card.CommentCount = article.CommentCount
 			card.CoverImage = article.CoverImage
 			card.PublishedAt = article.PublishedAt
 		} else {

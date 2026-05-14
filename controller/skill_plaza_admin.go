@@ -28,6 +28,7 @@ import (
 	"github.com/runcoor/aggre-api/common"
 	"github.com/runcoor/aggre-api/model"
 	"github.com/runcoor/aggre-api/service/skill_plaza"
+	"github.com/runcoor/aggre-api/setting/operation_setting"
 	"gorm.io/gorm"
 )
 
@@ -352,6 +353,60 @@ func PostSkillPlazaArticlePublish(c *gin.Context) {
 	}
 	updated, _ := model.GetSkillArticle(id)
 	common.ApiSuccess(c, updated)
+}
+
+// =====================================================================
+// Module settings
+// =====================================================================
+//
+// We don't go through /api/option/ because that's RootAuth-gated — only
+// the super-admin (role 100) can write there. For a single-module config
+// that's overkill; module-level config should be writable by anyone with
+// access to the module's admin UI (role 10+). This endpoint exposes the
+// same skill_plaza_setting.* keys but enforces AdminAuth instead.
+
+// GetSkillPlazaAdminSettings GET /api/skill-plaza/admin/settings
+// Returns the full SkillPlazaSetting (sensitive fields included — admins
+// already see the settings page).
+func GetSkillPlazaAdminSettings(c *gin.Context) {
+	common.ApiSuccess(c, operation_setting.GetSkillPlazaSetting())
+}
+
+// PutSkillPlazaAdminSettings PUT /api/skill-plaza/admin/settings
+// Accepts the whole settings struct. Persists each field as a
+// "skill_plaza_setting.<key>" row in the options table so the existing
+// reload-from-DB path picks it up too.
+func PutSkillPlazaAdminSettings(c *gin.Context) {
+	var req operation_setting.SkillPlazaSetting
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.ApiErrorMsg(c, "invalid request body")
+		return
+	}
+
+	// Persist via UpdateOption — same path /api/option/ uses, but without
+	// the RootAuth wall. UpdateOption writes the DB row and refreshes the
+	// in-memory typed config via config.GlobalConfig.
+	pairs := map[string]string{
+		"skill_plaza_setting.enabled":             strconv.FormatBool(req.Enabled),
+		"skill_plaza_setting.generation_model":    strings.TrimSpace(req.GenerationModel),
+		"skill_plaza_setting.server_token":        req.ServerToken,
+		"skill_plaza_setting.server_base_url":     strings.TrimSpace(req.ServerBaseURL),
+		"skill_plaza_setting.gen_system_prompt_zh": req.GenSystemPromptZh,
+		"skill_plaza_setting.gen_system_prompt_en": req.GenSystemPromptEn,
+		"skill_plaza_setting.gen_temperature":     strconv.FormatFloat(req.GenTemperature, 'f', -1, 64),
+		"skill_plaza_setting.gen_max_tokens":      strconv.Itoa(req.GenMaxTokens),
+		"skill_plaza_setting.github_pat":          req.GitHubPAT,
+		"skill_plaza_setting.max_repo_size_mb":    strconv.Itoa(req.MaxRepoSizeMB),
+		"skill_plaza_setting.max_file_size_kb":    strconv.Itoa(req.MaxFileSizeKB),
+		"skill_plaza_setting.max_file_count":      strconv.Itoa(req.MaxFileCount),
+	}
+	for k, v := range pairs {
+		if err := model.UpdateOption(k, v); err != nil {
+			common.ApiError(c, err)
+			return
+		}
+	}
+	common.ApiSuccess(c, operation_setting.GetSkillPlazaSetting())
 }
 
 // PostSkillPlazaArticleUnpublish POST /api/skill-plaza/admin/articles/:id/unpublish

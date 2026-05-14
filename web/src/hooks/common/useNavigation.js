@@ -30,8 +30,10 @@ import { isAdmin } from '../../helpers';
 
 export const useNavigation = (t, docsLink, headerNavModules) => {
   const mainNavLinks = useMemo(() => {
-    // Phase 1 of SKILLS 广场 is admin-only — the nav entry hides for
-    // anyone whose local user role is below RoleAdminUser (10).
+    // Phase 2 opens SKILLS 广场 to all visitors. The backend gate
+    // (operation_setting.IsSkillPlazaEnabled) still hides content while
+    // the module is being staged — admins bypass that gate so they can
+    // preview before the public switch flips.
     const isAdminViewer = isAdmin();
     // 默认配置，如果没有传入配置则显示所有模块
     const defaultModules = {
@@ -75,7 +77,6 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
         text: t('SKILLS 广场'),
         itemKey: 'skills',
         to: '/skills',
-        adminOnly: true,
       },
       {
         text: t('工具'),
@@ -143,7 +144,9 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
         return true; // always visible
       }
       if (link.itemKey === 'skills') {
-        return true; // adminOnly already filtered above; show for admins
+        // Always shown in the nav. Backend gate decides whether content
+        // is actually served; admins see content even when gated.
+        return true;
       }
       if (link.itemKey === 'pricing') {
         // 支持新的pricing配置格式

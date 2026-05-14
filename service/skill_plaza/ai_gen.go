@@ -101,9 +101,11 @@ type chatResponse struct {
 // tabs populated).
 func GenerateBilingualArticles(ctx context.Context, mf *Manifest) ([]GenerateResult, error) {
 	cfg := operation_setting.GetSkillPlazaSetting()
-	if !cfg.Enabled {
-		return nil, errors.New("SKILLS 广场 is disabled in settings")
-	}
+	// Note: we don't gate on cfg.Enabled — that switch only controls
+	// public visibility of the Plaza. Admins running this from the
+	// admin console are gated by AdminAuth on the route. Blocking
+	// generation here would mean admins can't prepare content before
+	// flipping the public switch on.
 	if strings.TrimSpace(cfg.ServerToken) == "" {
 		return nil, errors.New("skill plaza: ServerToken is not configured")
 	}

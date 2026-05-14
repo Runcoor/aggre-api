@@ -414,7 +414,7 @@ V1.2(留存):
 
 让普通用户能贡献内容。
 
-- [ ] **P4-1 表 `skill_user_articles`** — type 6 选 1: tutorial/review/showcase/troubleshooting/prompts/comparison
+- [x] **P4-1 表 `skill_user_articles`** — type 6 选 1: tutorial/review/showcase/troubleshooting/prompts/comparison(`483070f`)
 - [ ] **P4-2 用户编辑器 `/skills/editor`** — CodeMirror Markdown + 实时预览 + 工具栏 + 拖图上传 + 草稿自动保存
 - [ ] **P4-3 案例分享 `/skills/showcase/new`** — 图片轮播 + Prompt + 输出截图 + 关联 skill
 - [ ] **P4-4 草稿自动保存 + 版本历史** — 每 30s 写一次,版本可回滚
@@ -606,3 +606,30 @@ P3-7 删 `.design-tmp` 按用户决定延后到 V1.1+ 完成。SKILLS 广场 V1.
 状态:**完整功能就绪**,可以转入 Phase 4(用户投稿,V1.1)。
 
 下一阶段优先级:P4-1 投稿表 + P4-2 编辑器,Phase 4 的核心打通最快。
+
+### 2026-05-14 — P4-1 表 + 后端 API + 单测落地(`483070f`)
+
+V1.1 投稿后端基础完工。
+- `model.SkillUserArticle` 表已加入 AutoMigrate;6 个类型常量
+  (tutorial/review/showcase/troubleshooting/prompts/comparison) +
+  5 状态机(draft/pending/approved/rejected/offline)。
+- 状态机迁移函数:`SubmitSkillUserArticle`(author 自己 draft|rejected→pending)、
+  `ReviewSkillUserArticle`(admin pending→approved|rejected,首次通过自动
+  stamp published_at,重新审核保留原时间)、`OfflineSkillUserArticle`
+  (admin approved→offline)。
+- `UpdateSkillUserArticle` 主动剔除 status / author_id / reviewed_by 等
+  受保护字段,防止 client 越权写入。
+- Slug 生成:title 转 lowercase,保留 CJK,空格 / 标点折叠为 `-`,
+  collision 时追加 `-2 -3 ...` 后缀。
+- 跨 DB 适配:tag CSV 的 LIKE 查询用 `||` 拼接(SQLite/PostgreSQL),
+  MySQL 改用 `CONCAT()`(MySQL 把 `||` 解释为逻辑 OR)。
+- Controller `skill_plaza_articles.go`:public 读 / author /me/articles
+  CRUD+submit / admin 审核队列 approve/reject/offline/delete。提交时
+  跑敏感词过滤,命中返回与 PostSkillComment 一致的 envelope。
+- 路由接通:public `GET /skill-plaza/user-articles{,/slug}`、user
+  `/me/articles`、admin `/admin/user-articles`。
+- 审计日志加 3 个 action 常量:`user_article.approve/reject/offline`。
+- 12 个 model 单测(state machine / slug uniqueness / forbidden-key
+  strip / public filter / count aggregate / type validity),全绿。
+
+下一步:P4-2 编辑器(CodeMirror Markdown + 实时预览 + 草稿自动保存)。

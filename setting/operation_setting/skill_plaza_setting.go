@@ -51,6 +51,13 @@ type SkillPlazaSetting struct {
 	TestMode      bool   `json:"test_mode"`
 	TestModeUsers string `json:"test_mode_users"` // comma-separated usernames
 
+	// SensitiveWords is a newline-separated list of forbidden phrases.
+	// Matched case-insensitively against user-submitted content (comments,
+	// future user submissions). Empty entries / leading-trailing whitespace
+	// are ignored. When any phrase matches, the submission is rejected with
+	// the offending words returned so the UI can highlight them.
+	SensitiveWords string `json:"sensitive_words"`
+
 	// AI generation
 	GenerationModel  string `json:"generation_model"`
 	ServerToken      string `json:"server_token"`      // an admin-created internal token
@@ -101,6 +108,7 @@ var skillPlazaSetting = SkillPlazaSetting{
 	Enabled:           false,
 	TestMode:          false,
 	TestModeUsers:     "Runcoor",
+	SensitiveWords:    "",
 	GenerationModel:   "gpt-5",
 	ServerToken:       "",
 	ServerBaseURL:     "",
@@ -144,6 +152,31 @@ func SkillPlazaTestModeUsers() []string {
 		return nil
 	}
 	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.ToLower(strings.TrimSpace(p))
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+// SkillPlazaSensitiveWords returns the configured sensitive-word list,
+// already trimmed and lowercased. Empty lines are dropped. The list is
+// rebuilt from the raw setting on every call so an admin save takes
+// effect without a restart — call sites should cache locally if they
+// run in tight loops.
+func SkillPlazaSensitiveWords() []string {
+	raw := skillPlazaSetting.SensitiveWords
+	if raw == "" {
+		return nil
+	}
+	// Accept both newlines and commas as separators so admins can paste
+	// either format without surprise.
+	raw = strings.ReplaceAll(raw, "\r\n", "\n")
+	raw = strings.ReplaceAll(raw, ",", "\n")
+	parts := strings.Split(raw, "\n")
 	out := make([]string, 0, len(parts))
 	for _, p := range parts {
 		p = strings.ToLower(strings.TrimSpace(p))

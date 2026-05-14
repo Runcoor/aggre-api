@@ -23,7 +23,14 @@ For commercial licensing, please contact support@quantumnous.com
 
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, Github, Shield, RefreshCw, Save } from 'lucide-react';
+import {
+  Sparkles,
+  Github,
+  Shield,
+  RefreshCw,
+  Save,
+  ShieldAlert,
+} from 'lucide-react';
 import { API, showError, showSuccess } from '../../helpers';
 
 // Each key maps 1:1 to a backend SkillPlazaSetting field. Defaults match
@@ -32,6 +39,7 @@ const DEFAULTS = {
   'skill_plaza_setting.enabled': false,
   'skill_plaza_setting.test_mode': false,
   'skill_plaza_setting.test_mode_users': 'Runcoor',
+  'skill_plaza_setting.sensitive_words': '',
   'skill_plaza_setting.generation_model': 'gpt-5',
   'skill_plaza_setting.server_token': '',
   'skill_plaza_setting.server_base_url': '',
@@ -70,6 +78,8 @@ const SettingSkillPlaza = () => {
       next['skill_plaza_setting.test_mode'] = !!data.test_mode;
       next['skill_plaza_setting.test_mode_users'] =
         data.test_mode_users == null ? '' : String(data.test_mode_users);
+      next['skill_plaza_setting.sensitive_words'] =
+        data.sensitive_words == null ? '' : String(data.sensitive_words);
       next['skill_plaza_setting.generation_model'] = data.generation_model || '';
       next['skill_plaza_setting.server_token'] = data.server_token || '';
       next['skill_plaza_setting.server_base_url'] = data.server_base_url || '';
@@ -103,6 +113,7 @@ const SettingSkillPlaza = () => {
         enabled: !!values['skill_plaza_setting.enabled'],
         test_mode: !!values['skill_plaza_setting.test_mode'],
         test_mode_users: values['skill_plaza_setting.test_mode_users'] || '',
+        sensitive_words: values['skill_plaza_setting.sensitive_words'] || '',
         generation_model: values['skill_plaza_setting.generation_model'],
         server_token: values['skill_plaza_setting.server_token'],
         server_base_url: values['skill_plaza_setting.server_base_url'],
@@ -214,6 +225,24 @@ const SettingSkillPlaza = () => {
             '测试模式打开后,前台只对超级管理员 (role=100) 和下面白名单中的用户名可见。逗号分隔,大小写不敏感。普通管理员仍可通过 /console/skill-plaza 后台预览。',
           )}
         </div>
+      </Section>
+
+      {/* Sensitive words */}
+      <Section
+        icon={<ShieldAlert size={16} />}
+        title={t('敏感词过滤')}
+        subtitle={t(
+          '一行一个,大小写不敏感,逗号也可作分隔。评论和未来的用户投稿一旦命中,会被拒绝并把命中词返回给前端高亮。留空表示不过滤。',
+        )}
+      >
+        <Row label={t('敏感词列表')} stack>
+          <Textarea
+            value={values['skill_plaza_setting.sensitive_words']}
+            onChange={set('skill_plaza_setting.sensitive_words')}
+            rows={6}
+            placeholder={'spam\nfraud\n违禁词'}
+          />
+        </Row>
       </Section>
 
       {/* AI generation */}

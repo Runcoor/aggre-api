@@ -403,7 +403,7 @@ V1.2(留存):
 把现有半截功能补齐,去掉所有 TODO。完成后即为「完整 MVP」状态。
 
 - [x] **P3-1 评论点赞 + 一层回复接通** — 后端表已有 LikeCount + ParentId,加 `POST /api/skill-plaza/comments/:id/like` 切换 + `skill_comment_likes` 唯一表;前端 CommentItem 加点赞按钮/回复按钮/嵌套渲染
-- [ ] **P3-2 敏感词过滤** — 评论 / 投稿 submit 时拦截,admin 后台配置词库(`skill_plaza_setting.sensitive_words` CSV 或多行)
+- [x] **P3-2 敏感词过滤** — 评论 / 投稿 submit 时拦截,admin 后台配置词库(`skill_plaza_setting.sensitive_words` CSV 或多行)
 - [ ] **P3-3 举报队列** — 评论 / 案例右下角"举报"按钮 → 表 `skill_reports`(user_id / target_type / target_id / reason / status) → admin 队列页
 - [ ] **P3-4 i18n 英文翻译补齐** — `bun run i18n:extract` → 用 AI 批量翻译填空 → admin review
 - [ ] **P3-5 基础单测** — 评分 upsert / 评论 create / 收藏 toggle / 聚合 recompute 四条主路径
@@ -532,3 +532,15 @@ V1.2(留存):
 - Heart 用 optimistic update + 错误回滚;loggedIn 检查避免匿名点赞
 
 下一步:P3-2 敏感词过滤
+
+### 2026-05-14 — P3-2 敏感词过滤(commit pending)
+
+完成内容:
+- 后端 `SkillPlazaSetting` 加 `SensitiveWords`(多行/逗号分隔);`SkillPlazaSensitiveWords()` 解析为 trim+lower 列表
+- 新模块 `service/skill_plaza/sensitive.go` 提供 `DetectSensitive(content)`:大小写不敏感子串匹配,返回命中词数组
+- `PostSkillComment` 在长度校验后调用,命中时返回 `success:false + data.sensitive_words` 并不写库
+- admin GET/PUT `/api/skill-plaza/admin/settings` 透传 `sensitive_words` 字段
+- 前端 `SettingSkillPlaza.jsx` 新增"敏感词过滤"Section + 6 行 Textarea(占位 `spam\nfraud\n违禁词`)
+- `CommentForm` 加 `sensitiveHits` 状态:命中时 textarea 边框转红、下方红色 banner 列出命中词,编辑/切回复目标时自动清除
+
+下一步:P3-3 举报队列

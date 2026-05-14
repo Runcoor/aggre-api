@@ -531,15 +531,19 @@ function CommentForm({ slug, replyTo, onCancelReply, onPosted }) {
   const { t } = useTranslation();
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
-  // Clear input when switching reply targets so the user doesn't carry
-  // a half-typed top-level comment into a reply context (or vice versa).
+  // Sensitive-word hits returned by the backend on the last rejected
+  // submit. Cleared as soon as the user edits the textarea or switches
+  // reply targets so stale warnings don't follow them around.
+  const [sensitiveHits, setSensitiveHits] = useState([]);
   useEffect(() => {
     setText('');
+    setSensitiveHits([]);
   }, [replyTo?.id]);
   const submit = () => {
     const content = text.trim();
     if (!content) return;
     setBusy(true);
+    setSensitiveHits([]);
     const payload = { content };
     if (replyTo?.id) payload.parent_id = replyTo.id;
     API.post(
@@ -551,6 +555,10 @@ function CommentForm({ slug, replyTo, onCancelReply, onPosted }) {
           setText('');
           onPosted?.(res.data.data);
         } else {
+          const hits = res.data?.data?.sensitive_words;
+          if (Array.isArray(hits) && hits.length > 0) {
+            setSensitiveHits(hits);
+          }
           showError(res.data?.message);
         }
       })
@@ -606,7 +614,10 @@ function CommentForm({ slug, replyTo, onCancelReply, onPosted }) {
       )}
       <textarea
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => {
+          setText(e.target.value);
+          if (sensitiveHits.length > 0) setSensitiveHits([]);
+        }}
         placeholder={
           replyTo
             ? t('回复 @{{name}}...', {
@@ -620,13 +631,33 @@ function CommentForm({ slug, replyTo, onCancelReply, onPosted }) {
           width: '100%',
           padding: 10,
           borderRadius: 8,
-          border: '1px solid var(--border-default)',
+          border:
+            sensitiveHits.length > 0
+              ? '1px solid #ef4444'
+              : '1px solid var(--border-default)',
           background: 'var(--bg-base)',
           fontSize: 13.5,
           fontFamily: 'inherit',
           resize: 'vertical',
         }}
       />
+      {sensitiveHits.length > 0 && (
+        <div
+          style={{
+            marginTop: 6,
+            padding: '6px 10px',
+            background: 'rgba(239,68,68,0.08)',
+            border: '1px solid rgba(239,68,68,0.3)',
+            borderRadius: 6,
+            color: '#b91c1c',
+            fontSize: 12,
+          }}
+        >
+          {t('包含敏感词：{{words}},请修改后重试。', {
+            words: sensitiveHits.join('、'),
+          })}
+        </div>
+      )}
       <div
         style={{
           marginTop: 8,

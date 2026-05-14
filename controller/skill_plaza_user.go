@@ -26,6 +26,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/runcoor/aggre-api/common"
 	"github.com/runcoor/aggre-api/model"
+	"github.com/runcoor/aggre-api/service/skill_plaza"
 )
 
 // =====================================================================
@@ -205,6 +206,18 @@ func PostSkillComment(c *gin.Context) {
 	}
 	if len(content) > 2000 {
 		common.ApiErrorMsg(c, "content too long (max 2000 chars)")
+		return
+	}
+	if hits := skill_plaza.DetectSensitive(content); len(hits) > 0 {
+		// Return the hits in the same envelope a regular error uses, plus
+		// a `data.sensitive_words` array so the UI can highlight what to
+		// remove. We don't have a shared ApiErrorWithData helper, so the
+		// envelope is built inline rather than introducing one.
+		c.JSON(200, gin.H{
+			"success": false,
+			"message": "包含敏感词，请修改后重试",
+			"data":    gin.H{"sensitive_words": hits},
+		})
 		return
 	}
 	comment := &model.SkillComment{

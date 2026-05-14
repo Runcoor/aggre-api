@@ -221,6 +221,9 @@ func PostSkillComment(c *gin.Context) {
 }
 
 // GetSkillComments GET /api/skill-plaza/skills/:id/comments
+// Mounted with TryUserAuth — when the caller is logged in, each item
+// gets a `liked_by_me` flag so the heart icon can render in its filled
+// state without an extra round-trip.
 func GetSkillComments(c *gin.Context) {
 	if !skillPlazaGate(c) {
 		return
@@ -235,9 +238,55 @@ func GetSkillComments(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
+	// Hydrate liked_by_me when we know who's asking. TryUserAuth leaves
+	// `id` unset for anonymous callers, so currentUserID returns 0 and
+	// the helper short-circuits to an empty set.
+	if userID := currentUserID(c); userID > 0 && len(comments) > 0 {
+		ids := make([]int, 0, len(comments))
+		for _, m := range comments {
+			ids = append(ids, m.Id)
+		}
+		likes, lerr := model.ListCommentLikesByUser(userID, ids)
+		if lerr == nil {
+			for i := range comments {
+				if likes[comments[i].Id] {
+					comments[i].LikedByMe = true
+				}
+			}
+		}
+	}
 	common.ApiSuccess(c, gin.H{
 		"items": comments,
 		"total": len(comments),
+	})
+}
+
+// PostSkillCommentLikeToggle POST /api/skill-plaza/comments/:id/like
+// Toggles the like state for the calling user. Returns the new state
+// and the resulting like_count.
+func PostSkillCommentLikeToggle(c *gin.Context) {
+	if !skillPlazaGate(c) {
+		return
+	}
+	commentID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		common.ApiErrorMsg(c, "invalid comment id")
+		return
+	}
+	userID := currentUserID(c)
+	if userID == 0 {
+		common.ApiErrorMsg(c, "login required")
+		return
+	}
+	liked, count, err := model.ToggleSkillCommentLike(userID, commentID)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, gin.H{
+		"liked":      liked,
+		"like_count": count,
+		"id":         commentID,
 	})
 }
 

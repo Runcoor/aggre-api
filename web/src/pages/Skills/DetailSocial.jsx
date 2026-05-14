@@ -32,6 +32,9 @@ import {
   CheckCircle2,
   Send,
   Trash2,
+  Heart,
+  Reply,
+  X as XIcon,
 } from 'lucide-react';
 import { API, showError, showSuccess, getUserIdFromLocalStorage, isAdmin } from '../../helpers';
 
@@ -312,9 +315,33 @@ function RatingForm({ slug, initial, onSubmitted }) {
   );
 }
 
-function CommentItem({ c, currentUserId, onDeleted }) {
+// CommentItem renders one comment, optionally with its replies nested
+// underneath (passed in as `replies`). Top-level only — reply items
+// don't render their own children since we cap nesting at one level.
+function CommentItem({
+  c,
+  replies,
+  currentUserId,
+  loggedIn,
+  onDeleted,
+  onReply,
+  onLikeChanged,
+  isReply,
+}) {
   const { t } = useTranslation();
   const canDelete = c.user_id === currentUserId || isAdmin();
+  // Optimistic local state — keeps the heart filled / count incremented
+  // immediately on click, rolls back on error. The parent's state still
+  // gets updated via onLikeChanged so re-renders stay consistent.
+  const [liked, setLiked] = useState(!!c.liked_by_me);
+  const [likeCount, setLikeCount] = useState(c.like_count || 0);
+  const [busyLike, setBusyLike] = useState(false);
+
+  useEffect(() => {
+    setLiked(!!c.liked_by_me);
+    setLikeCount(c.like_count || 0);
+  }, [c.liked_by_me, c.like_count]);
+
   const remove = () => {
     if (!window.confirm(t('确定删除这条评论?'))) return;
     API.delete(`/api/skill-plaza/comments/${c.id}`)
@@ -324,14 +351,50 @@ function CommentItem({ c, currentUserId, onDeleted }) {
       })
       .catch((e) => showError(e?.message));
   };
+
+  const toggleLike = () => {
+    if (!loggedIn) {
+      showError(t('登录后即可点赞'));
+      return;
+    }
+    if (busyLike) return;
+    // Optimistic flip first.
+    const nextLiked = !liked;
+    const nextCount = likeCount + (nextLiked ? 1 : -1);
+    setLiked(nextLiked);
+    setLikeCount(Math.max(0, nextCount));
+    setBusyLike(true);
+    API.post(`/api/skill-plaza/comments/${c.id}/like`)
+      .then((res) => {
+        if (res.data?.success) {
+          const { liked: serverLiked, like_count } = res.data.data || {};
+          setLiked(!!serverLiked);
+          setLikeCount(like_count || 0);
+          onLikeChanged?.(c.id, !!serverLiked, like_count || 0);
+        } else {
+          // Roll back.
+          setLiked(!nextLiked);
+          setLikeCount(likeCount);
+          showError(res.data?.message);
+        }
+      })
+      .catch((e) => {
+        setLiked(!nextLiked);
+        setLikeCount(likeCount);
+        showError(e?.message);
+      })
+      .finally(() => setBusyLike(false));
+  };
+
   return (
     <div
       style={{
         padding: 14,
-        background: 'var(--surface)',
+        background: isReply ? 'var(--bg-base)' : 'var(--surface)',
         border: '1px solid var(--border-default)',
         borderRadius: 10,
         marginBottom: 10,
+        marginLeft: isReply ? 32 : 0,
       }}
     >
       <div
@@ -344,15 +407,15 @@ function CommentItem({ c, currentUserId, onDeleted }) {
       >
         <div
           style={{
-            width: 28,
-            height: 28,
+            width: isReply ? 24 : 28,
+            height: isReply ? 24 : 28,
             borderRadius: '50%',
             background: 'linear-gradient(135deg,#0072ff,#00c6ff)',
             color: '#fff',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: 12,
+            fontSize: isReply ? 11 : 12,
             fontWeight: 600,
           }}
         >
@@ -391,21 +454,98 @@ function CommentItem({ c, currentUserId, onDeleted }) {
       >
         {c.content}
       </div>
+      <div
+        style={{
+          marginTop: 10,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+        }}
+      >
+        <button
+          onClick={toggleLike}
+          disabled={busyLike}
+          title={liked ? t('取消点赞') : t('点赞')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            padding: '4px 8px',
+            borderRadius: 6,
+            border: 0,
+            background: 'transparent',
+            color: liked ? '#e0245e' : 'var(--text-muted)',
+            cursor: busyLike ? 'wait' : 'pointer',
+            fontSize: 12,
+          }}
+        >
+          <Heart
+            size={13}
+            fill={liked ? '#e0245e' : 'none'}
+            strokeWidth={liked ? 0 : 2}
+          />
+          <span>{likeCount > 0 ? likeCount : ''}</span>
+        </button>
+        {!isReply && (
+          <button
+            onClick={() => onReply?.(c)}
+            title={t('回复')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '4px 8px',
+              borderRadius: 6,
+              border: 0,
+              background: 'transparent',
+              color: 'var(--text-muted)',
+              cursor: 'pointer',
+              fontSize: 12,
+            }}
+          >
+            <Reply size={13} />
+            <span>{t('回复')}</span>
+          </button>
+        )}
+      </div>
+      {!isReply &&
+        replies &&
+        replies.length > 0 &&
+        replies.map((r) => (
+          <div key={r.id} style={{ marginTop: 8 }}>
+            <CommentItem
+              c={r}
+              currentUserId={currentUserId}
+              loggedIn={loggedIn}
+              onDeleted={onDeleted}
+              onLikeChanged={onLikeChanged}
+              isReply
+            />
+          </div>
+        ))}
     </div>
   );
 }
 
-function CommentForm({ slug, onPosted }) {
+function CommentForm({ slug, replyTo, onCancelReply, onPosted }) {
   const { t } = useTranslation();
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
+  // Clear input when switching reply targets so the user doesn't carry
+  // a half-typed top-level comment into a reply context (or vice versa).
+  useEffect(() => {
+    setText('');
+  }, [replyTo?.id]);
   const submit = () => {
     const content = text.trim();
     if (!content) return;
     setBusy(true);
-    API.post(`/api/skill-plaza/skills/${encodeURIComponent(slug)}/comments`, {
-      content,
-    })
+    const payload = { content };
+    if (replyTo?.id) payload.parent_id = replyTo.id;
+    API.post(
+      `/api/skill-plaza/skills/${encodeURIComponent(slug)}/comments`,
+      payload,
+    )
       .then((res) => {
         if (res.data?.success) {
           setText('');
@@ -422,15 +562,58 @@ function CommentForm({ slug, onPosted }) {
       style={{
         padding: 14,
         background: 'var(--surface)',
-        border: '1px solid var(--border-default)',
+        border: replyTo
+          ? '1px solid rgba(0,114,255,0.4)'
+          : '1px solid var(--border-default)',
         borderRadius: 10,
         marginBottom: 14,
       }}
     >
+      {replyTo && (
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '4px 10px',
+            marginBottom: 10,
+            background: 'rgba(0,114,255,0.08)',
+            color: '#0072ff',
+            borderRadius: 999,
+            fontSize: 12,
+            fontWeight: 500,
+          }}
+        >
+          <Reply size={12} />
+          {t('回复 @')}{replyTo.user_name || `User ${replyTo.user_id}`}
+          <button
+            onClick={onCancelReply}
+            title={t('取消回复')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              background: 'transparent',
+              border: 0,
+              color: '#0072ff',
+              cursor: 'pointer',
+              padding: 0,
+              marginLeft: 2,
+            }}
+          >
+            <XIcon size={12} />
+          </button>
+        </div>
+      )}
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder={t('分享你的使用心得、问题或者吐槽... (2000 字以内)')}
+        placeholder={
+          replyTo
+            ? t('回复 @{{name}}...', {
+                name: replyTo.user_name || `User ${replyTo.user_id}`,
+              })
+            : t('分享你的使用心得、问题或者吐槽... (2000 字以内)')
+        }
         rows={3}
         maxLength={2000}
         style={{
@@ -475,7 +658,12 @@ function CommentForm({ slug, onPosted }) {
             gap: 6,
           }}
         >
-          <Send size={13} /> {busy ? t('提交中...') : t('发表评论')}
+          <Send size={13} />{' '}
+          {busy
+            ? t('提交中...')
+            : replyTo
+              ? t('发表回复')
+              : t('发表评论')}
         </button>
       </div>
     </div>
@@ -494,6 +682,30 @@ export default function DetailSocial({ slug, onSkillRefreshed }) {
   const [comments, setComments] = useState([]);
   const [loadingSummary, setLoadingSummary] = useState(true);
   const [loadingComments, setLoadingComments] = useState(true);
+  // replyTo: which top-level comment the form is currently aimed at,
+  // or null for a fresh top-level comment.
+  const [replyTo, setReplyTo] = useState(null);
+
+  // Build a one-level tree: top-level comments (newest first) and their
+  // replies (oldest first under each parent). Done in JS so the API can
+  // keep returning a flat list.
+  const commentTree = React.useMemo(() => {
+    const replies = {};
+    const tops = [];
+    for (const c of comments) {
+      if (c.parent_id && c.parent_id > 0) {
+        if (!replies[c.parent_id]) replies[c.parent_id] = [];
+        replies[c.parent_id].push(c);
+      } else {
+        tops.push(c);
+      }
+    }
+    tops.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+    Object.values(replies).forEach((arr) =>
+      arr.sort((a, b) => (a.created_at || 0) - (b.created_at || 0)),
+    );
+    return { tops, replies };
+  }, [comments]);
 
   const loadSummary = () => {
     setLoadingSummary(true);
@@ -531,12 +743,25 @@ export default function DetailSocial({ slug, onSkillRefreshed }) {
   };
   const onCommentPosted = (newComment) => {
     setComments((prev) => [newComment, ...prev]);
+    setReplyTo(null);
     // parent comment_count is on Skill — re-fetch detail to keep sidebar fresh
     onSkillRefreshed?.(null);
   };
   const onCommentDeleted = (id) => {
-    setComments((prev) => prev.filter((c) => c.id !== id));
+    // Remove the comment AND any of its replies, so the thread doesn't
+    // leave orphaned children pointing at a deleted parent.
+    setComments((prev) =>
+      prev.filter((c) => c.id !== id && c.parent_id !== id),
+    );
+    if (replyTo?.id === id) setReplyTo(null);
     onSkillRefreshed?.(null);
+  };
+  const onCommentLikeChanged = (id, liked, count) => {
+    setComments((prev) =>
+      prev.map((c) =>
+        c.id === id ? { ...c, liked_by_me: liked, like_count: count } : c,
+      ),
+    );
   };
 
   return (
@@ -675,7 +900,12 @@ export default function DetailSocial({ slug, onSkillRefreshed }) {
       {tab === 'comments' && (
         <div>
           {loggedIn ? (
-            <CommentForm slug={slug} onPosted={onCommentPosted} />
+            <CommentForm
+              slug={slug}
+              replyTo={replyTo}
+              onCancelReply={() => setReplyTo(null)}
+              onPosted={onCommentPosted}
+            />
           ) : (
             <LoginPrompt message={t('登录后即可发表评论')} />
           )}
@@ -690,7 +920,7 @@ export default function DetailSocial({ slug, onSkillRefreshed }) {
             >
               {t('加载中...')}
             </div>
-          ) : comments.length === 0 ? (
+          ) : commentTree.tops.length === 0 ? (
             <div
               style={{
                 padding: 30,
@@ -708,12 +938,16 @@ export default function DetailSocial({ slug, onSkillRefreshed }) {
               <div>{t('还没有评论。来抢沙发吧。')}</div>
             </div>
           ) : (
-            comments.map((c) => (
+            commentTree.tops.map((c) => (
               <CommentItem
                 key={c.id}
                 c={c}
+                replies={commentTree.replies[c.id]}
                 currentUserId={userId}
+                loggedIn={loggedIn}
                 onDeleted={onCommentDeleted}
+                onReply={(target) => setReplyTo(target)}
+                onLikeChanged={onCommentLikeChanged}
               />
             ))
           )}

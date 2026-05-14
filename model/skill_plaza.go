@@ -804,6 +804,7 @@ type SkillComment struct {
 	// Hydrated by ListComments — not persisted.
 	UserName   string `json:"user_name" gorm:"-"`
 	UserAvatar string `json:"user_avatar" gorm:"-"`
+	LikedByMe  bool   `json:"liked_by_me" gorm:"-"`
 }
 
 const (
@@ -829,13 +830,29 @@ func (c *SkillComment) BeforeUpdate(tx *gorm.DB) error {
 }
 
 // CreateSkillComment writes the row and refreshes the parent Skill's
-// comment_count in the same transaction.
+// comment_count in the same transaction. When ParentId is set, validates
+// that the parent belongs to the same skill and is itself a top-level
+// comment — we only allow one level of nesting, matching the design.
 func CreateSkillComment(c *SkillComment) error {
 	if c.SkillId == 0 || c.UserId == 0 {
 		return errors.New("skill_id and user_id are required")
 	}
 	if strings.TrimSpace(c.Content) == "" {
 		return errors.New("content is required")
+	}
+	if c.ParentId != 0 {
+		var parent SkillComment
+		if err := DB.First(&parent, c.ParentId).Error; err != nil {
+			return errors.New("parent comment not found")
+		}
+		if parent.SkillId != c.SkillId {
+			return errors.New("parent comment belongs to a different skill")
+		}
+		if parent.ParentId != 0 {
+			// Replies can only point at top-level comments; reject deeper
+			// nesting by collapsing — re-target at the top-level ancestor.
+			c.ParentId = parent.ParentId
+		}
 	}
 	return DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(c).Error; err != nil {
@@ -927,6 +944,94 @@ func refreshCommentCount(tx *gorm.DB, skillId int) error {
 		"comment_count": int(count),
 		"updated_at":    time.Now().Unix(),
 	}).Error
+}
+
+// =====================================================================
+// SkillCommentLike — one row per (user, comment). Lookups stay cheap
+// because the LikeCount denormalized on SkillComment is what UI reads;
+// this table is just the source of truth + idempotency guard for the
+// toggle endpoint.
+// =====================================================================
+type SkillCommentLike struct {
+	Id        int   `json:"id" gorm:"primaryKey"`
+	CommentId int   `json:"comment_id" gorm:"not null;index;uniqueIndex:idx_comment_user"`
+	UserId    int   `json:"user_id" gorm:"not null;index;uniqueIndex:idx_comment_user"`
+	CreatedAt int64 `json:"created_at" gorm:"bigint;index"`
+}
+
+func (SkillCommentLike) TableName() string { return "skill_comment_likes" }
+
+func (l *SkillCommentLike) BeforeCreate(tx *gorm.DB) error {
+	l.CreatedAt = time.Now().Unix()
+	return nil
+}
+
+// ToggleSkillCommentLike flips the like state for (userId, commentId).
+// Returns the new state and the resulting like_count snapshot. Wrapped
+// in a transaction so the SkillComment.LikeCount stays consistent with
+// the underlying rows.
+func ToggleSkillCommentLike(userId, commentId int) (liked bool, count int, err error) {
+	err = DB.Transaction(func(tx *gorm.DB) error {
+		// Ensure the comment exists and isn't hidden.
+		var c SkillComment
+		if e := tx.First(&c, commentId).Error; e != nil {
+			return e
+		}
+		if c.Status == SkillCommentStatusHidden {
+			return errors.New("comment is hidden")
+		}
+
+		var existing SkillCommentLike
+		findErr := tx.Where("comment_id = ? AND user_id = ?", commentId, userId).
+			First(&existing).Error
+		switch {
+		case findErr == nil:
+			if e := tx.Delete(&existing).Error; e != nil {
+				return e
+			}
+			liked = false
+		case errors.Is(findErr, gorm.ErrRecordNotFound):
+			row := SkillCommentLike{CommentId: commentId, UserId: userId}
+			if e := tx.Create(&row).Error; e != nil {
+				return e
+			}
+			liked = true
+		default:
+			return findErr
+		}
+
+		var c64 int64
+		if e := tx.Model(&SkillCommentLike{}).
+			Where("comment_id = ?", commentId).Count(&c64).Error; e != nil {
+			return e
+		}
+		count = int(c64)
+		return tx.Model(&SkillComment{}).Where("id = ?", commentId).
+			Updates(map[string]any{
+				"like_count": count,
+				"updated_at": time.Now().Unix(),
+			}).Error
+	})
+	return
+}
+
+// ListCommentLikesByUser returns the set of comment IDs (from the given
+// list) that userId has liked. Used to hydrate the "I liked this" pill
+// on the comment thread without N+1 lookups.
+func ListCommentLikesByUser(userId int, commentIds []int) (map[int]bool, error) {
+	out := make(map[int]bool, len(commentIds))
+	if userId <= 0 || len(commentIds) == 0 {
+		return out, nil
+	}
+	var rows []SkillCommentLike
+	if err := DB.Where("user_id = ? AND comment_id IN ?", userId, commentIds).
+		Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	for _, r := range rows {
+		out[r.CommentId] = true
+	}
+	return out, nil
 }
 
 // ListUserRatings returns the ratings the caller has left, joined with

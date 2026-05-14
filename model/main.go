@@ -296,6 +296,7 @@ func migrateDB() error {
 		&SkillRating{},
 		&SkillFavorite{},
 		&SkillComment{},
+		&SkillCommentLike{},
 	)
 	if err != nil {
 		return err

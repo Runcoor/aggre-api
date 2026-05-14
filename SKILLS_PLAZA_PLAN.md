@@ -373,3 +373,162 @@ V1.2(留存):
 - Favorite 用 toggle 接口而非 add+remove 两个 — RESTful 折中,前端更省事
 - 全部聚合字段都在 skills 表里冗余存(rating_average / rating_count / favorite_count / comment_count),写时更新 — 读性能优先,Plaza 列表不需要 JOIN
 - 设置接口拆出来 `/skill-plaza/admin/settings` — 不动 /api/option/ 的 root-only 边界,只放宽本模块自己的设置
+
+### 2026-05-14 — Session 4(总开关 + 测试白名单,commit 8d5abd7)
+
+**已完成:**
+- `SkillPlazaSetting` 加 `TestMode` + `TestModeUsers` 字段(默认 false / "Runcoor")
+- `IsSkillPlazaTestMode` / `SkillPlazaTestModeUsers` / `IsSkillPlazaAllowedUser` helpers(大小写不敏感)
+- `controller/skill_plaza_public.go` 抽出 `isSkillPlazaVisibleForSession(c)`,重写 `skillPlazaGate`:
+  - 总开关 OFF → 全 404(admin role≥10 仍可预览路由,菜单不显示)
+  - 总开关 ON + TestMode OFF → 所有访客可见
+  - 总开关 ON + TestMode ON → 仅 role≥100 或 username 在白名单可见
+- `/api/skill-plaza/status` 多返回 `test_mode` / `visible` 字段
+- `/api/status` 顶层多返回 `skill_plaza_enabled` / `skill_plaza_test_mode` / `skill_plaza_test_mode_users`,前端启动时拿到
+- `web/src/helpers/utils.jsx` 加 `isSkillPlazaVisible(status)` 镜像后端规则
+- `useNavigation.js` 用上面 helper 决定 skills 菜单显隐(修掉"硬编码 return true"的真因)
+- `SettingSkillPlaza.jsx` 加 TestMode + 白名单 UI(disabled state 联动)
+- `Detail.jsx` 404 时显示「SKILLS 广场暂未开放」占位
+
+**修复的核心 bug:** 之前用户反馈"禁用模块但普通用户仍能看到菜单"—— 真因是 `useNavigation.js` 第 146-150 行硬编码 `return true`,完全不读后端状态。
+
+---
+
+## 13. 完整路线图(2026-05-14 锁定,Session 4 之后)
+
+> **执行节奏:每完成一个子任务就在本路线图打勾,并在 §14 工作日志追加 commit hash + 下一步计划。**
+
+### Phase 3 ─ 收尾清零(预估 1-2 天)
+
+把现有半截功能补齐,去掉所有 TODO。完成后即为「完整 MVP」状态。
+
+- [x] **P3-1 评论点赞 + 一层回复接通** — 后端表已有 LikeCount + ParentId,加 `POST /api/skill-plaza/comments/:id/like` 切换 + `skill_comment_likes` 唯一表;前端 CommentItem 加点赞按钮/回复按钮/嵌套渲染
+- [ ] **P3-2 敏感词过滤** — 评论 / 投稿 submit 时拦截,admin 后台配置词库(`skill_plaza_setting.sensitive_words` CSV 或多行)
+- [ ] **P3-3 举报队列** — 评论 / 案例右下角"举报"按钮 → 表 `skill_reports`(user_id / target_type / target_id / reason / status) → admin 队列页
+- [ ] **P3-4 i18n 英文翻译补齐** — `bun run i18n:extract` → 用 AI 批量翻译填空 → admin review
+- [ ] **P3-5 基础单测** — 评分 upsert / 评论 create / 收藏 toggle / 聚合 recompute 四条主路径
+- [ ] **P3-6 管理员审核日志** — 表 `skill_audit_logs`(谁 / 何时 / 对哪条 skill 做了什么),admin 后台时间轴
+- [ ] **P3-7 删 `.design-tmp/`** — task #128,P3 全部完成后执行
+
+### Phase 4 ─ 用户投稿(V1.1,预估 3-5 天)
+
+让普通用户能贡献内容。
+
+- [ ] **P4-1 表 `skill_user_articles`** — type 6 选 1: tutorial/review/showcase/troubleshooting/prompts/comparison
+- [ ] **P4-2 用户编辑器 `/skills/editor`** — CodeMirror Markdown + 实时预览 + 工具栏 + 拖图上传 + 草稿自动保存
+- [ ] **P4-3 案例分享 `/skills/showcase/new`** — 图片轮播 + Prompt + 输出截图 + 关联 skill
+- [ ] **P4-4 草稿自动保存 + 版本历史** — 每 30s 写一次,版本可回滚
+- [ ] **P4-5 投稿审核管理员后台** — pending / approved / rejected + 审核理由
+- [ ] **P4-6 用户主页 `/skills/u/:username`** — 我发了啥 + 收到的赞 + 等级徽章
+
+### Phase 5 ─ 平台运营增强(V1.2,预估 2-3 天)
+
+- [ ] **P5-1 commit hash 过期 Badge** — 定时拉 GitHub → 比对 → "上游已更新" 提示
+- [ ] **P5-2 一键重生成** — 检测到过期后 admin 点一下重跑 AI 生成(保留 human_revisions 警告)
+- [ ] **P5-3 标签订阅** — 用户订阅 tag/category,新内容站内通知
+- [ ] **P5-4 作者打赏** — 用 aggre-api quota 给作者直接转
+- [ ] **P5-5 SEO sitemap.xml + 静态 OG image** — sitemap 自动生成,OG 图用 headless render 或 SVG 模板
+- [ ] **P5-6 RSS feed `/skills/rss`** — 最新发布推出去
+
+### Phase 6 ─ 差异化能力(超越同类,预估 5-7 天)⭐
+
+#### 6A 在线 Playground(杀手锏)
+
+让用户不离开页面就能试玩 skill —— 官方文档都没有的能力。
+
+- [ ] **P6A-1** 表 `skill_play_sessions`(session_id / skill_id / user_id / prompt / response / tokens / latency / model / created_at)
+- [ ] **P6A-2** 后端 `POST /api/skill-plaza/skills/:id/play` — 用 admin 配置的 server token 走 /v1/chat/completions,带 skill 文档作为 system context
+- [ ] **P6A-3** 限频(IP + 用户双维度),匿名访客限 3 次/小时,登录用户限 20 次/小时
+- [ ] **P6A-4** Detail 页右栏「试玩」抽屉 — Prompt 输入框 + 实时响应 + Token 消耗 + 延迟显示
+- [ ] **P6A-5** 试玩 session 分享 URL `/skills/play/:session_id`(用 nano-id,7-8 位 base62)
+
+#### 6B AI 智能助手(Ask Skill)
+
+每个 skill detail 页一个 chat 入口,基于文档回答精准引用。
+
+- [ ] **P6B-1** 文档 chunk + 简单 BM25 检索(无需向量库,先用 keyword + Redis SortedSet)
+- [ ] **P6B-2** 后端 `POST /api/skill-plaza/skills/:id/ask` — 把检索到的 chunks 拼进 system prompt
+- [ ] **P6B-3** 前端 Detail 页底部抽屉 "Ask this skill"
+
+#### 6C Skill Stack(个人组合页)
+
+- [ ] **P6C-1** 表 `skill_stacks`(stack_id / user_id / name / description / public / fork_of) + `skill_stack_items`(stack_id / skill_id / order / note)
+- [ ] **P6C-2** 编辑器 `/skills/stacks/new` — 添加 skill + 写串联说明 + Mermaid 工作流图
+- [ ] **P6C-3** 公开页 `/skills/stacks/:id` — 收藏 / fork / 评论
+- [ ] **P6C-4** "我的 Stack" tab(挂在 MyCenter 下)
+
+#### 6D Skill Battle
+
+- [ ] **P6D-1** 表 `skill_battles`(weekly battle: skill_a_id / skill_b_id / week_start / vote_a / vote_b / 状态)
+- [ ] **P6D-2** Battle 页 `/skills/battle` — 周对决卡片 + 投票按钮 + 用 token 试跑 A/B 比较 + 自动 evaluator 评分
+- [ ] **P6D-3** 月度排行榜(本月最佳 / 最佳新人)
+
+#### 6E 真实使用统计(数据壁垒)
+
+公开 aggre-api 真实流量(隐私安全 aggregated)。
+
+- [ ] **P6E-1** 后端日志埋点 — 每次 /v1/chat/completions 调用按 skill_id(从 system prompt 或显式 header)聚合到 Redis SortedSet
+- [ ] **P6E-2** Detail 页统计卡片 — 累计被调用 / 平均 Token / 平均会话深度 / 24h 热度
+- [ ] **P6E-3** 各主流模型成功率 — 用 evaluator 模型自动判定(每天异步扫一批)
+- [ ] **P6E-4** 隐私边界 — 不显示具体 prompt 内容,只显示 token 数 / 成功率 / 延迟
+
+#### 6F 智能推荐
+
+- [ ] **P6F-1** Redis 协同过滤(用过 X 的人也用 Y)
+- [ ] **P6F-2** "新趋势" / "热度上升" Badge(基于 P6E 数据)
+- [ ] **P6F-3** 首页 / Detail 页推荐位
+
+### Phase 7 ─ 创作者经济(留住人,预估 3-4 天)
+
+- [ ] **P7-1 作者分成** — 用户用付费模型跑某 skill 的 Playground,按 X%(默认 5%)返还作者 quota,加 `author_revenue_share` admin 配置
+- [ ] **P7-2 作者等级 / 徽章** — 累计 fork / 评分 / 收藏阈值升级(青铜→白银→黄金→大师)
+- [ ] **P7-3 官方推荐位** — admin 给 skill 打"官方推荐"标,首页 Hero 轮播
+- [ ] **P7-4 打赏排行榜** — 月度被打赏最多的作者
+- [ ] **P7-5 作者认证** — 蓝标(证明是 skill repo owner,通过 OAuth GitHub 验证)
+
+### Phase 8 ─ 企业 & 高级(可选,预估 5-7 天)
+
+- [ ] **P8-1 团队私有 Skill 库** — group_id 过滤,团队成员可见
+- [ ] **P8-2 CLI 工具** — `aggre skills install foo-skill` → 拉到本地 `~/.claude/skills/`
+- [ ] **P8-3 VS Code 扩展** — 侧栏浏览 + 一键安装
+- [ ] **P8-4 离线 PDF / Markdown bundle 导出**
+- [ ] **P8-5 审计日志** — 企业管理员看团队成员安装的 skill
+
+### Phase 9 ─ 多模态 & 体验细节(预估 3-4 天)
+
+- [ ] **P9-1 Skill 演示视频位** — YouTube / Bilibili embed
+- [ ] **P9-2 Skill 截图轮播**
+- [ ] **P9-3 工作流图** — Mermaid render
+- [ ] **P9-4 Dark mode 完整支持** — 自动跟随系统
+- [ ] **P9-5 键盘快捷键** — `/` 搜索 / `j/k` 列表导航 / `g d` 跳详情
+- [ ] **P9-6 中英文段落级对照** — 详情页可切换"段落对照"模式
+
+### Phase 10 ─ 智能化运营(持续)
+
+- [ ] **P10-1 每日 AI 摘要** — admin 后台显示「昨天 N 篇新内容 / 热门评论 / 待审核 N 条」
+- [ ] **P10-2 自动质量评分** — evaluator 模型每天扫新 AI 教程打分 → 低分自动标"待优化"
+- [ ] **P10-3 内容自动翻译** — 用户发中文 → AI 自动生成英文(人工可覆盖)
+- [ ] **P10-4 Prompt injection 扫描** — 用户内容 submit 时扫一遍,可疑内容进入人工审核
+
+---
+
+## 14. 路线图执行日志(每次实现后追加)
+
+格式:
+- **YYYY-MM-DD — P{phase}-{n} 标题(commit hash)**
+- 完成内容(简洁,3-5 行)
+- 下一步:P{phase}-{m}
+
+### 2026-05-14 — P3-1 评论点赞 + 一层回复(pending commit)
+
+完成内容:
+- 后端 `SkillCommentLike` 表(user_id × comment_id 唯一索引),AutoMigrate 注册
+- `ToggleSkillCommentLike` 在事务里翻转 + 重算 like_count;`ListCommentLikesByUser` 批量回填 `liked_by_me`
+- `POST /api/skill-plaza/comments/:id/like`(UserAuth),`GET /skill-plaza/skills/:slug/comments` 加 TryUserAuth
+- `CreateSkillComment` 校验 parent_id:必须同 skill + 折叠到顶层
+- 前端 `CommentItem` 加 Heart/Reply 按钮 + 嵌套渲染(reply 缩进 32px + base 底色)
+- `CommentForm` 接受 `replyTo`,显示"回复 @user"chip 可取消
+- `DetailSocial` 用 useMemo 把扁平列表分成 `{tops, replies}` 树,删除评论时连同子评论一起清理
+- Heart 用 optimistic update + 错误回滚;loggedIn 检查避免匿名点赞
+
+下一步:P3-2 敏感词过滤

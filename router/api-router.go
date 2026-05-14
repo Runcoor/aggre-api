@@ -38,7 +38,7 @@ func SetApiRouter(router *gin.Engine) {
 		// Public read-only social info — TryUserAuth so the caller's own
 		// rating / favorite state piggybacks the same call if logged in.
 		apiRouter.GET("/skill-plaza/skills/:slug/ratings", middleware.TryUserAuth(), controller.GetSkillRatingSummary)
-		apiRouter.GET("/skill-plaza/skills/:slug/comments", controller.GetSkillComments)
+		apiRouter.GET("/skill-plaza/skills/:slug/comments", middleware.TryUserAuth(), controller.GetSkillComments)
 		apiRouter.GET("/skill-plaza/skills/:slug/favorite-state", middleware.TryUserAuth(), controller.GetSkillFavoriteState)
 		apiRouter.POST("/tool/balance", middleware.CriticalRateLimit(), controller.ToolCheckBalance)
 		apiRouter.GET("/pricing", middleware.TryUserAuth(), controller.GetPricing)
@@ -282,6 +282,7 @@ func SetApiRouter(router *gin.Engine) {
 			skillPlazaUserRoute.POST("/skills/:slug/comments", controller.PostSkillComment)
 			skillPlazaUserRoute.POST("/skills/:slug/favorite-toggle", controller.PostSkillFavoriteToggle)
 			skillPlazaUserRoute.DELETE("/comments/:id", controller.DeleteSkillCommentUser)
+			skillPlazaUserRoute.POST("/comments/:id/like", controller.PostSkillCommentLikeToggle)
 			skillPlazaUserRoute.GET("/me/favorites", controller.GetMySkillFavorites)
 			skillPlazaUserRoute.GET("/me/ratings", controller.GetMySkillRatings)
 			skillPlazaUserRoute.GET("/me/comments", controller.GetMySkillComments)

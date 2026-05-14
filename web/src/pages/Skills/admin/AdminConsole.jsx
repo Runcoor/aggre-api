@@ -23,7 +23,15 @@ For commercial licensing, please contact support@quantumnous.com
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Github, Eye, Edit3, Trash2, RefreshCw } from 'lucide-react';
+import {
+  Plus,
+  Github,
+  Eye,
+  Edit3,
+  Trash2,
+  RefreshCw,
+  ArrowLeft,
+} from 'lucide-react';
 import { API, showError, showSuccess } from '../../../helpers';
 import { SKILL_PLAZA_STYLES, SourceBadge, StatusBadge } from '../styles';
 
@@ -83,6 +91,20 @@ const AdminConsole = () => {
             }}
           >
             <div>
+              <Link
+                to='/skills'
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  fontSize: 12.5,
+                  color: 'var(--text-muted)',
+                  textDecoration: 'none',
+                  marginBottom: 2,
+                }}
+              >
+                <ArrowLeft size={12} /> {t('返回 SKILLS 广场')}
+              </Link>
               <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>
                 {t('管理员工作台')}
               </div>

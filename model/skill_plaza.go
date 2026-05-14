@@ -216,8 +216,12 @@ func ListSkillsAdmin(f ListSkillsAdminFilter) ([]Skill, int64, error) {
 		q = q.Where("category = ?", f.Category)
 	}
 	if f.Search != "" {
-		like := "%" + f.Search + "%"
-		q = q.Where("name LIKE ? OR slug LIKE ?", like, like)
+		// LOWER() on both sides to stay case-insensitive across MySQL (default
+		// collation is case-insensitive), SQLite (LIKE is ASCII case-insensitive
+		// by default) and PostgreSQL (LIKE is case-sensitive — without LOWER()
+		// the search would silently miss matches on PG).
+		like := "%" + strings.ToLower(f.Search) + "%"
+		q = q.Where("LOWER(name) LIKE ? OR LOWER(slug) LIKE ?", like, like)
 	}
 	var total int64
 	if err := q.Count(&total).Error; err != nil {
@@ -256,11 +260,12 @@ func ListSkillsPublic(f ListSkillsPublicFilter) ([]Skill, int64, error) {
 		q = q.Where("source_type = ?", f.SourceType)
 	}
 	if f.Tag != "" {
-		q = q.Where("tags LIKE ?", "%"+f.Tag+"%")
+		q = q.Where("LOWER(tags) LIKE ?", "%"+strings.ToLower(f.Tag)+"%")
 	}
 	if f.Search != "" {
-		like := "%" + f.Search + "%"
-		q = q.Where("name LIKE ?", like)
+		// LOWER() so PostgreSQL stays case-insensitive like the other two DBs.
+		like := "%" + strings.ToLower(f.Search) + "%"
+		q = q.Where("LOWER(name) LIKE ?", like)
 	}
 	var total int64
 	if err := q.Count(&total).Error; err != nil {
@@ -310,8 +315,8 @@ type SkillArticle struct {
 	// Generation provenance — populated by AI gen service for audit.
 	GeneratedBy    string `json:"generated_by" gorm:"type:varchar(120)"` // model name e.g. gpt-5
 	GeneratedAt    int64  `json:"generated_at" gorm:"bigint"`
-	TokenInput     int    `json:"token_input" gorm:"int"`
-	TokenOutput    int    `json:"token_output" gorm:"int"`
+	TokenInput     int    `json:"token_input"`
+	TokenOutput    int    `json:"token_output"`
 	GenerationLog  string `json:"generation_log" gorm:"type:text"` // optional debug trace
 	HumanRevisions int    `json:"human_revisions" gorm:"default:0"`
 

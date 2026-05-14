@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/runcoor/aggre-api/common"
 	"github.com/runcoor/aggre-api/model"
@@ -38,11 +39,17 @@ import (
 // =====================================================================
 
 func skillPlazaGate(c *gin.Context) bool {
-	if !operation_setting.IsSkillPlazaEnabled() {
-		c.JSON(http.StatusNotFound, gin.H{"success": false, "message": "Not Found"})
-		return false
+	if operation_setting.IsSkillPlazaEnabled() {
+		return true
 	}
-	return true
+	// Admins can preview the Plaza even before the module is publicly
+	// enabled — otherwise an admin who's reviewing/publishing content
+	// can't see what end users would see. Public visitors still hit 404.
+	if role, ok := sessions.Default(c).Get("role").(int); ok && role >= common.RoleAdminUser {
+		return true
+	}
+	c.JSON(http.StatusNotFound, gin.H{"success": false, "message": "Not Found"})
+	return false
 }
 
 // =====================================================================

@@ -46,18 +46,32 @@ import (
 // user controls.
 // =====================================================================
 
-// RepoRef identifies a single GitHub repository (and optional branch).
+// RepoRef identifies a single GitHub repository (and optional branch /
+// subdirectory). Subdir is the part of the path after `/tree/<branch>/`
+// in a GitHub URL — it lets us scope an import to one skill inside a
+// monorepo (e.g. anthropics/skills/document-skills/pdf) without pulling
+// the rest of the repo.
 type RepoRef struct {
 	Owner  string
 	Repo   string
 	Branch string // empty means "use default"
+	Subdir string // empty means "repo root"; never starts or ends with "/"
 }
 
 var slugRe = regexp.MustCompile(`^[A-Za-z0-9._-]+$`)
 
-// ParseGitHubURL accepts e.g. "https://github.com/owner/repo" or
-// "https://github.com/owner/repo/tree/main" and returns a RepoRef.
-// Returns an error for any non-github.com URL or malformed path.
+// subdirSegmentRe is the per-segment validator for Subdir. We accept the
+// same character class as a GitHub path segment: letters, digits, and
+// .-_ — no spaces, no traversal, no shell metas.
+var subdirSegmentRe = regexp.MustCompile(`^[A-Za-z0-9._-]+$`)
+
+// ParseGitHubURL accepts:
+//   - https://github.com/owner/repo
+//   - https://github.com/owner/repo/tree/<branch>
+//   - https://github.com/owner/repo/tree/<branch>/<subdir...>
+//
+// and returns a RepoRef. Returns an error for any non-github.com URL or
+// malformed path.
 func ParseGitHubURL(raw string) (*RepoRef, error) {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
@@ -86,20 +100,42 @@ func ParseGitHubURL(raw string) (*RepoRef, error) {
 		return nil, errors.New("invalid owner or repo segment")
 	}
 	ref := &RepoRef{Owner: owner, Repo: repo}
-	// Optional /tree/<branch>/...
+	// Optional /tree/<branch>/<subdir...>
 	if len(parts) >= 4 && parts[2] == "tree" {
 		if !slugRe.MatchString(parts[3]) {
 			return nil, errors.New("invalid branch segment")
 		}
 		ref.Branch = parts[3]
+		if len(parts) > 4 {
+			subParts := parts[4:]
+			for _, seg := range subParts {
+				if seg == "" || seg == "." || seg == ".." {
+					return nil, errors.New("invalid subdirectory segment")
+				}
+				if !subdirSegmentRe.MatchString(seg) {
+					return nil, errors.New("invalid subdirectory segment")
+				}
+			}
+			ref.Subdir = strings.Join(subParts, "/")
+		}
 	}
 	return ref, nil
 }
 
 // CanonicalURL returns the canonical https://github.com/owner/repo form
-// that we store in the database (without branch suffix).
+// that we store in the database. When a Subdir is set we keep it in the
+// URL (`/tree/<branch>/<subdir>`) so that re-imports and duplicate-detect
+// can distinguish multiple skills imported from the same monorepo.
 func (r *RepoRef) CanonicalURL() string {
-	return fmt.Sprintf("https://github.com/%s/%s", r.Owner, r.Repo)
+	base := fmt.Sprintf("https://github.com/%s/%s", r.Owner, r.Repo)
+	if r.Subdir == "" {
+		return base
+	}
+	branch := r.Branch
+	if branch == "" {
+		branch = "HEAD" // placeholder; FetchManifest resolves the real default
+	}
+	return fmt.Sprintf("%s/tree/%s/%s", base, branch, r.Subdir)
 }
 
 // =====================================================================
@@ -157,6 +193,7 @@ type Manifest struct {
 	Owner         string      `json:"owner"`
 	Repo          string      `json:"repo"`
 	Branch        string      `json:"branch"`
+	Subdir        string      `json:"subdir,omitempty"` // empty = repo root
 	CommitHash    string      `json:"commit_hash"`
 	License       string      `json:"license"`
 	Description   string      `json:"description"`
@@ -241,6 +278,23 @@ func isWhitelisted(p string) bool {
 		return true
 	}
 	return false
+}
+
+// relPathForWhitelist returns the file path relative to the configured
+// subdir (so whitelist patterns can stay anchored at "root"), or the
+// empty string if the entry isn't under subdir at all.
+//
+// subdir == "" means we're scoped to repo root, in which case every
+// tree entry passes the prefix gate and we return the path unchanged.
+func relPathForWhitelist(treePath, subdir string) (string, bool) {
+	if subdir == "" {
+		return treePath, true
+	}
+	prefix := subdir + "/"
+	if !strings.HasPrefix(treePath, prefix) {
+		return "", false
+	}
+	return treePath[len(prefix):], true
 }
 
 // =====================================================================
@@ -367,11 +421,16 @@ func FetchManifest(ctx context.Context, ref *RepoRef) (*Manifest, error) {
 	}
 
 	// 4. Filter + fetch whitelisted blobs
+	// Re-resolve canonical URL with the actual default branch (in case the
+	// caller passed a Subdir with no Branch — we now know the branch).
+	resolvedRef := *ref
+	resolvedRef.Branch = branch
 	mf := &Manifest{
-		RepoURL:    ref.CanonicalURL(),
+		RepoURL:    resolvedRef.CanonicalURL(),
 		Owner:      ref.Owner,
 		Repo:       ref.Repo,
 		Branch:     branch,
+		Subdir:     ref.Subdir,
 		CommitHash: br.Commit.Sha,
 		Truncated:  tree.Truncated,
 		RepoSizeKB: meta.Size,
@@ -394,8 +453,16 @@ func FetchManifest(ctx context.Context, ref *RepoRef) (*Manifest, error) {
 		if entry.Type != "blob" {
 			continue
 		}
-		// Cheap pre-filter on path
-		if !isWhitelisted(entry.Path) {
+		// Subdir scoping: skip anything outside the configured subtree.
+		// When Subdir is empty this is a no-op.
+		relPath, ok := relPathForWhitelist(entry.Path, ref.Subdir)
+		if !ok {
+			continue
+		}
+		// Whitelist runs against the *relative* path so existing patterns
+		// (SKILL.md, references/*.md, etc.) keep working regardless of
+		// where the subdir lives in the host repo.
+		if !isWhitelisted(relPath) {
 			continue
 		}
 		if entry.Size > maxFileBytes {
@@ -413,7 +480,7 @@ func FetchManifest(ctx context.Context, ref *RepoRef) (*Manifest, error) {
 			return nil, fmt.Errorf("aggregate read exceeded %dMB cap", cfg.MaxRepoSizeMB)
 		}
 		mf.Detected = append(mf.Detected, FileEntry{
-			Path:  entry.Path,
+			Path:  relPath, // store the relative path so the envelope / UI stays clean
 			Size:  len(body),
 			Bytes: string(body),
 		})
@@ -424,6 +491,9 @@ func FetchManifest(ctx context.Context, ref *RepoRef) (*Manifest, error) {
 	}
 	mf.TotalBytes = totalBytes
 	if len(mf.Detected) == 0 {
+		if ref.Subdir != "" {
+			return nil, fmt.Errorf("no whitelisted documentation files found under %s", ref.Subdir)
+		}
 		return nil, errors.New("no whitelisted documentation files found in repo")
 	}
 	return mf, nil
@@ -433,9 +503,11 @@ func FetchManifest(ctx context.Context, ref *RepoRef) (*Manifest, error) {
 // Helpers for the AI generation step (used by ai_gen.go)
 // =====================================================================
 
-// SlugFor returns a URL-friendly slug derived from owner+repo, e.g.
-// "anthropic-pdf-toolkit". Caller should de-dup on collision.
-func SlugFor(owner, repo string) string {
+// SlugFor returns a URL-friendly slug derived from owner+repo+subdir,
+// e.g. "anthropic-pdf-toolkit" or "anthropics-skills-pdf" (for a skill
+// imported from a monorepo subdirectory). Caller should de-dup on
+// collision. Pass subdir="" when scoping to repo root.
+func SlugFor(owner, repo, subdir string) string {
 	clean := func(s string) string {
 		var b strings.Builder
 		for _, r := range strings.ToLower(s) {
@@ -448,6 +520,11 @@ func SlugFor(owner, repo string) string {
 		return strings.Trim(b.String(), "-")
 	}
 	slug := clean(owner) + "-" + clean(repo)
+	if subdir != "" {
+		// Only the leaf segment goes into the slug — full paths produce
+		// long ugly slugs like "anthropics-skills-document-skills-pdf".
+		slug = slug + "-" + clean(path.Base(subdir))
+	}
 	if len(slug) > 100 {
 		slug = slug[:100]
 	}
@@ -466,7 +543,13 @@ func EnvelopeFiles(mf *Manifest) string {
 	b.WriteString(mf.CommitHash)
 	b.WriteString("\" branch=\"")
 	b.WriteString(mf.Branch)
-	b.WriteString("\">\n")
+	b.WriteString("\"")
+	if mf.Subdir != "" {
+		b.WriteString(" subdir=\"")
+		b.WriteString(mf.Subdir)
+		b.WriteString("\"")
+	}
+	b.WriteString(">\n")
 	for _, f := range mf.Detected {
 		b.WriteString("\n=== FILE: ")
 		b.WriteString(f.Path)
@@ -479,7 +562,12 @@ func EnvelopeFiles(mf *Manifest) string {
 }
 
 // CoverSeedFor returns a short deterministic seed used by the frontend's
-// procedural SVG cover generator.
-func CoverSeedFor(owner, repo string) string {
-	return path.Base(owner) + "-" + path.Base(repo)
+// procedural SVG cover generator. When subdir is set, it's appended so
+// multiple skills imported from the same monorepo render distinct covers.
+func CoverSeedFor(owner, repo, subdir string) string {
+	seed := path.Base(owner) + "-" + path.Base(repo)
+	if subdir != "" {
+		seed += "-" + path.Base(subdir)
+	}
+	return seed
 }

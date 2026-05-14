@@ -195,13 +195,25 @@ func upsertSkill(mf *Manifest, ref *RepoRef, adminID int) (*model.Skill, error) 
 		return model.GetSkillByID(existing.Id)
 	}
 
-	slug, err := uniqueSlug(mf.Owner, mf.Repo)
+	slug, err := uniqueSlug(mf.Owner, mf.Repo, mf.Subdir)
 	if err != nil {
 		return nil, err
 	}
+	// When importing a monorepo subdirectory the display name is the
+	// leaf folder (e.g. "skill-creator"), not the host repo name.
+	displayName := mf.Repo
+	if mf.Subdir != "" {
+		leaf := mf.Subdir
+		if i := strings.LastIndex(leaf, "/"); i >= 0 {
+			leaf = leaf[i+1:]
+		}
+		if leaf != "" {
+			displayName = leaf
+		}
+	}
 	skill := &model.Skill{
 		Slug:          slug,
-		Name:          mf.Repo,
+		Name:          displayName,
 		SourceType:    model.SkillSourceGitHub,
 		GitHubURL:     mf.RepoURL,
 		Owner:         mf.Owner,
@@ -213,7 +225,7 @@ func upsertSkill(mf *Manifest, ref *RepoRef, adminID int) (*model.Skill, error) 
 		RepoUpdatedAt: mf.RepoUpdatedAt,
 		ImportedBy:    adminID,
 		Status:        model.SkillStatusDraft,
-		CoverSeed:     CoverSeedFor(mf.Owner, mf.Repo),
+		CoverSeed:     CoverSeedFor(mf.Owner, mf.Repo, mf.Subdir),
 	}
 	if err := model.CreateSkill(skill); err != nil {
 		return nil, err
@@ -221,10 +233,10 @@ func upsertSkill(mf *Manifest, ref *RepoRef, adminID int) (*model.Skill, error) 
 	return skill, nil
 }
 
-// uniqueSlug picks a slug derived from owner/repo and appends a numeric
-// suffix on collision.
-func uniqueSlug(owner, repo string) (string, error) {
-	base := SlugFor(owner, repo)
+// uniqueSlug picks a slug derived from owner/repo (+ optional subdir
+// leaf) and appends a numeric suffix on collision.
+func uniqueSlug(owner, repo, subdir string) (string, error) {
+	base := SlugFor(owner, repo, subdir)
 	if base == "" {
 		return "", errors.New("could not derive slug from owner/repo")
 	}

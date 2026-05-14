@@ -31,22 +31,51 @@ import {
   MessageSquare,
   ArrowLeft,
   Inbox,
+  FileText,
+  PenSquare,
+  Plus,
+  Eye,
+  Edit3,
+  Trash2,
+  Send,
 } from 'lucide-react';
 import { API, showError, getUserIdFromLocalStorage } from '../../helpers';
 import { SKILL_PLAZA_STYLES, SourceBadge, ProceduralCover } from './styles';
 
 const TABS = [
+  { id: 'articles', icon: FileText, label: '我的投稿' },
   { id: 'favorites', icon: Bookmark, label: '收藏' },
   { id: 'ratings', icon: Star, label: '我的评分' },
   { id: 'comments', icon: MessageSquare, label: '我的评论' },
 ];
 
+const ARTICLE_STATUS_META = {
+  draft: { label: '草稿', color: '#64748b', bg: '#f1f5f9' },
+  pending: { label: '待审核', color: '#a16207', bg: '#fef3c7' },
+  approved: { label: '已发布', color: '#15803d', bg: '#dcfce7' },
+  rejected: { label: '已驳回', color: '#b91c1c', bg: '#fee2e2' },
+  offline: { label: '已下架', color: '#475569', bg: '#e2e8f0' },
+};
+
+const ARTICLE_TYPE_LABEL = {
+  tutorial: '教程',
+  review: '测评',
+  showcase: '案例',
+  troubleshooting: '排错',
+  prompts: 'Prompt',
+  comparison: '对比',
+};
+
 const MyCenter = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const userId = getUserIdFromLocalStorage();
-  const [tab, setTab] = useState('favorites');
+  // Honor ?tab=articles deep-link from "submit success" navigation.
+  const initialTab =
+    new URLSearchParams(window.location.search).get('tab') || 'articles';
+  const [tab, setTab] = useState(initialTab);
   const [data, setData] = useState({
+    articles: [],
     favorites: [],
     ratings: [],
     comments: [],
@@ -64,11 +93,13 @@ const MyCenter = () => {
     if (userId <= 0) return;
     setLoading(true);
     const url =
-      tab === 'favorites'
-        ? '/api/skill-plaza/me/favorites'
-        : tab === 'ratings'
-          ? '/api/skill-plaza/me/ratings'
-          : '/api/skill-plaza/me/comments';
+      tab === 'articles'
+        ? '/api/skill-plaza/me/articles'
+        : tab === 'favorites'
+          ? '/api/skill-plaza/me/favorites'
+          : tab === 'ratings'
+            ? '/api/skill-plaza/me/ratings'
+            : '/api/skill-plaza/me/comments';
     API.get(url)
       .then((res) => {
         if (res.data?.success) {
@@ -104,18 +135,68 @@ const MyCenter = () => {
             >
               <ArrowLeft size={12} /> {t('返回 SKILLS 广场')}
             </Link>
-            <h1
+            <div
               style={{
-                fontSize: 28,
-                margin: '4px 0 0',
-                letterSpacing: '-0.4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+                flexWrap: 'wrap',
               }}
             >
-              {t('我的中心')}
-            </h1>
-            <p style={{ color: 'var(--text-secondary)', margin: '6px 0 0' }}>
-              {t('管理你的收藏、评分和评论。')}
-            </p>
+              <div>
+                <h1
+                  style={{
+                    fontSize: 28,
+                    margin: '4px 0 0',
+                    letterSpacing: '-0.4px',
+                  }}
+                >
+                  {t('我的中心')}
+                </h1>
+                <p style={{ color: 'var(--text-secondary)', margin: '6px 0 0' }}>
+                  {t('管理你的投稿、收藏、评分和评论。')}
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Link
+                  to='/skills/showcase/new'
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '10px 16px',
+                    borderRadius: 10,
+                    textDecoration: 'none',
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: 'var(--text-primary)',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border-default)',
+                  }}
+                >
+                  <PenSquare size={14} /> {t('分享案例')}
+                </Link>
+                <Link
+                  to='/skills/editor'
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '10px 18px',
+                    borderRadius: 10,
+                    color: '#fff',
+                    textDecoration: 'none',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    background: 'linear-gradient(135deg,#0072ff,#00c6ff)',
+                    boxShadow: '0 4px 12px rgba(0,114,255,0.25)',
+                  }}
+                >
+                  <Plus size={14} /> {t('新建投稿')}
+                </Link>
+              </div>
+            </div>
           </div>
 
           {/* Tabs */}
@@ -179,6 +260,22 @@ const MyCenter = () => {
             >
               {t('加载中...')}
             </div>
+          ) : tab === 'articles' ? (
+            <MyArticlesList
+              items={data.articles}
+              onChanged={() => {
+                setLoading(true);
+                API.get('/api/skill-plaza/me/articles')
+                  .then((res) => {
+                    if (res.data?.success)
+                      setData((p) => ({
+                        ...p,
+                        articles: res.data.data?.items || [],
+                      }));
+                  })
+                  .finally(() => setLoading(false));
+              }}
+            />
           ) : tab === 'favorites' ? (
             <FavoritesList items={data.favorites} />
           ) : tab === 'ratings' ? (
@@ -225,6 +322,214 @@ function EmptyState({ message }) {
       >
         {t('去浏览')}
       </Link>
+    </div>
+  );
+}
+
+function MyArticlesList({ items, onChanged }) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  if (!items || items.length === 0) {
+    return (
+      <div
+        style={{
+          padding: '60px 0',
+          textAlign: 'center',
+          color: 'var(--text-muted)',
+        }}
+      >
+        <FileText size={22} style={{ opacity: 0.5, marginBottom: 8 }} />
+        <div style={{ fontSize: 14 }}>{t('还没有任何投稿')}</div>
+        <div style={{ fontSize: 12.5, marginTop: 4, opacity: 0.7 }}>
+          {t('写一篇教程 / 案例 / 测评,让更多人看到你的玩法。')}
+        </div>
+        <Link
+          to='/skills/editor'
+          style={{
+            display: 'inline-block',
+            marginTop: 14,
+            padding: '7px 16px',
+            borderRadius: 8,
+            color: '#fff',
+            background: 'linear-gradient(135deg,#0072ff,#00c6ff)',
+            fontSize: 13,
+            fontWeight: 600,
+            textDecoration: 'none',
+          }}
+        >
+          {t('立即创建')}
+        </Link>
+      </div>
+    );
+  }
+  const remove = async (id) => {
+    // eslint-disable-next-line no-alert
+    if (!window.confirm(t('确定删除这篇投稿吗？'))) return;
+    try {
+      const res = await API.delete(`/api/skill-plaza/me/articles/${id}`);
+      if (res.data?.success) {
+        onChanged?.();
+      } else showError(res.data?.message);
+    } catch (e) {
+      showError(e?.message);
+    }
+  };
+  const submit = async (id) => {
+    try {
+      const res = await API.post(
+        `/api/skill-plaza/me/articles/${id}/submit`,
+      );
+      if (res.data?.success) {
+        onChanged?.();
+      } else {
+        const hits = res.data?.data?.sensitive_words;
+        if (Array.isArray(hits) && hits.length > 0) {
+          showError(
+            t('包含敏感词: {{w}}').replace('{{w}}', hits.join('、')),
+          );
+        } else {
+          showError(res.data?.message || t('提交失败'));
+        }
+      }
+    } catch (e) {
+      showError(e?.message);
+    }
+  };
+  return (
+    <div
+      style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--border-default)',
+        borderRadius: 14,
+        overflow: 'hidden',
+      }}
+    >
+      {items.map((a) => {
+        const meta = ARTICLE_STATUS_META[a.status] || ARTICLE_STATUS_META.draft;
+        return (
+          <div
+            key={a.id}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '80px 1fr 100px 140px 200px',
+              gap: 12,
+              padding: '14px 18px',
+              borderBottom: '1px solid var(--border-default)',
+              alignItems: 'center',
+              fontSize: 13,
+            }}
+          >
+            <span
+              style={{
+                padding: '2px 8px',
+                borderRadius: 999,
+                background: meta.bg,
+                color: meta.color,
+                fontSize: 11,
+                fontWeight: 600,
+                textAlign: 'center',
+              }}
+            >
+              {t(meta.label)}
+            </span>
+            <div>
+              <div style={{ fontWeight: 600, marginBottom: 2 }}>
+                {a.title}
+                <span
+                  style={{
+                    marginLeft: 8,
+                    padding: '1px 6px',
+                    borderRadius: 4,
+                    background: 'var(--bg-base)',
+                    color: 'var(--text-muted)',
+                    fontSize: 11,
+                  }}
+                >
+                  {t(ARTICLE_TYPE_LABEL[a.type] || a.type)}
+                </span>
+              </div>
+              {a.summary && (
+                <div
+                  style={{
+                    color: 'var(--text-secondary)',
+                    fontSize: 12.5,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    maxWidth: 500,
+                  }}
+                >
+                  {a.summary}
+                </div>
+              )}
+              {a.status === 'rejected' && a.reject_reason && (
+                <div
+                  style={{
+                    color: '#b91c1c',
+                    fontSize: 11.5,
+                    marginTop: 2,
+                  }}
+                >
+                  {t('驳回:')} {a.reject_reason}
+                </div>
+              )}
+            </div>
+            <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>
+              {a.view_count || 0} {t('浏览')} · {a.like_count || 0}{' '}
+              {t('赞')}
+            </span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
+              {new Date((a.updated_at || 0) * 1000).toLocaleDateString()}
+            </span>
+            <div
+              style={{
+                display: 'flex',
+                gap: 6,
+                justifyContent: 'flex-end',
+              }}
+            >
+              {a.status === 'approved' && (
+                <Link
+                  to={`/skills/article/${a.slug}`}
+                  className='skp-pill'
+                  style={{ textDecoration: 'none' }}
+                  title={t('查看公开页')}
+                >
+                  <Eye size={12} />
+                </Link>
+              )}
+              {(a.status === 'draft' || a.status === 'rejected') && (
+                <button
+                  className='skp-pill'
+                  onClick={() => submit(a.id)}
+                  title={t('提交审核')}
+                  style={{ color: '#15803d', borderColor: '#dcfce7' }}
+                >
+                  <Send size={12} />
+                </button>
+              )}
+              <button
+                className='skp-pill'
+                onClick={() => navigate(`/skills/editor/${a.id}`)}
+                disabled={a.status === 'approved'}
+                title={t('编辑')}
+              >
+                <Edit3 size={12} />
+              </button>
+              {a.status !== 'approved' && (
+                <button
+                  className='skp-pill'
+                  onClick={() => remove(a.id)}
+                  style={{ color: '#b91c1c' }}
+                  title={t('删除')}
+                >
+                  <Trash2 size={12} />
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

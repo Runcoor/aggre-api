@@ -300,6 +300,7 @@ func migrateDB() error {
 		&SkillReport{},
 		&SkillAuditLog{},
 		&SkillUserArticle{},
+		&SkillUserArticleVersion{},
 	)
 	if err != nil {
 		return err

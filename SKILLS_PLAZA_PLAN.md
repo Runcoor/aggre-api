@@ -415,11 +415,11 @@ V1.2(留存):
 让普通用户能贡献内容。
 
 - [x] **P4-1 表 `skill_user_articles`** — type 6 选 1: tutorial/review/showcase/troubleshooting/prompts/comparison(`483070f`)
-- [ ] **P4-2 用户编辑器 `/skills/editor`** — CodeMirror Markdown + 实时预览 + 工具栏 + 拖图上传 + 草稿自动保存
-- [ ] **P4-3 案例分享 `/skills/showcase/new`** — 图片轮播 + Prompt + 输出截图 + 关联 skill
-- [ ] **P4-4 草稿自动保存 + 版本历史** — 每 30s 写一次,版本可回滚
-- [ ] **P4-5 投稿审核管理员后台** — pending / approved / rejected + 审核理由
-- [ ] **P4-6 用户主页 `/skills/u/:username`** — 我发了啥 + 收到的赞 + 等级徽章
+- [x] **P4-2 用户编辑器 `/skills/editor`** — Markdown textarea + 实时预览 + 工具栏 + 拖图上传(base64 inline) + 草稿自动保存(P4-2 §14)
+- [x] **P4-3 案例分享 `/skills/showcase/new`** — 落地引导页 + 预设 type=showcase 跳转编辑器(P4-2 §14)
+- [x] **P4-4 草稿自动保存 + 版本历史** — 每 30s 写一次,版本可回滚,最多保留 50 条(P4-2 §14)
+- [x] **P4-5 投稿审核管理员后台** — pending / approved / rejected 状态过滤 + 审核理由 + 内联预览(P4-2 §14)
+- [x] **P4-6 用户主页 `/skills/u/:username`** — 已发文章 + 收到的赞 + 等级徽章(Lv1-5)(P4-2 §14)
 
 ### Phase 5 ─ 平台运营增强(V1.2,预估 2-3 天)
 
@@ -633,3 +633,75 @@ V1.1 投稿后端基础完工。
   strip / public filter / count aggregate / type validity),全绿。
 
 下一步:P4-2 编辑器(CodeMirror Markdown + 实时预览 + 草稿自动保存)。
+
+### 2026-05-14 — P4-2 ~ P4-6 V1.1 用户投稿全套上线
+
+V1.1 余下 5 个子项一次落地,涵盖前端编辑器 / 案例分享落地页 / 版本历史 /
+管理后台审核 / 公开作者主页。
+
+**后端新增**
+
+- `skill_user_article_versions` 表 + `CreateUserArticleSnapshot` /
+  `ListUserArticleVersions` / `RestoreUserArticleVersion`,每文章最多
+  保留 50 个快照,超过自动 prune。Restore 仅允许 draft / rejected,
+  approved 文章必须先 offline 才能回滚,防止悄悄改公开内容。
+- `GetAuthorProfile(username)` 聚合 article_count / total_likes /
+  total_views / comment_count / favorite_count;`deriveAuthorLevel`
+  根据文章数 + 累计赞数派生 Lv1~Lv5 等级徽章。
+- 控制器 4 个新端点:`POST /me/articles/:id/snapshot`、`GET
+  /me/articles/:id/versions{,/:vid}`、`POST .../restore`、公开的
+  `GET /skill-plaza/u/:username`。
+- 决策:CodeMirror 因为 bundle 增重 + "no local build" 约束被替换为
+  textarea + 工具栏 + react-markdown 预览,功能等价(写 Markdown 文章
+  不需要 IDE 级编辑器)。已在 P4-2 文件头说明。
+- 决策:图片采用 base64 内联(单图 ≤120KB / 封面 ≤180KB / 全文 ≤200KB),
+  不引入新文件存储接口,部署零侵入。
+- `SkillUserArticle.MarshalJSON` 通过 alias 结构暴露 `tags []string`,
+  让前端能直接读;CSV 仍存在 `tags` 列里,保留 `gorm:"-"` 的 hydrated
+  字段。
+
+**前端新增**
+
+- `pages/Skills/EditorPage.jsx`(P4-2 + P4-4 合体):textarea +
+  Bold/Italic/H2/H3/UL/OL/Quote/Code/CodeBlock/Link/Image 工具栏 +
+  右侧实时预览(MarkdownRenderer)+ 30s autosave tick(dirty 时静默 PUT
+  + snapshot)+ 版本历史抽屉(显示自动/手动标记 + 回滚按钮)+ 拖拽图片
+  → base64 嵌入 + 字数/字节统计 + beforeunload 脏数据保护 +
+  `?type=showcase&skill_id=` query 预设。
+- `pages/Skills/ShowcaseNewPage.jsx`(P4-3):案例分享专属落地页,3 张
+  Tip 卡片(Prompt / 截图 / 关联 Skill)+ Skill 下拉,点击「开始撰写」
+  转发到 `/skills/editor?type=showcase&skill_id=N`。
+- `pages/Skills/ArticleDetailPage.jsx`:`/skills/article/:slug` 路由的
+  用户投稿公开详情页(读 `/skill-plaza/user-articles/:slug`),含封面 /
+  作者 / 标签 / 关联 Skill 链接。
+- `pages/Skills/UserHomePage.jsx`(P4-6):作者公开主页 `/skills/u/:username`,
+  英文首字母 avatar 圆形头像 + Lv1~Lv5 等级 chip + 5 项统计卡片
+  (已发布 / 收到的赞 / 累计浏览 / 评论数 / 收藏数)+ 已发文章 grid。
+- `pages/Skills/admin/UserArticlesPage.jsx`(P4-5):状态 pill(待审核/
+  已发布/已驳回/已下架/草稿/全部)+ 单行展开查看完整 Markdown 渲染 +
+  Approve / Reject(prompt 填理由)/ Offline / Delete,所有动作写审计日志。
+- `pages/Skills/MyCenter.jsx`:新增 articles tab(默认),`MyArticlesList`
+  组件可编辑 / 删除 / 提交审核(命中敏感词时回显);头部加「新建投稿」
+  和「分享案例」入口,支持 `?tab=articles` deep link(提交成功跳转用)。
+- `pages/Skills/admin/AdminConsole.jsx`:工具栏新增「用户投稿」链接。
+- `App.jsx`:注册 5 个新路由(`/skills/editor{,/:id}` PrivateRoute,
+  `/skills/showcase/new` PrivateRoute,`/skills/article/:slug` 公开,
+  `/skills/u/:username` 公开,`/skills/admin/user-articles` AdminRoute)。
+  注意 React Router 中将 `/skills/u/:username` 等具体路由放在
+  catch-all `/skills/:slug` 之前,避免 slug 吞掉 username。
+- 同步处理 admin 顶部图标:去掉 `ReportsPage` / `AuditLogsPage` 标题里
+  的 Flag / History 大图标(用户反馈"两个图标"重复)。
+
+**测试**
+
+- 新增 5 个 model 单测:`TestCreateUserArticleSnapshot_AndList`、
+  `TestCreateUserArticleSnapshot_RejectsForeignAuthor`、
+  `TestRestoreUserArticleVersion_OverwritesContent`、
+  `TestRestoreUserArticleVersion_RejectsApproved`、
+  `TestDeriveAuthorLevel`。`resetSkillPlazaTables` + `task_cas_test`
+  bootstrap 同步加入 `skill_user_article_versions` AutoMigrate。
+- `go build ./...` + `go test ./model/ ./service/skill_plaza/` 全绿,
+  前端 ESLint 全过。
+
+下一阶段:Phase 5(commit hash 过期 Badge / 一键重生成 / 标签订阅 /
+打赏 / SEO + RSS)。

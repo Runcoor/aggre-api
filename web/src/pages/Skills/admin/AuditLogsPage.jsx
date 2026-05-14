@@ -123,10 +123,6 @@ const AuditLogsPage = () => {
               <ArrowLeft size={12} /> {t('返回管理工作台')}
             </Link>
             <h1 style={{ fontSize: 26, margin: '4px 0 6px' }}>
-              <History
-                size={22}
-                style={{ verticalAlign: -3, marginRight: 8, color: '#6366f1' }}
-              />
               {t('审核日志')}
             </h1>
             <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: 13 }}>

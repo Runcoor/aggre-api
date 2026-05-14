@@ -106,6 +106,15 @@ const SkillsAdminAuditLogs = lazy(
   () => import('./pages/Skills/admin/AuditLogsPage'),
 );
 const SkillsMyCenter = lazy(() => import('./pages/Skills/MyCenter'));
+const SkillsEditor = lazy(() => import('./pages/Skills/EditorPage'));
+const SkillsShowcaseNew = lazy(() => import('./pages/Skills/ShowcaseNewPage'));
+const SkillsArticleDetail = lazy(
+  () => import('./pages/Skills/ArticleDetailPage'),
+);
+const SkillsUserHome = lazy(() => import('./pages/Skills/UserHomePage'));
+const SkillsAdminUserArticles = lazy(
+  () => import('./pages/Skills/admin/UserArticlesPage'),
+);
 
 // Shared shell for standalone tool pages — centered column, top padding,
 // auto dark mode. Wraps CurlGenerator and LatencyTester.
@@ -720,6 +729,69 @@ function App() {
                   <SkillsAdminAuditLogs />
                 </Suspense>
               </AdminRoute>
+            }
+          />
+          <Route
+            path='/skills/admin/user-articles'
+            element={
+              <AdminRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <SkillsAdminUserArticles />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          {/* V1.1 — user submissions. Editor + showcase landing + article
+              detail + author home. Editor is auth-gated; the others are
+              public read. Note ordering — specific routes like /skills/u/:x
+              must appear BEFORE the catch-all /skills/:slug. */}
+          <Route
+            path='/skills/editor'
+            element={
+              <PrivateRoute>
+                <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                  <SkillsEditor />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/skills/editor/:id'
+            element={
+              <PrivateRoute>
+                <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                  <SkillsEditor />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/skills/showcase/new'
+            element={
+              <PrivateRoute>
+                <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                  <SkillsShowcaseNew />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/skills/article/:slug'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <SkillsArticleDetail />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/skills/u/:username'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <SkillsUserHome />
+              </Suspense>
             }
           />
           <Route

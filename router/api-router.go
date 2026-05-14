@@ -43,6 +43,8 @@ func SetApiRouter(router *gin.Engine) {
 		// V1.1 user articles — public read.
 		apiRouter.GET("/skill-plaza/user-articles", controller.ListUserArticlesPublicEndpoint)
 		apiRouter.GET("/skill-plaza/user-articles/:slug", controller.GetUserArticlePublic)
+		// V1.1 — public author profile.
+		apiRouter.GET("/skill-plaza/u/:username", controller.GetAuthorProfilePublic)
 		apiRouter.POST("/tool/balance", middleware.CriticalRateLimit(), controller.ToolCheckBalance)
 		apiRouter.GET("/pricing", middleware.TryUserAuth(), controller.GetPricing)
 		apiRouter.GET("/verification", middleware.EmailVerificationRateLimit(), middleware.TurnstileCheck(), controller.SendEmailVerification)
@@ -298,6 +300,12 @@ func SetApiRouter(router *gin.Engine) {
 			skillPlazaUserRoute.PUT("/me/articles/:id", controller.PutMyArticle)
 			skillPlazaUserRoute.DELETE("/me/articles/:id", controller.DeleteMyArticle)
 			skillPlazaUserRoute.POST("/me/articles/:id/submit", controller.PostMyArticleSubmit)
+
+			// P4-4 version history.
+			skillPlazaUserRoute.POST("/me/articles/:id/snapshot", controller.PostMyArticleSnapshot)
+			skillPlazaUserRoute.GET("/me/articles/:id/versions", controller.GetMyArticleVersions)
+			skillPlazaUserRoute.GET("/me/articles/:id/versions/:vid", controller.GetMyArticleVersion)
+			skillPlazaUserRoute.POST("/me/articles/:id/versions/:vid/restore", controller.PostMyArticleVersionRestore)
 		}
 
 		// SKILLS 广场 — admin endpoints (AdminAuth gated).

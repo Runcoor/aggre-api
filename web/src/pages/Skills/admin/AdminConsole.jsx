@@ -33,6 +33,7 @@ import {
   ArrowLeft,
   Flag,
   History,
+  Inbox,
 } from 'lucide-react';
 import { API, showError, showSuccess } from '../../../helpers';
 import { SKILL_PLAZA_STYLES, SourceBadge, StatusBadge } from '../styles';
@@ -126,6 +127,24 @@ const AdminConsole = () => {
               </p>
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
+              <Link
+                to='/skills/admin/user-articles'
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '10px 16px',
+                  borderRadius: 10,
+                  textDecoration: 'none',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: 'var(--text-primary)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-default)',
+                }}
+              >
+                <Inbox size={14} /> {t('用户投稿')}
+              </Link>
               <Link
                 to='/skills/admin/audit-logs'
                 style={{

@@ -30,7 +30,7 @@ func resetSkillPlazaTables(t *testing.T) {
 		"skill_ratings", "skill_favorites",
 		"skill_comments", "skill_comment_likes",
 		"skill_reports", "skill_audit_logs",
-		"skill_user_articles",
+		"skill_user_articles", "skill_user_article_versions",
 	} {
 		DB.Exec("DELETE FROM " + table)
 	}
@@ -505,6 +505,89 @@ func TestCountUserArticlesByStatus(t *testing.T) {
 	assert.EqualValues(t, 1, counts[SkillUserArticleStatusDraft])
 	assert.EqualValues(t, 2, counts[SkillUserArticleStatusPending])
 	assert.EqualValues(t, 1, counts[SkillUserArticleStatusApproved])
+}
+
+// =====================================================================
+// P4-4 — version history snapshots.
+// =====================================================================
+
+func TestCreateUserArticleSnapshot_AndList(t *testing.T) {
+	resetSkillPlazaTables(t)
+	a := &SkillUserArticle{AuthorId: 7, Title: "snap-test", Content: "v1"}
+	require.NoError(t, CreateSkillUserArticle(a))
+
+	v1, err := CreateUserArticleSnapshot(a.Id, 7, "auto")
+	require.NoError(t, err)
+	require.NotNil(t, v1)
+	assert.Equal(t, "auto", v1.Source)
+	assert.Equal(t, "v1", v1.Content)
+
+	// Update + snap again — second version should be newer.
+	require.NoError(t, UpdateSkillUserArticle(a.Id, map[string]any{"content": "v2"}))
+	v2, err := CreateUserArticleSnapshot(a.Id, 7, "manual")
+	require.NoError(t, err)
+	assert.Equal(t, "manual", v2.Source)
+
+	rows, err := ListUserArticleVersions(a.Id, 7)
+	require.NoError(t, err)
+	require.Len(t, rows, 2)
+	// Newest first.
+	assert.True(t, rows[0].Id > rows[1].Id)
+}
+
+func TestCreateUserArticleSnapshot_RejectsForeignAuthor(t *testing.T) {
+	resetSkillPlazaTables(t)
+	a := &SkillUserArticle{AuthorId: 7, Title: "x", Content: "x"}
+	require.NoError(t, CreateSkillUserArticle(a))
+	_, err := CreateUserArticleSnapshot(a.Id, 99, "auto")
+	require.Error(t, err)
+}
+
+func TestRestoreUserArticleVersion_OverwritesContent(t *testing.T) {
+	resetSkillPlazaTables(t)
+	a := &SkillUserArticle{AuthorId: 7, Title: "orig", Content: "first"}
+	require.NoError(t, CreateSkillUserArticle(a))
+	v, err := CreateUserArticleSnapshot(a.Id, 7, "manual")
+	require.NoError(t, err)
+
+	// Mutate the article, then restore.
+	require.NoError(t, UpdateSkillUserArticle(a.Id, map[string]any{
+		"title":   "changed",
+		"content": "second",
+	}))
+	require.NoError(t, RestoreUserArticleVersion(a.Id, 7, v.Id))
+
+	fresh, err := GetSkillUserArticleByID(a.Id)
+	require.NoError(t, err)
+	assert.Equal(t, "orig", fresh.Title)
+	assert.Equal(t, "first", fresh.Content)
+}
+
+func TestRestoreUserArticleVersion_RejectsApproved(t *testing.T) {
+	resetSkillPlazaTables(t)
+	a := &SkillUserArticle{AuthorId: 7, Title: "x", Content: "x"}
+	require.NoError(t, CreateSkillUserArticle(a))
+	v, _ := CreateUserArticleSnapshot(a.Id, 7, "manual")
+	// Approve directly so status flips out of draft.
+	require.NoError(t, SubmitSkillUserArticle(a.Id, 7))
+	require.NoError(t, ReviewSkillUserArticle(a.Id, 1, true, ""))
+
+	err := RestoreUserArticleVersion(a.Id, 7, v.Id)
+	require.Error(t, err)
+}
+
+// =====================================================================
+// P4-6 — author profile aggregation.
+// =====================================================================
+
+func TestDeriveAuthorLevel(t *testing.T) {
+	assert.Equal(t, 1, deriveAuthorLevel(0, 0))
+	assert.Equal(t, 2, deriveAuthorLevel(3, 0))
+	assert.Equal(t, 3, deriveAuthorLevel(10, 0))
+	assert.Equal(t, 3, deriveAuthorLevel(0, 50))
+	assert.Equal(t, 4, deriveAuthorLevel(25, 0))
+	assert.Equal(t, 5, deriveAuthorLevel(60, 0))
+	assert.Equal(t, 5, deriveAuthorLevel(0, 600))
 }
 
 func TestIsValidSkillUserArticleType(t *testing.T) {

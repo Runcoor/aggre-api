@@ -1456,6 +1456,20 @@ type SkillUserArticle struct {
 
 func (SkillUserArticle) TableName() string { return "skill_user_articles" }
 
+// MarshalJSON exposes the comma-split tags slice as `tags` so clients can
+// consume the list directly. The underlying TagsCSV column stays private
+// (json:"-"). Using a type alias avoids triggering MarshalJSON recursion.
+func (a SkillUserArticle) MarshalJSON() ([]byte, error) {
+	type alias SkillUserArticle
+	return common.Marshal(struct {
+		alias
+		Tags []string `json:"tags"`
+	}{
+		alias: alias(a),
+		Tags:  a.Tags(),
+	})
+}
+
 func (a *SkillUserArticle) BeforeCreate(tx *gorm.DB) error {
 	now := time.Now().Unix()
 	a.CreatedAt = now
@@ -1759,9 +1773,11 @@ type ListUserArticlesPublicFilter struct {
 	Language string
 	Tag      string
 	SkillId  int
+	AuthorId int
 	Search   string
 	Page     int
 	PageSize int
+	Limit    int // when >0, returns the first N rows without pagination math
 }
 
 func ListUserArticlesPublic(f ListUserArticlesPublicFilter) ([]SkillUserArticle, int64, error) {
@@ -1775,6 +1791,9 @@ func ListUserArticlesPublic(f ListUserArticlesPublicFilter) ([]SkillUserArticle,
 	}
 	if f.SkillId > 0 {
 		q = q.Where("skill_id = ?", f.SkillId)
+	}
+	if f.AuthorId > 0 {
+		q = q.Where("author_id = ?", f.AuthorId)
 	}
 	if f.Tag != "" {
 		// Cross-DB safe: tags is a CSV TEXT column. Surround the haystack
@@ -1796,6 +1815,20 @@ func ListUserArticlesPublic(f ListUserArticlesPublicFilter) ([]SkillUserArticle,
 	var total int64
 	if err := q.Count(&total).Error; err != nil {
 		return nil, 0, err
+	}
+	if f.Limit > 0 {
+		// Bulk fetch mode — used by author profile etc.
+		cap := f.Limit
+		if cap > 200 {
+			cap = 200
+		}
+		var rows []SkillUserArticle
+		if err := q.Order("published_at desc").Limit(cap).Find(&rows).Error; err != nil {
+			return nil, 0, err
+		}
+		hydrateUserArticleAuthorNames(rows)
+		hydrateUserArticleSkillNames(rows)
+		return rows, total, nil
 	}
 	if f.PageSize <= 0 || f.PageSize > 100 {
 		f.PageSize = 24
@@ -1912,6 +1945,244 @@ func hydrateUserArticleAuthorNames(rows []SkillUserArticle) {
 	}
 	for i := range rows {
 		rows[i].AuthorName = nameByID[rows[i].AuthorId]
+	}
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// P4-4 — Skill User Article version history.
+//
+// The editor pushes a snapshot every ~30s and after each manual save.
+// We keep up to userArticleVersionLimit rows per article and prune older
+// ones in-place — version history is for "oops, I just deleted three
+// paragraphs", not for permanent archiving.
+// ─────────────────────────────────────────────────────────────────────────
+
+const userArticleVersionLimit = 50
+
+type SkillUserArticleVersion struct {
+	Id        int    `json:"id" gorm:"primaryKey"`
+	ArticleId int    `json:"article_id" gorm:"not null;index"`
+	AuthorId  int    `json:"author_id" gorm:"not null;index"`
+	Title     string `json:"title" gorm:"type:varchar(240)"`
+	Summary   string `json:"summary" gorm:"type:text"`
+	Content   string `json:"content" gorm:"type:text"`
+	TagsCSV   string `json:"-" gorm:"column:tags;type:text"`
+	Type      string `json:"type" gorm:"type:varchar(24)"`
+	Source    string `json:"source" gorm:"type:varchar(16);default:'auto'"` // auto | manual
+	CreatedAt int64  `json:"created_at" gorm:"bigint;index"`
+}
+
+func (SkillUserArticleVersion) TableName() string { return "skill_user_article_versions" }
+
+func (v *SkillUserArticleVersion) BeforeCreate(tx *gorm.DB) error {
+	v.CreatedAt = time.Now().Unix()
+	return nil
+}
+
+func (v *SkillUserArticleVersion) Tags() []string {
+	if v.TagsCSV == "" {
+		return nil
+	}
+	raw := strings.Split(v.TagsCSV, ",")
+	out := make([]string, 0, len(raw))
+	for _, t := range raw {
+		t = strings.TrimSpace(t)
+		if t != "" {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
+// CreateUserArticleSnapshot writes a version row capturing the article's
+// current state. authorId must match the article owner; pass source =
+// "auto" for 30s ticks, "manual" for explicit save points. Older
+// snapshots beyond userArticleVersionLimit get pruned.
+func CreateUserArticleSnapshot(articleId, authorId int, source string) (*SkillUserArticleVersion, error) {
+	art, err := GetSkillUserArticleByID(articleId)
+	if err != nil {
+		return nil, err
+	}
+	if art.AuthorId != authorId {
+		return nil, errors.New("forbidden")
+	}
+	if source != "manual" {
+		source = "auto"
+	}
+	v := &SkillUserArticleVersion{
+		ArticleId: art.Id,
+		AuthorId:  art.AuthorId,
+		Title:     art.Title,
+		Summary:   art.Summary,
+		Content:   art.Content,
+		TagsCSV:   art.TagsCSV,
+		Type:      art.Type,
+		Source:    source,
+	}
+	if err := DB.Create(v).Error; err != nil {
+		return nil, err
+	}
+	// Prune older versions beyond the cap. Best-effort — failure is not
+	// fatal (the snapshot is already saved).
+	_ = pruneUserArticleVersions(articleId)
+	return v, nil
+}
+
+func pruneUserArticleVersions(articleId int) error {
+	var ids []int
+	if err := DB.Model(&SkillUserArticleVersion{}).
+		Where("article_id = ?", articleId).
+		Order("id DESC").
+		Offset(userArticleVersionLimit).
+		Limit(1000).
+		Pluck("id", &ids).Error; err != nil {
+		return err
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	return DB.Where("id IN ?", ids).Delete(&SkillUserArticleVersion{}).Error
+}
+
+func ListUserArticleVersions(articleId, authorId int) ([]SkillUserArticleVersion, error) {
+	art, err := GetSkillUserArticleByID(articleId)
+	if err != nil {
+		return nil, err
+	}
+	if art.AuthorId != authorId {
+		return nil, errors.New("forbidden")
+	}
+	var rows []SkillUserArticleVersion
+	if err := DB.Where("article_id = ?", articleId).
+		Order("id DESC").
+		Limit(userArticleVersionLimit).
+		Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
+func GetUserArticleVersion(articleId, authorId, versionId int) (*SkillUserArticleVersion, error) {
+	var v SkillUserArticleVersion
+	if err := DB.Where("id = ? AND article_id = ?", versionId, articleId).
+		First(&v).Error; err != nil {
+		return nil, err
+	}
+	if v.AuthorId != authorId {
+		return nil, errors.New("forbidden")
+	}
+	return &v, nil
+}
+
+// RestoreUserArticleVersion overwrites the article's title/summary/content/
+// tags with the version's snapshot. Status / reviewed_* / published_at are
+// preserved; restore is editing only.
+func RestoreUserArticleVersion(articleId, authorId, versionId int) error {
+	art, err := GetSkillUserArticleByID(articleId)
+	if err != nil {
+		return err
+	}
+	if art.AuthorId != authorId {
+		return errors.New("forbidden")
+	}
+	if art.Status != SkillUserArticleStatusDraft && art.Status != SkillUserArticleStatusRejected {
+		return errors.New("only draft or rejected articles can be restored")
+	}
+	v, err := GetUserArticleVersion(articleId, authorId, versionId)
+	if err != nil {
+		return err
+	}
+	return DB.Model(&SkillUserArticle{}).Where("id = ?", articleId).Updates(map[string]any{
+		"title":   v.Title,
+		"summary": v.Summary,
+		"content": v.Content,
+		"tags":    v.TagsCSV,
+	}).Error
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// P4-6 — Public author profile.
+//
+// Aggregates stats for /api/skill-plaza/u/:username so we can render
+// the public author page without N+1 queries.
+// ─────────────────────────────────────────────────────────────────────────
+
+type AuthorProfile struct {
+	UserId        int     `json:"user_id"`
+	Username      string  `json:"username"`
+	DisplayName   string  `json:"display_name"`
+	Bio           string  `json:"bio"`
+	JoinedAt      int64   `json:"joined_at"`
+	ArticleCount  int64   `json:"article_count"`
+	TotalLikes    int64   `json:"total_likes"`
+	TotalViews    int64   `json:"total_views"`
+	CommentCount  int64   `json:"comment_count"`
+	FavoriteCount int64   `json:"favorite_count"`
+	Level         int     `json:"level"` // 1..5, derived from articles + likes
+}
+
+// GetAuthorProfile returns the public profile for the given username plus
+// aggregated counters used by the user home page. The user must exist; an
+// "not found" error is returned otherwise.
+func GetAuthorProfile(username string) (*AuthorProfile, error) {
+	var u struct {
+		Id          int
+		Username    string
+		DisplayName string
+		CreatedTime int64
+	}
+	if err := DB.Table("users").Select("id, username, display_name, created_time").
+		Where("username = ?", username).
+		First(&u).Error; err != nil {
+		return nil, err
+	}
+	p := &AuthorProfile{
+		UserId:      u.Id,
+		Username:    u.Username,
+		DisplayName: u.DisplayName,
+		JoinedAt:    u.CreatedTime,
+	}
+	// Approved articles authored.
+	_ = DB.Model(&SkillUserArticle{}).
+		Where("author_id = ? AND status = ?", u.Id, SkillUserArticleStatusApproved).
+		Count(&p.ArticleCount).Error
+	// Sum of likes + views across approved articles.
+	type sumRow struct {
+		TotalLikes int64
+		TotalViews int64
+	}
+	var s sumRow
+	_ = DB.Model(&SkillUserArticle{}).
+		Select("COALESCE(SUM(like_count),0) AS total_likes, COALESCE(SUM(view_count),0) AS total_views").
+		Where("author_id = ? AND status = ?", u.Id, SkillUserArticleStatusApproved).
+		Scan(&s).Error
+	p.TotalLikes = s.TotalLikes
+	p.TotalViews = s.TotalViews
+	// Comments + favorites — counted across all skills, not just authored.
+	_ = DB.Table("skill_comments").Where("user_id = ?", u.Id).Count(&p.CommentCount).Error
+	_ = DB.Table("skill_favorites").Where("user_id = ?", u.Id).Count(&p.FavoriteCount).Error
+	p.Level = deriveAuthorLevel(p.ArticleCount, p.TotalLikes)
+	return p, nil
+}
+
+// deriveAuthorLevel — pragmatic tiered badge:
+//   1 新人 (default)
+//   2 活跃   (3+ articles)
+//   3 资深   (10+ articles OR 50+ likes)
+//   4 大佬   (25+ articles OR 200+ likes)
+//   5 传奇   (50+ articles OR 500+ likes)
+func deriveAuthorLevel(articles, likes int64) int {
+	switch {
+	case articles >= 50 || likes >= 500:
+		return 5
+	case articles >= 25 || likes >= 200:
+		return 4
+	case articles >= 10 || likes >= 50:
+		return 3
+	case articles >= 3:
+		return 2
+	default:
+		return 1
 	}
 }
 

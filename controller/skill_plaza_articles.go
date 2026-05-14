@@ -486,6 +486,172 @@ func PostUserArticleOffline(c *gin.Context) {
 	common.ApiSuccess(c, fresh)
 }
 
+// =====================================================================
+// P4-4 — Version history snapshots.
+//
+// The editor calls /snapshot every ~30s while editing. Only the author
+// can snapshot / list / restore.  Restore is rejected for approved
+// articles to prevent silent edits of public content — the author has
+// to take it offline (or wait for admin offline) first.
+// =====================================================================
+
+// PostMyArticleSnapshot POST /api/skill-plaza/me/articles/:id/snapshot
+func PostMyArticleSnapshot(c *gin.Context) {
+	uid := c.GetInt("id")
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		common.ApiErrorMsg(c, "invalid id")
+		return
+	}
+	src := c.Query("source")
+	v, err := model.CreateUserArticleSnapshot(id, uid, src)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, gin.H{
+		"id":         v.Id,
+		"created_at": v.CreatedAt,
+		"source":     v.Source,
+	})
+}
+
+// GetMyArticleVersions GET /api/skill-plaza/me/articles/:id/versions
+func GetMyArticleVersions(c *gin.Context) {
+	uid := c.GetInt("id")
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		common.ApiErrorMsg(c, "invalid id")
+		return
+	}
+	rows, err := model.ListUserArticleVersions(id, uid)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	// Strip Content from list view — clients ask for the full version body
+	// via the detail endpoint to keep listing cheap.
+	type listItem struct {
+		Id        int    `json:"id"`
+		Source    string `json:"source"`
+		Title     string `json:"title"`
+		CreatedAt int64  `json:"created_at"`
+	}
+	out := make([]listItem, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, listItem{
+			Id:        r.Id,
+			Source:    r.Source,
+			Title:     r.Title,
+			CreatedAt: r.CreatedAt,
+		})
+	}
+	common.ApiSuccess(c, gin.H{"items": out})
+}
+
+// GetMyArticleVersion GET /api/skill-plaza/me/articles/:id/versions/:vid
+func GetMyArticleVersion(c *gin.Context) {
+	uid := c.GetInt("id")
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		common.ApiErrorMsg(c, "invalid id")
+		return
+	}
+	vid, err := strconv.Atoi(c.Param("vid"))
+	if err != nil {
+		common.ApiErrorMsg(c, "invalid vid")
+		return
+	}
+	v, err := model.GetUserArticleVersion(id, uid, vid)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, gin.H{
+		"id":         v.Id,
+		"article_id": v.ArticleId,
+		"title":      v.Title,
+		"summary":    v.Summary,
+		"content":    v.Content,
+		"tags":       v.Tags(),
+		"type":       v.Type,
+		"source":     v.Source,
+		"created_at": v.CreatedAt,
+	})
+}
+
+// PostMyArticleVersionRestore POST /api/skill-plaza/me/articles/:id/versions/:vid/restore
+func PostMyArticleVersionRestore(c *gin.Context) {
+	uid := c.GetInt("id")
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		common.ApiErrorMsg(c, "invalid id")
+		return
+	}
+	vid, err := strconv.Atoi(c.Param("vid"))
+	if err != nil {
+		common.ApiErrorMsg(c, "invalid vid")
+		return
+	}
+	if err := model.RestoreUserArticleVersion(id, uid, vid); err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	fresh, _ := model.GetSkillUserArticleByID(id)
+	common.ApiSuccess(c, fresh)
+}
+
+// =====================================================================
+// P4-6 — Public author profile.
+// =====================================================================
+
+// GetAuthorProfilePublic GET /api/skill-plaza/u/:username
+//
+// Returns the author profile + their approved articles. Anyone can view;
+// the user table stores the username as a unique handle so we don't
+// need auth for this lookup.
+func GetAuthorProfilePublic(c *gin.Context) {
+	username := strings.TrimSpace(c.Param("username"))
+	if username == "" {
+		common.ApiErrorMsg(c, "username required")
+		return
+	}
+	p, err := model.GetAuthorProfile(username)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	rows, _, err := model.ListUserArticlesPublic(model.ListUserArticlesPublicFilter{
+		AuthorId: p.UserId,
+		Limit:    100,
+	})
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	items := make([]gin.H, 0, len(rows))
+	for _, r := range rows {
+		items = append(items, gin.H{
+			"id":           r.Id,
+			"slug":         r.Slug,
+			"title":        r.Title,
+			"summary":      r.Summary,
+			"type":         r.Type,
+			"cover_image":  r.CoverImage,
+			"tags":         r.Tags(),
+			"view_count":   r.ViewCount,
+			"like_count":   r.LikeCount,
+			"published_at": r.PublishedAt,
+			"skill_name":   r.SkillName,
+			"skill_slug":   r.SkillSlug,
+		})
+	}
+	common.ApiSuccess(c, gin.H{
+		"profile":  p,
+		"articles": items,
+	})
+}
+
 // DeleteUserArticleAdmin DELETE /api/skill-plaza/admin/user-articles/:id
 func DeleteUserArticleAdmin(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))

@@ -41,7 +41,7 @@ func TestMain(m *testing.M) {
 		&Skill{}, &SkillArticle{}, &SkillImportJob{},
 		&SkillRating{}, &SkillFavorite{},
 		&SkillComment{}, &SkillCommentLike{}, &SkillReport{},
-		&SkillAuditLog{}, &SkillUserArticle{},
+		&SkillAuditLog{}, &SkillUserArticle{}, &SkillUserArticleVersion{},
 	); err != nil {
 		panic("failed to migrate: " + err.Error())
 	}

@@ -19,7 +19,6 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
-  Flag,
   CheckCircle2,
   XCircle,
   ExternalLink,
@@ -102,10 +101,6 @@ const ReportsPage = () => {
               <ArrowLeft size={12} /> {t('返回管理工作台')}
             </Link>
             <h1 style={{ fontSize: 26, margin: '4px 0 6px' }}>
-              <Flag
-                size={22}
-                style={{ verticalAlign: -3, marginRight: 8, color: '#dc2626' }}
-              />
               {t('举报队列')}
               <span
                 style={{

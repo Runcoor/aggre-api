@@ -298,7 +298,11 @@ type SkillArticle struct {
 	Language    string `json:"language" gorm:"type:varchar(8);not null;uniqueIndex:idx_skill_lang,priority:2;index"`
 	Title       string `json:"title" gorm:"type:varchar(240);not null"`
 	Summary     string `json:"summary" gorm:"type:text"`
-	Body        string `json:"body" gorm:"type:longtext"`
+	// Body uses TEXT (not LONGTEXT) because PostgreSQL has no LONGTEXT type
+	// and TEXT is unlimited there. On MySQL TEXT caps at 64KB — large
+	// enough for typical Markdown tutorials; if real-world articles exceed
+	// that, the per-DB migration can ALTER to MEDIUMTEXT.
+	Body        string `json:"body" gorm:"type:text"`
 	CoverImage  string `json:"cover_image" gorm:"type:varchar(512)"`
 	Status      string `json:"status" gorm:"type:varchar(20);not null;default:'draft';index"`
 	ArticleType string `json:"article_type" gorm:"type:varchar(20);default:'tutorial'"` // tutorial/review/case/troubleshoot/prompt/compare

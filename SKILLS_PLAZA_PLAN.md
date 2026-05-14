@@ -533,7 +533,7 @@ V1.2(留存):
 
 下一步:P3-2 敏感词过滤
 
-### 2026-05-14 — P3-2 敏感词过滤(commit pending)
+### 2026-05-14 — P3-2 敏感词过滤(commit 9f80bda)
 
 完成内容:
 - 后端 `SkillPlazaSetting` 加 `SensitiveWords`(多行/逗号分隔);`SkillPlazaSensitiveWords()` 解析为 trim+lower 列表

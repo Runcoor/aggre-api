@@ -30,6 +30,8 @@ import { API, showError, showSuccess } from '../../helpers';
 // setting/operation_setting/skill_plaza_setting.go.
 const DEFAULTS = {
   'skill_plaza_setting.enabled': false,
+  'skill_plaza_setting.test_mode': false,
+  'skill_plaza_setting.test_mode_users': 'Runcoor',
   'skill_plaza_setting.generation_model': 'gpt-5',
   'skill_plaza_setting.server_token': '',
   'skill_plaza_setting.server_base_url': '',
@@ -65,6 +67,9 @@ const SettingSkillPlaza = () => {
       // need to change.
       const next = { ...DEFAULTS };
       next['skill_plaza_setting.enabled'] = !!data.enabled;
+      next['skill_plaza_setting.test_mode'] = !!data.test_mode;
+      next['skill_plaza_setting.test_mode_users'] =
+        data.test_mode_users == null ? '' : String(data.test_mode_users);
       next['skill_plaza_setting.generation_model'] = data.generation_model || '';
       next['skill_plaza_setting.server_token'] = data.server_token || '';
       next['skill_plaza_setting.server_base_url'] = data.server_base_url || '';
@@ -96,6 +101,8 @@ const SettingSkillPlaza = () => {
     try {
       const payload = {
         enabled: !!values['skill_plaza_setting.enabled'],
+        test_mode: !!values['skill_plaza_setting.test_mode'],
+        test_mode_users: values['skill_plaza_setting.test_mode_users'] || '',
         generation_model: values['skill_plaza_setting.generation_model'],
         server_token: values['skill_plaza_setting.server_token'],
         server_base_url: values['skill_plaza_setting.server_base_url'],
@@ -137,10 +144,10 @@ const SettingSkillPlaza = () => {
         icon={<Sparkles size={16} />}
         title={t('SKILLS 广场模块')}
         subtitle={t(
-          '启用后顶部导航对管理员显示「SKILLS 广场」入口。第一期仅管理员可见。',
+          '总开关关闭时,顶部导航不会显示「SKILLS 广场」菜单,公共页面也会 404。',
         )}
       >
-        <Row label={t('启用模块')}>
+        <Row label={t('启用模块 (总开关)')}>
           <label
             style={{
               display: 'inline-flex',
@@ -161,6 +168,52 @@ const SettingSkillPlaza = () => {
             </span>
           </label>
         </Row>
+        <Row label={t('测试模式')}>
+          <label
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type='checkbox'
+              checked={!!values['skill_plaza_setting.test_mode']}
+              onChange={set('skill_plaza_setting.test_mode')}
+              disabled={!values['skill_plaza_setting.enabled']}
+            />
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+              {values['skill_plaza_setting.test_mode']
+                ? t('仅超级管理员和白名单用户可见')
+                : t('所有访客可见')}
+            </span>
+          </label>
+        </Row>
+        <Row label={t('白名单用户名')}>
+          <TextInput
+            value={values['skill_plaza_setting.test_mode_users']}
+            onChange={set('skill_plaza_setting.test_mode_users')}
+            placeholder='Runcoor, alice, bob'
+            disabled={
+              !values['skill_plaza_setting.enabled'] ||
+              !values['skill_plaza_setting.test_mode']
+            }
+          />
+        </Row>
+        <div
+          style={{
+            fontSize: 12,
+            color: 'var(--text-muted)',
+            lineHeight: 1.6,
+            paddingLeft: 234,
+            marginTop: -4,
+          }}
+        >
+          {t(
+            '测试模式打开后,前台只对超级管理员 (role=100) 和下面白名单中的用户名可见。逗号分隔,大小写不敏感。普通管理员仍可通过 /console/skill-plaza 后台预览。',
+          )}
+        </div>
       </Section>
 
       {/* AI generation */}

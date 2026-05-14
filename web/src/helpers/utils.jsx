@@ -65,6 +65,43 @@ export function getUserIdFromLocalStorage() {
   return user.id;
 }
 
+// isSkillPlazaVisible decides whether the current viewer should see the
+// "SKILLS 广场" nav entry. The backend exposes three fields on the
+// /api/status payload:
+//   - skill_plaza_enabled         master switch
+//   - skill_plaza_test_mode       restrict to allow-list while staging
+//   - skill_plaza_test_mode_users CSV username allow-list
+//
+// Logic mirrors the backend's isSkillPlazaVisibleForSession:
+//   - master OFF                  → hidden for everyone
+//   - master ON, test_mode OFF    → visible to everyone (incl. guests)
+//   - master ON, test_mode ON     → only role >= 100 or username in list
+//
+// We accept either a full status object (with snake_case keys as
+// returned by /api/status) or `undefined` (while the initial fetch is
+// still in flight). When the status hasn't loaded, we return false to
+// avoid flashing the entry and then hiding it on first paint.
+export function isSkillPlazaVisible(status) {
+  if (!status) return false;
+  if (!status.skill_plaza_enabled) return false;
+  if (!status.skill_plaza_test_mode) return true;
+
+  let user;
+  try {
+    user = JSON.parse(localStorage.getItem('user') || 'null');
+  } catch (e) {
+    user = null;
+  }
+  if (!user) return false;
+  if (user.role >= 100) return true;
+
+  const list = String(status.skill_plaza_test_mode_users || '')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  return list.includes(String(user.username || '').toLowerCase());
+}
+
 export function getFooterHTML() {
   return localStorage.getItem('footer_html');
 }

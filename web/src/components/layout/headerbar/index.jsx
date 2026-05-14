@@ -64,7 +64,12 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
     getUnreadKeys,
   } = useNotifications(statusState);
 
-  const { mainNavLinks } = useNavigation(t, docsLink, headerNavModules);
+  const { mainNavLinks } = useNavigation(
+    t,
+    docsLink,
+    headerNavModules,
+    statusState?.status,
+  );
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const showMobileNavDrawer = isMobile && !isConsoleRoute;

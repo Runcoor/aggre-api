@@ -19,7 +19,11 @@ For commercial licensing, please contact support@quantumnous.com
 
 package operation_setting
 
-import "github.com/runcoor/aggre-api/setting/config"
+import (
+	"strings"
+
+	"github.com/runcoor/aggre-api/setting/config"
+)
 
 // SkillPlazaSetting controls the SKILLS 广场 module:
 //   - Whether the module is enabled at all (the nav entry hides if disabled)
@@ -33,6 +37,19 @@ import "github.com/runcoor/aggre-api/setting/config"
 // admins see usage in their own billing.
 type SkillPlazaSetting struct {
 	Enabled bool `json:"enabled"`
+
+	// TestMode restricts public visibility to a small allow-list so the
+	// module can be soft-launched in production. When true, only the
+	// super-admin (role >= 100) and usernames listed in TestModeUsers can
+	// see the public nav entry / pages — everyone else gets 404 just as
+	// they would when Enabled is false.
+	//
+	// The intended workflow: admin flips Enabled=true + TestMode=true,
+	// uses the super-admin account to drive the admin-side UI, and uses
+	// a regular account in the allow-list to verify the end-user flow.
+	// Once happy, flip TestMode=false to open it up.
+	TestMode      bool   `json:"test_mode"`
+	TestModeUsers string `json:"test_mode_users"` // comma-separated usernames
 
 	// AI generation
 	GenerationModel  string `json:"generation_model"`
@@ -82,6 +99,8 @@ Security constraints:
 
 var skillPlazaSetting = SkillPlazaSetting{
 	Enabled:           false,
+	TestMode:          false,
+	TestModeUsers:     "Runcoor",
 	GenerationModel:   "gpt-5",
 	ServerToken:       "",
 	ServerBaseURL:     "",
@@ -108,4 +127,44 @@ func GetSkillPlazaSetting() *SkillPlazaSetting {
 // admin endpoints with it as a 404 short-circuit.
 func IsSkillPlazaEnabled() bool {
 	return skillPlazaSetting.Enabled
+}
+
+// IsSkillPlazaTestMode returns whether the public surface is restricted
+// to the test allow-list. Only meaningful when IsSkillPlazaEnabled().
+func IsSkillPlazaTestMode() bool {
+	return skillPlazaSetting.TestMode
+}
+
+// SkillPlazaTestModeUsers returns the (trimmed, lowercased) usernames
+// allowed to see the public surface while TestMode is on. Comparison is
+// case-insensitive so users don't get locked out by capitalization.
+func SkillPlazaTestModeUsers() []string {
+	raw := skillPlazaSetting.TestModeUsers
+	if raw == "" {
+		return nil
+	}
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.ToLower(strings.TrimSpace(p))
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+// IsSkillPlazaAllowedUser checks whether the given username is in the
+// test-mode allow-list (case-insensitive). Empty usernames never match.
+func IsSkillPlazaAllowedUser(username string) bool {
+	username = strings.ToLower(strings.TrimSpace(username))
+	if username == "" {
+		return false
+	}
+	for _, u := range SkillPlazaTestModeUsers() {
+		if u == username {
+			return true
+		}
+	}
+	return false
 }

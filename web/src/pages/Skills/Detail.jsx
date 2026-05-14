@@ -133,10 +133,15 @@ const SkillsDetail = () => {
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  // moduleDisabled mirrors Plaza.jsx — when the gated /api/skill-plaza/*
+  // path returns 404 (module off or test-mode blocked), we render a
+  // friendly placeholder instead of toasting an error.
+  const [moduleDisabled, setModuleDisabled] = useState(false);
 
   useEffect(() => {
     let aborted = false;
     setLoading(true);
+    setModuleDisabled(false);
     API.get(`/api/skill-plaza/skills/${encodeURIComponent(slug)}`, {
       params: { language },
     })
@@ -146,7 +151,12 @@ const SkillsDetail = () => {
         else showError(res.data?.message || '加载失败');
       })
       .catch((e) => {
-        if (!aborted) showError(e?.message || '加载失败');
+        if (aborted) return;
+        if (e?.response?.status === 404) {
+          setModuleDisabled(true);
+        } else {
+          showError(e?.message || '加载失败');
+        }
       })
       .finally(() => {
         if (!aborted) setLoading(false);
@@ -174,6 +184,35 @@ const SkillsDetail = () => {
         <div className='skp-root'>
           <div className='skp-page'>
             <p style={{ color: 'var(--text-muted)' }}>{t('加载中...')}</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+  if (moduleDisabled) {
+    return (
+      <>
+        <style>{SKILL_PLAZA_STYLES}</style>
+        <div className='skp-root'>
+          <div className='skp-page'>
+            <div
+              style={{
+                marginTop: 60,
+                padding: 40,
+                textAlign: 'center',
+                color: 'var(--text-muted)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border-default)',
+                borderRadius: 14,
+              }}
+            >
+              <div style={{ fontSize: 18, color: 'var(--text-primary)', marginBottom: 8 }}>
+                {t('SKILLS 广场暂未开放')}
+              </div>
+              <div style={{ fontSize: 13 }}>
+                {t('管理员尚未启用该模块,或当前账号不在测试可见范围内。')}
+              </div>
+            </div>
           </div>
         </div>
       </>

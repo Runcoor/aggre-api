@@ -120,6 +120,15 @@ func GetStatus(c *gin.Context) {
 		"user_agreement_enabled":      legalSetting.UserAgreement != "",
 		"privacy_policy_enabled":      legalSetting.PrivacyPolicy != "",
 		"checkin_enabled":             operation_setting.GetCheckinSetting().Enabled,
+
+		// SKILLS 广场 — surface the master switch + test-mode state so the
+		// frontend can decide whether to render the nav entry without an
+		// extra per-page fetch. The per-user visibility decision lives in
+		// the frontend helper isSkillPlazaVisible(status), which reads the
+		// current user from localStorage.
+		"skill_plaza_enabled":         operation_setting.IsSkillPlazaEnabled(),
+		"skill_plaza_test_mode":       operation_setting.IsSkillPlazaTestMode(),
+		"skill_plaza_test_mode_users": strings.Join(operation_setting.SkillPlazaTestModeUsers(), ","),
 	}
 
 	// 根据启用状态注入可选内容

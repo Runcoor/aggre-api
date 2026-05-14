@@ -26,15 +26,17 @@ import {
   Wallet,
   Zap,
 } from 'lucide-react';
-import { isAdmin } from '../../helpers';
+import { isAdmin, isSkillPlazaVisible } from '../../helpers';
 
-export const useNavigation = (t, docsLink, headerNavModules) => {
+export const useNavigation = (t, docsLink, headerNavModules, status) => {
   const mainNavLinks = useMemo(() => {
-    // Phase 2 opens SKILLS 广场 to all visitors. The backend gate
-    // (operation_setting.IsSkillPlazaEnabled) still hides content while
-    // the module is being staged — admins bypass that gate so they can
-    // preview before the public switch flips.
+    // SKILLS 广场 visibility is computed from the backend status payload
+    // (master switch + test-mode allow-list). When the module is hidden
+    // for the current viewer, the entry is filtered out entirely below.
+    // Admin-only items (admin console, etc.) use the local isAdmin()
+    // check, which reads role from localStorage.
     const isAdminViewer = isAdmin();
+    const skillPlazaVisible = isSkillPlazaVisible(status);
     // 默认配置，如果没有传入配置则显示所有模块
     const defaultModules = {
       home: true,
@@ -144,9 +146,11 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
         return true; // always visible
       }
       if (link.itemKey === 'skills') {
-        // Always shown in the nav. Backend gate decides whether content
-        // is actually served; admins see content even when gated.
-        return true;
+        // Driven by isSkillPlazaVisible(status). When the master switch
+        // is off, or test-mode is on and the viewer isn't allow-listed,
+        // hide the entry. Admins reach admin pages via /console — they
+        // don't need the public nav entry to do their work.
+        return skillPlazaVisible;
       }
       if (link.itemKey === 'pricing') {
         // 支持新的pricing配置格式
@@ -156,7 +160,7 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
       }
       return modules[link.itemKey] === true;
     });
-  }, [t, docsLink, headerNavModules]);
+  }, [t, docsLink, headerNavModules, status]);
 
   return {
     mainNavLinks,

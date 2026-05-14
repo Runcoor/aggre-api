@@ -38,13 +38,39 @@ import (
 // while disabled the routes 404 so we don't leak the module surface.
 // =====================================================================
 
-func skillPlazaGate(c *gin.Context) bool {
-	if operation_setting.IsSkillPlazaEnabled() {
+// isSkillPlazaVisibleForSession reports whether the current request's
+// session passes the public visibility checks. Admin/preview override
+// is layered on by skillPlazaGate, not here, so this stays a clean
+// "would the average user see the module?" decision.
+func isSkillPlazaVisibleForSession(c *gin.Context) bool {
+	if !operation_setting.IsSkillPlazaEnabled() {
+		return false
+	}
+	if !operation_setting.IsSkillPlazaTestMode() {
 		return true
 	}
-	// Admins can preview the Plaza even before the module is publicly
-	// enabled — otherwise an admin who's reviewing/publishing content
-	// can't see what end users would see. Public visitors still hit 404.
+	// Test mode: only super-admin OR allow-listed usernames.
+	sess := sessions.Default(c)
+	if role, ok := sess.Get("role").(int); ok && role >= common.RoleRootUser {
+		return true
+	}
+	if uname, ok := sess.Get("username").(string); ok && uname != "" {
+		if operation_setting.IsSkillPlazaAllowedUser(uname) {
+			return true
+		}
+	}
+	return false
+}
+
+func skillPlazaGate(c *gin.Context) bool {
+	if isSkillPlazaVisibleForSession(c) {
+		return true
+	}
+	// Admins (role >= 10) can preview the Plaza even when the module is
+	// hidden from the public — otherwise an admin staging content can't
+	// see what end users would see once the gates flip. The nav entry
+	// stays hidden for them too; they reach this via /console or by
+	// typing the URL directly.
 	if role, ok := sessions.Default(c).Get("role").(int); ok && role >= common.RoleAdminUser {
 		return true
 	}
@@ -58,11 +84,15 @@ func skillPlazaGate(c *gin.Context) bool {
 // =====================================================================
 
 // GetSkillPlazaStatus GET /api/skill-plaza/status
-// Returns whether the module is enabled. Always 200 — the frontend
-// uses this to gate the nav entry without spamming 404s.
+// Returns the module's public state plus a per-request `visible` field
+// (true when the caller's session passes the visibility checks). The
+// frontend uses this to gate the nav entry without spamming 404s.
+// Always 200.
 func GetSkillPlazaStatus(c *gin.Context) {
 	common.ApiSuccess(c, gin.H{
-		"enabled": operation_setting.IsSkillPlazaEnabled(),
+		"enabled":   operation_setting.IsSkillPlazaEnabled(),
+		"test_mode": operation_setting.IsSkillPlazaTestMode(),
+		"visible":   isSkillPlazaVisibleForSession(c),
 	})
 }
 

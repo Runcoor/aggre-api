@@ -388,6 +388,8 @@ func PutSkillPlazaAdminSettings(c *gin.Context) {
 	// in-memory typed config via config.GlobalConfig.
 	pairs := map[string]string{
 		"skill_plaza_setting.enabled":             strconv.FormatBool(req.Enabled),
+		"skill_plaza_setting.test_mode":           strconv.FormatBool(req.TestMode),
+		"skill_plaza_setting.test_mode_users":     strings.TrimSpace(req.TestModeUsers),
 		"skill_plaza_setting.generation_model":    strings.TrimSpace(req.GenerationModel),
 		"skill_plaza_setting.server_token":        req.ServerToken,
 		"skill_plaza_setting.server_base_url":     strings.TrimSpace(req.ServerBaseURL),

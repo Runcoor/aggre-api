@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/runcoor/aggre-api/common"
 	"gorm.io/gorm"
 )
 
@@ -73,6 +74,26 @@ const (
 const (
 	SkillArticleLangZh = "zh-CN"
 	SkillArticleLangEn = "en"
+)
+
+// SkillUserArticle types — user submission categories from PRD V1.1.
+// Strings appear in URLs / filters / JSON payloads; keep them stable.
+const (
+	SkillUserArticleTypeTutorial        = "tutorial"        // how-to walkthrough
+	SkillUserArticleTypeReview          = "review"          // hands-on evaluation
+	SkillUserArticleTypeShowcase        = "showcase"        // results / prompt + output
+	SkillUserArticleTypeTroubleshooting = "troubleshooting" // problem + fix
+	SkillUserArticleTypePrompts         = "prompts"         // prompt collection
+	SkillUserArticleTypeComparison      = "comparison"      // A vs B
+)
+
+// SkillUserArticle status — author workflow + admin moderation.
+const (
+	SkillUserArticleStatusDraft    = "draft"    // author still editing
+	SkillUserArticleStatusPending  = "pending"  // submitted, awaiting admin
+	SkillUserArticleStatusApproved = "approved" // public
+	SkillUserArticleStatusRejected = "rejected" // returned to author with reason
+	SkillUserArticleStatusOffline  = "offline"  // taken down post-publish
 )
 
 // =====================================================================
@@ -1247,13 +1268,16 @@ func CountOpenReports() (int64, error) {
 // =====================================================================
 
 const (
-	SkillAuditActionPublish      = "article.publish"
-	SkillAuditActionUnpublish    = "article.unpublish"
-	SkillAuditActionSkillUpdate  = "skill.update"
-	SkillAuditActionSkillDelete  = "skill.delete"
-	SkillAuditActionImport       = "skill.import"
-	SkillAuditActionReportResolve = "report.resolve"
-	SkillAuditActionSettings     = "settings.update"
+	SkillAuditActionPublish            = "article.publish"
+	SkillAuditActionUnpublish          = "article.unpublish"
+	SkillAuditActionSkillUpdate        = "skill.update"
+	SkillAuditActionSkillDelete        = "skill.delete"
+	SkillAuditActionImport             = "skill.import"
+	SkillAuditActionReportResolve      = "report.resolve"
+	SkillAuditActionSettings           = "settings.update"
+	SkillAuditActionUserArticleApprove = "user_article.approve"
+	SkillAuditActionUserArticleReject  = "user_article.reject"
+	SkillAuditActionUserArticleOffline = "user_article.offline"
 )
 
 type SkillAuditLog struct {
@@ -1383,4 +1407,543 @@ func ListUserComments(userId int, limit int) ([]UserCommentItem, error) {
 		out = append(out, UserCommentItem{Comment: c, Skill: byID[c.SkillId]})
 	}
 	return out, nil
+}
+
+// =====================================================================
+// SkillUserArticle — V1.1 user-submitted content (tutorials, reviews,
+// showcases, etc.). Distinct from SkillArticle (which is AI-generated
+// from an imported GitHub repo and tied to a specific Skill). User
+// articles may optionally reference a Skill (review / troubleshooting)
+// but are not required to.
+//
+// Lifecycle: draft → pending → approved (public) | rejected (back to author)
+// Admin can also flip approved → offline.
+// =====================================================================
+type SkillUserArticle struct {
+	Id         int    `json:"id" gorm:"primaryKey"`
+	AuthorId   int    `json:"author_id" gorm:"not null;index"`
+	Type       string `json:"type" gorm:"type:varchar(24);not null;index;default:'tutorial'"`
+	Slug       string `json:"slug" gorm:"type:varchar(200);uniqueIndex"`
+	Language   string `json:"language" gorm:"type:varchar(8);not null;default:'zh-CN';index"`
+	Title      string `json:"title" gorm:"type:varchar(240);not null"`
+	Summary    string `json:"summary" gorm:"type:text"`
+	Content    string `json:"content" gorm:"type:text"` // Markdown body
+	CoverImage string `json:"cover_image" gorm:"type:varchar(512)"`
+	TagsCSV    string `json:"-" gorm:"column:tags;type:text"`
+	SkillId    int    `json:"skill_id" gorm:"index;default:0"` // optional FK
+
+	Status string `json:"status" gorm:"type:varchar(20);not null;default:'draft';index"`
+
+	// Admin review trail.
+	ReviewedBy   int    `json:"reviewed_by" gorm:"index;default:0"`
+	ReviewedAt   int64  `json:"reviewed_at" gorm:"bigint"`
+	RejectReason string `json:"reject_reason" gorm:"type:text"`
+
+	// Engagement counters — reserve columns even though V1.1 read path
+	// is limited; V1.2 surface metrics for the user profile page.
+	ViewCount int64 `json:"view_count" gorm:"bigint;default:0"`
+	LikeCount int   `json:"like_count" gorm:"default:0"`
+
+	PublishedAt int64 `json:"published_at" gorm:"bigint;index"`
+	CreatedAt   int64 `json:"created_at" gorm:"bigint;index"`
+	UpdatedAt   int64 `json:"updated_at" gorm:"bigint"`
+
+	// Hydrated by List queries — no DB column.
+	AuthorName string `json:"author_name" gorm:"-"`
+	SkillName  string `json:"skill_name" gorm:"-"`
+	SkillSlug  string `json:"skill_slug" gorm:"-"`
+}
+
+func (SkillUserArticle) TableName() string { return "skill_user_articles" }
+
+func (a *SkillUserArticle) BeforeCreate(tx *gorm.DB) error {
+	now := time.Now().Unix()
+	a.CreatedAt = now
+	a.UpdatedAt = now
+	return nil
+}
+
+func (a *SkillUserArticle) BeforeUpdate(tx *gorm.DB) error {
+	a.UpdatedAt = time.Now().Unix()
+	return nil
+}
+
+func (a *SkillUserArticle) Tags() []string {
+	if a.TagsCSV == "" {
+		return nil
+	}
+	raw := strings.Split(a.TagsCSV, ",")
+	out := make([]string, 0, len(raw))
+	for _, t := range raw {
+		t = strings.TrimSpace(t)
+		if t != "" {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
+func (a *SkillUserArticle) SetTags(tags []string) {
+	seen := map[string]bool{}
+	keep := make([]string, 0, len(tags))
+	for _, t := range tags {
+		t = strings.TrimSpace(t)
+		if t == "" || seen[t] {
+			continue
+		}
+		seen[t] = true
+		keep = append(keep, t)
+	}
+	a.TagsCSV = strings.Join(keep, ",")
+}
+
+func IsValidSkillUserArticleType(t string) bool {
+	switch t {
+	case SkillUserArticleTypeTutorial, SkillUserArticleTypeReview,
+		SkillUserArticleTypeShowcase, SkillUserArticleTypeTroubleshooting,
+		SkillUserArticleTypePrompts, SkillUserArticleTypeComparison:
+		return true
+	}
+	return false
+}
+
+// userArticleSlugify produces a URL-safe slug from the title. Falls back
+// to "post" if the title is empty/all-symbols. Caller is responsible
+// for ensuring uniqueness via ensureUserArticleSlugUnique.
+func userArticleSlugify(title string) string {
+	title = strings.ToLower(strings.TrimSpace(title))
+	var b strings.Builder
+	prevDash := false
+	for _, r := range title {
+		switch {
+		case r >= 'a' && r <= 'z', r >= '0' && r <= '9':
+			b.WriteRune(r)
+			prevDash = false
+		case r >= 'A' && r <= 'Z':
+			b.WriteRune(r + 32)
+			prevDash = false
+		case r >= 0x4E00 && r <= 0x9FFF: // CJK unified ideographs — preserve
+			b.WriteRune(r)
+			prevDash = false
+		default:
+			if !prevDash && b.Len() > 0 {
+				b.WriteByte('-')
+				prevDash = true
+			}
+		}
+	}
+	out := strings.Trim(b.String(), "-")
+	if out == "" {
+		out = "post"
+	}
+	if len(out) > 160 {
+		out = out[:160]
+	}
+	return out
+}
+
+// ensureUserArticleSlugUnique appends -2, -3, ... until a free slug is
+// found. Safe under concurrent inserts only because of the uniqueIndex
+// on slug — on conflict the caller retries by reading the new error.
+func ensureUserArticleSlugUnique(base string) string {
+	slug := base
+	for i := 2; i < 100; i++ {
+		var cnt int64
+		if err := DB.Model(&SkillUserArticle{}).Where("slug = ?", slug).Count(&cnt).Error; err != nil {
+			return slug
+		}
+		if cnt == 0 {
+			return slug
+		}
+		slug = base + "-" + intToStr(i)
+	}
+	return slug
+}
+
+func intToStr(n int) string {
+	if n == 0 {
+		return "0"
+	}
+	neg := n < 0
+	if neg {
+		n = -n
+	}
+	var buf [20]byte
+	i := len(buf)
+	for n > 0 {
+		i--
+		buf[i] = byte('0' + n%10)
+		n /= 10
+	}
+	if neg {
+		i--
+		buf[i] = '-'
+	}
+	return string(buf[i:])
+}
+
+// CreateSkillUserArticle validates required fields and generates a slug
+// if the caller didn't supply one. The created row starts in `draft`
+// unless the caller pre-set Status.
+func CreateSkillUserArticle(a *SkillUserArticle) error {
+	if a.AuthorId == 0 {
+		return errors.New("author_id is required")
+	}
+	if a.Title == "" {
+		return errors.New("title is required")
+	}
+	if !IsValidSkillUserArticleType(a.Type) {
+		a.Type = SkillUserArticleTypeTutorial
+	}
+	if a.Language == "" {
+		a.Language = SkillArticleLangZh
+	}
+	if a.Status == "" {
+		a.Status = SkillUserArticleStatusDraft
+	}
+	if a.Slug == "" {
+		a.Slug = ensureUserArticleSlugUnique(userArticleSlugify(a.Title))
+	}
+	return DB.Create(a).Error
+}
+
+func GetSkillUserArticleByID(id int) (*SkillUserArticle, error) {
+	var a SkillUserArticle
+	if err := DB.First(&a, id).Error; err != nil {
+		return nil, err
+	}
+	return &a, nil
+}
+
+func GetSkillUserArticleBySlug(slug string) (*SkillUserArticle, error) {
+	var a SkillUserArticle
+	if err := DB.Where("slug = ?", slug).First(&a).Error; err != nil {
+		return nil, err
+	}
+	return &a, nil
+}
+
+// UpdateSkillUserArticle applies a partial update. The status column is
+// not editable through this path — use SubmitSkillUserArticle /
+// ReviewSkillUserArticle / OfflineSkillUserArticle which enforce the
+// state machine. Drops disallowed keys defensively.
+func UpdateSkillUserArticle(id int, updates map[string]any) error {
+	delete(updates, "id")
+	delete(updates, "status")
+	delete(updates, "reviewed_by")
+	delete(updates, "reviewed_at")
+	delete(updates, "reject_reason")
+	delete(updates, "published_at")
+	delete(updates, "created_at")
+	delete(updates, "author_id")
+	delete(updates, "view_count")
+	delete(updates, "like_count")
+	updates["updated_at"] = time.Now().Unix()
+	return DB.Model(&SkillUserArticle{}).Where("id = ?", id).Updates(updates).Error
+}
+
+// DeleteSkillUserArticle hard-deletes the row. Author may delete their
+// own draft/rejected/pending row; admin may delete anything. Returns
+// gorm.ErrRecordNotFound if no row matches the ownership filter.
+func DeleteSkillUserArticle(id, authorId int, isAdmin bool) error {
+	q := DB.Where("id = ?", id)
+	if !isAdmin {
+		// Author can only delete their own non-approved articles.
+		q = q.Where("author_id = ? AND status IN ?", authorId,
+			[]string{SkillUserArticleStatusDraft,
+				SkillUserArticleStatusPending,
+				SkillUserArticleStatusRejected})
+	}
+	res := q.Delete(&SkillUserArticle{})
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+// SubmitSkillUserArticle moves draft / rejected → pending. Author only.
+func SubmitSkillUserArticle(id, authorId int) error {
+	res := DB.Model(&SkillUserArticle{}).
+		Where("id = ? AND author_id = ? AND status IN ?", id, authorId,
+			[]string{SkillUserArticleStatusDraft, SkillUserArticleStatusRejected}).
+		Updates(map[string]any{
+			"status":     SkillUserArticleStatusPending,
+			"updated_at": time.Now().Unix(),
+		})
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return errors.New("article not found or not in a submittable state")
+	}
+	return nil
+}
+
+// ReviewSkillUserArticle is the admin action: pending → approved or rejected.
+// On approval, PublishedAt is stamped (first time only — re-approval
+// of a previously offline article keeps the original PublishedAt).
+func ReviewSkillUserArticle(id, adminId int, approve bool, reason string) error {
+	target := SkillUserArticleStatusRejected
+	if approve {
+		target = SkillUserArticleStatusApproved
+	}
+	now := time.Now().Unix()
+	// Look up current row to decide whether to stamp published_at.
+	cur, err := GetSkillUserArticleByID(id)
+	if err != nil {
+		return err
+	}
+	if cur.Status != SkillUserArticleStatusPending {
+		return errors.New("only pending articles can be reviewed")
+	}
+	updates := map[string]any{
+		"status":        target,
+		"reviewed_by":   adminId,
+		"reviewed_at":   now,
+		"reject_reason": reason,
+		"updated_at":    now,
+	}
+	if approve && cur.PublishedAt == 0 {
+		updates["published_at"] = now
+	}
+	return DB.Model(&SkillUserArticle{}).Where("id = ?", id).Updates(updates).Error
+}
+
+// OfflineSkillUserArticle takes an approved article off the public
+// surface (status -> offline). Admin only. The article remains in the
+// DB and visible to the author in their dashboard.
+func OfflineSkillUserArticle(id, adminId int, reason string) error {
+	now := time.Now().Unix()
+	res := DB.Model(&SkillUserArticle{}).
+		Where("id = ? AND status = ?", id, SkillUserArticleStatusApproved).
+		Updates(map[string]any{
+			"status":        SkillUserArticleStatusOffline,
+			"reviewed_by":   adminId,
+			"reviewed_at":   now,
+			"reject_reason": reason,
+			"updated_at":    now,
+		})
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return errors.New("article not found or not currently approved")
+	}
+	return nil
+}
+
+// ListUserArticlesByAuthor returns the author's own articles (any
+// status). Newest first. Used by /skills/me article tab.
+func ListUserArticlesByAuthor(authorId int, status string, limit int) ([]SkillUserArticle, error) {
+	if limit <= 0 || limit > 200 {
+		limit = 50
+	}
+	q := DB.Where("author_id = ?", authorId)
+	if status != "" {
+		q = q.Where("status = ?", status)
+	}
+	var rows []SkillUserArticle
+	if err := q.Order("created_at desc").Limit(limit).Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	hydrateUserArticleSkillNames(rows)
+	return rows, nil
+}
+
+// ListUserArticlesPublicFilter — Plaza-facing list (status=approved).
+type ListUserArticlesPublicFilter struct {
+	Type     string
+	Language string
+	Tag      string
+	SkillId  int
+	Search   string
+	Page     int
+	PageSize int
+}
+
+func ListUserArticlesPublic(f ListUserArticlesPublicFilter) ([]SkillUserArticle, int64, error) {
+	q := DB.Model(&SkillUserArticle{}).
+		Where("status = ?", SkillUserArticleStatusApproved)
+	if f.Type != "" {
+		q = q.Where("type = ?", f.Type)
+	}
+	if f.Language != "" {
+		q = q.Where("language = ?", f.Language)
+	}
+	if f.SkillId > 0 {
+		q = q.Where("skill_id = ?", f.SkillId)
+	}
+	if f.Tag != "" {
+		// Cross-DB safe: tags is a CSV TEXT column. Surround the haystack
+		// with commas so a tag of "ai" doesn't match "ai-safety" mid-token.
+		// MySQL uses `||` for logical OR, so CONCAT() is required there;
+		// SQLite/PostgreSQL accept both but CONCAT works on modern SQLite
+		// (3.44+) — branch to keep older SQLite happy.
+		like := "%," + strings.ToLower(strings.TrimSpace(f.Tag)) + ",%"
+		if common.UsingMySQL {
+			q = q.Where("LOWER(CONCAT(',', tags, ',')) LIKE ?", like)
+		} else {
+			q = q.Where("LOWER(',' || tags || ',') LIKE ?", like)
+		}
+	}
+	if f.Search != "" {
+		like := "%" + strings.ToLower(f.Search) + "%"
+		q = q.Where("LOWER(title) LIKE ? OR LOWER(summary) LIKE ?", like, like)
+	}
+	var total int64
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	if f.PageSize <= 0 || f.PageSize > 100 {
+		f.PageSize = 24
+	}
+	if f.Page <= 0 {
+		f.Page = 1
+	}
+	var rows []SkillUserArticle
+	if err := q.Order("published_at desc").
+		Offset((f.Page - 1) * f.PageSize).Limit(f.PageSize).Find(&rows).Error; err != nil {
+		return nil, 0, err
+	}
+	hydrateUserArticleAuthorNames(rows)
+	hydrateUserArticleSkillNames(rows)
+	return rows, total, nil
+}
+
+// ListUserArticlesAdminFilter — admin moderation queue.
+type ListUserArticlesAdminFilter struct {
+	Status   string
+	Type     string
+	Search   string
+	Page     int
+	PageSize int
+}
+
+func ListUserArticlesAdmin(f ListUserArticlesAdminFilter) ([]SkillUserArticle, int64, error) {
+	q := DB.Model(&SkillUserArticle{})
+	if f.Status != "" {
+		q = q.Where("status = ?", f.Status)
+	}
+	if f.Type != "" {
+		q = q.Where("type = ?", f.Type)
+	}
+	if f.Search != "" {
+		like := "%" + strings.ToLower(f.Search) + "%"
+		q = q.Where("LOWER(title) LIKE ?", like)
+	}
+	var total int64
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	if f.PageSize <= 0 || f.PageSize > 100 {
+		f.PageSize = 30
+	}
+	if f.Page <= 0 {
+		f.Page = 1
+	}
+	var rows []SkillUserArticle
+	// Admin queue is most useful sorted by `updated_at desc` so the most
+	// recently submitted item bubbles to the top of the pending list.
+	if err := q.Order("updated_at desc").
+		Offset((f.Page - 1) * f.PageSize).Limit(f.PageSize).Find(&rows).Error; err != nil {
+		return nil, 0, err
+	}
+	hydrateUserArticleAuthorNames(rows)
+	hydrateUserArticleSkillNames(rows)
+	return rows, total, nil
+}
+
+// CountUserArticlesByStatus returns counts grouped by status. Used by
+// the admin queue KPI strip.
+func CountUserArticlesByStatus() (map[string]int64, error) {
+	type row struct {
+		Status string
+		Cnt    int64
+	}
+	var rows []row
+	if err := DB.Model(&SkillUserArticle{}).
+		Select("status, COUNT(*) as cnt").
+		Group("status").Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	out := make(map[string]int64, len(rows))
+	for _, r := range rows {
+		out[r.Status] = r.Cnt
+	}
+	return out, nil
+}
+
+// hydrateUserArticleAuthorNames runs one extra users-table query per
+// page to fill AuthorName (display_name → username fallback).
+func hydrateUserArticleAuthorNames(rows []SkillUserArticle) {
+	if len(rows) == 0 {
+		return
+	}
+	idSet := map[int]bool{}
+	ids := make([]int, 0, len(rows))
+	for _, r := range rows {
+		if r.AuthorId > 0 && !idSet[r.AuthorId] {
+			idSet[r.AuthorId] = true
+			ids = append(ids, r.AuthorId)
+		}
+	}
+	if len(ids) == 0 {
+		return
+	}
+	var users []struct {
+		Id          int
+		Username    string
+		DisplayName string
+	}
+	if err := DB.Table("users").Select("id, username, display_name").
+		Where("id IN ?", ids).Find(&users).Error; err != nil {
+		return
+	}
+	nameByID := make(map[int]string, len(users))
+	for _, u := range users {
+		name := u.DisplayName
+		if name == "" {
+			name = u.Username
+		}
+		nameByID[u.Id] = name
+	}
+	for i := range rows {
+		rows[i].AuthorName = nameByID[rows[i].AuthorId]
+	}
+}
+
+// hydrateUserArticleSkillNames fills SkillName / SkillSlug for rows
+// that reference a Skill. One query per page, no N+1.
+func hydrateUserArticleSkillNames(rows []SkillUserArticle) {
+	if len(rows) == 0 {
+		return
+	}
+	idSet := map[int]bool{}
+	ids := make([]int, 0, len(rows))
+	for _, r := range rows {
+		if r.SkillId > 0 && !idSet[r.SkillId] {
+			idSet[r.SkillId] = true
+			ids = append(ids, r.SkillId)
+		}
+	}
+	if len(ids) == 0 {
+		return
+	}
+	skills, err := GetSkillsByIDs(ids)
+	if err != nil {
+		return
+	}
+	byID := make(map[int]Skill, len(skills))
+	for _, s := range skills {
+		byID[s.Id] = s
+	}
+	for i := range rows {
+		if s, ok := byID[rows[i].SkillId]; ok {
+			rows[i].SkillName = s.Name
+			rows[i].SkillSlug = s.Slug
+		}
+	}
 }

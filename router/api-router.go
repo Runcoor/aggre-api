@@ -40,6 +40,9 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.GET("/skill-plaza/skills/:slug/ratings", middleware.TryUserAuth(), controller.GetSkillRatingSummary)
 		apiRouter.GET("/skill-plaza/skills/:slug/comments", middleware.TryUserAuth(), controller.GetSkillComments)
 		apiRouter.GET("/skill-plaza/skills/:slug/favorite-state", middleware.TryUserAuth(), controller.GetSkillFavoriteState)
+		// V1.1 user articles — public read.
+		apiRouter.GET("/skill-plaza/user-articles", controller.ListUserArticlesPublicEndpoint)
+		apiRouter.GET("/skill-plaza/user-articles/:slug", controller.GetUserArticlePublic)
 		apiRouter.POST("/tool/balance", middleware.CriticalRateLimit(), controller.ToolCheckBalance)
 		apiRouter.GET("/pricing", middleware.TryUserAuth(), controller.GetPricing)
 		apiRouter.GET("/verification", middleware.EmailVerificationRateLimit(), middleware.TurnstileCheck(), controller.SendEmailVerification)
@@ -287,6 +290,14 @@ func SetApiRouter(router *gin.Engine) {
 			skillPlazaUserRoute.GET("/me/favorites", controller.GetMySkillFavorites)
 			skillPlazaUserRoute.GET("/me/ratings", controller.GetMySkillRatings)
 			skillPlazaUserRoute.GET("/me/comments", controller.GetMySkillComments)
+
+			// V1.1 user articles — author-only CRUD + submit.
+			skillPlazaUserRoute.POST("/user-articles", controller.PostUserArticle)
+			skillPlazaUserRoute.GET("/me/articles", controller.ListMyArticles)
+			skillPlazaUserRoute.GET("/me/articles/:id", controller.GetMyArticle)
+			skillPlazaUserRoute.PUT("/me/articles/:id", controller.PutMyArticle)
+			skillPlazaUserRoute.DELETE("/me/articles/:id", controller.DeleteMyArticle)
+			skillPlazaUserRoute.POST("/me/articles/:id/submit", controller.PostMyArticleSubmit)
 		}
 
 		// SKILLS 广场 — admin endpoints (AdminAuth gated).
@@ -321,6 +332,14 @@ func SetApiRouter(router *gin.Engine) {
 
 			// Audit log
 			skillPlazaAdminRoute.GET("/audit-logs", controller.ListSkillPlazaAuditLogs)
+
+			// V1.1 user article moderation queue.
+			skillPlazaAdminRoute.GET("/user-articles", controller.ListUserArticlesAdminEndpoint)
+			skillPlazaAdminRoute.GET("/user-articles/:id", controller.GetUserArticleAdmin)
+			skillPlazaAdminRoute.POST("/user-articles/:id/approve", controller.PostUserArticleApprove)
+			skillPlazaAdminRoute.POST("/user-articles/:id/reject", controller.PostUserArticleReject)
+			skillPlazaAdminRoute.POST("/user-articles/:id/offline", controller.PostUserArticleOffline)
+			skillPlazaAdminRoute.DELETE("/user-articles/:id", controller.DeleteUserArticleAdmin)
 		}
 
 		aiNewsAdminRoute := apiRouter.Group("/ai-news/admin")

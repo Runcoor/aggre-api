@@ -30,6 +30,7 @@ func resetSkillPlazaTables(t *testing.T) {
 		"skill_ratings", "skill_favorites",
 		"skill_comments", "skill_comment_likes",
 		"skill_reports", "skill_audit_logs",
+		"skill_user_articles",
 	} {
 		DB.Exec("DELETE FROM " + table)
 	}
@@ -288,4 +289,231 @@ func TestIsValidReportTarget(t *testing.T) {
 	assert.True(t, IsValidReportTarget(SkillReportTargetShowcase))
 	assert.False(t, IsValidReportTarget(""))
 	assert.False(t, IsValidReportTarget("user"))
+}
+
+// =====================================================================
+// SkillUserArticle — P4-1 user submission tests
+// =====================================================================
+
+func TestCreateSkillUserArticle_DefaultsAndSlug(t *testing.T) {
+	resetSkillPlazaTables(t)
+
+	a := &SkillUserArticle{
+		AuthorId: 7,
+		Title:    "Hello World 教程",
+		Content:  "body",
+	}
+	require.NoError(t, CreateSkillUserArticle(a))
+	assert.NotZero(t, a.Id)
+	assert.Equal(t, SkillUserArticleStatusDraft, a.Status)
+	assert.Equal(t, SkillUserArticleTypeTutorial, a.Type) // empty type → tutorial
+	assert.Equal(t, SkillArticleLangZh, a.Language)
+	assert.NotEmpty(t, a.Slug)
+	assert.NotZero(t, a.CreatedAt)
+
+	// Second article with same title should get a -2 suffix.
+	b := &SkillUserArticle{AuthorId: 7, Title: "Hello World 教程"}
+	require.NoError(t, CreateSkillUserArticle(b))
+	assert.NotEqual(t, a.Slug, b.Slug)
+}
+
+func TestCreateSkillUserArticle_RequiresAuthorAndTitle(t *testing.T) {
+	resetSkillPlazaTables(t)
+	require.Error(t, CreateSkillUserArticle(&SkillUserArticle{Title: "no author"}))
+	require.Error(t, CreateSkillUserArticle(&SkillUserArticle{AuthorId: 1}))
+}
+
+func TestSubmitSkillUserArticle_StateMachine(t *testing.T) {
+	resetSkillPlazaTables(t)
+
+	a := &SkillUserArticle{AuthorId: 7, Title: "Submit me"}
+	require.NoError(t, CreateSkillUserArticle(a))
+
+	// Wrong author cannot submit.
+	require.Error(t, SubmitSkillUserArticle(a.Id, 999))
+
+	// Author submits.
+	require.NoError(t, SubmitSkillUserArticle(a.Id, 7))
+	fresh, err := GetSkillUserArticleByID(a.Id)
+	require.NoError(t, err)
+	assert.Equal(t, SkillUserArticleStatusPending, fresh.Status)
+
+	// Submitting again from pending should fail (not in submittable state).
+	require.Error(t, SubmitSkillUserArticle(a.Id, 7))
+}
+
+func TestReviewSkillUserArticle_ApproveStampsPublishedAt(t *testing.T) {
+	resetSkillPlazaTables(t)
+
+	a := &SkillUserArticle{AuthorId: 7, Title: "Approve me",
+		Status: SkillUserArticleStatusPending}
+	require.NoError(t, CreateSkillUserArticle(a))
+
+	require.NoError(t, ReviewSkillUserArticle(a.Id, 100, true, ""))
+
+	fresh, err := GetSkillUserArticleByID(a.Id)
+	require.NoError(t, err)
+	assert.Equal(t, SkillUserArticleStatusApproved, fresh.Status)
+	assert.Equal(t, 100, fresh.ReviewedBy)
+	assert.NotZero(t, fresh.PublishedAt)
+	publishedAt := fresh.PublishedAt
+
+	// Offline then re-pending then re-approve should keep original published_at.
+	require.NoError(t, OfflineSkillUserArticle(a.Id, 100, "test"))
+	// Manually flip back to pending (simulating author resubmit flow — for
+	// this unit test we bypass author re-edit and just update status).
+	require.NoError(t, DB.Model(&SkillUserArticle{}).Where("id = ?", a.Id).
+		Update("status", SkillUserArticleStatusPending).Error)
+	require.NoError(t, ReviewSkillUserArticle(a.Id, 100, true, ""))
+	fresh2, err := GetSkillUserArticleByID(a.Id)
+	require.NoError(t, err)
+	assert.Equal(t, publishedAt, fresh2.PublishedAt, "published_at should not be re-stamped")
+}
+
+func TestReviewSkillUserArticle_RejectKeepsReason(t *testing.T) {
+	resetSkillPlazaTables(t)
+
+	a := &SkillUserArticle{AuthorId: 7, Title: "Reject me",
+		Status: SkillUserArticleStatusPending}
+	require.NoError(t, CreateSkillUserArticle(a))
+
+	require.NoError(t, ReviewSkillUserArticle(a.Id, 100, false, "格式不规范"))
+
+	fresh, err := GetSkillUserArticleByID(a.Id)
+	require.NoError(t, err)
+	assert.Equal(t, SkillUserArticleStatusRejected, fresh.Status)
+	assert.Equal(t, "格式不规范", fresh.RejectReason)
+	assert.Zero(t, fresh.PublishedAt)
+}
+
+func TestReviewSkillUserArticle_RejectsNonPending(t *testing.T) {
+	resetSkillPlazaTables(t)
+
+	a := &SkillUserArticle{AuthorId: 7, Title: "Still draft"}
+	require.NoError(t, CreateSkillUserArticle(a))
+
+	// Cannot review a draft directly.
+	require.Error(t, ReviewSkillUserArticle(a.Id, 100, true, ""))
+}
+
+func TestUpdateSkillUserArticle_StripsForbiddenKeys(t *testing.T) {
+	resetSkillPlazaTables(t)
+
+	a := &SkillUserArticle{AuthorId: 7, Title: "Original"}
+	require.NoError(t, CreateSkillUserArticle(a))
+
+	require.NoError(t, UpdateSkillUserArticle(a.Id, map[string]any{
+		"title":   "Edited",
+		"summary": "new summary",
+		// Should be stripped:
+		"status":      SkillUserArticleStatusApproved,
+		"author_id":   999,
+		"reviewed_by": 999,
+	}))
+
+	fresh, err := GetSkillUserArticleByID(a.Id)
+	require.NoError(t, err)
+	assert.Equal(t, "Edited", fresh.Title)
+	assert.Equal(t, "new summary", fresh.Summary)
+	assert.Equal(t, SkillUserArticleStatusDraft, fresh.Status, "status must not change via Update")
+	assert.Equal(t, 7, fresh.AuthorId, "author_id must not change via Update")
+	assert.Zero(t, fresh.ReviewedBy)
+}
+
+func TestDeleteSkillUserArticle_AuthorRestrictions(t *testing.T) {
+	resetSkillPlazaTables(t)
+
+	// Author can delete own draft.
+	draft := &SkillUserArticle{AuthorId: 7, Title: "Draft"}
+	require.NoError(t, CreateSkillUserArticle(draft))
+	require.NoError(t, DeleteSkillUserArticle(draft.Id, 7, false))
+
+	// Author cannot delete approved article.
+	approved := &SkillUserArticle{AuthorId: 7, Title: "Approved",
+		Status: SkillUserArticleStatusApproved}
+	require.NoError(t, CreateSkillUserArticle(approved))
+	require.Error(t, DeleteSkillUserArticle(approved.Id, 7, false))
+
+	// Wrong author cannot delete.
+	other := &SkillUserArticle{AuthorId: 7, Title: "Other"}
+	require.NoError(t, CreateSkillUserArticle(other))
+	require.Error(t, DeleteSkillUserArticle(other.Id, 999, false))
+
+	// Admin can delete anything.
+	require.NoError(t, DeleteSkillUserArticle(approved.Id, 999, true))
+	require.NoError(t, DeleteSkillUserArticle(other.Id, 0, true))
+}
+
+func TestListUserArticlesPublic_FilterApprovedOnly(t *testing.T) {
+	resetSkillPlazaTables(t)
+
+	// Two approved, one pending, one rejected.
+	for _, x := range []struct{ status, title string }{
+		{SkillUserArticleStatusApproved, "Approved 1"},
+		{SkillUserArticleStatusApproved, "Approved 2"},
+		{SkillUserArticleStatusPending, "Pending"},
+		{SkillUserArticleStatusRejected, "Rejected"},
+	} {
+		a := &SkillUserArticle{AuthorId: 7, Title: x.title, Status: x.status,
+			PublishedAt: 1700000000}
+		require.NoError(t, CreateSkillUserArticle(a))
+	}
+
+	rows, total, err := ListUserArticlesPublic(ListUserArticlesPublicFilter{})
+	require.NoError(t, err)
+	assert.EqualValues(t, 2, total)
+	assert.Len(t, rows, 2)
+	for _, r := range rows {
+		assert.Equal(t, SkillUserArticleStatusApproved, r.Status)
+	}
+}
+
+func TestListUserArticlesPublic_FilterByType(t *testing.T) {
+	resetSkillPlazaTables(t)
+
+	tutorial := &SkillUserArticle{AuthorId: 7, Title: "Tut",
+		Type: SkillUserArticleTypeTutorial, Status: SkillUserArticleStatusApproved}
+	require.NoError(t, CreateSkillUserArticle(tutorial))
+	review := &SkillUserArticle{AuthorId: 7, Title: "Rev",
+		Type: SkillUserArticleTypeReview, Status: SkillUserArticleStatusApproved}
+	require.NoError(t, CreateSkillUserArticle(review))
+
+	rows, total, err := ListUserArticlesPublic(ListUserArticlesPublicFilter{
+		Type: SkillUserArticleTypeReview,
+	})
+	require.NoError(t, err)
+	assert.EqualValues(t, 1, total)
+	require.Len(t, rows, 1)
+	assert.Equal(t, "Rev", rows[0].Title)
+}
+
+func TestCountUserArticlesByStatus(t *testing.T) {
+	resetSkillPlazaTables(t)
+
+	for _, s := range []string{
+		SkillUserArticleStatusDraft,
+		SkillUserArticleStatusPending, SkillUserArticleStatusPending,
+		SkillUserArticleStatusApproved,
+	} {
+		require.NoError(t, CreateSkillUserArticle(&SkillUserArticle{
+			AuthorId: 7, Title: "t-" + s, Status: s,
+		}))
+	}
+
+	counts, err := CountUserArticlesByStatus()
+	require.NoError(t, err)
+	assert.EqualValues(t, 1, counts[SkillUserArticleStatusDraft])
+	assert.EqualValues(t, 2, counts[SkillUserArticleStatusPending])
+	assert.EqualValues(t, 1, counts[SkillUserArticleStatusApproved])
+}
+
+func TestIsValidSkillUserArticleType(t *testing.T) {
+	assert.True(t, IsValidSkillUserArticleType(SkillUserArticleTypeTutorial))
+	assert.True(t, IsValidSkillUserArticleType(SkillUserArticleTypeReview))
+	assert.True(t, IsValidSkillUserArticleType(SkillUserArticleTypeShowcase))
+	assert.True(t, IsValidSkillUserArticleType(SkillUserArticleTypeTroubleshooting))
+	assert.True(t, IsValidSkillUserArticleType(SkillUserArticleTypePrompts))
+	assert.True(t, IsValidSkillUserArticleType(SkillUserArticleTypeComparison))
+	assert.False(t, IsValidSkillUserArticleType(""))
+	assert.False(t, IsValidSkillUserArticleType("blog"))
 }

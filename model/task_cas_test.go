@@ -33,7 +33,15 @@ func TestMain(m *testing.M) {
 	}
 	sqlDB.SetMaxOpenConns(1)
 
-	if err := db.AutoMigrate(&Task{}, &User{}, &Token{}, &Log{}, &Channel{}); err != nil {
+	if err := db.AutoMigrate(
+		&Task{}, &User{}, &Token{}, &Log{}, &Channel{},
+		// SKILLS 广场 tables — tests in skill_plaza_test.go rely on these
+		// being present. AutoMigrate is idempotent so co-locating here is
+		// cheaper than duplicating a setup helper.
+		&Skill{}, &SkillArticle{}, &SkillImportJob{},
+		&SkillRating{}, &SkillFavorite{},
+		&SkillComment{}, &SkillCommentLike{}, &SkillReport{},
+	); err != nil {
 		panic("failed to migrate: " + err.Error())
 	}
 

@@ -406,7 +406,7 @@ V1.2(留存):
 - [x] **P3-2 敏感词过滤** — 评论 / 投稿 submit 时拦截,admin 后台配置词库(`skill_plaza_setting.sensitive_words` CSV 或多行)
 - [x] **P3-3 举报队列** — 评论 / 案例右下角"举报"按钮 → 表 `skill_reports`(user_id / target_type / target_id / reason / status) → admin 队列页
 - [ ] **P3-4 i18n 英文翻译补齐** — `bun run i18n:extract` → 用 AI 批量翻译填空 → admin review
-- [ ] **P3-5 基础单测** — 评分 upsert / 评论 create / 收藏 toggle / 聚合 recompute 四条主路径
+- [x] **P3-5 基础单测** — 评分 upsert / 评论 create / 收藏 toggle / 聚合 recompute 四条主路径
 - [ ] **P3-6 管理员审核日志** — 表 `skill_audit_logs`(谁 / 何时 / 对哪条 skill 做了什么),admin 后台时间轴
 - [ ] **P3-7 删 `.design-tmp/`** — task #128,P3 全部完成后执行
 
@@ -545,7 +545,7 @@ V1.2(留存):
 
 下一步:P3-3 举报队列
 
-### 2026-05-14 — P3-3 举报队列(commit pending)
+### 2026-05-14 — P3-3 举报队列(commit 1db0505)
 
 完成内容:
 - 后端 `SkillReport` 表 + AutoMigrate;targets=[comment|skill|showcase];status=[open|resolved|dismissed]
@@ -554,5 +554,15 @@ V1.2(留存):
 - admin 接口 `GET /admin/reports?status=open|resolved|dismissed|all`(返回 items + open_count)与 `POST /admin/reports/:id/resolve`(status: resolved|dismissed|open)
 - 前端 `pages/Skills/admin/ReportsPage.jsx`:filter pills + 队列表 + StatusBadge + 处理/驳回/重开按钮
 - App.jsx `/skills/admin/reports` 路由(AdminRoute);AdminConsole 顶栏新增"举报队列"入口
+
+下一步:P3-4 i18n 英文翻译补齐
+
+### 2026-05-14 — P3-5 基础单测(commit pending)
+
+完成内容:
+- `model/skill_plaza_test.go`:UpsertSkillRating(create/update + 多用户平均)、ToggleSkillFavorite(on/off/on + 聚合)、CreateSkillComment(顶层/回复/三层折叠/跨 skill 拒绝 + comment_count)、ToggleSkillCommentLike + ListCommentLikesByUser、CreateOrUpdateSkillReport(upsert + 跨用户独立 + resolve/重开) — 共 9 个 Test
+- `service/skill_plaza/sensitive_test.go`:DetectSensitive 空列表 / 大小写 / 中文 / 多命中 / 未命中 5 路径
+- `model/task_cas_test.go` TestMain 的 AutoMigrate 列表加 Skill / SkillArticle / SkillImportJob / SkillRating / SkillFavorite / SkillComment / SkillCommentLike / SkillReport
+- 用 `require.Empty` 替代 `require.Nil` 处理 typed-nil slice 经 interface{} boxing 的 testify 边界
 
 下一步:P3-4 i18n 英文翻译补齐

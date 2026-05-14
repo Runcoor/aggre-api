@@ -388,6 +388,48 @@ func GetSkillFavoriteState(c *gin.Context) {
 }
 
 // =====================================================================
+// Reports — user-side: file a report against a comment / skill /
+// showcase. Server upserts so a single user can't queue-spam.
+// =====================================================================
+
+type postReportRequest struct {
+	TargetType string `json:"target_type"`
+	TargetId   int    `json:"target_id"`
+	Reason     string `json:"reason"`
+}
+
+// PostSkillReport POST /api/skill-plaza/reports
+func PostSkillReport(c *gin.Context) {
+	if !skillPlazaGate(c) {
+		return
+	}
+	userID := currentUserID(c)
+	if userID == 0 {
+		common.ApiErrorMsg(c, "login required")
+		return
+	}
+	var req postReportRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.ApiErrorMsg(c, "invalid request body")
+		return
+	}
+	if !model.IsValidReportTarget(req.TargetType) {
+		common.ApiErrorMsg(c, "invalid target_type")
+		return
+	}
+	if req.TargetId <= 0 {
+		common.ApiErrorMsg(c, "invalid target_id")
+		return
+	}
+	row, err := model.CreateOrUpdateSkillReport(userID, req.TargetType, req.TargetId, req.Reason)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, row)
+}
+
+// =====================================================================
 // My center
 // =====================================================================
 

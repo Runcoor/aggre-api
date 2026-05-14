@@ -412,6 +412,59 @@ func PutSkillPlazaAdminSettings(c *gin.Context) {
 	common.ApiSuccess(c, operation_setting.GetSkillPlazaSetting())
 }
 
+// =====================================================================
+// Reports — admin queue handlers.
+// =====================================================================
+
+// ListSkillPlazaReports GET /api/skill-plaza/admin/reports?status=open
+//
+// Optional status filter; defaults to "open" since that's the working
+// queue. Pass status=all (or empty after the default kicks in via
+// explicit "") to see resolved/dismissed too.
+func ListSkillPlazaReports(c *gin.Context) {
+	status := c.DefaultQuery("status", model.SkillReportStatusOpen)
+	if status == "all" {
+		status = ""
+	}
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	rows, err := model.ListSkillReports(status, limit)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	open, _ := model.CountOpenReports()
+	common.ApiSuccess(c, gin.H{
+		"items":      rows,
+		"open_count": open,
+	})
+}
+
+type resolveReportRequest struct {
+	Status string `json:"status"` // resolved | dismissed | open
+}
+
+// PostSkillPlazaReportResolve POST /api/skill-plaza/admin/reports/:id/resolve
+func PostSkillPlazaReportResolve(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		common.ApiErrorMsg(c, "invalid id")
+		return
+	}
+	var req resolveReportRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.ApiErrorMsg(c, "invalid request body")
+		return
+	}
+	if req.Status == "" {
+		req.Status = model.SkillReportStatusResolved
+	}
+	if err := model.ResolveSkillReport(id, currentAdminID(c), req.Status); err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, gin.H{"id": id, "status": req.Status})
+}
+
 // PostSkillPlazaArticleUnpublish POST /api/skill-plaza/admin/articles/:id/unpublish
 func PostSkillPlazaArticleUnpublish(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))

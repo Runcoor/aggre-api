@@ -31,6 +31,7 @@ import {
   Trash2,
   RefreshCw,
   ArrowLeft,
+  Flag,
 } from 'lucide-react';
 import { API, showError, showSuccess } from '../../../helpers';
 import { SKILL_PLAZA_STYLES, SourceBadge, StatusBadge } from '../styles';
@@ -123,24 +124,44 @@ const AdminConsole = () => {
                 )}
               </p>
             </div>
-            <Link
-              to='/skills/admin/import'
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '10px 18px',
-                borderRadius: 10,
-                color: '#fff',
-                textDecoration: 'none',
-                fontSize: 14,
-                fontWeight: 600,
-                background: 'linear-gradient(135deg,#0072ff,#00c6ff)',
-                boxShadow: '0 4px 12px rgba(0,114,255,0.25)',
-              }}
-            >
-              <Plus size={16} /> {t('从 GitHub 导入')}
-            </Link>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <Link
+                to='/skills/admin/reports'
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '10px 16px',
+                  borderRadius: 10,
+                  textDecoration: 'none',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: 'var(--text-primary)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-default)',
+                }}
+              >
+                <Flag size={14} /> {t('举报队列')}
+              </Link>
+              <Link
+                to='/skills/admin/import'
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '10px 18px',
+                  borderRadius: 10,
+                  color: '#fff',
+                  textDecoration: 'none',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  background: 'linear-gradient(135deg,#0072ff,#00c6ff)',
+                  boxShadow: '0 4px 12px rgba(0,114,255,0.25)',
+                }}
+              >
+                <Plus size={16} /> {t('从 GitHub 导入')}
+              </Link>
+            </div>
           </div>
 
           {/* KPI strip */}

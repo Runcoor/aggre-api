@@ -34,6 +34,7 @@ import {
   Trash2,
   Heart,
   Reply,
+  Flag,
   X as XIcon,
 } from 'lucide-react';
 import { API, showError, showSuccess, getUserIdFromLocalStorage, isAdmin } from '../../helpers';
@@ -505,6 +506,45 @@ function CommentItem({
           >
             <Reply size={13} />
             <span>{t('回复')}</span>
+          </button>
+        )}
+        {loggedIn && c.user_id !== currentUserId && (
+          <button
+            onClick={() => {
+              const reason = window.prompt(
+                t('请说明举报原因 (可选,1000 字以内):'),
+                '',
+              );
+              if (reason === null) return; // user cancelled
+              API.post('/api/skill-plaza/reports', {
+                target_type: 'comment',
+                target_id: c.id,
+                reason: reason || '',
+              })
+                .then((res) => {
+                  if (res.data?.success) {
+                    showSuccess(t('已提交举报,管理员会尽快处理'));
+                  } else {
+                    showError(res.data?.message);
+                  }
+                })
+                .catch((e) => showError(e?.message));
+            }}
+            title={t('举报')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '4px 8px',
+              borderRadius: 6,
+              border: 0,
+              background: 'transparent',
+              color: 'var(--text-muted)',
+              cursor: 'pointer',
+              fontSize: 12,
+            }}
+          >
+            <Flag size={12} />
           </button>
         )}
       </div>

@@ -283,6 +283,7 @@ func SetApiRouter(router *gin.Engine) {
 			skillPlazaUserRoute.POST("/skills/:slug/favorite-toggle", controller.PostSkillFavoriteToggle)
 			skillPlazaUserRoute.DELETE("/comments/:id", controller.DeleteSkillCommentUser)
 			skillPlazaUserRoute.POST("/comments/:id/like", controller.PostSkillCommentLikeToggle)
+			skillPlazaUserRoute.POST("/reports", controller.PostSkillReport)
 			skillPlazaUserRoute.GET("/me/favorites", controller.GetMySkillFavorites)
 			skillPlazaUserRoute.GET("/me/ratings", controller.GetMySkillRatings)
 			skillPlazaUserRoute.GET("/me/comments", controller.GetMySkillComments)
@@ -313,6 +314,10 @@ func SetApiRouter(router *gin.Engine) {
 			// the super-admin password.
 			skillPlazaAdminRoute.GET("/settings", controller.GetSkillPlazaAdminSettings)
 			skillPlazaAdminRoute.PUT("/settings", controller.PutSkillPlazaAdminSettings)
+
+			// Reports queue
+			skillPlazaAdminRoute.GET("/reports", controller.ListSkillPlazaReports)
+			skillPlazaAdminRoute.POST("/reports/:id/resolve", controller.PostSkillPlazaReportResolve)
 		}
 
 		aiNewsAdminRoute := apiRouter.Group("/ai-news/admin")

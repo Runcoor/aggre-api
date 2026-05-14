@@ -1080,6 +1080,166 @@ type UserCommentItem struct {
 	Skill   Skill        `json:"skill"`
 }
 
+// =====================================================================
+// SkillReport — user-filed reports against comments / skills / showcases.
+// Phase 3-3 of the SKILLS 广场 roadmap.
+//
+// One row per (reporter, target_type, target_id). Re-reporting the same
+// target as the same user just updates the reason and bumps created_at;
+// this keeps the queue clean without losing context. Resolution flow:
+//   open → resolved | dismissed
+// `resolved_by` / `resolved_at` are populated by the admin handler.
+//
+// Cross-DB safe: GORM-only, no DB-specific types or operators.
+// =====================================================================
+
+const (
+	SkillReportTargetComment  = "comment"
+	SkillReportTargetSkill    = "skill"
+	SkillReportTargetShowcase = "showcase"
+)
+
+const (
+	SkillReportStatusOpen      = "open"
+	SkillReportStatusResolved  = "resolved"
+	SkillReportStatusDismissed = "dismissed"
+)
+
+type SkillReport struct {
+	Id         int    `json:"id" gorm:"primaryKey"`
+	ReporterId int    `json:"reporter_id" gorm:"not null;index;uniqueIndex:idx_report_unique"`
+	TargetType string `json:"target_type" gorm:"size:32;not null;index;uniqueIndex:idx_report_unique"`
+	TargetId   int    `json:"target_id" gorm:"not null;index;uniqueIndex:idx_report_unique"`
+	Reason     string `json:"reason" gorm:"type:text"`
+	Status     string `json:"status" gorm:"size:16;not null;default:'open';index"`
+	CreatedAt  int64  `json:"created_at" gorm:"bigint;index"`
+	ResolvedAt int64  `json:"resolved_at" gorm:"bigint"`
+	ResolvedBy int    `json:"resolved_by"`
+}
+
+func (SkillReport) TableName() string { return "skill_reports" }
+
+func (r *SkillReport) BeforeCreate(tx *gorm.DB) error {
+	if r.CreatedAt == 0 {
+		r.CreatedAt = time.Now().Unix()
+	}
+	if r.Status == "" {
+		r.Status = SkillReportStatusOpen
+	}
+	return nil
+}
+
+// IsValidReportTarget returns whether the given target_type string is one
+// of the three supported targets. Callers should use this before inserting
+// so the queue doesn't fill up with junk types.
+func IsValidReportTarget(t string) bool {
+	switch t {
+	case SkillReportTargetComment, SkillReportTargetSkill, SkillReportTargetShowcase:
+		return true
+	}
+	return false
+}
+
+// CreateOrUpdateSkillReport upserts a report so a single user can't spam
+// the queue with the same target. Returns the resulting row.
+//
+// Behavior:
+//   - if (reporter, target_type, target_id) already exists and is OPEN,
+//     update the reason + bump created_at so the queue surfaces the most
+//     recent complaint.
+//   - if it exists but is RESOLVED/DISMISSED, re-open it with the new
+//     reason — repeat complaints after a dismissal are signal worth
+//     surfacing again.
+//   - otherwise create a fresh row.
+func CreateOrUpdateSkillReport(reporterId int, targetType string, targetId int, reason string) (*SkillReport, error) {
+	if reporterId <= 0 {
+		return nil, errors.New("reporter required")
+	}
+	if !IsValidReportTarget(targetType) || targetId <= 0 {
+		return nil, errors.New("invalid target")
+	}
+	reason = strings.TrimSpace(reason)
+	if len(reason) > 1000 {
+		reason = reason[:1000]
+	}
+
+	var existing SkillReport
+	err := DB.Where("reporter_id = ? AND target_type = ? AND target_id = ?",
+		reporterId, targetType, targetId).First(&existing).Error
+	if err == nil {
+		existing.Reason = reason
+		existing.Status = SkillReportStatusOpen
+		existing.CreatedAt = time.Now().Unix()
+		existing.ResolvedAt = 0
+		existing.ResolvedBy = 0
+		if err := DB.Save(&existing).Error; err != nil {
+			return nil, err
+		}
+		return &existing, nil
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	row := &SkillReport{
+		ReporterId: reporterId,
+		TargetType: targetType,
+		TargetId:   targetId,
+		Reason:     reason,
+		Status:     SkillReportStatusOpen,
+	}
+	if err := DB.Create(row).Error; err != nil {
+		return nil, err
+	}
+	return row, nil
+}
+
+// ListSkillReports lists reports filtered by status. status="" returns
+// every status. Newest first. Limit clamped to [1, 200].
+func ListSkillReports(status string, limit int) ([]SkillReport, error) {
+	if limit <= 0 || limit > 200 {
+		limit = 50
+	}
+	q := DB.Model(&SkillReport{})
+	if status != "" {
+		q = q.Where("status = ?", status)
+	}
+	var rows []SkillReport
+	if err := q.Order("created_at desc").Limit(limit).Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
+// ResolveSkillReport flips a report to resolved/dismissed and stamps it
+// with the admin who closed it. Pass status=open to re-open (rare).
+func ResolveSkillReport(reportId, adminId int, status string) error {
+	switch status {
+	case SkillReportStatusResolved, SkillReportStatusDismissed:
+	case SkillReportStatusOpen:
+	default:
+		return errors.New("invalid status")
+	}
+	updates := map[string]any{
+		"status": status,
+	}
+	if status == SkillReportStatusOpen {
+		updates["resolved_at"] = 0
+		updates["resolved_by"] = 0
+	} else {
+		updates["resolved_at"] = time.Now().Unix()
+		updates["resolved_by"] = adminId
+	}
+	return DB.Model(&SkillReport{}).Where("id = ?", reportId).Updates(updates).Error
+}
+
+// CountOpenReports returns how many reports are currently OPEN — used as
+// a badge in the admin sidebar.
+func CountOpenReports() (int64, error) {
+	var n int64
+	err := DB.Model(&SkillReport{}).Where("status = ?", SkillReportStatusOpen).Count(&n).Error
+	return n, err
+}
+
 func ListUserComments(userId int, limit int) ([]UserCommentItem, error) {
 	if limit <= 0 || limit > 200 {
 		limit = 60

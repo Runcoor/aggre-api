@@ -519,7 +519,7 @@ V1.2(留存):
 - 完成内容(简洁,3-5 行)
 - 下一步:P{phase}-{m}
 
-### 2026-05-14 — P3-1 评论点赞 + 一层回复(pending commit)
+### 2026-05-14 — P3-1 评论点赞 + 一层回复(commit b9f6645)
 
 完成内容:
 - 后端 `SkillCommentLike` 表(user_id × comment_id 唯一索引),AutoMigrate 注册

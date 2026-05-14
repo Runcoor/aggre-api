@@ -102,6 +102,9 @@ const SkillsAdminReview = lazy(() => import('./pages/Skills/admin/ReviewPage'));
 const SkillsAdminReports = lazy(
   () => import('./pages/Skills/admin/ReportsPage'),
 );
+const SkillsAdminAuditLogs = lazy(
+  () => import('./pages/Skills/admin/AuditLogsPage'),
+);
 const SkillsMyCenter = lazy(() => import('./pages/Skills/MyCenter'));
 
 // Shared shell for standalone tool pages — centered column, top padding,
@@ -702,6 +705,19 @@ function App() {
                   key={location.pathname}
                 >
                   <SkillsAdminReports />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/skills/admin/audit-logs'
+            element={
+              <AdminRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <SkillsAdminAuditLogs />
                 </Suspense>
               </AdminRoute>
             }

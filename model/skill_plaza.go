@@ -1240,6 +1240,116 @@ func CountOpenReports() (int64, error) {
 	return n, err
 }
 
+// =====================================================================
+// SkillAuditLog — admin action timeline. Best-effort logging: write
+// failures are swallowed (logged at sys-error level) so they never
+// block the underlying operation. Reads power the admin audit page.
+// =====================================================================
+
+const (
+	SkillAuditActionPublish      = "article.publish"
+	SkillAuditActionUnpublish    = "article.unpublish"
+	SkillAuditActionSkillUpdate  = "skill.update"
+	SkillAuditActionSkillDelete  = "skill.delete"
+	SkillAuditActionImport       = "skill.import"
+	SkillAuditActionReportResolve = "report.resolve"
+	SkillAuditActionSettings     = "settings.update"
+)
+
+type SkillAuditLog struct {
+	Id         int    `json:"id" gorm:"primaryKey"`
+	AdminId    int    `json:"admin_id" gorm:"not null;index"`
+	Action     string `json:"action" gorm:"size:64;not null;index"`
+	TargetType string `json:"target_type" gorm:"size:32;index"`
+	TargetId   int    `json:"target_id" gorm:"index"`
+	Summary    string `json:"summary" gorm:"type:text"`
+	Meta       string `json:"meta" gorm:"type:text"` // JSON blob, optional
+	CreatedAt  int64  `json:"created_at" gorm:"bigint;index"`
+
+	// Hydrated by ListSkillAuditLogs from users table for display.
+	AdminName string `json:"admin_name" gorm:"-"`
+}
+
+func (SkillAuditLog) TableName() string { return "skill_audit_logs" }
+
+func (l *SkillAuditLog) BeforeCreate(tx *gorm.DB) error {
+	if l.CreatedAt == 0 {
+		l.CreatedAt = time.Now().Unix()
+	}
+	return nil
+}
+
+// WriteSkillAuditLog records one admin action. adminId=0 falls back to
+// the system actor so seed/cron writes still leave a trace. Returns
+// the row id, but callers should NOT block on the error — call sites
+// log to sys-error and continue.
+func WriteSkillAuditLog(adminId int, action, targetType string, targetId int, summary, meta string) error {
+	row := &SkillAuditLog{
+		AdminId:    adminId,
+		Action:     action,
+		TargetType: targetType,
+		TargetId:   targetId,
+		Summary:    summary,
+		Meta:       meta,
+	}
+	return DB.Create(row).Error
+}
+
+// ListSkillAuditLogs returns the newest `limit` rows, optionally
+// filtered by action and/or target_type. Hydrates admin display name
+// via one extra users-table query (avoids N+1).
+func ListSkillAuditLogs(action, targetType string, limit int) ([]SkillAuditLog, error) {
+	if limit <= 0 || limit > 200 {
+		limit = 50
+	}
+	q := DB.Model(&SkillAuditLog{})
+	if action != "" {
+		q = q.Where("action = ?", action)
+	}
+	if targetType != "" {
+		q = q.Where("target_type = ?", targetType)
+	}
+	var rows []SkillAuditLog
+	if err := q.Order("created_at desc").Limit(limit).Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return rows, nil
+	}
+	// Hydrate admin name.
+	idSet := map[int]bool{}
+	ids := make([]int, 0, len(rows))
+	for _, r := range rows {
+		if r.AdminId > 0 && !idSet[r.AdminId] {
+			idSet[r.AdminId] = true
+			ids = append(ids, r.AdminId)
+		}
+	}
+	if len(ids) > 0 {
+		var users []struct {
+			Id          int
+			Username    string
+			DisplayName string
+		}
+		if err := DB.Table("users").Select("id, username, display_name").
+			Where("id IN ?", ids).Find(&users).Error; err != nil {
+			return nil, err
+		}
+		nameByID := make(map[int]string, len(users))
+		for _, u := range users {
+			name := u.DisplayName
+			if name == "" {
+				name = u.Username
+			}
+			nameByID[u.Id] = name
+		}
+		for i := range rows {
+			rows[i].AdminName = nameByID[rows[i].AdminId]
+		}
+	}
+	return rows, nil
+}
+
 func ListUserComments(userId int, limit int) ([]UserCommentItem, error) {
 	if limit <= 0 || limit > 200 {
 		limit = 60

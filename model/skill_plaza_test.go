@@ -29,7 +29,7 @@ func resetSkillPlazaTables(t *testing.T) {
 		"skills", "skill_articles", "skill_import_jobs",
 		"skill_ratings", "skill_favorites",
 		"skill_comments", "skill_comment_likes",
-		"skill_reports",
+		"skill_reports", "skill_audit_logs",
 	} {
 		DB.Exec("DELETE FROM " + table)
 	}

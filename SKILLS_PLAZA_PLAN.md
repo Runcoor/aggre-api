@@ -407,7 +407,7 @@ V1.2(留存):
 - [x] **P3-3 举报队列** — 评论 / 案例右下角"举报"按钮 → 表 `skill_reports`(user_id / target_type / target_id / reason / status) → admin 队列页
 - [ ] **P3-4 i18n 英文翻译补齐** — `bun run i18n:extract` → 用 AI 批量翻译填空 → admin review
 - [x] **P3-5 基础单测** — 评分 upsert / 评论 create / 收藏 toggle / 聚合 recompute 四条主路径
-- [ ] **P3-6 管理员审核日志** — 表 `skill_audit_logs`(谁 / 何时 / 对哪条 skill 做了什么),admin 后台时间轴
+- [x] **P3-6 管理员审核日志** — 表 `skill_audit_logs`(谁 / 何时 / 对哪条 skill 做了什么),admin 后台时间轴
 - [ ] **P3-7 删 `.design-tmp/`** — task #128,P3 全部完成后执行
 
 ### Phase 4 ─ 用户投稿(V1.1,预估 3-5 天)
@@ -555,14 +555,28 @@ V1.2(留存):
 - 前端 `pages/Skills/admin/ReportsPage.jsx`:filter pills + 队列表 + StatusBadge + 处理/驳回/重开按钮
 - App.jsx `/skills/admin/reports` 路由(AdminRoute);AdminConsole 顶栏新增"举报队列"入口
 
-下一步:P3-4 i18n 英文翻译补齐
+下一步:P3-6 管理员审核日志
 
-### 2026-05-14 — P3-5 基础单测(commit pending)
+### 2026-05-14 — P3-5 基础单测(commit f3ca2a6)
 
 完成内容:
 - `model/skill_plaza_test.go`:UpsertSkillRating(create/update + 多用户平均)、ToggleSkillFavorite(on/off/on + 聚合)、CreateSkillComment(顶层/回复/三层折叠/跨 skill 拒绝 + comment_count)、ToggleSkillCommentLike + ListCommentLikesByUser、CreateOrUpdateSkillReport(upsert + 跨用户独立 + resolve/重开) — 共 9 个 Test
 - `service/skill_plaza/sensitive_test.go`:DetectSensitive 空列表 / 大小写 / 中文 / 多命中 / 未命中 5 路径
 - `model/task_cas_test.go` TestMain 的 AutoMigrate 列表加 Skill / SkillArticle / SkillImportJob / SkillRating / SkillFavorite / SkillComment / SkillCommentLike / SkillReport
 - 用 `require.Empty` 替代 `require.Nil` 处理 typed-nil slice 经 interface{} boxing 的 testify 边界
+
+下一步:P3-4 i18n 英文翻译补齐
+
+### 2026-05-14 — P3-6 管理员审核日志(commit pending)
+
+完成内容:
+- 后端 `SkillAuditLog` 表 + AutoMigrate + 测试 truncate;字段:admin_id / action / target_type / target_id / summary / meta(JSON 文本) / created_at
+- 动作常量:article.publish / article.unpublish / skill.update / skill.delete / skill.import / report.resolve / settings.update
+- `WriteSkillAuditLog`(返回 error 但 caller 用 `_` 忽略,记录失败不阻塞主流程)
+- `ListSkillAuditLogs(action, targetType, limit)` 批量回填 admin_name(users.display_name fallback username)
+- 写入点:`DeleteSkillPlazaSkill`(删前快照名)、`PostSkillPlazaArticlePublish`、`PostSkillPlazaArticleUnpublish`、`PostSkillPlazaReportResolve`、`PutSkillPlazaAdminSettings`
+- admin 接口 `GET /api/skill-plaza/admin/audit-logs?action=&target_type=&limit=`
+- 前端 `pages/Skills/admin/AuditLogsPage.jsx`:时间轴风格、动作图标 + 颜色映射、filter pills、显示 admin 名 / 时间 / summary
+- App.jsx `/skills/admin/audit-logs` 路由(AdminRoute);AdminConsole 顶栏新增"审核日志"入口
 
 下一步:P3-4 i18n 英文翻译补齐

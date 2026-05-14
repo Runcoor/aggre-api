@@ -253,10 +253,20 @@ func DeleteSkillPlazaSkill(c *gin.Context) {
 		common.ApiErrorMsg(c, "invalid id")
 		return
 	}
+	// Pre-read so the audit summary captures the skill name even after the
+	// row is gone. Falls back to id if the read fails.
+	var summary string
+	if s, err := model.GetSkillByID(id); err == nil && s != nil {
+		summary = "删除 Skill: " + s.Name + " (" + s.Slug + ")"
+	} else {
+		summary = "删除 Skill #" + strconv.Itoa(id)
+	}
 	if err := model.DeleteSkill(id); err != nil {
 		common.ApiError(c, err)
 		return
 	}
+	_ = model.WriteSkillAuditLog(currentAdminID(c),
+		model.SkillAuditActionSkillDelete, "skill", id, summary, "")
 	common.ApiSuccess(c, gin.H{"id": id})
 }
 
@@ -352,6 +362,9 @@ func PostSkillPlazaArticlePublish(c *gin.Context) {
 		})
 	}
 	updated, _ := model.GetSkillArticle(id)
+	_ = model.WriteSkillAuditLog(currentAdminID(c),
+		model.SkillAuditActionPublish, "article", id,
+		"发布文章: "+article.Title, "")
 	common.ApiSuccess(c, updated)
 }
 
@@ -409,7 +422,27 @@ func PutSkillPlazaAdminSettings(c *gin.Context) {
 			return
 		}
 	}
+	_ = model.WriteSkillAuditLog(currentAdminID(c),
+		model.SkillAuditActionSettings, "skill_plaza_setting", 0,
+		"更新模块设置", "")
 	common.ApiSuccess(c, operation_setting.GetSkillPlazaSetting())
+}
+
+// =====================================================================
+// Audit log — read-only timeline of admin actions.
+// =====================================================================
+
+// ListSkillPlazaAuditLogs GET /api/skill-plaza/admin/audit-logs
+func ListSkillPlazaAuditLogs(c *gin.Context) {
+	action := c.Query("action")
+	targetType := c.Query("target_type")
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	rows, err := model.ListSkillAuditLogs(action, targetType, limit)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, gin.H{"items": rows})
 }
 
 // =====================================================================
@@ -462,6 +495,9 @@ func PostSkillPlazaReportResolve(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
+	_ = model.WriteSkillAuditLog(currentAdminID(c),
+		model.SkillAuditActionReportResolve, "report", id,
+		"处理举报 #"+strconv.Itoa(id)+" → "+req.Status, "")
 	common.ApiSuccess(c, gin.H{"id": id, "status": req.Status})
 }
 
@@ -472,12 +508,20 @@ func PostSkillPlazaArticleUnpublish(c *gin.Context) {
 		common.ApiErrorMsg(c, "invalid id")
 		return
 	}
+	article, _ := model.GetSkillArticle(id)
 	if err := model.UpdateSkillArticle(id, map[string]any{
 		"status": model.SkillStatusOffline,
 	}); err != nil {
 		common.ApiError(c, err)
 		return
 	}
+	title := ""
+	if article != nil {
+		title = article.Title
+	}
+	_ = model.WriteSkillAuditLog(currentAdminID(c),
+		model.SkillAuditActionUnpublish, "article", id,
+		"下架文章: "+title, "")
 	updated, _ := model.GetSkillArticle(id)
 	common.ApiSuccess(c, updated)
 }

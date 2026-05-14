@@ -318,6 +318,9 @@ func SetApiRouter(router *gin.Engine) {
 			// Reports queue
 			skillPlazaAdminRoute.GET("/reports", controller.ListSkillPlazaReports)
 			skillPlazaAdminRoute.POST("/reports/:id/resolve", controller.PostSkillPlazaReportResolve)
+
+			// Audit log
+			skillPlazaAdminRoute.GET("/audit-logs", controller.ListSkillPlazaAuditLogs)
 		}
 
 		aiNewsAdminRoute := apiRouter.Group("/ai-news/admin")

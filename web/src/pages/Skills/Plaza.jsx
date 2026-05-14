@@ -25,41 +25,57 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Search,
-  Filter,
+  Inbox,
   Star,
   Bookmark,
   MessageSquare,
   Globe,
   Settings,
   ArrowRight,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { API, isAdmin, showError } from '../../helpers';
-import { SKILL_PLAZA_STYLES, SourceBadge, ProceduralCover } from './styles';
+import { SKILL_PLAZA_STYLES, ProceduralCover } from './styles';
 
+// Categories are user-facing — keep them concrete and broad so common
+// AI workflows have a home. Order matches loose popularity.
 const CATEGORIES = [
   { id: '', name: '全部' },
+  { id: 'coding', name: '编程辅助' },
   { id: 'writing', name: '写作创作' },
   { id: 'data', name: '数据分析' },
-  { id: 'design', name: '设计' },
-  { id: 'devops', name: 'DevOps' },
   { id: 'research', name: '研究调研' },
+  { id: 'design', name: '设计' },
   { id: 'multimodal', name: '多模态' },
-  { id: 'coding', name: '编程辅助' },
+  { id: 'image', name: '图像生成' },
+  { id: 'audio_video', name: '音视频' },
   { id: 'productivity', name: '效率办公' },
-];
-
-const SOURCES = [
-  { id: '', name: '全部' },
-  { id: 'official', name: '官方生成' },
-  { id: 'github', name: 'GitHub 导入' },
-  { id: 'user', name: '用户原创' },
-  { id: 'case', name: '案例分享' },
+  { id: 'document', name: '文档处理' },
+  { id: 'translation', name: '翻译' },
+  { id: 'education', name: '学习教育' },
+  { id: 'marketing', name: '市场营销' },
+  { id: 'customer_service', name: '客户服务' },
+  { id: 'finance_legal', name: '金融法律' },
+  { id: 'health', name: '健康医疗' },
+  { id: 'devops', name: 'DevOps' },
+  { id: 'agent', name: 'AI Agent' },
+  { id: 'prompt', name: 'Prompt 工程' },
+  { id: 'other', name: '其他' },
 ];
 
 const SORTS = [
   { id: 'latest', name: '最新' },
   { id: 'updated', name: '最近更新' },
 ];
+
+// categoryLabel maps a category id back to its display name.
+// Falls back to the raw id (capitalized) if the id isn't recognized —
+// so older skills with manual categories still render something.
+function categoryLabel(id) {
+  if (!id) return '';
+  const hit = CATEGORIES.find((c) => c.id === id);
+  return hit ? hit.name : id;
+}
 
 const SkillsPlaza = () => {
   const { t } = useTranslation();
@@ -68,7 +84,6 @@ const SkillsPlaza = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
-  const [sourceType, setSourceType] = useState('');
   const [sort, setSort] = useState('latest');
   const [language, setLanguage] = useState('zh-CN');
 
@@ -78,14 +93,13 @@ const SkillsPlaza = () => {
   const params = useMemo(
     () => ({
       category,
-      source_type: sourceType,
       sort,
       language,
       search,
       page: 1,
       page_size: 60,
     }),
-    [category, sourceType, sort, language, search],
+    [category, sort, language, search],
   );
 
   useEffect(() => {
@@ -165,21 +179,37 @@ const SkillsPlaza = () => {
                 <Globe size={13} /> <span>{t('中英双语')}</span>
               </div>
               {admin && (
-                <Link
-                  to='/skills/admin'
-                  className='skp-stat'
+                <span
                   style={{
                     marginLeft: 'auto',
-                    textDecoration: 'none',
-                    color: '#0072ff',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 6,
-                    cursor: 'pointer',
+                    gap: 14,
                   }}
                 >
-                  <Settings size={14} /> {t('管理员工作台')}
-                </Link>
+                  <Link
+                    to='/skills/admin'
+                    className='skp-stat'
+                    style={{
+                      textDecoration: 'none',
+                      color: '#0072ff',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Settings size={14} /> {t('管理员工作台')}
+                  </Link>
+                  <Link
+                    to='/console/setting?tab=skill-plaza'
+                    className='skp-stat'
+                    style={{
+                      textDecoration: 'none',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <SlidersHorizontal size={13} /> {t('模块设置')}
+                  </Link>
+                </span>
               )}
             </div>
           </section>
@@ -195,21 +225,6 @@ const SkillsPlaza = () => {
                   onClick={() => setCategory(c.id)}
                 >
                   {t(c.name)}
-                </button>
-              ))}
-            </div>
-
-            <div className='skp-filter-row'>
-              <span className='skp-label-sm'>{t('来源')}</span>
-              {SOURCES.map((s) => (
-                <button
-                  key={s.id || 'all'}
-                  className={
-                    'skp-pill' + (sourceType === s.id ? ' active' : '')
-                  }
-                  onClick={() => setSourceType(s.id)}
-                >
-                  {t(s.name)}
                 </button>
               ))}
             </div>
@@ -259,12 +274,24 @@ const SkillsPlaza = () => {
             <div
               style={{
                 textAlign: 'center',
-                padding: '60px 0',
+                padding: '72px 0',
                 color: 'var(--text-muted)',
               }}
             >
-              <Filter size={28} style={{ marginBottom: 12 }} />
-              <div>{t('没有匹配的 Skill,换个关键词或筛选条件试试')}</div>
+              <Inbox
+                size={20}
+                style={{
+                  marginBottom: 10,
+                  opacity: 0.5,
+                  verticalAlign: 'middle',
+                }}
+              />
+              <div style={{ fontSize: 14 }}>
+                {t('暂时还没有可展示的 Skill')}
+              </div>
+              <div style={{ fontSize: 12.5, marginTop: 4, opacity: 0.7 }}>
+                {t('换个分类或关键词试试,管理员可在工作台导入更多内容')}
+              </div>
             </div>
           ) : (
             <div className='skp-grid'>
@@ -280,7 +307,22 @@ const SkillsPlaza = () => {
                   />
                   <div className='skp-card-body'>
                     <div className='skp-card-row'>
-                      <SourceBadge type={item.source_type} />
+                      {item.category && (
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            fontSize: 11.5,
+                            color: 'var(--text-muted)',
+                            background: 'var(--bg-base)',
+                            border: '1px solid var(--border-default)',
+                            borderRadius: 4,
+                            padding: '2px 8px',
+                          }}
+                        >
+                          {t(categoryLabel(item.category))}
+                        </span>
+                      )}
                       <span
                         style={{
                           display: 'inline-flex',
@@ -288,6 +330,7 @@ const SkillsPlaza = () => {
                           gap: 4,
                           fontSize: 11.5,
                           color: 'var(--text-muted)',
+                          marginLeft: 'auto',
                         }}
                       >
                         <Globe size={12} />{' '}

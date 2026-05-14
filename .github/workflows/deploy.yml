@@ -139,8 +139,11 @@ jobs:
               echo "[INFO] docker compose up -d --no-build"
               docker compose up -d --no-build
 
-              echo "[INFO] docker image prune -f"
-              docker image prune -f || true
+              # Keep dangling layers from the last 24h so the next deploy
+              # can reuse base/runtime layers instead of re-downloading them
+              # — saves ~60–80MB on GHCR pulls from slow regions.
+              echo "[INFO] docker image prune (keep <24h)"
+              docker image prune -f --filter "until=24h" || true
 
               echo "$(date '+%Y-%m-%d %H:%M:%S') [DONE] Deploy $VERSION completed"
               echo "========================================"

@@ -46,9 +46,9 @@ export const SKILL_PLAZA_STYLES = `
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .skp-hero p { color: var(--text-secondary); max-width: 640px; font-size: 14.5px; margin: 0 0 22px 0; }
-  .skp-hero .skp-stats { display: flex; gap: 28px; margin-top: 18px; flex-wrap: wrap; }
-  .skp-hero .skp-stat { display: flex; align-items: baseline; gap: 6px; color: var(--text-secondary); font-size: 13px; }
-  .skp-hero .skp-stat strong { font-size: 18px; color: var(--text-primary); }
+  .skp-hero .skp-stats { display: flex; gap: 28px; margin-top: 18px; flex-wrap: wrap; align-items: center; }
+  .skp-hero .skp-stat { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 13px; line-height: 1; }
+  .skp-hero .skp-stat strong { font-size: 18px; color: var(--text-primary); line-height: 1; }
 
   .skp-search {
     display: flex; align-items: center; gap: 8px;

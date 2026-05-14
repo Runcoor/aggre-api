@@ -405,7 +405,7 @@ V1.2(留存):
 - [x] **P3-1 评论点赞 + 一层回复接通** — 后端表已有 LikeCount + ParentId,加 `POST /api/skill-plaza/comments/:id/like` 切换 + `skill_comment_likes` 唯一表;前端 CommentItem 加点赞按钮/回复按钮/嵌套渲染
 - [x] **P3-2 敏感词过滤** — 评论 / 投稿 submit 时拦截,admin 后台配置词库(`skill_plaza_setting.sensitive_words` CSV 或多行)
 - [x] **P3-3 举报队列** — 评论 / 案例右下角"举报"按钮 → 表 `skill_reports`(user_id / target_type / target_id / reason / status) → admin 队列页
-- [ ] **P3-4 i18n 英文翻译补齐** — `bun run i18n:extract` → 用 AI 批量翻译填空 → admin review
+- [x] **P3-4 i18n 英文翻译补齐** — `bun run i18n:extract` → 用 AI 批量翻译填空 → admin review
 - [x] **P3-5 基础单测** — 评分 upsert / 评论 create / 收藏 toggle / 聚合 recompute 四条主路径
 - [x] **P3-6 管理员审核日志** — 表 `skill_audit_logs`(谁 / 何时 / 对哪条 skill 做了什么),admin 后台时间轴
 - [ ] **P3-7 删 `.design-tmp/`** — task #128,P3 全部完成后执行
@@ -567,7 +567,7 @@ V1.2(留存):
 
 下一步:P3-4 i18n 英文翻译补齐
 
-### 2026-05-14 — P3-6 管理员审核日志(commit pending)
+### 2026-05-14 — P3-6 管理员审核日志(commit 8b2dd97)
 
 完成内容:
 - 后端 `SkillAuditLog` 表 + AutoMigrate + 测试 truncate;字段:admin_id / action / target_type / target_id / summary / meta(JSON 文本) / created_at
@@ -580,3 +580,14 @@ V1.2(留存):
 - App.jsx `/skills/admin/audit-logs` 路由(AdminRoute);AdminConsole 顶栏新增"审核日志"入口
 
 下一步:P3-4 i18n 英文翻译补齐
+
+### 2026-05-14 — P3-4 i18n 英文翻译补齐(commit pending)
+
+完成内容:
+- `bun run i18n:extract` 重新抓取所有 `t('中文')` 调用,zh-CN.json 与 en.json 新增 76 个键
+- 其它 5 个 locale(zh-TW / fr / ru / ja / vi)按 [[feedback_i18n_only_zh_en]] 重置回主分支基线,本次只翻 en
+- Python 脚本 `/tmp/translate_keys.py` 批量填充 en.json:覆盖所有空 string 键、保留已翻译的旧值
+- 涉及 SKILLS 广场全部新文案:评论 / 举报 / 审核日志 / 敏感词 / 多维评分 / 我的中心 / 状态提示
+- `bun run i18n:status` 验证:en 80% 覆盖率(其余未译都是历史遗留,与本次 P3 无关)
+
+下一步:P3-7 删 .design-tmp(在确认 V1.0 + Phase 3 全部上线后执行)

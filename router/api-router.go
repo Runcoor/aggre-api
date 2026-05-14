@@ -30,6 +30,11 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.GET("/about", controller.GetAbout)
 		//apiRouter.GET("/midjourney", controller.GetMidjourney)
 		apiRouter.GET("/home_page_content", controller.GetHomePageContent)
+
+		// SKILLS 广场 — public read endpoints (gated by feature flag).
+		apiRouter.GET("/skill-plaza/status", controller.GetSkillPlazaStatus)
+		apiRouter.GET("/skill-plaza/skills", controller.ListSkillPlazaPublic)
+		apiRouter.GET("/skill-plaza/skills/:slug", controller.GetSkillPlazaPublic)
 		apiRouter.POST("/tool/balance", middleware.CriticalRateLimit(), controller.ToolCheckBalance)
 		apiRouter.GET("/pricing", middleware.TryUserAuth(), controller.GetPricing)
 		apiRouter.GET("/verification", middleware.EmailVerificationRateLimit(), middleware.TurnstileCheck(), controller.SendEmailVerification)
@@ -260,6 +265,27 @@ func SetApiRouter(router *gin.Engine) {
 			subscriptionAdminRoute.POST("/users/:id/subscriptions", controller.AdminCreateUserSubscription)
 			subscriptionAdminRoute.POST("/user_subscriptions/:id/invalidate", controller.AdminInvalidateUserSubscription)
 			subscriptionAdminRoute.DELETE("/user_subscriptions/:id", controller.AdminDeleteUserSubscription)
+		}
+
+		// SKILLS 广场 — admin endpoints (AdminAuth gated).
+		skillPlazaAdminRoute := apiRouter.Group("/skill-plaza/admin")
+		skillPlazaAdminRoute.Use(middleware.AdminAuth())
+		{
+			// Import jobs
+			skillPlazaAdminRoute.POST("/imports", controller.PostSkillPlazaImport)
+			skillPlazaAdminRoute.GET("/imports", controller.ListSkillPlazaImportJobs)
+			skillPlazaAdminRoute.GET("/imports/:id", controller.GetSkillPlazaImportJob)
+
+			// Skills
+			skillPlazaAdminRoute.GET("/skills", controller.ListSkillPlazaSkillsAdmin)
+			skillPlazaAdminRoute.GET("/skills/:id", controller.GetSkillPlazaSkillAdmin)
+			skillPlazaAdminRoute.PUT("/skills/:id", controller.PutSkillPlazaSkill)
+			skillPlazaAdminRoute.DELETE("/skills/:id", controller.DeleteSkillPlazaSkill)
+
+			// Articles
+			skillPlazaAdminRoute.PUT("/articles/:id", controller.PutSkillPlazaArticle)
+			skillPlazaAdminRoute.POST("/articles/:id/publish", controller.PostSkillPlazaArticlePublish)
+			skillPlazaAdminRoute.POST("/articles/:id/unpublish", controller.PostSkillPlazaArticleUnpublish)
 		}
 
 		aiNewsAdminRoute := apiRouter.Group("/ai-news/admin")

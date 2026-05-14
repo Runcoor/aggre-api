@@ -49,6 +49,7 @@ import DrawingSetting from '../../components/settings/DrawingSetting';
 import PaymentSetting from '../../components/settings/PaymentSetting';
 import ModelDeploymentSetting from '../../components/settings/ModelDeploymentSetting';
 import PerformanceSetting from '../../components/settings/PerformanceSetting';
+import SettingSkillPlaza from '../../components/settings/SettingSkillPlaza';
 
 const Setting = () => {
   const { t } = useTranslation();
@@ -171,6 +172,16 @@ const Setting = () => {
     panes.push({
       tab: (
         <span className='flex items-center gap-1.5'>
+          <Shapes size={16} />
+          {t('SKILLS 广场')}
+        </span>
+      ),
+      content: <SettingSkillPlaza />,
+      itemKey: 'skill-plaza',
+    });
+    panes.push({
+      tab: (
+        <span className='flex items-center gap-1.5'>
           <MoreHorizontal size={16} />
           {t('其他设置')}
         </span>
@@ -244,7 +255,11 @@ const Setting = () => {
               onChange={(key) => onChangeTab(key)}
             >
               {panes.map((pane) => (
-                <TabPane itemKey={pane.itemKey} tab={pane.tab} key={pane.itemKey}>
+                <TabPane
+                  itemKey={pane.itemKey}
+                  tab={pane.tab}
+                  key={pane.itemKey}
+                >
                   {tabActiveKey === pane.itemKey && pane.content}
                 </TabPane>
               ))}

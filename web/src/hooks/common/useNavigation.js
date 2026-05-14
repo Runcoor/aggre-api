@@ -18,10 +18,21 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useMemo } from 'react';
-import { ShieldCheck, Terminal, Gauge, Calculator, Wallet, Zap } from 'lucide-react';
+import {
+  ShieldCheck,
+  Terminal,
+  Gauge,
+  Calculator,
+  Wallet,
+  Zap,
+} from 'lucide-react';
+import { isAdmin } from '../../helpers';
 
 export const useNavigation = (t, docsLink, headerNavModules) => {
   const mainNavLinks = useMemo(() => {
+    // Phase 1 of SKILLS 广场 is admin-only — the nav entry hides for
+    // anyone whose local user role is below RoleAdminUser (10).
+    const isAdminViewer = isAdmin();
     // 默认配置，如果没有传入配置则显示所有模块
     const defaultModules = {
       home: true,
@@ -59,6 +70,12 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
         text: t('文档'),
         itemKey: 'docs',
         to: '/docs',
+      },
+      {
+        text: t('SKILLS 广场'),
+        itemKey: 'skills',
+        to: '/skills',
+        adminOnly: true,
       },
       {
         text: t('工具'),
@@ -112,6 +129,10 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
 
     // 根据配置过滤导航链接
     return allLinks.filter((link) => {
+      // adminOnly links are hidden for non-admin viewers regardless of modules config.
+      if (link.adminOnly && !isAdminViewer) {
+        return false;
+      }
       if (link.itemKey === 'docs') {
         return modules.docs !== false;
       }
@@ -120,6 +141,9 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
       }
       if (link.itemKey === 'plans') {
         return true; // always visible
+      }
+      if (link.itemKey === 'skills') {
+        return true; // adminOnly already filtered above; show for admins
       }
       if (link.itemKey === 'pricing') {
         // 支持新的pricing配置格式

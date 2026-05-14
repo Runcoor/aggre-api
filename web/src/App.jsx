@@ -18,7 +18,13 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { lazy, Suspense, useContext, useEffect, useMemo } from 'react';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useParams,
+} from 'react-router-dom';
 import Loading from './components/common/ui/Loading';
 import User from './pages/User';
 import LoginLog from './pages/LoginLog';
@@ -86,6 +92,13 @@ const GuideIndex = lazy(() => import('./pages/Guide'));
 const GuidePrerequisites = lazy(() => import('./pages/Guide/Prerequisites'));
 const GuideNodejsSetup = lazy(() => import('./pages/Guide/NodejsSetup'));
 const GuideDetail = lazy(() => import('./pages/Guide/GuideDetail'));
+const SkillsPlaza = lazy(() => import('./pages/Skills/Plaza'));
+const SkillsDetail = lazy(() => import('./pages/Skills/Detail'));
+const SkillsAdminConsole = lazy(
+  () => import('./pages/Skills/admin/AdminConsole'),
+);
+const SkillsAdminImport = lazy(() => import('./pages/Skills/admin/ImportPage'));
+const SkillsAdminReview = lazy(() => import('./pages/Skills/admin/ReviewPage'));
 
 // Shared shell for standalone tool pages — centered column, top padding,
 // auto dark mode. Wraps CurlGenerator and LatencyTester.
@@ -140,573 +153,689 @@ function App() {
     <SetupCheck>
       <BotWidget />
       <div key={location.pathname} className='mv-fade-in'>
-      <Routes>
-        <Route
-          path='/'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <HomeLanding />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/home-old'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <Home />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/setup'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <Setup />
-            </Suspense>
-          }
-        />
-        <Route path='/forbidden' element={<Forbidden />} />
-        <Route
-          path='/why-trust'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <WhyTrustPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/console/models'
-          element={
-            <AdminRoute>
-              <ModelPage />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path='/console/deployment'
-          element={
-            <AdminRoute>
-              <ModelDeploymentPage />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path='/console/subscription'
-          element={
-            <AdminRoute>
-              <Subscription />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path='/console/channel'
-          element={
-            <AdminRoute>
-              <Channel />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path='/console/finance'
-          element={
-            <Suspense fallback={<Loading />}>
+        <Routes>
+          <Route
+            path='/'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <HomeLanding />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/home-old'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <Home />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/setup'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <Setup />
+              </Suspense>
+            }
+          />
+          <Route path='/forbidden' element={<Forbidden />} />
+          <Route
+            path='/why-trust'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <WhyTrustPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/console/models'
+            element={
               <AdminRoute>
-                <Finance />
+                <ModelPage />
               </AdminRoute>
-            </Suspense>
-          }
-        />
-        <Route
-          path='/console/ai-news'
-          element={
-            <Suspense fallback={<Loading />}>
+            }
+          />
+          <Route
+            path='/console/deployment'
+            element={
               <AdminRoute>
-                <AiNews />
+                <ModelDeploymentPage />
               </AdminRoute>
-            </Suspense>
-          }
-        />
-        <Route
-          path='/console/token'
-          element={
-            <PrivateRoute>
-              <Token />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/console/playground'
-          element={
-            <PrivateRoute>
-              <Playground />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/console/redemption'
-          element={
-            <AdminRoute>
-              <Redemption />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path='/console/user'
-          element={
-            <AdminRoute>
-              <User />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path='/console/user/:id'
-          element={
-            <AdminRoute>
-              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <UserDetail />
+            }
+          />
+          <Route
+            path='/console/subscription'
+            element={
+              <AdminRoute>
+                <Subscription />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/console/channel'
+            element={
+              <AdminRoute>
+                <Channel />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/console/finance'
+            element={
+              <Suspense fallback={<Loading />}>
+                <AdminRoute>
+                  <Finance />
+                </AdminRoute>
               </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path='/console/login-log'
-          element={
-            <AdminRoute>
-              <LoginLog />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path='/user/reset'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <PasswordResetConfirm />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/login'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <AuthRedirect>
-                <LoginForm />
-              </AuthRedirect>
-            </Suspense>
-          }
-        />
-        <Route
-          path='/register'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <AuthRedirect>
-                <RegisterForm />
-              </AuthRedirect>
-            </Suspense>
-          }
-        />
-        <Route
-          path='/reset'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <PasswordResetForm />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/oauth/github'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <OAuth2Callback type='github'></OAuth2Callback>
-            </Suspense>
-          }
-        />
-        <Route
-          path='/oauth/discord'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <OAuth2Callback type='discord'></OAuth2Callback>
-            </Suspense>
-          }
-        />
-        <Route
-          path='/oauth/oidc'
-          element={
-            <Suspense fallback={<Loading></Loading>}>
-              <OAuth2Callback type='oidc'></OAuth2Callback>
-            </Suspense>
-          }
-        />
-        <Route
-          path='/oauth/linuxdo'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <OAuth2Callback type='linuxdo'></OAuth2Callback>
-            </Suspense>
-          }
-        />
-        <Route
-          path='/oauth/:provider'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <DynamicOAuth2Callback />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/console/setting'
-          element={
-            <AdminRoute>
-              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <Setting />
+            }
+          />
+          <Route
+            path='/console/ai-news'
+            element={
+              <Suspense fallback={<Loading />}>
+                <AdminRoute>
+                  <AiNews />
+                </AdminRoute>
               </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path='/console/personal'
-          element={
-            <PrivateRoute>
+            }
+          />
+          <Route
+            path='/console/token'
+            element={
+              <PrivateRoute>
+                <Token />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/console/playground'
+            element={
+              <PrivateRoute>
+                <Playground />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/console/redemption'
+            element={
+              <AdminRoute>
+                <Redemption />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/console/user'
+            element={
+              <AdminRoute>
+                <User />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/console/user/:id'
+            element={
+              <AdminRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <UserDetail />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/console/login-log'
+            element={
+              <AdminRoute>
+                <LoginLog />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/user/reset'
+            element={
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <PersonalSetting />
+                <PasswordResetConfirm />
               </Suspense>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/console/topup'
-          element={
-            <PrivateRoute>
+            }
+          />
+          <Route
+            path='/login'
+            element={
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <TopUp />
+                <AuthRedirect>
+                  <LoginForm />
+                </AuthRedirect>
               </Suspense>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/console/recharge'
-          element={
-            <PrivateRoute>
+            }
+          />
+          <Route
+            path='/register'
+            element={
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <RechargePage />
+                <AuthRedirect>
+                  <RegisterForm />
+                </AuthRedirect>
               </Suspense>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/console/recharge/trial'
-          element={
-            <PrivateRoute>
+            }
+          />
+          <Route
+            path='/reset'
+            element={
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <TrialPackagePage />
+                <PasswordResetForm />
               </Suspense>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/console/team'
-          element={
-            <PrivateRoute>
+            }
+          />
+          <Route
+            path='/oauth/github'
+            element={
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <TeamPage />
+                <OAuth2Callback type='github'></OAuth2Callback>
               </Suspense>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/console/team/join/:code'
-          element={
-            <PrivateRoute>
+            }
+          />
+          <Route
+            path='/oauth/discord'
+            element={
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <JoinTeam />
+                <OAuth2Callback type='discord'></OAuth2Callback>
               </Suspense>
-            </PrivateRoute>
-          }
-        />
-        {/* Legacy admin team-applications route folded into the team tabs.
+            }
+          />
+          <Route
+            path='/oauth/oidc'
+            element={
+              <Suspense fallback={<Loading></Loading>}>
+                <OAuth2Callback type='oidc'></OAuth2Callback>
+              </Suspense>
+            }
+          />
+          <Route
+            path='/oauth/linuxdo'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <OAuth2Callback type='linuxdo'></OAuth2Callback>
+              </Suspense>
+            }
+          />
+          <Route
+            path='/oauth/:provider'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <DynamicOAuth2Callback />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/console/setting'
+            element={
+              <AdminRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <Setting />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/console/personal'
+            element={
+              <PrivateRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <PersonalSetting />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/console/topup'
+            element={
+              <PrivateRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <TopUp />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/console/recharge'
+            element={
+              <PrivateRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <RechargePage />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/console/recharge/trial'
+            element={
+              <PrivateRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <TrialPackagePage />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/console/team'
+            element={
+              <PrivateRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <TeamPage />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/console/team/join/:code'
+            element={
+              <PrivateRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <JoinTeam />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          {/* Legacy admin team-applications route folded into the team tabs.
             Keep redirecting so existing bookmarks / sidebar history land on
             the right tab. */}
-        <Route
-          path='/console/team-applications'
-          element={<Navigate to='/console/team?tab=applications' replace />}
-        />
-        <Route
-          path='/console/team/:id'
-          element={
-            <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <TeamDetail />
-              </Suspense>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/console/admin/teams/:id'
-          element={
-            <AdminRoute>
-              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <AdminTeamDetail />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path='/console/log'
-          element={
-            <PrivateRoute>
-              <Log />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/console'
-          element={
-            <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <Dashboard />
-              </Suspense>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/console/midjourney'
-          element={
-            <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <Midjourney />
-              </Suspense>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/console/task'
-          element={
-            <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <Task />
-              </Suspense>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/pricing'
-          element={
-            pricingRequireAuth ? (
+          <Route
+            path='/console/team-applications'
+            element={<Navigate to='/console/team?tab=applications' replace />}
+          />
+          <Route
+            path='/console/team/:id'
+            element={
               <PrivateRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <TeamDetail />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/console/admin/teams/:id'
+            element={
+              <AdminRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <AdminTeamDetail />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/console/log'
+            element={
+              <PrivateRoute>
+                <Log />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/console'
+            element={
+              <PrivateRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <Dashboard />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/console/midjourney'
+            element={
+              <PrivateRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <Midjourney />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/console/task'
+            element={
+              <PrivateRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <Task />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='/pricing'
+            element={
+              pricingRequireAuth ? (
+                <PrivateRoute>
+                  <Suspense
+                    fallback={<Loading></Loading>}
+                    key={location.pathname}
+                  >
+                    <Pricing />
+                  </Suspense>
+                </PrivateRoute>
+              ) : (
                 <Suspense
                   fallback={<Loading></Loading>}
                   key={location.pathname}
                 >
                   <Pricing />
                 </Suspense>
+              )
+            }
+          />
+          <Route
+            path='/plans'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <PlansPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/quick-start'
+            element={
+              <PrivateRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <QuickStart />
+                </Suspense>
               </PrivateRoute>
-            ) : (
+            }
+          />
+          <Route
+            path='/about'
+            element={
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <Pricing />
+                <About />
               </Suspense>
-            )
-          }
-        />
-        <Route
-          path='/plans'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <PlansPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/quick-start'
-          element={
-            <PrivateRoute>
+            }
+          />
+          <Route
+            path='/guide'
+            element={
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <QuickStart />
+                <GuideIndex />
               </Suspense>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path='/about'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <About />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/guide'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <GuideIndex />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/guide/prerequisites'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <GuidePrerequisites />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/guide/nodejs-setup'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <GuideNodejsSetup />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/guide/:categoryId'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <GuideDetail />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/docs'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <Docs />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/docs/*'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <Docs />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/user-agreement'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <UserAgreement />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/privacy-policy'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <PrivacyPolicy />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/terms-of-service'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <TermsOfService />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/verifier'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <Verifier />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/tools/curl'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <ToolPageShell>
-                <CurlGenerator />
-              </ToolPageShell>
-            </Suspense>
-          }
-        />
-        <Route
-          path='/tools/latency'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <ToolPageShell>
-                <LatencyTester />
-              </ToolPageShell>
-            </Suspense>
-          }
-        />
-        <Route
-          path='/tools/tokens'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <ToolPageShell>
-                <TokenCalculator />
-              </ToolPageShell>
-            </Suspense>
-          }
-        />
-        <Route
-          path='/tools/cache'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <ToolPageShell>
-                <CacheCalculator />
-              </ToolPageShell>
-            </Suspense>
-          }
-        />
-        <Route
-          path='/tools/balance'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <ToolPageShell>
-                <BalanceChecker />
-              </ToolPageShell>
-            </Suspense>
-          }
-        />
-        <Route
-          path='/changelog'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <ChangelogPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/status'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <StatusPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/security'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <Security />
-            </Suspense>
-          }
-        />
-        <Route
-          path='/console/chat/:id?'
-          element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <Chat />
-            </Suspense>
-          }
-        />
-        {/* 方便使用chat2link直接跳转聊天... */}
-        <Route
-          path='/chat2link'
-          element={
-            <PrivateRoute>
+            }
+          />
+          <Route
+            path='/guide/prerequisites'
+            element={
               <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <Chat2Link />
+                <GuidePrerequisites />
               </Suspense>
-            </PrivateRoute>
-          }
-        />
-        <Route path='*' element={<NotFound />} />
-      </Routes>
+            }
+          />
+          <Route
+            path='/guide/nodejs-setup'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <GuideNodejsSetup />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/guide/:categoryId'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <GuideDetail />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/docs'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <Docs />
+              </Suspense>
+            }
+          />
+          {/* SKILLS 广场 — phase 1 is admin-only. Public detail/plaza routes
+            still 200 for the admin viewing experience; phase 2 will drop
+            AdminRoute. */}
+          <Route
+            path='/skills'
+            element={
+              <AdminRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <SkillsPlaza />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/skills/admin'
+            element={
+              <AdminRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <SkillsAdminConsole />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/skills/admin/import'
+            element={
+              <AdminRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <SkillsAdminImport />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/skills/admin/review/:id'
+            element={
+              <AdminRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <SkillsAdminReview />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/skills/:slug'
+            element={
+              <AdminRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <SkillsDetail />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path='/docs/*'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <Docs />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/user-agreement'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <UserAgreement />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/privacy-policy'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <PrivacyPolicy />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/terms-of-service'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <TermsOfService />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/verifier'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <Verifier />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/tools/curl'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <ToolPageShell>
+                  <CurlGenerator />
+                </ToolPageShell>
+              </Suspense>
+            }
+          />
+          <Route
+            path='/tools/latency'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <ToolPageShell>
+                  <LatencyTester />
+                </ToolPageShell>
+              </Suspense>
+            }
+          />
+          <Route
+            path='/tools/tokens'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <ToolPageShell>
+                  <TokenCalculator />
+                </ToolPageShell>
+              </Suspense>
+            }
+          />
+          <Route
+            path='/tools/cache'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <ToolPageShell>
+                  <CacheCalculator />
+                </ToolPageShell>
+              </Suspense>
+            }
+          />
+          <Route
+            path='/tools/balance'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <ToolPageShell>
+                  <BalanceChecker />
+                </ToolPageShell>
+              </Suspense>
+            }
+          />
+          <Route
+            path='/changelog'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <ChangelogPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/status'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <StatusPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/security'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <Security />
+              </Suspense>
+            }
+          />
+          <Route
+            path='/console/chat/:id?'
+            element={
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <Chat />
+              </Suspense>
+            }
+          />
+          {/* 方便使用chat2link直接跳转聊天... */}
+          <Route
+            path='/chat2link'
+            element={
+              <PrivateRoute>
+                <Suspense
+                  fallback={<Loading></Loading>}
+                  key={location.pathname}
+                >
+                  <Chat2Link />
+                </Suspense>
+              </PrivateRoute>
+            }
+          />
+          <Route path='*' element={<NotFound />} />
+        </Routes>
       </div>
     </SetupCheck>
   );

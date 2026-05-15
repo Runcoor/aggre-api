@@ -378,12 +378,27 @@ function tryWrapHtmlCode(text) {
     );
 }
 
+// extractText walks the React children of a heading and concatenates the
+// raw text. Used by headingIdSlugger so callers (e.g. SKILLS Plaza Detail)
+// can build TOC anchors like `#h-{slugified-title}`. Anything that isn't
+// a string (e.g. inline <code>) is recursed into via its `children` prop.
+function extractText(node) {
+  if (node == null || node === false) return '';
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(extractText).join('');
+  if (typeof node === 'object' && node.props && node.props.children) {
+    return extractText(node.props.children);
+  }
+  return '';
+}
+
 function _MarkdownContent(props) {
   const {
     content,
     className,
     animated = false,
     previousContentLength = 0,
+    headingIdSlugger,
   } = props;
 
   const escapedContent = useMemo(() => {
@@ -392,6 +407,13 @@ function _MarkdownContent(props) {
 
   // 判断是否为用户消息
   const isUserMessage = className && className.includes('user-message');
+
+  const makeHeadingId = (children) => {
+    if (typeof headingIdSlugger !== 'function') return undefined;
+    const text = extractText(children).trim();
+    if (!text) return undefined;
+    return headingIdSlugger(text);
+  };
 
   const rehypePluginsBase = useMemo(() => {
     const base = [
@@ -465,71 +487,95 @@ function _MarkdownContent(props) {
             />
           );
         },
-        h1: (props) => (
+        h1: ({ children, ...rest }) => (
           <h1
-            {...props}
+            id={makeHeadingId(children)}
+            {...rest}
             style={{
               fontSize: '24px',
               fontWeight: 'bold',
               margin: '20px 0 12px 0',
               color: isUserMessage ? 'white' : 'var(--text-primary)',
+              scrollMarginTop: '80px',
             }}
-          />
+          >
+            {children}
+          </h1>
         ),
-        h2: (props) => (
+        h2: ({ children, ...rest }) => (
           <h2
-            {...props}
+            id={makeHeadingId(children)}
+            {...rest}
             style={{
               fontSize: '20px',
               fontWeight: 'bold',
               margin: '18px 0 10px 0',
               color: isUserMessage ? 'white' : 'var(--text-primary)',
+              scrollMarginTop: '80px',
             }}
-          />
+          >
+            {children}
+          </h2>
         ),
-        h3: (props) => (
+        h3: ({ children, ...rest }) => (
           <h3
-            {...props}
+            id={makeHeadingId(children)}
+            {...rest}
             style={{
               fontSize: '18px',
               fontWeight: 'bold',
               margin: '16px 0 8px 0',
               color: isUserMessage ? 'white' : 'var(--text-primary)',
+              scrollMarginTop: '80px',
             }}
-          />
+          >
+            {children}
+          </h3>
         ),
-        h4: (props) => (
+        h4: ({ children, ...rest }) => (
           <h4
-            {...props}
+            id={makeHeadingId(children)}
+            {...rest}
             style={{
               fontSize: '16px',
               fontWeight: 'bold',
               margin: '14px 0 6px 0',
               color: isUserMessage ? 'white' : 'var(--text-primary)',
+              scrollMarginTop: '80px',
             }}
-          />
+          >
+            {children}
+          </h4>
         ),
-        h5: (props) => (
+        h5: ({ children, ...rest }) => (
           <h5
-            {...props}
+            id={makeHeadingId(children)}
+            {...rest}
             style={{
               fontSize: '14px',
               fontWeight: 'bold',
               margin: '12px 0 4px 0',
               color: isUserMessage ? 'white' : 'var(--text-primary)',
+              scrollMarginTop: '80px',
             }}
-          />
+          >
+            {children}
+          </h5>
         ),
-        h6: (props) => (
+        h6: ({ children, ...rest }) => (
           <h6
-            {...props}
+            id={makeHeadingId(children)}
+            {...rest}
             style={{
               fontSize: '13px',
               fontWeight: 'bold',
               margin: '10px 0 4px 0',
               color: isUserMessage ? 'white' : 'var(--text-primary)',
+              scrollMarginTop: '80px',
             }}
-          />
+          >
+            {children}
+          </h6>
         ),
         blockquote: (props) => (
           <blockquote
@@ -644,6 +690,7 @@ export function MarkdownRenderer(props) {
     style,
     animated = false,
     previousContentLength = 0,
+    headingIdSlugger,
     ...otherProps
   } = props;
 
@@ -688,6 +735,7 @@ export function MarkdownRenderer(props) {
           className={className}
           animated={animated}
           previousContentLength={previousContentLength}
+          headingIdSlugger={headingIdSlugger}
         />
       )}
     </div>

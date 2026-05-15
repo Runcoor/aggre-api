@@ -21,7 +21,7 @@ For commercial licensing, please contact support@quantumnous.com
 // Three-column: TOC | Article body | Sidebar (Skill info + ratings/comments
 // placeholder tabs for phase 2).
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -34,75 +34,7 @@ import {
 import { API, showError, showSuccess } from '../../helpers';
 import { SKILL_PLAZA_STYLES, SourceBadge } from './styles';
 import DetailSocial, { FavoriteButton } from './DetailSocial';
-
-// Minimal Markdown → HTML — keeps the bundle small and avoids
-// pulling in a Markdown library just for this page. Handles headings,
-// paragraphs, code fences, inline code, bold, italics, links, lists,
-// blockquotes. Anything else falls through as text.
-function renderMarkdown(md) {
-  if (!md) return '';
-  let html = String(md);
-  // Code fences
-  html = html.replace(/```([a-z]*)\n([\s\S]*?)```/g, (_m, lang, code) => {
-    const escaped = code
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-    return `<pre><code class="lang-${lang}">${escaped}</code></pre>`;
-  });
-  // Headings (preserve anchors for TOC)
-  html = html.replace(
-    /^### (.+)$/gm,
-    (_m, t) => `<h3 id="${slugify(t)}">${t}</h3>`,
-  );
-  html = html.replace(
-    /^## (.+)$/gm,
-    (_m, t) => `<h2 id="${slugify(t)}">${t}</h2>`,
-  );
-  html = html.replace(
-    /^# (.+)$/gm,
-    (_m, t) => `<h1 id="${slugify(t)}">${t}</h1>`,
-  );
-  // Blockquotes
-  html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
-  // Unordered lists
-  html = html.replace(/(^|\n)((?:- .+\n?)+)/g, (m, pre, block) => {
-    const items = block
-      .trim()
-      .split('\n')
-      .map((line) => `<li>${line.replace(/^- /, '')}</li>`)
-      .join('');
-    return `${pre}<ul>${items}</ul>`;
-  });
-  // Ordered lists
-  html = html.replace(/(^|\n)((?:\d+\. .+\n?)+)/g, (m, pre, block) => {
-    const items = block
-      .trim()
-      .split('\n')
-      .map((line) => `<li>${line.replace(/^\d+\. /, '')}</li>`)
-      .join('');
-    return `${pre}<ol>${items}</ol>`;
-  });
-  // Inline code, bold, italics, links
-  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, text, url) => {
-    const safe = /^(https?:|mailto:|#)/.test(url) ? url : '#';
-    return `<a href="${safe}" target="_blank" rel="noopener noreferrer">${text}</a>`;
-  });
-  // Paragraphs — wrap remaining bare lines.
-  html = html
-    .split(/\n{2,}/)
-    .map((para) => {
-      const trimmed = para.trim();
-      if (!trimmed) return '';
-      if (/^<(h\d|ul|ol|pre|blockquote)/.test(trimmed)) return trimmed;
-      return `<p>${trimmed.replace(/\n/g, '<br/>')}</p>`;
-    })
-    .join('\n');
-  return html;
-}
+import { MarkdownRenderer } from '../../components/common/markdown/MarkdownRenderer';
 
 function slugify(text) {
   return (
@@ -172,10 +104,9 @@ const SkillsDetail = () => {
     () => extractHeadings(article?.body || ''),
     [article?.body],
   );
-  const bodyHtml = useMemo(
-    () => renderMarkdown(article?.body || ''),
-    [article?.body],
-  );
+  // Stable slugger so MarkdownContent's React.memo doesn't bust every render.
+  // Same algorithm as extractHeadings, so the TOC anchors line up.
+  const headingIdSlugger = useCallback((text) => slugify(text), []);
 
   if (loading) {
     return (
@@ -420,10 +351,13 @@ const SkillsDetail = () => {
 
             {/* Body */}
             <main>
-              <article
-                className='skp-prose'
-                dangerouslySetInnerHTML={{ __html: bodyHtml }}
-              />
+              <article className='skp-prose'>
+                <MarkdownRenderer
+                  content={article.body || ''}
+                  fontSize={14.5}
+                  headingIdSlugger={headingIdSlugger}
+                />
+              </article>
 
               <DetailSocial
                 slug={slug}

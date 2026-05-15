@@ -27,6 +27,7 @@ For commercial licensing, please contact support@quantumnous.com
 export const SKILL_PLAZA_STYLES = `
   .skp-root { color: var(--text-primary); }
   .skp-page { max-width: 1320px; margin: 0 auto; padding: 24px; width: 100%; }
+  .skp-page.skp-wide { max-width: 1480px; }
   .skp-page.skp-narrow { max-width: 920px; }
 
   /* Hero ---------------------------------------------------------------- */
@@ -143,12 +144,43 @@ export const SKILL_PLAZA_STYLES = `
   .skp-status-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
 
   /* Detail page -------------------------------------------------------- */
+  /* Narrower sidebars vs original 230/320 — gives the article column      */
+  /* ~100px more breathing room. Combined with .skp-wide (1480 max-width). */
   .skp-detail-layout {
-    display: grid; gap: 28px; align-items: start;
-    grid-template-columns: 230px minmax(0,1fr) 320px;
+    display: grid; gap: 24px; align-items: start;
+    grid-template-columns: 200px minmax(0,1fr) 260px;
   }
-  .skp-detail-header h1 { font-size: 30px; letter-spacing: -0.5px; margin: 0 0 14px 0; }
-  .skp-detail-meta { display: flex; align-items: center; gap: 14px; color: var(--text-secondary); font-size: 13px; flex-wrap: wrap; }
+  .skp-detail-header { padding: 4px 0 18px; }
+  .skp-detail-header h1 {
+    font-size: 30px; letter-spacing: -0.5px; line-height: 1.3;
+    margin: 0 0 12px 0; color: var(--text-primary);
+  }
+  .skp-detail-badges {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .skp-detail-meta {
+    display: flex; align-items: center; gap: 14px;
+    color: var(--text-secondary); font-size: 13px; flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .skp-detail-meta .sep { color: var(--text-muted); }
+
+  /* Tab-bar (segmented control) — used for zh/en language switcher.      */
+  .skp-tab-bar {
+    display: inline-flex; gap: 4px; padding: 4px;
+    background: var(--bg-base); border-radius: 10px; width: fit-content;
+  }
+  .skp-tab-bar button {
+    border: 0; background: transparent; padding: 6px 14px;
+    border-radius: 7px; color: var(--text-secondary); font-size: 12.5px;
+    cursor: pointer; font-weight: 500; transition: all .15s;
+  }
+  .skp-tab-bar button:hover { color: var(--text-primary); }
+  .skp-tab-bar button.active {
+    background: var(--surface); color: #0072ff;
+    box-shadow: 0 1px 2px rgba(11,17,32,0.04), 0 1px 1px rgba(11,17,32,0.03);
+  }
 
   .skp-github-source {
     display: flex; align-items: center; gap: 14px;
@@ -162,37 +194,74 @@ export const SKILL_PLAZA_STYLES = `
   }
   .skp-github-source .repo-meta {
     font-size: 12px; color: var(--text-muted); margin-top: 2px;
-    display: flex; gap: 14px; flex-wrap: wrap;
+    display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
   }
-  .skp-github-source code {
+  .skp-github-source .repo-meta code {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     background: var(--surface); padding: 1px 6px; border-radius: 4px;
     color: var(--text-secondary);
   }
 
+  /* TOC ---------------------------------------------------------------- */
   .skp-toc { position: sticky; top: 84px; }
   .skp-toc h4 {
-    font-size: 12.5px; color: var(--text-muted); text-transform: uppercase;
-    letter-spacing: 0.8px; margin: 0 0 12px 0;
+    font-size: 12px; color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.8px; margin: 0 0 12px 0; font-weight: 600;
   }
+  .skp-toc ol {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 2px;
+    counter-reset: toc;
+  }
+  .skp-toc li {
+    counter-increment: toc;
+    padding: 7px 10px; border-radius: 6px;
+    font-size: 13px; color: var(--text-secondary);
+    border-left: 2px solid transparent;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .skp-toc li a {
+    color: inherit; text-decoration: none; display: block;
+    line-height: 1.5;
+  }
+  .skp-toc li .toc-num {
+    color: var(--text-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px; margin-right: 6px; font-weight: 500;
+  }
+  .skp-toc li:hover {
+    color: var(--text-primary); background: var(--surface-hover);
+  }
+  .skp-toc li.active {
+    color: #0072ff; border-left-color: #0072ff;
+    background: rgba(0,114,255,0.05); font-weight: 500;
+  }
+  .skp-toc li.active .toc-num { color: #0072ff; }
 
   /* Article body typography now lives in markdown-document.css (.markdown-doc). */
 
+  /* Sidebar cards ------------------------------------------------------- */
   .skp-side-card {
     background: var(--surface); border: 1px solid var(--border-default);
     border-radius: 14px; padding: 16px;
   }
   .skp-side-card h4 {
     font-size: 13.5px; color: var(--text-primary); margin: 0 0 12px 0;
+    font-weight: 600;
     display: flex; justify-content: space-between; align-items: center;
+    gap: 8px;
   }
   .skp-side-card .kv {
-    display: flex; justify-content: space-between; font-size: 12.5px;
-    padding: 5px 0; color: var(--text-secondary);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12.5px; padding: 6px 0; color: var(--text-secondary);
     border-bottom: 1px dashed var(--border-default);
+    gap: 12px;
   }
   .skp-side-card .kv:last-child { border-bottom: 0; }
-  .skp-side-card .kv strong { color: var(--text-primary); font-weight: 500; }
+  .skp-side-card .kv strong {
+    color: var(--text-primary); font-weight: 500;
+    text-align: right; word-break: break-all;
+  }
 
   /* Import + Review pages ---------------------------------------------- */
   .skp-stepper { display: flex; gap: 8px; padding: 4px 0 22px; flex-wrap: wrap; }

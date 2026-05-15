@@ -30,9 +30,11 @@ import {
   Github,
   Star,
   Share2,
+  Eye,
+  Calendar,
 } from 'lucide-react';
 import { API, showError, showSuccess } from '../../helpers';
-import { SKILL_PLAZA_STYLES, SourceBadge } from './styles';
+import { SKILL_PLAZA_STYLES, SourceBadge, StatusBadge } from './styles';
 import DetailSocial, { FavoriteButton } from './DetailSocial';
 import { DocumentMarkdownRenderer } from '../../components/common/markdown/DocumentMarkdownRenderer';
 
@@ -176,11 +178,15 @@ const SkillsDetail = () => {
     );
   }
 
+  const tags = data.tags || [];
+  const langs = data.available_languages || [language];
+  const publishedAt = article.published_at || article.updated_at;
+
   return (
     <>
       <style>{SKILL_PLAZA_STYLES}</style>
       <div className='skp-root'>
-        <div className='skp-page'>
+        <div className='skp-page skp-wide'>
           {/* Breadcrumb */}
           <div
             style={{
@@ -205,46 +211,110 @@ const SkillsDetail = () => {
               <ArrowLeft size={12} /> {t('SKILLS 广场')}
             </Link>
             <span>/</span>
+            {skill.category && (
+              <>
+                <span>{skill.category}</span>
+                <span>/</span>
+              </>
+            )}
             <span style={{ color: 'var(--text-secondary)' }}>{skill.name}</span>
           </div>
 
-          {/* Article header */}
+          {/* Article header — strict design match: badges row → title → meta */}
           <header className='skp-detail-header'>
-            <div className='skp-detail-meta' style={{ marginBottom: 8 }}>
+            <div className='skp-detail-badges'>
               <SourceBadge type={skill.source_type} />
-              <span>·</span>
-              <span>
-                {new Date(
-                  (article.published_at || article.updated_at) * 1000,
-                ).toLocaleDateString()}
-              </span>
-              <span>·</span>
-              <span style={{ display: 'inline-flex', gap: 6 }}>
-                {(data.available_languages || [language]).map((l) => (
-                  <button
-                    key={l}
-                    onClick={() => setSearchParams({ lang: l })}
-                    className={'skp-pill' + (l === language ? ' active' : '')}
-                    style={{ height: 24, padding: '0 10px', fontSize: 11.5 }}
-                  >
-                    {l === 'en' ? 'EN' : '中文'}
-                  </button>
-                ))}
-              </span>
+              <StatusBadge status={skill.status || 'published'} />
+              {tags.slice(0, 6).map((tg) => (
+                <span key={tg} className='skp-mini-tag'>
+                  {tg}
+                </span>
+              ))}
             </div>
+
             <h1>{article.title}</h1>
+
             {article.summary && (
               <p
                 style={{
                   color: 'var(--text-secondary)',
                   fontSize: 15,
                   lineHeight: 1.7,
-                  margin: '6px 0 0 0',
+                  margin: '8px 0 0 0',
                 }}
               >
                 {article.summary}
               </p>
             )}
+
+            <div className='skp-detail-meta'>
+              {publishedAt > 0 && (
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <Calendar size={13} />
+                  {t('发布于')}{' '}
+                  {new Date(publishedAt * 1000).toLocaleDateString()}
+                </span>
+              )}
+              {skill.rating_count > 0 && (
+                <>
+                  <span className='sep'>·</span>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <Star
+                      size={13}
+                      color='#f59e0b'
+                      fill='#f59e0b'
+                    />
+                    <strong style={{ color: 'var(--text-primary)' }}>
+                      {(skill.rating_average || 0).toFixed(1)}
+                    </strong>
+                    <span style={{ color: 'var(--text-muted)' }}>
+                      ({skill.rating_count} {t('评分')})
+                    </span>
+                  </span>
+                </>
+              )}
+              {skill.view_count > 0 && (
+                <>
+                  <span className='sep'>·</span>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <Eye size={13} />
+                    {skill.view_count} {t('阅读')}
+                  </span>
+                </>
+              )}
+
+              {langs.length > 1 && (
+                <div className='skp-tab-bar' style={{ marginLeft: 'auto' }}>
+                  {langs.map((l) => (
+                    <button
+                      key={l}
+                      onClick={() => setSearchParams({ lang: l })}
+                      className={l === language ? 'active' : ''}
+                    >
+                      {l === 'en' ? 'English' : '中文'}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </header>
 
           {/* GitHub source */}
@@ -303,43 +373,12 @@ const SkillsDetail = () => {
           <div className='skp-detail-layout'>
             {/* TOC */}
             <aside className='skp-toc'>
-              <h4>{t('目录')}</h4>
-              <ol
-                style={{
-                  listStyle: 'none',
-                  padding: 0,
-                  margin: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 2,
-                  counterReset: 'toc',
-                }}
-              >
+              <h4>{t('本文目录')}</h4>
+              <ol>
                 {headings.map((h, i) => (
-                  <li
-                    key={h.id}
-                    style={{
-                      counterIncrement: 'toc',
-                      padding: '7px 10px',
-                      borderRadius: 6,
-                      fontSize: 13,
-                      color: 'var(--text-secondary)',
-                      borderLeft: '2px solid transparent',
-                    }}
-                  >
-                    <a
-                      href={`#${h.id}`}
-                      style={{ color: 'inherit', textDecoration: 'none' }}
-                    >
-                      <span
-                        style={{
-                          color: 'var(--text-muted)',
-                          fontFamily:
-                            'ui-monospace, SFMono-Regular, Menlo, monospace',
-                          fontSize: 11,
-                          marginRight: 6,
-                        }}
-                      >
+                  <li key={h.id}>
+                    <a href={`#${h.id}`}>
+                      <span className='toc-num'>
                         {String(i + 1).padStart(2, '0')}
                       </span>
                       {h.text}
@@ -393,7 +432,10 @@ const SkillsDetail = () => {
               }}
             >
               <div className='skp-side-card'>
-                <h4>{t('Skill 信息')}</h4>
+                <h4>
+                  <span>{t('Skill 信息')}</span>
+                  <SourceBadge type={skill.source_type} />
+                </h4>
                 <div className='kv'>
                   <span>{t('分类')}</span>
                   <strong>{skill.category || '-'}</strong>

@@ -1,0 +1,324 @@
+/*
+ * markdown-document.css
+ *
+ * Production-grade typography for long-form Markdown reading.
+ * Used by DocumentMarkdownRenderer — keeps the in-chat MarkdownRenderer
+ * untouched so chat bubbles stay compact.
+ *
+ * Aesthetic targets: Stripe / Vercel / Linear / GitHub docs.
+ * Modeled after @tailwindcss/typography's "prose" defaults with hand-tuned
+ * spacing, CJK font fallbacks, dark-by-default code blocks, and a hljs
+ * palette inspired by one-dark-pro.
+ */
+
+.markdown-doc {
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC",
+    "Microsoft YaHei", "微软雅黑", "Helvetica Neue", Arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+  font-size: 15.5px;
+  line-height: 1.78;
+  color: var(--text-primary);
+  word-wrap: break-word;
+  word-break: break-word;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* First / last child margin reset so the doc hugs its container. */
+.markdown-doc > :first-child { margin-top: 0; }
+.markdown-doc > :last-child  { margin-bottom: 0; }
+
+/* ─────────────────────────── Headings ─────────────────────────── */
+
+.markdown-doc h1,
+.markdown-doc h2,
+.markdown-doc h3,
+.markdown-doc h4,
+.markdown-doc h5,
+.markdown-doc h6 {
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  scroll-margin-top: 84px;
+  font-family: var(--font-serif, inherit);
+}
+.markdown-doc h1 { font-size: 32px; margin: 0 0 18px; line-height: 1.25; }
+.markdown-doc h2 {
+  font-size: 24px; margin: 36px 0 14px; line-height: 1.3;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-default);
+}
+.markdown-doc h3 { font-size: 19px; margin: 28px 0 12px; line-height: 1.35; }
+.markdown-doc h4 { font-size: 16.5px; margin: 22px 0 10px; line-height: 1.4; }
+.markdown-doc h5,
+.markdown-doc h6 { font-size: 15px; margin: 18px 0 8px; }
+
+/* ─────────────────────────── Body text ─────────────────────────── */
+
+.markdown-doc p { margin: 14px 0; }
+
+.markdown-doc strong { font-weight: 700; color: var(--text-primary); }
+.markdown-doc em { font-style: italic; }
+.markdown-doc del,
+.markdown-doc s { color: var(--text-muted); }
+
+/* ─────────────────────────── Links ─────────────────────────── */
+
+.markdown-doc a {
+  color: #0072ff;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 114, 255, 0.3);
+  transition: border-color 0.15s, color 0.15s;
+  font-weight: 500;
+}
+.markdown-doc a:hover {
+  color: #0058cc;
+  border-bottom-color: #0072ff;
+}
+
+/* ─────────────────────────── Lists ─────────────────────────── */
+
+.markdown-doc ul,
+.markdown-doc ol { padding-left: 28px; margin: 14px 0; }
+.markdown-doc ul li { list-style: disc; }
+.markdown-doc ol li { list-style: decimal; }
+.markdown-doc li { margin: 6px 0; padding-left: 4px; }
+.markdown-doc li::marker { color: var(--text-muted); }
+.markdown-doc li > ul,
+.markdown-doc li > ol { margin: 6px 0; }
+.markdown-doc li > p { margin: 4px 0; }
+
+/* GFM task lists */
+.markdown-doc input[type='checkbox'] {
+  margin-right: 8px;
+  vertical-align: middle;
+  accent-color: #0072ff;
+}
+.markdown-doc li.task-list-item {
+  list-style: none;
+  margin-left: -24px;
+}
+
+/* ─────────────────────────── Inline code ─────────────────────────── */
+
+.markdown-doc :not(pre) > code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  font-size: 0.875em;
+  background: rgba(135, 131, 120, 0.15);
+  color: #d6336c;
+  padding: 0.16em 0.42em;
+  border-radius: 4px;
+  border: none;
+  word-break: break-word;
+  font-weight: 500;
+}
+html.dark .markdown-doc :not(pre) > code {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ff8fa3;
+}
+
+/* ─────────────────────────── Code blocks ─────────────────────────── */
+/* Always dark — like Stripe / Vercel / Linear docs.                  */
+
+.markdown-doc pre.md-code-block {
+  background: #0d1117;
+  color: #e6edf3;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  padding: 18px 20px;
+  overflow-x: auto;
+  margin: 18px 0;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  font-size: 13.5px;
+  line-height: 1.7;
+  position: relative;
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+}
+.markdown-doc pre.md-code-block code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+  display: block;
+  border: none;
+  font-family: inherit;
+  white-space: pre;
+}
+.markdown-doc pre.md-code-block.has-lang { padding-top: 34px; }
+
+.markdown-doc .md-code-lang {
+  position: absolute;
+  top: 8px;
+  left: 16px;
+  font-size: 10.5px;
+  color: rgba(230, 237, 243, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 600;
+  user-select: none;
+  pointer-events: none;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+.markdown-doc .md-code-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(230, 237, 243, 0.08);
+  border: 1px solid rgba(230, 237, 243, 0.1);
+  color: rgba(230, 237, 243, 0.7);
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.18s, background 0.18s, color 0.18s;
+  padding: 0;
+}
+.markdown-doc pre.md-code-block:hover .md-code-copy,
+.markdown-doc .md-code-copy:focus-visible { opacity: 1; }
+.markdown-doc .md-code-copy:hover {
+  background: rgba(230, 237, 243, 0.15);
+  color: #e6edf3;
+}
+.markdown-doc .md-code-copy svg { width: 14px; height: 14px; }
+
+/* hljs token palette — one-dark-pro inspired. Scoped to .markdown-doc
+ * so it does NOT bleed into chat MarkdownRenderer's hljs theme. */
+.markdown-doc pre .hljs { color: #abb2bf; background: transparent; }
+.markdown-doc pre .hljs-comment,
+.markdown-doc pre .hljs-quote { color: #5c6370; font-style: italic; }
+.markdown-doc pre .hljs-keyword,
+.markdown-doc pre .hljs-selector-tag,
+.markdown-doc pre .hljs-section,
+.markdown-doc pre .hljs-meta { color: #c678dd; }
+.markdown-doc pre .hljs-built_in,
+.markdown-doc pre .hljs-type,
+.markdown-doc pre .hljs-class .hljs-title { color: #e5c07b; }
+.markdown-doc pre .hljs-string,
+.markdown-doc pre .hljs-doctag,
+.markdown-doc pre .hljs-regexp,
+.markdown-doc pre .hljs-template-tag { color: #98c379; }
+.markdown-doc pre .hljs-number,
+.markdown-doc pre .hljs-literal,
+.markdown-doc pre .hljs-symbol,
+.markdown-doc pre .hljs-bullet { color: #d19a66; }
+.markdown-doc pre .hljs-title,
+.markdown-doc pre .hljs-function .hljs-title,
+.markdown-doc pre .hljs-name,
+.markdown-doc pre .hljs-selector-id,
+.markdown-doc pre .hljs-selector-class { color: #61afef; }
+.markdown-doc pre .hljs-attr,
+.markdown-doc pre .hljs-attribute,
+.markdown-doc pre .hljs-variable,
+.markdown-doc pre .hljs-template-variable,
+.markdown-doc pre .hljs-tag,
+.markdown-doc pre .hljs-tag .hljs-name { color: #e06c75; }
+.markdown-doc pre .hljs-params { color: #abb2bf; }
+.markdown-doc pre .hljs-emphasis { font-style: italic; }
+.markdown-doc pre .hljs-strong { font-weight: 700; }
+.markdown-doc pre .hljs-addition { background: rgba(152, 195, 121, 0.18); }
+.markdown-doc pre .hljs-deletion { background: rgba(224, 108, 117, 0.18); }
+
+/* ─────────────────────────── Tables ─────────────────────────── */
+
+.markdown-doc .md-table-wrap {
+  margin: 18px 0;
+  overflow-x: auto;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+}
+.markdown-doc table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin: 0;
+}
+.markdown-doc thead { background: var(--surface-hover); }
+.markdown-doc th,
+.markdown-doc td {
+  border-bottom: 1px solid var(--border-default);
+  padding: 10px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+.markdown-doc th:not(:last-child),
+.markdown-doc td:not(:last-child) {
+  border-right: 1px solid var(--border-default);
+}
+.markdown-doc th { font-weight: 600; color: var(--text-primary); }
+.markdown-doc tbody tr:last-child td { border-bottom: 0; }
+.markdown-doc tbody tr:nth-child(even) { background: rgba(0, 0, 0, 0.02); }
+html.dark .markdown-doc tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+.markdown-doc tbody tr:hover { background: rgba(0, 114, 255, 0.04); }
+
+/* ─────────────────────────── Blockquote ─────────────────────────── */
+
+.markdown-doc blockquote {
+  border-left: 4px solid #0072ff;
+  background: rgba(0, 114, 255, 0.06);
+  padding: 12px 18px;
+  margin: 18px 0;
+  border-radius: 0 8px 8px 0;
+  color: var(--text-secondary);
+}
+.markdown-doc blockquote > :first-child { margin-top: 0; }
+.markdown-doc blockquote > :last-child  { margin-bottom: 0; }
+.markdown-doc blockquote p { margin: 6px 0; }
+
+/* ─────────────────────────── Misc ─────────────────────────── */
+
+.markdown-doc hr {
+  border: none;
+  border-top: 1px solid var(--border-default);
+  margin: 32px 0;
+}
+
+.markdown-doc img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 18px 0;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.markdown-doc kbd {
+  background: var(--surface);
+  border: 1px solid var(--border-default);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  color: var(--text-primary);
+}
+
+/* ─────────────────────────── Responsive ─────────────────────────── */
+
+@media (max-width: 768px) {
+  .markdown-doc { font-size: 14.5px; line-height: 1.75; }
+  .markdown-doc h1 { font-size: 26px; }
+  .markdown-doc h2 { font-size: 21px; }
+  .markdown-doc h3 { font-size: 17px; }
+  .markdown-doc pre.md-code-block {
+    padding: 14px 16px;
+    font-size: 12.5px;
+    border-radius: 8px;
+  }
+  .markdown-doc pre.md-code-block.has-lang { padding-top: 30px; }
+  .markdown-doc th,
+  .markdown-doc td { padding: 8px 10px; font-size: 13px; }
+}

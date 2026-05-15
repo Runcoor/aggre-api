@@ -176,27 +176,7 @@ export const SKILL_PLAZA_STYLES = `
     letter-spacing: 0.8px; margin: 0 0 12px 0;
   }
 
-  .skp-prose h2 { font-size: 22px; margin: 32px 0 14px; scroll-margin-top: 80px; }
-  .skp-prose h3 { font-size: 17px; margin: 22px 0 10px; scroll-margin-top: 80px; }
-  .skp-prose p { color: var(--text-primary); font-size: 14.5px; line-height: 1.85; margin: 10px 0; }
-  .skp-prose ul, .skp-prose ol { color: var(--text-primary); font-size: 14.5px; line-height: 1.85; padding-left: 22px; }
-  .skp-prose code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 13px; background: var(--bg-base); padding: 1px 6px;
-    border-radius: 4px; color: var(--text-primary);
-  }
-  .skp-prose pre {
-    background: #0b1322; color: #e2e8f0; padding: 18px;
-    border-radius: 10px; overflow-x: auto;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 12.5px; line-height: 1.7;
-  }
-  .skp-prose pre code { background: transparent; color: inherit; padding: 0; font-size: 12.5px; }
-  .skp-prose blockquote {
-    border-left: 3px solid #0072ff; background: rgba(0,114,255,0.06);
-    padding: 12px 16px; border-radius: 0 8px 8px 0;
-    color: var(--text-secondary); margin: 14px 0;
-  }
+  /* Article body typography now lives in markdown-document.css (.markdown-doc). */
 
   .skp-side-card {
     background: var(--surface); border: 1px solid var(--border-default);

@@ -34,7 +34,7 @@ import {
 import { API, showError, showSuccess } from '../../helpers';
 import { SKILL_PLAZA_STYLES, SourceBadge } from './styles';
 import DetailSocial, { FavoriteButton } from './DetailSocial';
-import { MarkdownRenderer } from '../../components/common/markdown/MarkdownRenderer';
+import { DocumentMarkdownRenderer } from '../../components/common/markdown/DocumentMarkdownRenderer';
 
 function slugify(text) {
   return (
@@ -351,10 +351,9 @@ const SkillsDetail = () => {
 
             {/* Body */}
             <main>
-              <article className='skp-prose'>
-                <MarkdownRenderer
+              <article>
+                <DocumentMarkdownRenderer
                   content={article.body || ''}
-                  fontSize={14.5}
                   headingIdSlugger={headingIdSlugger}
                 />
               </article>

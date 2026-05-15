@@ -17,12 +17,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-// Detail page — bottom social section (ratings / comments / favorite).
-// Split out of Detail.jsx so the file stays readable. The detail page
-// passes `slug` + `skillId` + an optional `onFavoriteCountChange` so the
-// sidebar count animates together with the bookmark.
+// Detail page — bottom social section (ratings + comments + favorite).
+//
+// Visual structure follows the design bundle's `page-detail.jsx` —
+// stacked sections instead of tabs, radar + dimension breakdown card,
+// J-shaped 5-star distribution, modern comment list with one-level
+// reply threading.
+//
+// State + API wiring is unchanged from the prior tab-based version;
+// only the layout and styling were rewritten.
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -36,31 +41,35 @@ import {
   Reply,
   Flag,
   X as XIcon,
+  Edit3,
 } from 'lucide-react';
-import { API, showError, showSuccess, getUserIdFromLocalStorage, isAdmin } from '../../helpers';
+import {
+  API,
+  showError,
+  showSuccess,
+  getUserIdFromLocalStorage,
+  isAdmin,
+} from '../../helpers';
 
-// Five-dim radar — pure SVG, 5 axes at 90° / 90°+72° / etc. Each axis is
-// drawn at 0..5 scale. The fill polygon is the averaged values; the
-// outline rings are at 1/2/3/4/5. Hover labels are out-of-scope here.
-function RatingRadar({ values, size = 260, max = 5, color = '#0072ff' }) {
-  // values: { usability, practicality, clarity, stability, innovation }
+// Five-dim radar — pure SVG, 5 axes at 72° intervals. Outline rings at
+// 0.2/0.4/0.6/0.8/1.0; fill polygon at the current values.
+function RatingRadar({ values, size = 220, max = 5, color = '#0072ff' }) {
+  const { t } = useTranslation();
   const labels = [
-    { key: 'usability', name: '易用性' },
-    { key: 'practicality', name: '实用性' },
-    { key: 'clarity', name: '文档清晰度' },
-    { key: 'stability', name: '结果稳定性' },
-    { key: 'innovation', name: '创新性' },
+    { key: 'usability', name: t('易用性') },
+    { key: 'practicality', name: t('实用性') },
+    { key: 'clarity', name: t('文档清晰度') },
+    { key: 'stability', name: t('结果稳定性') },
+    { key: 'innovation', name: t('创新性') },
   ];
   const cx = size / 2;
   const cy = size / 2;
-  const r = size / 2 - 32; // leave room for labels
-  // Start at top (−90°), step clockwise 72°.
+  const r = size / 2 - 34;
   const angle = (i) => -Math.PI / 2 + (i * 2 * Math.PI) / labels.length;
   const point = (i, valFrac) => {
     const a = angle(i);
     return [cx + Math.cos(a) * r * valFrac, cy + Math.sin(a) * r * valFrac];
   };
-  // Outline rings at 0.2 / 0.4 / 0.6 / 0.8 / 1.0
   const rings = [0.2, 0.4, 0.6, 0.8, 1].map((frac) => {
     const pts = labels.map((_, i) => point(i, frac).join(',')).join(' ');
     return (
@@ -70,11 +79,10 @@ function RatingRadar({ values, size = 260, max = 5, color = '#0072ff' }) {
         fill='none'
         stroke='var(--border-default)'
         strokeWidth={frac === 1 ? 1 : 0.5}
-        opacity={frac === 1 ? 1 : 0.6}
+        opacity={frac === 1 ? 1 : 0.55}
       />
     );
   });
-  // Spoke lines
   const spokes = labels.map((_, i) => {
     const [x, y] = point(i, 1);
     return (
@@ -90,18 +98,14 @@ function RatingRadar({ values, size = 260, max = 5, color = '#0072ff' }) {
       />
     );
   });
-  // Value polygon
   const valFracs = labels.map((l) =>
     Math.max(0, Math.min(1, (values?.[l.key] || 0) / max)),
   );
-  const valPoints = valFracs
-    .map((f, i) => point(i, f).join(','))
-    .join(' ');
-  // Labels just outside the outer ring
+  const valPoints = valFracs.map((f, i) => point(i, f).join(',')).join(' ');
   const labelNodes = labels.map((l, i) => {
     const a = angle(i);
-    const lx = cx + Math.cos(a) * (r + 16);
-    const ly = cy + Math.sin(a) * (r + 16);
+    const lx = cx + Math.cos(a) * (r + 18);
+    const ly = cy + Math.sin(a) * (r + 18);
     return (
       <text
         key={l.key}
@@ -109,21 +113,27 @@ function RatingRadar({ values, size = 260, max = 5, color = '#0072ff' }) {
         y={ly}
         textAnchor='middle'
         dominantBaseline='middle'
-        fontSize='11.5'
+        fontSize='11'
         fill='var(--text-secondary)'
+        fontWeight='500'
       >
         {l.name}
       </text>
     );
   });
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      style={{ flexShrink: 0 }}
+    >
       {rings}
       {spokes}
       <polygon
         points={valPoints}
         fill={color}
-        fillOpacity={0.18}
+        fillOpacity={0.16}
         stroke={color}
         strokeWidth={1.5}
       />
@@ -137,57 +147,48 @@ function RatingRadar({ values, size = 260, max = 5, color = '#0072ff' }) {
   );
 }
 
-// One row in the 5-dim rating form. The slider is 1–5; "0" means
-// "未评分" so we deliberately don't allow it on the form (the
-// initial state is 5 unless the user has rated before).
-function DimRow({ label, value, onChange }) {
+// Static star row (display only).
+function StaticStars({ value = 0, size = 14, max = 5 }) {
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '110px 1fr 28px',
-        alignItems: 'center',
-        gap: 12,
-        marginBottom: 10,
-      }}
-    >
-      <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-        {label}
-      </span>
-      <div style={{ display: 'inline-flex', gap: 6 }}>
+    <span className='skp-rating-stars' aria-label={`${value}/${max}`}>
+      {Array.from({ length: max }).map((_, i) => {
+        const filled = i + 1 <= Math.round(value);
+        return (
+          <Star
+            key={i}
+            size={size}
+            color={filled ? '#f59e0b' : 'var(--border-default)'}
+            fill={filled ? '#f59e0b' : 'none'}
+          />
+        );
+      })}
+    </span>
+  );
+}
+
+// Interactive 5-star picker — one row of the rate form.
+function RateCell({ label, value, onChange }) {
+  return (
+    <div className='skp-rate-cell'>
+      <div className='skp-rate-label'>{label}</div>
+      <div className='skp-rate-stars'>
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
             type='button'
             onClick={() => onChange(n)}
+            className={value >= n ? 'on' : ''}
             aria-label={`${label} ${n}`}
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 6,
-              border: '1px solid var(--border-default)',
-              background:
-                value >= n
-                  ? 'linear-gradient(135deg,#fbbf24,#f59e0b)'
-                  : 'var(--surface)',
-              color: value >= n ? '#fff' : 'var(--text-muted)',
-              cursor: 'pointer',
-              padding: 0,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
           >
             <Star size={14} fill={value >= n ? '#fff' : 'none'} />
           </button>
         ))}
       </div>
-      <strong style={{ textAlign: 'right', fontSize: 13 }}>{value}</strong>
     </div>
   );
 }
 
-function RatingForm({ slug, initial, onSubmitted }) {
+function RatingDrawer({ slug, initial, onSubmitted, onCancel }) {
   const { t } = useTranslation();
   const [form, setForm] = useState({
     usability: initial?.usability || 5,
@@ -203,10 +204,7 @@ function RatingForm({ slug, initial, onSubmitted }) {
 
   const submit = () => {
     setBusy(true);
-    API.post(
-      `/api/skill-plaza/skills/${encodeURIComponent(slug)}/rate`,
-      form,
-    )
+    API.post(`/api/skill-plaza/skills/${encodeURIComponent(slug)}/rate`, form)
       .then((res) => {
         if (res.data?.success) {
           showSuccess(t('评分已提交'));
@@ -220,105 +218,124 @@ function RatingForm({ slug, initial, onSubmitted }) {
   };
 
   return (
-    <div
-      style={{
-        padding: 18,
-        background: 'var(--surface)',
-        border: '1px solid var(--border-default)',
-        borderRadius: 12,
-      }}
-    >
-      <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14 }}>
-        {initial ? t('更新你的评分') : t('给这个 Skill 打分')}
-      </div>
-      <DimRow
-        label={t('易用性')}
-        value={form.usability}
-        onChange={(v) => set('usability', v)}
-      />
-      <DimRow
-        label={t('实用性')}
-        value={form.practicality}
-        onChange={(v) => set('practicality', v)}
-      />
-      <DimRow
-        label={t('文档清晰度')}
-        value={form.clarity}
-        onChange={(v) => set('clarity', v)}
-      />
-      <DimRow
-        label={t('结果稳定性')}
-        value={form.stability}
-        onChange={(v) => set('stability', v)}
-      />
-      <DimRow
-        label={t('创新性')}
-        value={form.innovation}
-        onChange={(v) => set('innovation', v)}
-      />
-      <label
+    <div className='skp-rate-drawer'>
+      <div
         style={{
-          display: 'inline-flex',
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          gap: 8,
-          fontSize: 13,
-          color: 'var(--text-secondary)',
-          margin: '8px 0',
-          cursor: 'pointer',
+          marginBottom: 16,
         }}
       >
-        <input
-          type='checkbox'
-          checked={form.verified_used}
-          onChange={(e) => set('verified_used', e.target.checked)}
+        <strong style={{ fontSize: 14.5, color: 'var(--text-primary)' }}>
+          {initial ? t('更新你的评分') : t('填写你的评分')}
+        </strong>
+        {onCancel && (
+          <button
+            onClick={onCancel}
+            aria-label={t('取消')}
+            style={{
+              background: 'transparent',
+              border: 0,
+              color: 'var(--text-muted)',
+              cursor: 'pointer',
+              padding: 4,
+              borderRadius: 6,
+            }}
+          >
+            <XIcon size={16} />
+          </button>
+        )}
+      </div>
+
+      <div className='skp-rate-grid'>
+        <RateCell
+          label={t('易用性')}
+          value={form.usability}
+          onChange={(v) => set('usability', v)}
         />
-        <CheckCircle2 size={14} color='#10b981' />
-        {t('我已经使用过这个 Skill')}
-      </label>
+        <RateCell
+          label={t('实用性')}
+          value={form.practicality}
+          onChange={(v) => set('practicality', v)}
+        />
+        <RateCell
+          label={t('文档清晰度')}
+          value={form.clarity}
+          onChange={(v) => set('clarity', v)}
+        />
+        <RateCell
+          label={t('结果稳定性')}
+          value={form.stability}
+          onChange={(v) => set('stability', v)}
+        />
+        <RateCell
+          label={t('创新性')}
+          value={form.innovation}
+          onChange={(v) => set('innovation', v)}
+        />
+      </div>
+
       <textarea
         value={form.comment}
         onChange={(e) => set('comment', e.target.value)}
-        placeholder={t('可选:留下一句使用感受(2000 字以内)')}
+        placeholder={t('说说你的使用体验、踩坑和建议(可选,2000 字以内)')}
         rows={3}
         maxLength={2000}
-        style={{
-          width: '100%',
-          padding: 10,
-          borderRadius: 8,
-          border: '1px solid var(--border-default)',
-          background: 'var(--bg-base)',
-          fontSize: 13,
-          fontFamily: 'inherit',
-          resize: 'vertical',
-          marginTop: 6,
-        }}
+        className='skp-comment-textarea'
+        style={{ marginBottom: 12 }}
       />
-      <div style={{ marginTop: 10, textAlign: 'right' }}>
-        <button
-          onClick={submit}
-          disabled={busy}
+
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: 12,
+          flexWrap: 'wrap',
+        }}
+      >
+        <label
           style={{
-            padding: '8px 18px',
-            borderRadius: 8,
-            border: 0,
-            color: '#fff',
-            background: 'linear-gradient(135deg,#0072ff,#00c6ff)',
-            cursor: busy ? 'wait' : 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
             fontSize: 13,
-            fontWeight: 600,
-            opacity: busy ? 0.7 : 1,
+            color: 'var(--text-secondary)',
+            cursor: 'pointer',
           }}
         >
-          {busy ? t('提交中...') : t('提交评分')}
-        </button>
+          <input
+            type='checkbox'
+            checked={form.verified_used}
+            onChange={(e) => set('verified_used', e.target.checked)}
+            style={{ accentColor: '#0072ff' }}
+          />
+          <CheckCircle2 size={14} color='#16a34a' />
+          {t('我已经使用过这个 Skill (将获得「已使用」标识)')}
+        </label>
+        <div style={{ display: 'inline-flex', gap: 8 }}>
+          {onCancel && (
+            <button className='skp-rate-cta ghost' onClick={onCancel}>
+              {t('取消')}
+            </button>
+          )}
+          <button
+            className='skp-submit-btn'
+            onClick={submit}
+            disabled={busy}
+            style={busy ? { opacity: 0.7, cursor: 'wait' } : undefined}
+          >
+            <Send size={13} />
+            {busy ? t('提交中...') : t('提交评分')}
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-// CommentItem renders one comment, optionally with its replies nested
-// underneath (passed in as `replies`). Top-level only — reply items
-// don't render their own children since we cap nesting at one level.
+// Single comment — handles its own optimistic like state.
 function CommentItem({
   c,
   replies,
@@ -331,9 +348,6 @@ function CommentItem({
 }) {
   const { t } = useTranslation();
   const canDelete = c.user_id === currentUserId || isAdmin();
-  // Optimistic local state — keeps the heart filled / count incremented
-  // immediately on click, rolls back on error. The parent's state still
-  // gets updated via onLikeChanged so re-renders stay consistent.
   const [liked, setLiked] = useState(!!c.liked_by_me);
   const [likeCount, setLikeCount] = useState(c.like_count || 0);
   const [busyLike, setBusyLike] = useState(false);
@@ -359,7 +373,6 @@ function CommentItem({
       return;
     }
     if (busyLike) return;
-    // Optimistic flip first.
     const nextLiked = !liked;
     const nextCount = likeCount + (nextLiked ? 1 : -1);
     setLiked(nextLiked);
@@ -373,7 +386,6 @@ function CommentItem({
           setLikeCount(like_count || 0);
           onLikeChanged?.(c.id, !!serverLiked, like_count || 0);
         } else {
-          // Roll back.
           setLiked(!nextLiked);
           setLikeCount(likeCount);
           showError(res.data?.message);
@@ -387,182 +399,115 @@ function CommentItem({
       .finally(() => setBusyLike(false));
   };
 
+  const report = () => {
+    const reason = window.prompt(
+      t('请说明举报原因 (可选,1000 字以内):'),
+      '',
+    );
+    if (reason === null) return;
+    API.post('/api/skill-plaza/reports', {
+      target_type: 'comment',
+      target_id: c.id,
+      reason: reason || '',
+    })
+      .then((res) => {
+        if (res.data?.success) {
+          showSuccess(t('已提交举报,管理员会尽快处理'));
+        } else {
+          showError(res.data?.message);
+        }
+      })
+      .catch((e) => showError(e?.message));
+  };
+
+  const displayName = c.user_name || `User ${c.user_id}`;
+  const avatarLetter = (c.user_avatar || displayName.charAt(0) || '?')
+    .toString()
+    .charAt(0)
+    .toUpperCase();
+
   return (
-    <div
-      style={{
-        padding: 14,
-        background: isReply ? 'var(--bg-base)' : 'var(--surface)',
-        border: '1px solid var(--border-default)',
-        borderRadius: 10,
-        marginBottom: 10,
-        marginLeft: isReply ? 32 : 0,
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          marginBottom: 8,
-        }}
-      >
-        <div
-          style={{
-            width: isReply ? 24 : 28,
-            height: isReply ? 24 : 28,
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg,#0072ff,#00c6ff)',
-            color: '#fff',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: isReply ? 11 : 12,
-            fontWeight: 600,
-          }}
-        >
-          {c.user_avatar || '?'}
+    <div className={'skp-comment' + (isReply ? ' is-reply' : '')}>
+      <div className='skp-comment-avatar' aria-hidden='true'>
+        {avatarLetter}
+      </div>
+      <div className='skp-comment-body'>
+        <div className='skp-comment-head'>
+          <span className='name'>{displayName}</span>
+          {c.verified_used && (
+            <span className='skp-verified-pill'>
+              <CheckCircle2 size={10} />
+              {t('已使用')}
+            </span>
+          )}
+          {typeof c.rating === 'number' && c.rating > 0 && (
+            <StaticStars value={c.rating} size={11} />
+          )}
+          <span className='skp-comment-time'>
+            {new Date((c.created_at || 0) * 1000).toLocaleString()}
+          </span>
         </div>
-        <strong style={{ fontSize: 13 }}>{c.user_name || `User ${c.user_id}`}</strong>
-        <span
-          style={{ color: 'var(--text-muted)', fontSize: 12, marginLeft: 'auto' }}
-        >
-          {new Date((c.created_at || 0) * 1000).toLocaleString()}
-        </span>
-        {canDelete && (
+        <div className='skp-comment-text'>{c.content}</div>
+        <div className='skp-comment-actions'>
           <button
-            onClick={remove}
-            title={t('删除')}
-            style={{
-              background: 'transparent',
-              border: 0,
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              padding: 4,
-              borderRadius: 4,
-            }}
+            className={'skp-comment-action' + (liked ? ' liked' : '')}
+            onClick={toggleLike}
+            disabled={busyLike}
+            title={liked ? t('取消点赞') : t('点赞')}
           >
-            <Trash2 size={12} />
-          </button>
-        )}
-      </div>
-      <div
-        style={{
-          fontSize: 14,
-          color: 'var(--text-primary)',
-          lineHeight: 1.7,
-          whiteSpace: 'pre-wrap',
-        }}
-      >
-        {c.content}
-      </div>
-      <div
-        style={{
-          marginTop: 10,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
-        }}
-      >
-        <button
-          onClick={toggleLike}
-          disabled={busyLike}
-          title={liked ? t('取消点赞') : t('点赞')}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 4,
-            padding: '4px 8px',
-            borderRadius: 6,
-            border: 0,
-            background: 'transparent',
-            color: liked ? '#e0245e' : 'var(--text-muted)',
-            cursor: busyLike ? 'wait' : 'pointer',
-            fontSize: 12,
-          }}
-        >
-          <Heart
-            size={13}
-            fill={liked ? '#e0245e' : 'none'}
-            strokeWidth={liked ? 0 : 2}
-          />
-          <span>{likeCount > 0 ? likeCount : ''}</span>
-        </button>
-        {!isReply && (
-          <button
-            onClick={() => onReply?.(c)}
-            title={t('回复')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: '4px 8px',
-              borderRadius: 6,
-              border: 0,
-              background: 'transparent',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              fontSize: 12,
-            }}
-          >
-            <Reply size={13} />
-            <span>{t('回复')}</span>
-          </button>
-        )}
-        {loggedIn && c.user_id !== currentUserId && (
-          <button
-            onClick={() => {
-              const reason = window.prompt(
-                t('请说明举报原因 (可选,1000 字以内):'),
-                '',
-              );
-              if (reason === null) return; // user cancelled
-              API.post('/api/skill-plaza/reports', {
-                target_type: 'comment',
-                target_id: c.id,
-                reason: reason || '',
-              })
-                .then((res) => {
-                  if (res.data?.success) {
-                    showSuccess(t('已提交举报,管理员会尽快处理'));
-                  } else {
-                    showError(res.data?.message);
-                  }
-                })
-                .catch((e) => showError(e?.message));
-            }}
-            title={t('举报')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: '4px 8px',
-              borderRadius: 6,
-              border: 0,
-              background: 'transparent',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              fontSize: 12,
-            }}
-          >
-            <Flag size={12} />
-          </button>
-        )}
-      </div>
-      {!isReply &&
-        replies &&
-        replies.length > 0 &&
-        replies.map((r) => (
-          <div key={r.id} style={{ marginTop: 8 }}>
-            <CommentItem
-              c={r}
-              currentUserId={currentUserId}
-              loggedIn={loggedIn}
-              onDeleted={onDeleted}
-              onLikeChanged={onLikeChanged}
-              isReply
+            <Heart
+              size={13}
+              fill={liked ? '#e0245e' : 'none'}
+              strokeWidth={liked ? 0 : 2}
             />
+            <span>{likeCount > 0 ? likeCount : t('赞')}</span>
+          </button>
+          {!isReply && (
+            <button
+              className='skp-comment-action'
+              onClick={() => onReply?.(c)}
+              title={t('回复')}
+            >
+              <Reply size={13} />
+              <span>{t('回复')}</span>
+            </button>
+          )}
+          {loggedIn && c.user_id !== currentUserId && (
+            <button
+              className='skp-comment-action'
+              onClick={report}
+              title={t('举报')}
+            >
+              <Flag size={12} />
+            </button>
+          )}
+          {canDelete && (
+            <button
+              className='skp-comment-action danger'
+              onClick={remove}
+              title={t('删除')}
+            >
+              <Trash2 size={12} />
+            </button>
+          )}
+        </div>
+
+        {!isReply && replies && replies.length > 0 && (
+          <div className='skp-comment-replies'>
+            {replies.map((r) => (
+              <CommentItem
+                key={r.id}
+                c={r}
+                currentUserId={currentUserId}
+                loggedIn={loggedIn}
+                onDeleted={onDeleted}
+                onLikeChanged={onLikeChanged}
+                isReply
+              />
+            ))}
           </div>
-        ))}
+        )}
+      </div>
     </div>
   );
 }
@@ -571,9 +516,6 @@ function CommentForm({ slug, replyTo, onCancelReply, onPosted }) {
   const { t } = useTranslation();
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
-  // Sensitive-word hits returned by the backend on the last rejected
-  // submit. Cleared as soon as the user edits the textarea or switches
-  // reply targets so stale warnings don't follow them around.
   const [sensitiveHits, setSensitiveHits] = useState([]);
   useEffect(() => {
     setText('');
@@ -605,52 +547,18 @@ function CommentForm({ slug, replyTo, onCancelReply, onPosted }) {
       .catch((e) => showError(e?.message))
       .finally(() => setBusy(false));
   };
+
   return (
-    <div
-      style={{
-        padding: 14,
-        background: 'var(--surface)',
-        border: replyTo
-          ? '1px solid rgba(0,114,255,0.4)'
-          : '1px solid var(--border-default)',
-        borderRadius: 10,
-        marginBottom: 14,
-      }}
-    >
+    <div className={'skp-comment-form' + (replyTo ? ' replying' : '')}>
       {replyTo && (
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '4px 10px',
-            marginBottom: 10,
-            background: 'rgba(0,114,255,0.08)',
-            color: '#0072ff',
-            borderRadius: 999,
-            fontSize: 12,
-            fontWeight: 500,
-          }}
-        >
-          <Reply size={12} />
-          {t('回复 @')}{replyTo.user_name || `User ${replyTo.user_id}`}
-          <button
-            onClick={onCancelReply}
-            title={t('取消回复')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              background: 'transparent',
-              border: 0,
-              color: '#0072ff',
-              cursor: 'pointer',
-              padding: 0,
-              marginLeft: 2,
-            }}
-          >
+        <span className='skp-reply-chip'>
+          <Reply size={11} />
+          {t('回复 @')}
+          {replyTo.user_name || `User ${replyTo.user_id}`}
+          <button onClick={onCancelReply} title={t('取消回复')}>
             <XIcon size={12} />
           </button>
-        </div>
+        </span>
       )}
       <textarea
         value={text}
@@ -667,69 +575,26 @@ function CommentForm({ slug, replyTo, onCancelReply, onPosted }) {
         }
         rows={3}
         maxLength={2000}
-        style={{
-          width: '100%',
-          padding: 10,
-          borderRadius: 8,
-          border:
-            sensitiveHits.length > 0
-              ? '1px solid #ef4444'
-              : '1px solid var(--border-default)',
-          background: 'var(--bg-base)',
-          fontSize: 13.5,
-          fontFamily: 'inherit',
-          resize: 'vertical',
-        }}
+        className={
+          'skp-comment-textarea' +
+          (sensitiveHits.length > 0 ? ' error' : '')
+        }
       />
       {sensitiveHits.length > 0 && (
-        <div
-          style={{
-            marginTop: 6,
-            padding: '6px 10px',
-            background: 'rgba(239,68,68,0.08)',
-            border: '1px solid rgba(239,68,68,0.3)',
-            borderRadius: 6,
-            color: '#b91c1c',
-            fontSize: 12,
-          }}
-        >
-          {t('包含敏感词：{{words}},请修改后重试。', {
+        <div className='skp-sensitive-warn'>
+          {t('包含敏感词:{{words}},请修改后重试。', {
             words: sensitiveHits.join('、'),
           })}
         </div>
       )}
-      <div
-        style={{
-          marginTop: 8,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>
-          {text.length}/2000
-        </span>
+      <div className='skp-comment-form-actions'>
+        <span className='skp-char-count'>{text.length}/2000</span>
         <button
+          className='skp-submit-btn'
           onClick={submit}
           disabled={busy || !text.trim()}
-          style={{
-            padding: '7px 16px',
-            borderRadius: 8,
-            border: 0,
-            color: '#fff',
-            background:
-              busy || !text.trim()
-                ? 'var(--text-muted)'
-                : 'linear-gradient(135deg,#0072ff,#00c6ff)',
-            cursor: busy || !text.trim() ? 'not-allowed' : 'pointer',
-            fontSize: 13,
-            fontWeight: 600,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
         >
-          <Send size={13} />{' '}
+          <Send size={13} />
           {busy
             ? t('提交中...')
             : replyTo
@@ -741,48 +606,24 @@ function CommentForm({ slug, replyTo, onCancelReply, onPosted }) {
   );
 }
 
-// Main exported section. Loads ratings + comments lazily after the
-// article is rendered so the page first-paint isn't blocked.
+// Main export — drives the bottom-of-detail social UI.
 export default function DetailSocial({ slug, onSkillRefreshed }) {
   const { t } = useTranslation();
   const userId = getUserIdFromLocalStorage();
   const loggedIn = userId > 0;
-  const [tab, setTab] = useState('rating'); // 'rating' | 'comments'
 
-  const [summary, setSummary] = useState(null); // { average, count, usability, ..., my_rating }
+  const [summary, setSummary] = useState(null);
   const [comments, setComments] = useState([]);
   const [loadingSummary, setLoadingSummary] = useState(true);
   const [loadingComments, setLoadingComments] = useState(true);
-  // replyTo: which top-level comment the form is currently aimed at,
-  // or null for a fresh top-level comment.
   const [replyTo, setReplyTo] = useState(null);
-
-  // Build a one-level tree: top-level comments (newest first) and their
-  // replies (oldest first under each parent). Done in JS so the API can
-  // keep returning a flat list.
-  const commentTree = React.useMemo(() => {
-    const replies = {};
-    const tops = [];
-    for (const c of comments) {
-      if (c.parent_id && c.parent_id > 0) {
-        if (!replies[c.parent_id]) replies[c.parent_id] = [];
-        replies[c.parent_id].push(c);
-      } else {
-        tops.push(c);
-      }
-    }
-    tops.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
-    Object.values(replies).forEach((arr) =>
-      arr.sort((a, b) => (a.created_at || 0) - (b.created_at || 0)),
-    );
-    return { tops, replies };
-  }, [comments]);
+  const [showRateForm, setShowRateForm] = useState(false);
+  // 'recent' | 'popular' | 'verified-only'
+  const [sortMode, setSortMode] = useState('recent');
 
   const loadSummary = () => {
     setLoadingSummary(true);
-    API.get(
-      `/api/skill-plaza/skills/${encodeURIComponent(slug)}/ratings`,
-    )
+    API.get(`/api/skill-plaza/skills/${encodeURIComponent(slug)}/ratings`)
       .then((res) => {
         if (res.data?.success) setSummary(res.data.data);
       })
@@ -807,20 +648,47 @@ export default function DetailSocial({ slug, onSkillRefreshed }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
+  // Build one-level tree + apply sort/filter.
+  const commentTree = useMemo(() => {
+    const replies = {};
+    let tops = [];
+    for (const c of comments) {
+      if (c.parent_id && c.parent_id > 0) {
+        if (!replies[c.parent_id]) replies[c.parent_id] = [];
+        replies[c.parent_id].push(c);
+      } else {
+        tops.push(c);
+      }
+    }
+    if (sortMode === 'verified-only') {
+      tops = tops.filter((c) => c.verified_used);
+    }
+    if (sortMode === 'popular') {
+      tops.sort(
+        (a, b) =>
+          (b.like_count || 0) - (a.like_count || 0) ||
+          (b.created_at || 0) - (a.created_at || 0),
+      );
+    } else {
+      tops.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+    }
+    Object.values(replies).forEach((arr) =>
+      arr.sort((a, b) => (a.created_at || 0) - (b.created_at || 0)),
+    );
+    return { tops, replies };
+  }, [comments, sortMode]);
+
   const onRatingSubmitted = (data) => {
-    // refresh summary + parent skill aggregates
     loadSummary();
+    setShowRateForm(false);
     if (data?.skill) onSkillRefreshed?.(data.skill);
   };
   const onCommentPosted = (newComment) => {
     setComments((prev) => [newComment, ...prev]);
     setReplyTo(null);
-    // parent comment_count is on Skill — re-fetch detail to keep sidebar fresh
     onSkillRefreshed?.(null);
   };
   const onCommentDeleted = (id) => {
-    // Remove the comment AND any of its replies, so the thread doesn't
-    // leave orphaned children pointing at a deleted parent.
     setComments((prev) =>
       prev.filter((c) => c.id !== id && c.parent_id !== id),
     );
@@ -835,181 +703,267 @@ export default function DetailSocial({ slug, onSkillRefreshed }) {
     );
   };
 
+  // Build the 5/4/3/2/1 distribution. Backend may return summary.distribution
+  // as {5: n, 4: n, ...}; fall back to all-zeros if absent so the UI is still
+  // structurally complete.
+  const distribution = useMemo(() => {
+    const out = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    const src = summary?.distribution;
+    if (src && typeof src === 'object') {
+      for (let k = 1; k <= 5; k++) out[k] = Number(src[k] || src[String(k)] || 0);
+    }
+    return out;
+  }, [summary]);
+  const totalRatings = useMemo(
+    () => Object.values(distribution).reduce((a, b) => a + b, 0),
+    [distribution],
+  );
+  const ratingCount = summary?.count || totalRatings || 0;
+  const ratingAverage = summary?.average || 0;
+
+  // Dim breakdown rows — labels + short descriptions per design spec.
+  const dimRows = [
+    {
+      key: 'usability',
+      label: t('易用性'),
+      desc: t('安装、上手、文档查阅的整体顺滑度'),
+    },
+    {
+      key: 'practicality',
+      label: t('实用性'),
+      desc: t('是否能解决真实工作中的问题'),
+    },
+    {
+      key: 'clarity',
+      label: t('文档清晰度'),
+      desc: t('README / SKILL.md 的完整与可读性'),
+    },
+    {
+      key: 'stability',
+      label: t('结果稳定性'),
+      desc: t('相同输入产出的可重现程度'),
+    },
+    {
+      key: 'innovation',
+      label: t('创新性'),
+      desc: t('解决问题的方法是否有亮点'),
+    },
+  ];
+
   return (
-    <div
-      style={{
-        marginTop: 40,
-        paddingTop: 24,
-        borderTop: '1px solid var(--border-default)',
-      }}
-    >
-      {/* Tab strip */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 6,
-          borderBottom: '1px solid var(--border-default)',
-          marginBottom: 18,
-        }}
-      >
-        {[
-          {
-            id: 'rating',
-            label: `${t('评分')} (${summary?.count || 0})`,
-          },
-          {
-            id: 'comments',
-            label: `${t('评论')} (${comments.length})`,
-          },
-        ].map((t2) => (
-          <button
-            key={t2.id}
-            onClick={() => setTab(t2.id)}
-            style={{
-              padding: '10px 14px',
-              border: 0,
-              background: 'transparent',
-              cursor: 'pointer',
-              fontSize: 14,
-              fontWeight: tab === t2.id ? 600 : 500,
-              color: tab === t2.id ? '#0072ff' : 'var(--text-secondary)',
-              borderBottom:
-                tab === t2.id ? '2px solid #0072ff' : '2px solid transparent',
-              marginBottom: -1,
-            }}
-          >
-            {t2.label}
-          </button>
-        ))}
-      </div>
-
-      {tab === 'rating' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
-          {/* Radar + average */}
-          <div
-            style={{
-              padding: 18,
-              background: 'var(--surface)',
-              border: '1px solid var(--border-default)',
-              borderRadius: 12,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
-          >
-            <div
-              style={{
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'baseline',
-                marginBottom: 8,
-              }}
-            >
-              <strong style={{ fontSize: 14 }}>{t('多维评分')}</strong>
-              <span
-                style={{ color: 'var(--text-muted)', fontSize: 12 }}
-              >
-                {summary?.count || 0} {t('人评分')}
-              </span>
-            </div>
-            <RatingRadar
-              values={{
-                usability: summary?.usability || 0,
-                practicality: summary?.practicality || 0,
-                clarity: summary?.clarity || 0,
-                stability: summary?.stability || 0,
-                innovation: summary?.innovation || 0,
-              }}
-            />
-            <div
-              style={{
-                marginTop: 4,
-                display: 'inline-flex',
-                gap: 6,
-                alignItems: 'center',
-              }}
-            >
-              <Star size={18} color='#f59e0b' fill='#f59e0b' />
-              <span style={{ fontSize: 22, fontWeight: 700 }}>
-                {(summary?.average || 0).toFixed(1)}
-              </span>
-              <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-                / 5.0
-              </span>
-            </div>
-          </div>
-
-          {/* Rating form */}
+    <div className='skp-social'>
+      {/* ──────────── Multi-dim ratings ──────────── */}
+      <section className='skp-social-section'>
+        <div className='skp-section-h'>
           <div>
-            {loadingSummary ? (
-              <div
-                style={{
-                  padding: 30,
-                  textAlign: 'center',
-                  color: 'var(--text-muted)',
-                  fontSize: 13,
-                }}
+            <h2 className='skp-section-title'>{t('多维度评分')}</h2>
+            <p className='skp-section-sub'>
+              {ratingCount > 0
+                ? t('由 {{n}} 位用户基于真实使用经验提供', {
+                    n: ratingCount,
+                  })
+                : t('还没有人评分,来当第一个吧')}
+            </p>
+          </div>
+          <div className='skp-section-tools'>
+            {loggedIn ? (
+              <button
+                className='skp-rate-cta'
+                onClick={() => setShowRateForm((v) => !v)}
               >
-                {t('加载中...')}
-              </div>
-            ) : loggedIn ? (
-              <RatingForm
-                slug={slug}
-                initial={summary?.my_rating}
-                onSubmitted={onRatingSubmitted}
-              />
+                <Edit3 size={13} />
+                {summary?.my_rating
+                  ? t('更新评分')
+                  : showRateForm
+                    ? t('收起表单')
+                    : t('我要评分')}
+              </button>
             ) : (
-              <LoginPrompt
-                message={t('登录后即可给这个 Skill 打分')}
-              />
+              <Link to='/login' className='skp-rate-cta'>
+                <Edit3 size={13} />
+                {t('登录后评分')}
+              </Link>
             )}
           </div>
         </div>
-      )}
 
-      {tab === 'comments' && (
-        <div>
-          {loggedIn ? (
-            <CommentForm
-              slug={slug}
-              replyTo={replyTo}
-              onCancelReply={() => setReplyTo(null)}
-              onPosted={onCommentPosted}
-            />
-          ) : (
-            <LoginPrompt message={t('登录后即可发表评论')} />
-          )}
-          {loadingComments ? (
-            <div
-              style={{
-                padding: 30,
-                textAlign: 'center',
-                color: 'var(--text-muted)',
-                fontSize: 13,
-              }}
-            >
-              {t('加载中...')}
+        {loadingSummary ? (
+          <div className='skp-empty-state'>{t('加载中...')}</div>
+        ) : (
+          <div className='skp-rating-card'>
+            {/* Left: big average + 5-star distribution */}
+            <div className='skp-rating-summary'>
+              <div className='skp-rating-big'>
+                <span className='num'>{ratingAverage.toFixed(1)}</span>
+                <span className='max'>/ 5.0</span>
+              </div>
+              <StaticStars value={ratingAverage} size={16} />
+              <div className='skp-rating-count'>
+                {ratingCount > 0
+                  ? t('共 {{n}} 人评分', { n: ratingCount })
+                  : t('暂无评分')}
+              </div>
+              <div className='skp-rating-dist'>
+                {[5, 4, 3, 2, 1].map((star) => {
+                  const n = distribution[star] || 0;
+                  const pct =
+                    totalRatings > 0 ? (n / totalRatings) * 100 : 0;
+                  return (
+                    <div key={star} className='skp-dist-row'>
+                      <span className='star-label'>
+                        {star}
+                        <Star size={10} color='#f59e0b' fill='#f59e0b' />
+                      </span>
+                      <span
+                        className='skp-dist-bar'
+                        role='progressbar'
+                        aria-valuenow={pct}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                      >
+                        <span
+                          className='skp-dist-fill'
+                          style={{ width: `${pct}%` }}
+                        />
+                      </span>
+                      <span className='skp-dist-count'>{n}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          ) : commentTree.tops.length === 0 ? (
-            <div
-              style={{
-                padding: 30,
-                textAlign: 'center',
-                color: 'var(--text-muted)',
-                fontSize: 13,
-                border: '1px dashed var(--border-default)',
-                borderRadius: 10,
-              }}
-            >
-              <MessageSquare
-                size={18}
-                style={{ opacity: 0.5, marginBottom: 6 }}
+
+            {/* Right: radar + 5-dim breakdown */}
+            <div className='skp-rating-radar-row'>
+              <RatingRadar
+                values={{
+                  usability: summary?.usability || 0,
+                  practicality: summary?.practicality || 0,
+                  clarity: summary?.clarity || 0,
+                  stability: summary?.stability || 0,
+                  innovation: summary?.innovation || 0,
+                }}
               />
-              <div>{t('还没有评论。来抢沙发吧。')}</div>
+              <div className='skp-dim-list'>
+                {dimRows.map((row) => {
+                  const v = Number(summary?.[row.key] || 0);
+                  const pct = Math.max(0, Math.min(100, (v / 5) * 100));
+                  return (
+                    <div key={row.key} className='skp-dim-row'>
+                      <div style={{ minWidth: 0 }}>
+                        <div className='label'>{row.label}</div>
+                        <div className='desc'>{row.desc}</div>
+                      </div>
+                      <span
+                        className='skp-dim-bar'
+                        role='progressbar'
+                        aria-valuenow={pct}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                      >
+                        <span
+                          className='skp-dim-fill'
+                          style={{ width: `${pct}%` }}
+                        />
+                      </span>
+                      <span className='score'>
+                        <Star
+                          size={12}
+                          color='#f59e0b'
+                          fill='#f59e0b'
+                        />
+                        {v.toFixed(1)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          ) : (
-            commentTree.tops.map((c) => (
+          </div>
+        )}
+
+        {showRateForm && loggedIn && (
+          <RatingDrawer
+            slug={slug}
+            initial={summary?.my_rating}
+            onSubmitted={onRatingSubmitted}
+            onCancel={() => setShowRateForm(false)}
+          />
+        )}
+      </section>
+
+      {/* ──────────── Comments ──────────── */}
+      <section className='skp-social-section'>
+        <div className='skp-section-h'>
+          <div>
+            <h2 className='skp-section-title'>
+              {t('评论')} · {comments.length}
+            </h2>
+            <p className='skp-section-sub'>
+              {t('讨论使用体验、踩坑和建议')}
+            </p>
+          </div>
+          <div className='skp-section-tools'>
+            <button
+              className={
+                'skp-sort-pill' + (sortMode === 'recent' ? ' active' : '')
+              }
+              onClick={() => setSortMode('recent')}
+            >
+              {t('按时间')}
+            </button>
+            <button
+              className={
+                'skp-sort-pill' + (sortMode === 'popular' ? ' active' : '')
+              }
+              onClick={() => setSortMode('popular')}
+            >
+              {t('按热度')}
+            </button>
+            <button
+              className={
+                'skp-sort-pill' +
+                (sortMode === 'verified-only' ? ' active' : '')
+              }
+              onClick={() => setSortMode('verified-only')}
+            >
+              {t('只看已使用')}
+            </button>
+          </div>
+        </div>
+
+        {loggedIn ? (
+          <CommentForm
+            slug={slug}
+            replyTo={replyTo}
+            onCancelReply={() => setReplyTo(null)}
+            onPosted={onCommentPosted}
+          />
+        ) : (
+          <div className='skp-login-prompt'>
+            <div className='skp-login-prompt-text'>
+              {t('登录后即可发表评论')}
+            </div>
+            <Link to='/login' className='skp-submit-btn'>
+              {t('去登录')}
+            </Link>
+          </div>
+        )}
+
+        {loadingComments ? (
+          <div className='skp-empty-state'>{t('加载中...')}</div>
+        ) : commentTree.tops.length === 0 ? (
+          <div className='skp-empty-state'>
+            <MessageSquare size={20} className='icon' />
+            <div>
+              {sortMode === 'verified-only'
+                ? t('暂无已使用用户的评论')
+                : t('还没有评论。来抢沙发吧。')}
+            </div>
+          </div>
+        ) : (
+          <div className='skp-comment-list'>
+            {commentTree.tops.map((c) => (
               <CommentItem
                 key={c.id}
                 c={c}
@@ -1020,16 +974,16 @@ export default function DetailSocial({ slug, onSkillRefreshed }) {
                 onReply={(target) => setReplyTo(target)}
                 onLikeChanged={onCommentLikeChanged}
               />
-            ))
-          )}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
 
 // FavoriteButton — used by the sidebar. Toggles favorite state on click,
-// shows the count, falls back to a login prompt on auth failures.
+// surfaces the current count.
 export function FavoriteButton({ slug, onCountChange }) {
   const { t } = useTranslation();
   const userId = getUserIdFromLocalStorage();
@@ -1083,45 +1037,8 @@ export function FavoriteButton({ slug, onCountChange }) {
         cursor: busy ? 'wait' : 'pointer',
       }}
     >
-      <Bookmark
-        size={12}
-        fill={favored ? '#0072ff' : 'none'}
-      />
+      <Bookmark size={12} fill={favored ? '#0072ff' : 'none'} />
       {favored ? t('已收藏') : t('收藏')}
     </button>
-  );
-}
-
-function LoginPrompt({ message }) {
-  const { t } = useTranslation();
-  return (
-    <div
-      style={{
-        padding: 24,
-        textAlign: 'center',
-        color: 'var(--text-muted)',
-        fontSize: 13,
-        background: 'var(--bg-base)',
-        border: '1px dashed var(--border-default)',
-        borderRadius: 10,
-      }}
-    >
-      <div style={{ marginBottom: 8 }}>{message}</div>
-      <Link
-        to='/login'
-        style={{
-          display: 'inline-block',
-          padding: '7px 16px',
-          borderRadius: 8,
-          color: '#fff',
-          background: 'linear-gradient(135deg,#0072ff,#00c6ff)',
-          fontSize: 13,
-          fontWeight: 600,
-          textDecoration: 'none',
-        }}
-      >
-        {t('去登录')}
-      </Link>
-    </div>
   );
 }

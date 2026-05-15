@@ -263,6 +263,348 @@ export const SKILL_PLAZA_STYLES = `
     text-align: right; word-break: break-all;
   }
 
+  /* Social section (ratings + comments) -------------------------------- */
+  /* Sectioned vertical stack (replaces the old tab strip). Layout      */
+  /* follows the design's .section-h + .card pattern; visuals borrow    */
+  /* from modern review patterns: J-shaped distribution bars, dim       */
+  /* breakdown rows, indented reply rail.                                */
+  .skp-social { margin-top: 40px; }
+  .skp-social-section + .skp-social-section { margin-top: 28px; }
+
+  .skp-section-h {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin: 0 0 14px 0; gap: 16px; flex-wrap: wrap;
+  }
+  .skp-section-h .skp-section-title {
+    font-size: 19px; font-weight: 600; color: var(--text-primary);
+    margin: 0; letter-spacing: -0.2px;
+  }
+  .skp-section-h .skp-section-sub {
+    color: var(--text-muted); font-size: 12.5px;
+    margin: 4px 0 0 0;
+  }
+  .skp-section-h .skp-section-tools {
+    display: inline-flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+
+  /* Rating overview card — left: average + distribution, right: radar  */
+  /* + 5-dim breakdown rows.                                             */
+  .skp-rating-card {
+    background: var(--surface); border: 1px solid var(--border-default);
+    border-radius: 14px; padding: 24px;
+    display: grid; gap: 28px;
+    grid-template-columns: 280px 1fr;
+    align-items: start;
+  }
+  .skp-rating-summary {
+    display: flex; flex-direction: column; gap: 14px; min-width: 0;
+  }
+  .skp-rating-big {
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .skp-rating-big .num {
+    font-size: 48px; font-weight: 700; color: var(--text-primary);
+    line-height: 1; letter-spacing: -1.2px;
+  }
+  .skp-rating-big .max {
+    font-size: 18px; color: var(--text-muted); font-weight: 500;
+  }
+  .skp-rating-stars { display: inline-flex; gap: 2px; }
+  .skp-rating-count { font-size: 12.5px; color: var(--text-muted); }
+
+  /* 5/4/3/2/1 star distribution — J-shaped histogram. */
+  .skp-rating-dist {
+    display: flex; flex-direction: column; gap: 7px;
+    margin-top: 4px;
+  }
+  .skp-dist-row {
+    display: grid; grid-template-columns: 22px 1fr 30px;
+    gap: 10px; align-items: center;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .skp-dist-row .star-label {
+    display: inline-flex; align-items: center; gap: 3px;
+    color: var(--text-secondary); font-weight: 500;
+  }
+  .skp-dist-bar {
+    height: 7px; background: var(--bg-base); border-radius: 999px;
+    overflow: hidden;
+  }
+  .skp-dist-fill {
+    height: 100%; background: linear-gradient(90deg,#fbbf24,#f59e0b);
+    border-radius: 999px; transition: width .4s ease;
+  }
+  .skp-dist-count { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Radar + dimension breakdown (right column of rating card). */
+  .skp-rating-radar-row {
+    display: grid; grid-template-columns: 240px 1fr;
+    gap: 24px; align-items: center; min-width: 0;
+  }
+  .skp-dim-list {
+    display: flex; flex-direction: column; gap: 14px; min-width: 0;
+  }
+  .skp-dim-row {
+    display: grid; grid-template-columns: minmax(0,1.2fr) minmax(120px,1fr) 44px;
+    gap: 14px; align-items: center;
+  }
+  .skp-dim-row .label {
+    font-size: 13px; font-weight: 500; color: var(--text-primary);
+    line-height: 1.4;
+  }
+  .skp-dim-row .desc {
+    font-size: 11.5px; color: var(--text-muted); margin-top: 2px;
+    line-height: 1.4;
+  }
+  .skp-dim-bar {
+    height: 7px; background: var(--bg-base); border-radius: 999px;
+    overflow: hidden; min-width: 0;
+  }
+  .skp-dim-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg,#0072ff,#00c6ff);
+    transition: width .4s ease;
+  }
+  .skp-dim-row .score {
+    display: inline-flex; align-items: center; gap: 4px;
+    justify-content: flex-end; font-size: 13px; font-weight: 600;
+    color: var(--text-primary); font-variant-numeric: tabular-nums;
+  }
+
+  /* Sort filter pills — used as .section-tools children. */
+  .skp-sort-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 28px; padding: 0 12px; border-radius: 999px;
+    border: 1px solid var(--border-default);
+    background: var(--surface); color: var(--text-secondary);
+    font-size: 12.5px; cursor: pointer;
+    transition: all .15s;
+  }
+  .skp-sort-pill:hover { color: #0072ff; border-color: #0072ff; }
+  .skp-sort-pill.active {
+    background: rgba(0,114,255,0.08); color: #0072ff;
+    border-color: rgba(0,114,255,0.4); font-weight: 500;
+  }
+
+  /* Rating form (toggled drawer). */
+  .skp-rate-drawer {
+    background: var(--surface); border: 1px solid var(--border-default);
+    border-radius: 14px; padding: 22px;
+    margin-top: 16px;
+    box-shadow: 0 6px 18px rgba(0,114,255,0.06);
+    animation: skp-fade-in .25s ease;
+  }
+  @keyframes skp-fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .skp-rate-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 16px; margin-bottom: 16px;
+  }
+  .skp-rate-grid .skp-rate-cell {
+    display: flex; flex-direction: column; gap: 6px;
+    min-width: 0;
+  }
+  .skp-rate-cell .skp-rate-label {
+    font-size: 12.5px; color: var(--text-secondary); font-weight: 500;
+  }
+  .skp-rate-stars { display: inline-flex; gap: 3px; }
+  .skp-rate-stars button {
+    width: 28px; height: 28px; border-radius: 6px; padding: 0;
+    background: var(--bg-base);
+    border: 1px solid var(--border-default);
+    color: var(--text-muted); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform .12s, background .12s, color .12s;
+  }
+  .skp-rate-stars button:hover { transform: scale(1.08); }
+  .skp-rate-stars button.on {
+    background: linear-gradient(135deg,#fbbf24,#f59e0b);
+    border-color: transparent; color: #fff;
+  }
+
+  /* Comment list ------------------------------------------------------- */
+  .skp-comment-form {
+    background: var(--surface); border: 1px solid var(--border-default);
+    border-radius: 12px; padding: 16px; margin-bottom: 14px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .skp-comment-form.replying {
+    border-color: rgba(0,114,255,0.4);
+    box-shadow: 0 0 0 3px rgba(0,114,255,0.06);
+  }
+  .skp-reply-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; margin-bottom: 10px;
+    background: rgba(0,114,255,0.08); color: #0072ff;
+    border-radius: 999px; font-size: 12px; font-weight: 500;
+  }
+  .skp-reply-chip button {
+    background: transparent; border: 0; color: inherit;
+    padding: 0; cursor: pointer;
+    display: inline-flex; align-items: center;
+  }
+  .skp-comment-textarea {
+    width: 100%; padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-default);
+    background: var(--bg-base); color: var(--text-primary);
+    font-size: 14px; line-height: 1.7;
+    font-family: inherit; resize: vertical;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .skp-comment-textarea:focus {
+    outline: none;
+    border-color: #0072ff;
+    box-shadow: 0 0 0 3px rgba(0,114,255,0.10);
+  }
+  .skp-comment-textarea.error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.08);
+  }
+  .skp-comment-form-actions {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 10px; gap: 12px; flex-wrap: wrap;
+  }
+  .skp-char-count { font-size: 12px; color: var(--text-muted); }
+  .skp-submit-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 18px; border-radius: 8px; border: 0;
+    color: #fff; font-size: 13px; font-weight: 600;
+    background: linear-gradient(135deg,#0072ff,#00c6ff);
+    cursor: pointer; transition: filter .15s, box-shadow .15s;
+    box-shadow: 0 4px 12px rgba(0,114,255,0.22);
+  }
+  .skp-submit-btn:hover { filter: brightness(1.05); box-shadow: 0 6px 18px rgba(0,114,255,0.30); }
+  .skp-submit-btn:disabled {
+    background: var(--bg-base); color: var(--text-muted);
+    cursor: not-allowed; box-shadow: none;
+  }
+  .skp-sensitive-warn {
+    margin-top: 8px; padding: 8px 12px;
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 8px;
+    color: #b91c1c; font-size: 12px;
+  }
+
+  .skp-comment-list {
+    display: flex; flex-direction: column;
+  }
+  .skp-comment {
+    display: flex; gap: 12px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border-default);
+  }
+  .skp-comment:first-child { padding-top: 8px; }
+  .skp-comment:last-child  { border-bottom: 0; padding-bottom: 8px; }
+  .skp-comment-replies {
+    margin-top: 12px; margin-left: -8px;
+    padding-left: 16px;
+    border-left: 2px solid var(--border-default);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .skp-comment.is-reply { padding: 10px 0; border-bottom: 0; }
+
+  .skp-comment-avatar {
+    flex-shrink: 0;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg,#0072ff,#00c6ff);
+    color: #fff; display: inline-flex;
+    align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600;
+  }
+  .skp-comment.is-reply .skp-comment-avatar { width: 28px; height: 28px; font-size: 12px; }
+
+  .skp-comment-body { flex: 1; min-width: 0; }
+  .skp-comment-head {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap; margin-bottom: 6px;
+  }
+  .skp-comment-head .name {
+    font-weight: 600; color: var(--text-primary); font-size: 13.5px;
+  }
+  .skp-verified-pill {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 1px 7px; border-radius: 4px;
+    background: rgba(22,163,74,0.10); color: #16a34a;
+    font-size: 11px; font-weight: 500;
+  }
+  .skp-comment-time {
+    font-size: 12px; color: var(--text-muted);
+    margin-left: auto;
+  }
+  .skp-comment-text {
+    color: var(--text-primary); font-size: 14px; line-height: 1.7;
+    white-space: pre-wrap; word-wrap: break-word;
+  }
+  .skp-comment-actions {
+    display: flex; align-items: center; gap: 4px;
+    margin-top: 10px; margin-left: -8px;
+  }
+  .skp-comment-action {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 10px; border-radius: 6px; border: 0;
+    background: transparent; color: var(--text-muted);
+    font-size: 12.5px; cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .skp-comment-action:hover {
+    background: var(--surface-hover); color: var(--text-primary);
+  }
+  .skp-comment-action.liked { color: #e0245e; }
+  .skp-comment-action.liked:hover { background: rgba(224,36,94,0.08); }
+  .skp-comment-action.danger:hover { color: #dc2626; background: rgba(220,38,38,0.06); }
+
+  .skp-empty-state {
+    padding: 40px 20px; text-align: center;
+    color: var(--text-muted); font-size: 13.5px;
+    border: 1px dashed var(--border-default);
+    border-radius: 12px;
+  }
+  .skp-empty-state .icon {
+    opacity: 0.5; margin-bottom: 8px;
+  }
+
+  .skp-login-prompt {
+    padding: 22px; text-align: center;
+    background: var(--bg-base);
+    border: 1px dashed var(--border-default);
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+  .skp-login-prompt-text {
+    color: var(--text-secondary); font-size: 13.5px;
+    margin-bottom: 12px;
+  }
+
+  /* Rate-CTA button — pairs with section header. */
+  .skp-rate-cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 8px; border: 0;
+    color: #fff; font-size: 13px; font-weight: 600;
+    background: linear-gradient(135deg,#0072ff,#00c6ff);
+    cursor: pointer; transition: filter .15s, box-shadow .15s;
+    box-shadow: 0 4px 12px rgba(0,114,255,0.22);
+  }
+  .skp-rate-cta:hover { filter: brightness(1.05); box-shadow: 0 6px 18px rgba(0,114,255,0.30); }
+  .skp-rate-cta.ghost {
+    background: var(--surface); color: var(--text-secondary);
+    border: 1px solid var(--border-default); box-shadow: none;
+  }
+  .skp-rate-cta.ghost:hover {
+    color: #0072ff; border-color: #0072ff;
+    box-shadow: 0 0 0 3px rgba(0,114,255,0.08);
+  }
+
+  /* Social-section responsive. */
+  @media (max-width: 900px) {
+    .skp-rating-card { grid-template-columns: 1fr; gap: 22px; }
+    .skp-rating-radar-row { grid-template-columns: 1fr; }
+    .skp-rate-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
   /* Import + Review pages ---------------------------------------------- */
   .skp-stepper { display: flex; gap: 8px; padding: 4px 0 22px; flex-wrap: wrap; }
   .skp-step {

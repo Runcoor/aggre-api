@@ -182,25 +182,6 @@ export const SKILL_PLAZA_STYLES = `
     box-shadow: 0 1px 2px rgba(11,17,32,0.04), 0 1px 1px rgba(11,17,32,0.03);
   }
 
-  .skp-github-source {
-    display: flex; align-items: center; gap: 14px;
-    padding: 14px 18px; border-radius: 10px;
-    background: var(--bg-base); border: 1px solid var(--border-default);
-    margin: 16px 0 20px;
-  }
-  .skp-github-source .repo-name {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 13.5px; color: var(--text-primary); font-weight: 600;
-  }
-  .skp-github-source .repo-meta {
-    font-size: 12px; color: var(--text-muted); margin-top: 2px;
-    display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
-  }
-  .skp-github-source .repo-meta code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    background: var(--surface); padding: 1px 6px; border-radius: 4px;
-    color: var(--text-secondary);
-  }
 
   /* TOC ---------------------------------------------------------------- */
   .skp-toc { position: sticky; top: 84px; }
@@ -680,7 +661,7 @@ export const SKILL_PLAZA_STYLES = `
 // values (see model/skill_plaza.go).
 export const SOURCE_BADGE_COLORS = {
   github: {
-    label: 'GitHub 导入',
+    label: '精选教程',
     bg: 'rgba(30,58,138,0.10)',
     color: '#1e3a8a',
     borderColor: 'rgba(30,58,138,0.25)',

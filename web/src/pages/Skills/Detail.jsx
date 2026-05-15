@@ -26,15 +26,13 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
-  ExternalLink,
-  Github,
   Star,
   Share2,
   Eye,
   Calendar,
 } from 'lucide-react';
 import { API, showError, showSuccess } from '../../helpers';
-import { SKILL_PLAZA_STYLES, SourceBadge, StatusBadge } from './styles';
+import { SKILL_PLAZA_STYLES, StatusBadge } from './styles';
 import DetailSocial, { FavoriteButton } from './DetailSocial';
 import { DocumentMarkdownRenderer } from '../../components/common/markdown/DocumentMarkdownRenderer';
 
@@ -223,7 +221,6 @@ const SkillsDetail = () => {
           {/* Article header — strict design match: badges row → title → meta */}
           <header className='skp-detail-header'>
             <div className='skp-detail-badges'>
-              <SourceBadge type={skill.source_type} />
               <StatusBadge status={skill.status || 'published'} />
               {tags.slice(0, 6).map((tg) => (
                 <span key={tg} className='skp-mini-tag'>
@@ -317,58 +314,6 @@ const SkillsDetail = () => {
             </div>
           </header>
 
-          {/* GitHub source */}
-          {skill.github_url && (
-            <div className='skp-github-source'>
-              <Github size={22} color='var(--text-primary)' />
-              <div style={{ flex: 1 }}>
-                <div className='repo-name'>
-                  {skill.owner}/{skill.repo_name}
-                </div>
-                <div className='repo-meta'>
-                  {skill.commit_hash && (
-                    <code>{String(skill.commit_hash).slice(0, 8)}</code>
-                  )}
-                  {skill.license && (
-                    <span>
-                      {t('许可证')}:{' '}
-                      <strong style={{ color: 'var(--text-primary)' }}>
-                        {skill.license}
-                      </strong>
-                    </span>
-                  )}
-                  {skill.repo_updated_at > 0 && (
-                    <span>
-                      {t('更新于')}{' '}
-                      {new Date(
-                        skill.repo_updated_at * 1000,
-                      ).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <a
-                href={skill.github_url}
-                target='_blank'
-                rel='noopener noreferrer'
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '8px 14px',
-                  borderRadius: 8,
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border-default)',
-                  color: 'var(--text-primary)',
-                  textDecoration: 'none',
-                  fontSize: 13,
-                }}
-              >
-                {t('在 GitHub 查看')} <ExternalLink size={14} />
-              </a>
-            </div>
-          )}
-
           {/* Three-column layout */}
           <div className='skp-detail-layout'>
             {/* TOC */}
@@ -434,24 +379,11 @@ const SkillsDetail = () => {
               <div className='skp-side-card'>
                 <h4>
                   <span>{t('Skill 信息')}</span>
-                  <SourceBadge type={skill.source_type} />
                 </h4>
                 <div className='kv'>
                   <span>{t('分类')}</span>
                   <strong>{skill.category || '-'}</strong>
                 </div>
-                <div className='kv'>
-                  <span>{t('来源')}</span>
-                  <strong>{skill.source_type}</strong>
-                </div>
-                {skill.commit_hash && (
-                  <div className='kv'>
-                    <span>Commit</span>
-                    <strong style={{ fontFamily: 'monospace' }}>
-                      {String(skill.commit_hash).slice(0, 8)}
-                    </strong>
-                  </div>
-                )}
                 {skill.license && (
                   <div className='kv'>
                     <span>License</span>

@@ -129,6 +129,10 @@ func GetStatus(c *gin.Context) {
 		"skill_plaza_enabled":         operation_setting.IsSkillPlazaEnabled(),
 		"skill_plaza_test_mode":       operation_setting.IsSkillPlazaTestMode(),
 		"skill_plaza_test_mode_users": strings.Join(operation_setting.SkillPlazaTestModeUsers(), ","),
+
+		// Wallet-funded subscription purchase toggle. When false the frontend
+		// must hide the "钱包余额支付" option in the subscription BuyModal.
+		"wallet_pay_enabled": operation_setting.GetPaymentSetting().WalletPayEnabled,
 	}
 
 	// 根据启用状态注入可选内容

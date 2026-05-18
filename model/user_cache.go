@@ -57,6 +57,13 @@ func invalidateUserCache(userId int) error {
 	return common.RedisDelKey(getUserCacheKey(userId))
 }
 
+// InvalidateUserCache exposes invalidateUserCache for callers that update the
+// users table directly inside a transaction (e.g. wallet-funded subscription
+// purchase). The next read repopulates the cache from DB.
+func InvalidateUserCache(userId int) error {
+	return invalidateUserCache(userId)
+}
+
 // updateUserCache updates all user cache fields using hash
 func updateUserCache(user User) error {
 	if !common.RedisEnabled {

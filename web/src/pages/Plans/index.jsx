@@ -17,7 +17,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -63,7 +70,7 @@ function submitEpayForm({ url, params }) {
 
 const CURRENCY_SYMBOL = { USD: '$', CNY: '¥', EUR: '€' };
 const fmtMoney = (amount, currency = 'USD') => {
-  const sym = CURRENCY_SYMBOL[currency] || (currency + ' ');
+  const sym = CURRENCY_SYMBOL[currency] || currency + ' ';
   const n = Number(amount || 0);
   // Tabular for nice alignment in the table; show .00 only when needed.
   const text = Number.isInteger(n) ? n.toString() : n.toFixed(2);
@@ -87,7 +94,8 @@ const fmtDuration = (value, unit, t) => {
 // "starter" so unknown groups still get a renderable card.
 const tierKey = (plan) => {
   const g = (plan?.upgrade_group || '').toLowerCase();
-  if (g.includes('ultra') || g.includes('flagship') || g.includes('旗舰')) return 'ultra';
+  if (g.includes('ultra') || g.includes('flagship') || g.includes('旗舰'))
+    return 'ultra';
   if (g.includes('pro') || g.includes('专业')) return 'pro';
   return 'starter';
 };
@@ -149,7 +157,10 @@ const MagneticWrap = ({ children, strength = 6 }) => {
       ref={ref}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
-      style={{ display: 'inline-block', transition: 'transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1)' }}
+      style={{
+        display: 'inline-block',
+        transition: 'transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1)',
+      }}
     >
       {children}
     </div>
@@ -170,8 +181,12 @@ const PlanCard = ({ index, plan, popular, t, onSubscribe }) => {
     return () => clearTimeout(tm);
   }, [index]);
 
-  const animatedPrice = useCountUp(Number(plan.price_amount || 0), 900, 200 + index * 120);
-  const sym = CURRENCY_SYMBOL[plan.currency] || (plan.currency + ' ');
+  const animatedPrice = useCountUp(
+    Number(plan.price_amount || 0),
+    900,
+    200 + index * 120,
+  );
+  const sym = CURRENCY_SYMBOL[plan.currency] || plan.currency + ' ';
   const displayPrice = Number.isInteger(Number(plan.price_amount))
     ? Math.round(animatedPrice).toString()
     : animatedPrice.toFixed(2);
@@ -183,9 +198,10 @@ const PlanCard = ({ index, plan, popular, t, onSubscribe }) => {
   // Discount % vs. original price (when available) — small "save X%" label
   const original = Number(plan.original_price_amount || 0);
   const current = Number(plan.price_amount || 0);
-  const savePct = original > current && original > 0
-    ? Math.round((1 - current / original) * 100)
-    : 0;
+  const savePct =
+    original > current && original > 0
+      ? Math.round((1 - current / original) * 100)
+      : 0;
 
   return (
     <div
@@ -194,19 +210,23 @@ const PlanCard = ({ index, plan, popular, t, onSubscribe }) => {
       style={{
         position: 'relative',
         background: 'var(--surface)',
-        border: popular ? '1.5px solid rgba(0, 114, 255, 0.45)' : '1px solid var(--border-default)',
+        border: popular
+          ? '1.5px solid rgba(0, 114, 255, 0.45)'
+          : '1px solid var(--border-default)',
         borderRadius: 'var(--radius-xl, 18px)',
         padding: '32px 28px 28px',
         display: 'flex',
         flexDirection: 'column',
         boxShadow: popular
-          ? (hover
-              ? '0 16px 48px rgba(0, 114, 255, 0.22), 0 0 0 1px rgba(0, 114, 255, 0.3) inset'
-              : '0 8px 32px rgba(0, 114, 255, 0.16), 0 0 0 1px rgba(0, 114, 255, 0.18) inset')
-          : (hover
-              ? '0 12px 36px rgba(0, 0, 0, 0.10)'
-              : '0 2px 8px rgba(0, 0, 0, 0.04)'),
-        transform: mounted ? `translateY(${hover ? -6 : 0}px)` : 'translateY(20px)',
+          ? hover
+            ? '0 16px 48px rgba(0, 114, 255, 0.22), 0 0 0 1px rgba(0, 114, 255, 0.3) inset'
+            : '0 8px 32px rgba(0, 114, 255, 0.16), 0 0 0 1px rgba(0, 114, 255, 0.18) inset'
+          : hover
+            ? '0 12px 36px rgba(0, 0, 0, 0.10)'
+            : '0 2px 8px rgba(0, 0, 0, 0.04)',
+        transform: mounted
+          ? `translateY(${hover ? -6 : 0}px)`
+          : 'translateY(20px)',
         opacity: mounted ? 1 : 0,
         transition: 'all 360ms cubic-bezier(0.2, 0.8, 0.2, 1)',
         zIndex: popular ? 2 : 1,
@@ -232,14 +252,24 @@ const PlanCard = ({ index, plan, popular, t, onSubscribe }) => {
         </div>
       )}
 
-      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+        }}
+      >
         {/* Icon */}
         <div
           style={{
             width: 48,
             height: 48,
             borderRadius: 'var(--radius-md)',
-            background: popular ? 'var(--accent-gradient)' : 'var(--surface-hover)',
+            background: popular
+              ? 'var(--accent-gradient)'
+              : 'var(--surface-hover)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -278,7 +308,15 @@ const PlanCard = ({ index, plan, popular, t, onSubscribe }) => {
         </h3>
 
         {/* Price */}
-        <div style={{ marginTop: 18, marginBottom: 6, display: 'flex', alignItems: 'baseline', gap: 6 }}>
+        <div
+          style={{
+            marginTop: 18,
+            marginBottom: 6,
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: 6,
+          }}
+        >
           <span
             style={{
               fontSize: 36,
@@ -288,7 +326,8 @@ const PlanCard = ({ index, plan, popular, t, onSubscribe }) => {
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            {sym}{displayPrice}
+            {sym}
+            {displayPrice}
           </span>
           <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
             / {fmtDuration(plan.duration_value, plan.duration_unit, t)}
@@ -304,7 +343,9 @@ const PlanCard = ({ index, plan, popular, t, onSubscribe }) => {
             marginBottom: 4,
           }}
         >
-          {t('plans.gift', { amount: fmtMoney(plan.original_price_amount, plan.currency) })}
+          {t('plans.gift', {
+            amount: fmtMoney(plan.original_price_amount, plan.currency),
+          })}
         </div>
 
         {/* Save % chip when original > price */}
@@ -495,9 +536,16 @@ const ComparisonTable = ({ plans, t }) => {
       }}
     >
       <div className='cy-plans-table-desktop' style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <table
+          style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}
+        >
           <thead>
-            <tr style={{ background: 'linear-gradient(90deg, rgba(0,114,255,0.05), rgba(0,198,255,0.08), rgba(0,114,255,0.04))' }}>
+            <tr
+              style={{
+                background:
+                  'linear-gradient(90deg, rgba(0,114,255,0.05), rgba(0,198,255,0.08), rgba(0,114,255,0.04))',
+              }}
+            >
               <th style={thStyle}>{t('plans.compare.feature')}</th>
               {tieredPlans.map((p) => {
                 const isPopular = TIER_META[p._tier]?.popular;
@@ -506,7 +554,9 @@ const ComparisonTable = ({ plans, t }) => {
                     key={p.id}
                     style={{
                       ...thStyle,
-                      color: isPopular ? 'var(--accent)' : 'var(--text-secondary)',
+                      color: isPopular
+                        ? 'var(--accent)'
+                        : 'var(--text-secondary)',
                     }}
                   >
                     {p.title ? t(p.title) : ''}
@@ -521,15 +571,26 @@ const ComparisonTable = ({ plans, t }) => {
                 key={i}
                 style={{
                   borderTop: '1px solid var(--border-subtle)',
-                  transition: 'background 150ms ease, opacity 500ms cubic-bezier(0.2,0.8,0.2,1), transform 500ms cubic-bezier(0.2,0.8,0.2,1)',
+                  transition:
+                    'background 150ms ease, opacity 500ms cubic-bezier(0.2,0.8,0.2,1), transform 500ms cubic-bezier(0.2,0.8,0.2,1)',
                   transitionDelay: `${i * 70}ms`,
                   opacity: inView ? 1 : 0,
                   transform: inView ? 'translateY(0)' : 'translateY(12px)',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--surface-hover)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--surface-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
               >
-                <td style={{ padding: '16px 24px', color: 'var(--text-primary)', fontWeight: 500 }}>
+                <td
+                  style={{
+                    padding: '16px 24px',
+                    color: 'var(--text-primary)',
+                    fontWeight: 500,
+                  }}
+                >
                   {row.label}
                 </td>
                 {tieredPlans.map((p) => {
@@ -539,7 +600,10 @@ const ComparisonTable = ({ plans, t }) => {
                       key={p.id}
                       style={{
                         padding: '16px 24px',
-                        color: isPopular && row.highlight ? 'var(--accent)' : 'var(--text-secondary)',
+                        color:
+                          isPopular && row.highlight
+                            ? 'var(--accent)'
+                            : 'var(--text-secondary)',
                         fontWeight: row.highlight ? 600 : 400,
                       }}
                     >
@@ -554,7 +618,10 @@ const ComparisonTable = ({ plans, t }) => {
       </div>
 
       {/* Mobile cards stack */}
-      <div className='cy-plans-table-mobile' style={{ display: 'none', flexDirection: 'column' }}>
+      <div
+        className='cy-plans-table-mobile'
+        style={{ display: 'none', flexDirection: 'column' }}
+      >
         {rows.map((row, i) => (
           <div
             key={i}
@@ -563,22 +630,54 @@ const ComparisonTable = ({ plans, t }) => {
               borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
               opacity: inView ? 1 : 0,
               transform: inView ? 'translateY(0)' : 'translateY(12px)',
-              transition: 'opacity 500ms cubic-bezier(0.2,0.8,0.2,1), transform 500ms cubic-bezier(0.2,0.8,0.2,1)',
+              transition:
+                'opacity 500ms cubic-bezier(0.2,0.8,0.2,1), transform 500ms cubic-bezier(0.2,0.8,0.2,1)',
               transitionDelay: `${i * 70}ms`,
             }}
           >
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                marginBottom: 8,
+              }}
+            >
               {row.label}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${tieredPlans.length}, 1fr)`, gap: 10 }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: `repeat(${tieredPlans.length}, 1fr)`,
+                gap: 10,
+              }}
+            >
               {tieredPlans.map((p) => {
                 const isPopular = TIER_META[p._tier]?.popular;
                 return (
                   <div key={p.id}>
-                    <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 2 }}>
+                    <div
+                      style={{
+                        fontSize: 9,
+                        color: 'var(--text-muted)',
+                        textTransform: 'uppercase',
+                        marginBottom: 2,
+                      }}
+                    >
                       {p.title ? t(p.title) : ''}
                     </div>
-                    <div style={{ fontSize: 12, color: isPopular && row.highlight ? 'var(--accent)' : 'var(--text-primary)', fontWeight: row.highlight ? 600 : 500 }}>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color:
+                          isPopular && row.highlight
+                            ? 'var(--accent)'
+                            : 'var(--text-primary)',
+                        fontWeight: row.highlight ? 600 : 500,
+                      }}
+                    >
                       {row.cell(p)}
                     </div>
                   </div>
@@ -631,7 +730,10 @@ const PlansPage = () => {
     setHeroVisible(true);
     const t1 = setTimeout(() => setTableVisible(true), 700);
     const t2 = setTimeout(() => setCtaVisible(true), 1000);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
   useEffect(() => {
@@ -645,7 +747,9 @@ const PlansPage = () => {
         if (cancelled) return;
         const items = (res?.data?.data || []).map((row) => row?.plan || row);
         // Sort by price ascending so the cheapest tier is first.
-        items.sort((a, b) => Number(a.price_amount || 0) - Number(b.price_amount || 0));
+        items.sort(
+          (a, b) => Number(a.price_amount || 0) - Number(b.price_amount || 0),
+        );
         setPlans(items);
       } catch (e) {
         if (!cancelled) setLoadError(String(e?.message || e));
@@ -653,19 +757,27 @@ const PlansPage = () => {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Mark exactly one card popular: the middle one if there are 3+, else
   // whichever has tier=pro.
-  const popularIdx = plans.length >= 3
-    ? Math.floor(plans.length / 2)
-    : plans.findIndex((p) => tierKey(p) === 'pro');
+  const popularIdx =
+    plans.length >= 3
+      ? Math.floor(plans.length / 2)
+      : plans.findIndex((p) => tierKey(p) === 'pro');
 
   const epayMethods = useMemo(() => {
     const list = paymentInfo?.payMethods || [];
     return list.filter(
-      (m) => m?.type && m.type !== 'stripe' && m.type !== 'creem' && m.type !== 'waffo' && m.type !== 'cryptomus',
+      (m) =>
+        m?.type &&
+        m.type !== 'stripe' &&
+        m.type !== 'creem' &&
+        m.type !== 'waffo' &&
+        m.type !== 'cryptomus',
     );
   }, [paymentInfo]);
 
@@ -678,7 +790,11 @@ const PlansPage = () => {
       if (success && data) {
         let methods = data.pay_methods || [];
         if (typeof methods === 'string') {
-          try { methods = JSON.parse(methods); } catch { methods = []; }
+          try {
+            methods = JSON.parse(methods);
+          } catch {
+            methods = [];
+          }
         }
         methods = (methods || []).filter((m) => m?.name && m?.type);
         const info = {
@@ -704,7 +820,9 @@ const PlansPage = () => {
       if (!isLoggedIn) {
         // Remember intent across the auth redirect so we can re-open the
         // modal once the user comes back to /plans.
-        try { sessionStorage.setItem(PENDING_PLAN_KEY, String(plan.id)); } catch {}
+        try {
+          sessionStorage.setItem(PENDING_PLAN_KEY, String(plan.id));
+        } catch {}
         const next = `/plans?plan=${plan.id}`;
         navigate(`/login?next=${encodeURIComponent(next)}`);
         return;
@@ -714,7 +832,12 @@ const PlansPage = () => {
       const info = paymentInfo || (await ensurePaymentInfo());
       // 下拉中保留 nowpayments — 若没有传统易支付方式，则自动落到加密货币
       const firstEpay = (info?.payMethods || []).find(
-        (m) => m?.type && m.type !== 'stripe' && m.type !== 'creem' && m.type !== 'waffo' && m.type !== 'cryptomus',
+        (m) =>
+          m?.type &&
+          m.type !== 'stripe' &&
+          m.type !== 'creem' &&
+          m.type !== 'waffo' &&
+          m.type !== 'cryptomus',
       );
       setSelectedEpayMethod((prev) => prev || firstEpay?.type || '');
     },
@@ -738,13 +861,17 @@ const PlansPage = () => {
 
     let pendingId = searchParams.get('plan');
     if (!pendingId) {
-      try { pendingId = sessionStorage.getItem(PENDING_PLAN_KEY); } catch {}
+      try {
+        pendingId = sessionStorage.getItem(PENDING_PLAN_KEY);
+      } catch {}
     }
     if (!pendingId) return;
 
     const target = plans.find((p) => String(p.id) === String(pendingId));
     autoOpenedRef.current = true;
-    try { sessionStorage.removeItem(PENDING_PLAN_KEY); } catch {}
+    try {
+      sessionStorage.removeItem(PENDING_PLAN_KEY);
+    } catch {}
     if (searchParams.get('plan')) {
       const next = new URLSearchParams(searchParams);
       next.delete('plan');
@@ -753,7 +880,14 @@ const PlansPage = () => {
     if (target) {
       openBuyForPlan(target);
     }
-  }, [loading, plans, isLoggedIn, searchParams, setSearchParams, openBuyForPlan]);
+  }, [
+    loading,
+    plans,
+    isLoggedIn,
+    searchParams,
+    setSearchParams,
+    openBuyForPlan,
+  ]);
 
   // When ?team_id=N is present, the purchase is on behalf of a team. The
   // backend gates this (only the team owner may buy) and creates a team
@@ -784,7 +918,9 @@ const PlansPage = () => {
         if (!cancelled) setTeamMeta({ id: purchaseTeamId, name: '' });
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [purchaseTeamId, isLoggedIn]);
 
   const switchToPersonalPurchase = useCallback(() => {
@@ -801,14 +937,19 @@ const PlansPage = () => {
     }
     setPaying(true);
     try {
-      const res = await API.post('/api/subscription/stripe/pay', { plan_id: plan.id, team_id: purchaseTeamId });
+      const res = await API.post('/api/subscription/stripe/pay', {
+        plan_id: plan.id,
+        team_id: purchaseTeamId,
+      });
       if (res.data?.message === 'success') {
         window.open(res.data.data?.pay_link, '_blank');
         showSuccess(t('已打开支付页面'));
         closeBuyModal();
       } else {
         const errorMsg =
-          typeof res.data?.data === 'string' ? res.data.data : res.data?.message || t('支付失败');
+          typeof res.data?.data === 'string'
+            ? res.data.data
+            : res.data?.message || t('支付失败');
         showError(errorMsg);
       }
     } catch {
@@ -826,14 +967,19 @@ const PlansPage = () => {
     }
     setPaying(true);
     try {
-      const res = await API.post('/api/subscription/creem/pay', { plan_id: plan.id, team_id: purchaseTeamId });
+      const res = await API.post('/api/subscription/creem/pay', {
+        plan_id: plan.id,
+        team_id: purchaseTeamId,
+      });
       if (res.data?.message === 'success') {
         window.open(res.data.data?.checkout_url, '_blank');
         showSuccess(t('已打开支付页面'));
         closeBuyModal();
       } else {
         const errorMsg =
-          typeof res.data?.data === 'string' ? res.data.data : res.data?.message || t('支付失败');
+          typeof res.data?.data === 'string'
+            ? res.data.data
+            : res.data?.message || t('支付失败');
         showError(errorMsg);
       }
     } catch {
@@ -848,14 +994,56 @@ const PlansPage = () => {
     if (!plan?.id) return;
     setPaying(true);
     try {
-      const res = await API.post('/api/subscription/nowpayments/pay', { plan_id: plan.id, team_id: purchaseTeamId });
+      const res = await API.post('/api/subscription/nowpayments/pay', {
+        plan_id: plan.id,
+        team_id: purchaseTeamId,
+      });
       if (res.data?.message === 'success' && res.data.data?.pay_link) {
         window.open(res.data.data.pay_link, '_blank');
         showSuccess(t('已打开支付页面'));
         closeBuyModal();
       } else {
         const errorMsg =
-          typeof res.data?.data === 'string' ? res.data.data : res.data?.message || t('支付失败');
+          typeof res.data?.data === 'string'
+            ? res.data.data
+            : res.data?.message || t('支付失败');
+        showError(errorMsg);
+      }
+    } catch {
+      showError(t('支付请求失败'));
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  // Wallet-funded subscription purchase. Backend deducts quota inside a
+  // transaction and activates the plan via CompleteSubscriptionOrder.
+  const payWallet = async () => {
+    const plan = selectedPlan?.plan;
+    if (!plan?.id) return;
+    setPaying(true);
+    try {
+      const res = await API.post('/api/subscription/wallet/pay', {
+        plan_id: plan.id,
+      });
+      if (res.data?.message === 'success') {
+        showSuccess(t('购买成功，套餐已激活'));
+        closeBuyModal();
+        // Refresh local user quota so the navbar/profile reflects the
+        // deducted balance immediately without a manual reload.
+        try {
+          const meRes = await API.get('/api/user/self');
+          if (meRes.data?.success && meRes.data?.data) {
+            localStorage.setItem('user', JSON.stringify(meRes.data.data));
+          }
+        } catch {
+          // Non-fatal: TTL will eventually correct the cached profile.
+        }
+      } else {
+        const errorMsg =
+          typeof res.data?.data === 'string'
+            ? res.data.data
+            : res.data?.message || t('支付失败');
         showError(errorMsg);
       }
     } catch {
@@ -885,7 +1073,9 @@ const PlansPage = () => {
         closeBuyModal();
       } else {
         const errorMsg =
-          typeof res.data?.data === 'string' ? res.data.data : res.data?.message || t('支付失败');
+          typeof res.data?.data === 'string'
+            ? res.data.data
+            : res.data?.message || t('支付失败');
         showError(errorMsg);
       }
     } catch {
@@ -922,12 +1112,16 @@ const PlansPage = () => {
               <div className='cy-team-banner-title'>
                 {t('正在为团队')}{' '}
                 <strong>
-                  {teamMeta?.name ? `「${teamMeta.name}」` : `#${purchaseTeamId}`}
+                  {teamMeta?.name
+                    ? `「${teamMeta.name}」`
+                    : `#${purchaseTeamId}`}
                 </strong>{' '}
                 {t('购买订阅')}
               </div>
               <div className='cy-team-banner-sub'>
-                {t('该订阅独立于个人订阅，团队令牌将走此订阅扣费，不会升级你的个人会员等级。')}
+                {t(
+                  '该订阅独立于个人订阅，团队令牌将走此订阅扣费，不会升级你的个人会员等级。',
+                )}
               </div>
             </div>
             <button
@@ -958,7 +1152,8 @@ const PlansPage = () => {
               gap: 6,
               padding: '5px 14px',
               borderRadius: '999px',
-              background: 'linear-gradient(135deg, rgba(0, 114, 255, 0.10), rgba(0, 198, 255, 0.16))',
+              background:
+                'linear-gradient(135deg, rgba(0, 114, 255, 0.10), rgba(0, 198, 255, 0.16))',
               border: '1px solid rgba(0, 114, 255, 0.20)',
               color: 'var(--accent)',
               fontSize: 11,
@@ -1009,15 +1204,33 @@ const PlansPage = () => {
 
         {/* Plan cards */}
         {loading ? (
-          <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '60px 0' }}>
+          <div
+            style={{
+              textAlign: 'center',
+              color: 'var(--text-muted)',
+              padding: '60px 0',
+            }}
+          >
             {t('plans.loading')}
           </div>
         ) : loadError ? (
-          <div style={{ textAlign: 'center', color: 'var(--semi-color-danger)', padding: '60px 0' }}>
+          <div
+            style={{
+              textAlign: 'center',
+              color: 'var(--semi-color-danger)',
+              padding: '60px 0',
+            }}
+          >
             {t('plans.loadError')}: {loadError}
           </div>
         ) : plans.length === 0 ? (
-          <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '60px 0' }}>
+          <div
+            style={{
+              textAlign: 'center',
+              color: 'var(--text-muted)',
+              padding: '60px 0',
+            }}
+          >
             {t('plans.empty')}
           </div>
         ) : (
@@ -1077,7 +1290,8 @@ const PlansPage = () => {
           style={{
             marginTop: 80,
             borderRadius: 'var(--radius-xl, 18px)',
-            background: 'linear-gradient(135deg, rgba(0, 114, 255, 0.10) 0%, rgba(0, 198, 255, 0.06) 100%)',
+            background:
+              'linear-gradient(135deg, rgba(0, 114, 255, 0.10) 0%, rgba(0, 198, 255, 0.06) 100%)',
             border: '1px solid rgba(0, 114, 255, 0.20)',
             padding: '48px 32px',
             textAlign: 'center',
@@ -1120,7 +1334,11 @@ const PlansPage = () => {
           >
             <MagneticWrap strength={5}>
               <Link
-                to={isLoggedIn ? '/console/topup' : `/register?next=${encodeURIComponent('/plans')}`}
+                to={
+                  isLoggedIn
+                    ? '/console/topup'
+                    : `/register?next=${encodeURIComponent('/plans')}`
+                }
                 style={{ textDecoration: 'none' }}
               >
                 <button
@@ -1140,7 +1358,9 @@ const PlansPage = () => {
                     transition: 'transform 200ms ease, box-shadow 200ms ease',
                   }}
                 >
-                  {isLoggedIn ? t('plans.cta.primaryAuth') : t('plans.cta.primary')}
+                  {isLoggedIn
+                    ? t('plans.cta.primaryAuth')
+                    : t('plans.cta.primary')}
                   <ArrowRight size={14} />
                 </button>
               </Link>
@@ -1161,8 +1381,12 @@ const PlansPage = () => {
                   gap: 8,
                   transition: 'background 200ms ease',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--surface-hover)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--surface)'; }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--surface-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--surface)';
+                }}
               >
                 <MessageSquare size={14} />
                 {t('plans.cta.secondary')}
@@ -1188,11 +1412,21 @@ const PlansPage = () => {
         enableOnlineTopUp={paymentInfo?.enableOnlineTopUp || false}
         enableStripeTopUp={paymentInfo?.enableStripeTopUp || false}
         enableCreemTopUp={paymentInfo?.enableCreemTopUp || false}
+        enableWalletPay={(() => {
+          try {
+            const raw = localStorage.getItem('status');
+            return raw ? !!JSON.parse(raw).wallet_pay_enabled : false;
+          } catch {
+            return false;
+          }
+        })()}
+        walletBalance={Number(userState?.user?.quota || 0)}
         purchaseLimitInfo={null}
         onPayStripe={payStripe}
         onPayCreem={payCreem}
         onPayEpay={payEpay}
         onPayNowPayments={payNowPayments}
+        onPayWallet={payWallet}
       />
 
       {/* Page-scoped CSS for blob drift, badge shimmer, and table responsiveness. */}
@@ -1309,7 +1543,8 @@ const blobAStyle = {
   width: 480,
   height: 480,
   borderRadius: '50%',
-  background: 'radial-gradient(circle, rgba(0, 114, 255, 0.10) 0%, transparent 70%)',
+  background:
+    'radial-gradient(circle, rgba(0, 114, 255, 0.10) 0%, transparent 70%)',
   filter: 'blur(40px)',
   pointerEvents: 'none',
 };
@@ -1320,7 +1555,8 @@ const blobBStyle = {
   width: 380,
   height: 380,
   borderRadius: '50%',
-  background: 'radial-gradient(circle, rgba(0, 198, 255, 0.08) 0%, transparent 70%)',
+  background:
+    'radial-gradient(circle, rgba(0, 198, 255, 0.08) 0%, transparent 70%)',
   filter: 'blur(40px)',
   pointerEvents: 'none',
 };

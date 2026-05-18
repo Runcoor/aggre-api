@@ -216,6 +216,7 @@ func SetApiRouter(router *gin.Engine) {
 			subscriptionRoute.POST("/creem/pay", middleware.CriticalRateLimit(), controller.SubscriptionRequestCreemPay)
 			subscriptionRoute.POST("/nowpayments/pay", middleware.CriticalRateLimit(), controller.SubscriptionRequestNowPaymentsPay)
 			subscriptionRoute.POST("/dodopayments/pay", middleware.CriticalRateLimit(), controller.SubscriptionRequestDodoPaymentsPay)
+			subscriptionRoute.POST("/wallet/pay", middleware.CriticalRateLimit(), controller.SubscriptionRequestWalletPay)
 		}
 		// Finance dashboard (admin only)
 		financeRoute := apiRouter.Group("/finance")

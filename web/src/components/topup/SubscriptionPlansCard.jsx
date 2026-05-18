@@ -206,6 +206,41 @@ const SubscriptionPlansCard = ({
     }
   };
 
+  // Wallet-funded subscription purchase. Mirrors Plans/index.jsx payWallet.
+  const payWallet = async () => {
+    const plan = selectedPlan?.plan;
+    if (!plan?.id) return;
+    setPaying(true);
+    try {
+      const res = await API.post('/api/subscription/wallet/pay', {
+        plan_id: plan.id,
+      });
+      if (res.data?.message === 'success') {
+        showSuccess(t('购买成功，套餐已激活'));
+        closeBuy();
+        try {
+          const meRes = await API.get('/api/user/self');
+          if (meRes.data?.success && meRes.data?.data) {
+            localStorage.setItem('user', JSON.stringify(meRes.data.data));
+          }
+        } catch {
+          // Non-fatal: stale user cache will be corrected by TTL.
+        }
+        reloadSubscriptionSelf?.();
+      } else {
+        const errorMsg =
+          typeof res.data?.data === 'string'
+            ? res.data.data
+            : res.data?.message || t('支付失败');
+        showError(errorMsg);
+      }
+    } catch {
+      showError(t('支付请求失败'));
+    } finally {
+      setPaying(false);
+    }
+  };
+
   const payEpay = async () => {
     if (!selectedEpayMethod) {
       showError(t('请选择支付方式'));
@@ -820,6 +855,22 @@ const SubscriptionPlansCard = ({
         enableOnlineTopUp={enableOnlineTopUp}
         enableStripeTopUp={enableStripeTopUp}
         enableCreemTopUp={enableCreemTopUp}
+        enableWalletPay={(() => {
+          try {
+            const raw = localStorage.getItem('status');
+            return raw ? !!JSON.parse(raw).wallet_pay_enabled : false;
+          } catch {
+            return false;
+          }
+        })()}
+        walletBalance={(() => {
+          try {
+            const raw = localStorage.getItem('user');
+            return raw ? Number(JSON.parse(raw).quota || 0) : 0;
+          } catch {
+            return 0;
+          }
+        })()}
         purchaseLimitInfo={
           selectedPlan?.plan?.id
             ? {
@@ -833,6 +884,7 @@ const SubscriptionPlansCard = ({
         onPayEpay={payEpay}
         onPayNowPayments={payNowPayments}
         onPayDodoPayments={payDodoPayments}
+        onPayWallet={payWallet}
       />
     </>
   );

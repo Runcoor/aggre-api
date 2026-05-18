@@ -29,13 +29,10 @@ import {
   Check,
   ArrowRight,
   CreditCard,
+  Wallet,
 } from 'lucide-react';
-import {
-  SiStripe,
-  SiWechat,
-  SiAlipay,
-  SiBitcoin,
-} from 'react-icons/si';
+import { renderQuota } from '../../../helpers/render';
+import { SiStripe, SiWechat, SiAlipay, SiBitcoin } from 'react-icons/si';
 import { getCurrencyConfig } from '../../../helpers/render';
 import {
   formatSubscriptionDuration,
@@ -223,10 +220,25 @@ html.dark .spm-pay--selected{
 const buildPaymentOptions = ({
   hasStripe,
   hasCreem,
+  hasWallet,
+  walletBalance,
+  walletInsufficient,
   epayMethods = [],
   t,
 }) => {
   const opts = [];
+  if (hasWallet) {
+    opts.push({
+      key: 'wallet',
+      glyphClass: 'g-card',
+      icon: <Wallet size={18} strokeWidth={1.8} />,
+      name: t('钱包余额支付'),
+      meta: walletInsufficient
+        ? t('余额不足') + ` · ${renderQuota(walletBalance, 2)}`
+        : t('当前余额') + ` ${renderQuota(walletBalance, 2)}`,
+      disabled: walletInsufficient,
+    });
+  }
   if (hasStripe) {
     opts.push({
       key: 'stripe',
@@ -264,7 +276,11 @@ const buildPaymentOptions = ({
         name: t('信用卡 / 全球支付'),
         meta: 'Visa · Mastercard · AmEx · WeChat',
       });
-    } else if (type.includes('wxpay') || type === 'wechat' || name.includes('微信')) {
+    } else if (
+      type.includes('wxpay') ||
+      type === 'wechat' ||
+      name.includes('微信')
+    ) {
       opts.push({
         key: 'epay:' + type,
         glyphClass: 'g-wx',
@@ -305,6 +321,8 @@ const SubscriptionPurchaseModal = ({
   enableOnlineTopUp = false,
   enableStripeTopUp = false,
   enableCreemTopUp = false,
+  enableWalletPay = false,
+  walletBalance = 0,
   purchaseLimitInfo = null,
   purchaseTeamId = 0,
   teamName = '',
@@ -313,6 +331,7 @@ const SubscriptionPurchaseModal = ({
   onPayEpay,
   onPayNowPayments,
   onPayDodoPayments,
+  onPayWallet,
 }) => {
   const isTeamPurchase = Number(purchaseTeamId) > 0;
   const teamLabel = teamName ? `「${teamName}」` : `#${purchaseTeamId}`;
@@ -341,7 +360,23 @@ const SubscriptionPurchaseModal = ({
   const hasStripe = enableStripeTopUp && !!plan?.stripe_price_id;
   const hasCreem = enableCreemTopUp && !!plan?.creem_product_id;
   const hasEpay = enableOnlineTopUp && epayMethods.length > 0;
-  const hasAnyPayment = hasStripe || hasCreem || hasEpay;
+  // Wallet pay is personal-purchase only (server enforces the same).
+  const hasWallet = enableWalletPay && !isTeamPurchase && price > 0;
+  // QuotaPerUnit defaults to 500000 (1 USD = 500k quota). /api/status
+  // surfaces it; cache via localStorage('status').
+  const quotaPerUnit = (() => {
+    try {
+      const raw = localStorage.getItem('status');
+      const v = raw ? Number(JSON.parse(raw).quota_per_unit) : 0;
+      return v > 0 ? v : 500000;
+    } catch {
+      return 500000;
+    }
+  })();
+  const walletQuotaCost = Math.floor(price * quotaPerUnit);
+  const walletInsufficient =
+    hasWallet && Number(walletBalance || 0) < walletQuotaCost;
+  const hasAnyPayment = hasStripe || hasCreem || hasEpay || hasWallet;
 
   const purchaseLimit = Number(purchaseLimitInfo?.limit || 0);
   const purchaseCount = Number(purchaseLimitInfo?.count || 0);
@@ -353,10 +388,22 @@ const SubscriptionPurchaseModal = ({
       buildPaymentOptions({
         hasStripe,
         hasCreem,
+        hasWallet,
+        walletBalance,
+        walletInsufficient,
         epayMethods: hasEpay ? epayMethods : [],
         t,
       }),
-    [hasStripe, hasCreem, hasEpay, epayMethods, t],
+    [
+      hasStripe,
+      hasCreem,
+      hasWallet,
+      walletBalance,
+      walletInsufficient,
+      hasEpay,
+      epayMethods,
+      t,
+    ],
   );
 
   const [internalSelected, setInternalSelected] = useState(null);
@@ -384,6 +431,10 @@ const SubscriptionPurchaseModal = ({
 
   const handleConfirm = () => {
     if (!internalSelected || paying || purchaseLimitReached) return;
+    if (internalSelected === 'wallet') {
+      if (walletInsufficient) return;
+      return onPayWallet?.();
+    }
     if (internalSelected === 'stripe') return onPayStripe?.();
     if (internalSelected === 'creem') return onPayCreem?.();
     if (internalSelected === 'epay:nowpayments') return onPayNowPayments?.();
@@ -392,7 +443,9 @@ const SubscriptionPurchaseModal = ({
   };
 
   // Pill content: tier label + (optional) discount badge
-  const tierLabel = (plan?.upgrade_group || t('订阅套餐')).toString().toUpperCase();
+  const tierLabel = (plan?.upgrade_group || t('订阅套餐'))
+    .toString()
+    .toUpperCase();
   const pillText =
     discountPct > 0
       ? `${tierLabel} · ${t('限时')} ${discountPct}% OFF`
@@ -554,12 +607,17 @@ const SubscriptionPurchaseModal = ({
                       onClick={() => setInternalSelected(opt.key)}
                       disabled={purchaseLimitReached}
                     >
-                      <div className={`spm-glyph ${opt.glyphClass}`} aria-hidden='true'>
+                      <div
+                        className={`spm-glyph ${opt.glyphClass}`}
+                        aria-hidden='true'
+                      >
                         {opt.icon}
                       </div>
                       <div className='spm-pay-txt'>
                         <div className='spm-pay-nm'>{opt.name}</div>
-                        {opt.meta && <div className='spm-pay-meta'>{opt.meta}</div>}
+                        {opt.meta && (
+                          <div className='spm-pay-meta'>{opt.meta}</div>
+                        )}
                       </div>
                       <span className='spm-check'>
                         <Check size={11} strokeWidth={3.5} />

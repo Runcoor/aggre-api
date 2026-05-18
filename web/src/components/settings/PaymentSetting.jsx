@@ -27,6 +27,7 @@ import SettingsPaymentGatewayWaffoPancake from '../../pages/Setting/Payment/Sett
 import SettingsPaymentGatewayCryptomus from '../../pages/Setting/Payment/SettingsPaymentGatewayCryptomus';
 import SettingsPaymentGatewayNowPayments from '../../pages/Setting/Payment/SettingsPaymentGatewayNowPayments';
 import SettingsPaymentGatewayDodoPayments from '../../pages/Setting/Payment/SettingsPaymentGatewayDodoPayments';
+import SettingsPaymentGatewayWallet from '../../pages/Setting/Payment/SettingsPaymentGatewayWallet';
 import { API, showError, toBoolean } from '../../helpers';
 import { useTranslation } from 'react-i18next';
 import MacSpinner from '../common/ui/MacSpinner';
@@ -175,6 +176,12 @@ const PaymentSetting = () => {
           </div>
           <div className='mv-settings-section'>
             <SettingsPaymentGatewayDodoPayments
+              options={inputs}
+              refresh={onRefresh}
+            />
+          </div>
+          <div className='mv-settings-section'>
+            <SettingsPaymentGatewayWallet
               options={inputs}
               refresh={onRefresh}
             />

@@ -78,7 +78,7 @@ const UserDetail = () => {
       </div>
       {/* Top region: identity card + finance metric cards */}
       <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <IdentityCard user={overview.user} />
+        <IdentityCard user={overview.user} finance={overview.finance} />
         <FinanceCards
           finance={overview.finance}
           subsSummary={overview.subscriptions_summary}

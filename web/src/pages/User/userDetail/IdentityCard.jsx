@@ -20,6 +20,8 @@ For commercial licensing, please contact support@quantumnous.com
 import React from 'react';
 import { Avatar } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
+import { isRoot } from '../../../helpers';
+import { renderQuota } from '../../../helpers';
 
 const roleMap = {
   1: { label: '普通用户', color: 'var(--text-muted)', bg: 'var(--surface-active)' },
@@ -47,11 +49,12 @@ const Pill = ({ color, bg, children }) => (
   </span>
 );
 
-const IdentityCard = ({ user }) => {
+const IdentityCard = ({ user, finance }) => {
   const { t } = useTranslation();
   if (!user) return null;
   const role = roleMap[user.role] || roleMap[1];
   const status = statusStyle(user, t);
+  const showTodayQuota = isRoot() && finance?.today_used_quota !== undefined;
   return (
     <div
       style={{
@@ -74,6 +77,11 @@ const IdentityCard = ({ user }) => {
           {user.group ? (
             <Pill color='var(--text-secondary)' bg='var(--surface-active)'>
               {t('分组')}: {user.group}
+            </Pill>
+          ) : null}
+          {showTodayQuota ? (
+            <Pill color='var(--accent)' bg='rgba(0,122,255,0.12)'>
+              {t('今日已用')}: {renderQuota(finance.today_used_quota)}
             </Pill>
           ) : null}
         </div>

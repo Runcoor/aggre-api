@@ -25,6 +25,7 @@ type userOverviewFinance struct {
 	UsedQuota       int   `json:"used_quota"`
 	RequestCount    int   `json:"request_count"`
 	TopupTotalCents int64 `json:"topup_total_cents"`
+	TodayUsedQuota  int64 `json:"today_used_quota,omitempty"`
 }
 
 type userOverviewSubscription struct {
@@ -88,6 +89,18 @@ func GetUserOverview(c *gin.Context) {
 		topupMoneySum = 0
 	}
 	finance.TopupTotalCents = int64(topupMoneySum*100 + 0.5)
+
+	if myRole == common.RoleRootUser {
+		todayStart := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.Now().Location()).Unix()
+		var todayQuota int64
+		if err := model.DB.Table("logs").
+			Select("COALESCE(SUM(quota), 0)").
+			Where("user_id = ? AND created_at >= ?", targetUserId, todayStart).
+			Row().Scan(&todayQuota); err != nil {
+			common.SysLog("GetUserOverview: failed to sum today quota: " + err.Error())
+		}
+		finance.TodayUsedQuota = todayQuota
+	}
 
 	// --- Subscriptions summary --------------------------------------------
 	subSummary := userOverviewSubscription{}

@@ -154,6 +154,13 @@ func applyHeaderOverridePlaceholders(template string, c *gin.Context, apiKey str
 	if strings.Contains(template, "{api_key}") {
 		template = strings.ReplaceAll(template, "{api_key}", apiKey)
 	}
+	if strings.Contains(template, "{user_id}") {
+		userId := 0
+		if c != nil {
+			userId = c.GetInt("id")
+		}
+		template = strings.ReplaceAll(template, "{user_id}", fmt.Sprintf("%d", userId))
+	}
 	if strings.TrimSpace(template) == "" {
 		return "", false, nil
 	}
@@ -267,6 +274,14 @@ func processHeaderOverride(info *common.RelayInfo, c *gin.Context) (map[string]s
 
 		headerOverride[key] = value
 	}
+
+	if info.ChannelMeta != nil && info.ChannelMeta.ChannelOtherSettings.CustomUserHeaderEnabled {
+		headerKey := strings.TrimSpace(info.ChannelMeta.ChannelOtherSettings.CustomUserHeaderKey)
+		if headerKey != "" && c != nil {
+			headerOverride[strings.ToLower(headerKey)] = fmt.Sprintf("%d", c.GetInt("id"))
+		}
+	}
+
 	return headerOverride, nil
 }
 

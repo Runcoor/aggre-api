@@ -48,6 +48,7 @@ import {
   Tooltip,
   Collapse,
   Dropdown,
+  Switch,
 } from '@douyinfe/semi-ui';
 import {
   getChannelModels,
@@ -891,6 +892,8 @@ const EditChannelModal = (props) => {
           data.allow_inference_geo =
             parsedSettings.allow_inference_geo || false;
           data.claude_beta_query = parsedSettings.claude_beta_query || false;
+          data.custom_user_header_enabled = parsedSettings.custom_user_header_enabled === true;
+          data.custom_user_header_key = parsedSettings.custom_user_header_key || '';
           data.upstream_model_update_check_enabled =
             parsedSettings.upstream_model_update_check_enabled === true;
           data.upstream_model_update_auto_sync_enabled =
@@ -920,6 +923,8 @@ const EditChannelModal = (props) => {
           data.allow_include_obfuscation = false;
           data.allow_inference_geo = false;
           data.claude_beta_query = false;
+          data.custom_user_header_enabled = false;
+          data.custom_user_header_key = '';
           data.upstream_model_update_check_enabled = false;
           data.upstream_model_update_auto_sync_enabled = false;
           data.upstream_model_update_last_check_time = 0;
@@ -2400,12 +2405,48 @@ const EditChannelModal = (props) => {
                             <div>
                               {t('渠道密钥')}: {'{api_key}'}
                             </div>
+                            <div>
+                              {t('用户ID')}: {'{user_id}'}
+                            </div>
                           </div>
                         </div>
                       </div>
                     }
                     showClear
                   />
+
+                  <div className='flex flex-col gap-2 mb-4'>
+                    <div className='flex items-center gap-2'>
+                      <Switch
+                        checked={!!inputs.custom_user_header_enabled}
+                        onChange={(v) => {
+                          handleInputChange('custom_user_header_enabled', v);
+                          handleChannelOtherSettingsChange('custom_user_header_enabled', v);
+                          if (!v) {
+                            handleInputChange('custom_user_header_key', '');
+                            handleChannelOtherSettingsChange('custom_user_header_key', '');
+                          }
+                        }}
+                        size='small'
+                      />
+                      <Text strong>{t('自定义用户标识请求头')}</Text>
+                    </div>
+                    <Text type='tertiary' size='small'>
+                      {t('启用后，每次请求会自动附加一个请求头，值为当前调用用户的ID，用于上游识别用户身份')}
+                    </Text>
+                    {inputs.custom_user_header_enabled && (
+                      <Form.Input
+                        field='custom_user_header_key'
+                        label={t('请求头名称')}
+                        placeholder={t('例如：X-User-Id')}
+                        onChange={(value) => {
+                          handleInputChange('custom_user_header_key', value);
+                          handleChannelOtherSettingsChange('custom_user_header_key', value);
+                        }}
+                      />
+                    )}
+                  </div>
+
                   <JSONEditor
                     key={`status_code_mapping-${isEdit ? channelId : 'new'}`}
                     field='status_code_mapping'

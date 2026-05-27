@@ -21,11 +21,11 @@ type userOverviewResponse struct {
 }
 
 type userOverviewFinance struct {
-	WalletQuota     int   `json:"wallet_quota"`
-	UsedQuota       int   `json:"used_quota"`
-	RequestCount    int   `json:"request_count"`
-	TopupTotalCents int64 `json:"topup_total_cents"`
-	TodayUsedQuota  int64 `json:"today_used_quota,omitempty"`
+	WalletQuota     int    `json:"wallet_quota"`
+	UsedQuota       int    `json:"used_quota"`
+	RequestCount    int    `json:"request_count"`
+	TopupTotalCents int64  `json:"topup_total_cents"`
+	TodayUsedQuota  *int64 `json:"today_used_quota,omitempty"`
 }
 
 type userOverviewSubscription struct {
@@ -99,7 +99,7 @@ func GetUserOverview(c *gin.Context) {
 			Row().Scan(&todayQuota); err != nil {
 			common.SysLog("GetUserOverview: failed to sum today quota: " + err.Error())
 		}
-		finance.TodayUsedQuota = todayQuota
+		finance.TodayUsedQuota = &todayQuota
 	}
 
 	// --- Subscriptions summary --------------------------------------------

@@ -260,8 +260,9 @@ const Row = ({
   const ttftSec = other?.frt ? (parseFloat(other.frt) / 1000).toFixed(1) : null;
 
   const requestId = record.request_id || other?.request_id || '';
-  const channelLabel =
-    record.channel_name || (record.channel ? `#${record.channel}` : '');
+  const channelLabel = record.channel
+    ? `#${record.channel}${record.channel_name ? ' ' + record.channel_name : ''}`
+    : record.channel_name || '';
   const failReason = isError
     ? record.content || other?.reject_reason || ''
     : '';

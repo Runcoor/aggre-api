@@ -263,6 +263,32 @@ func (s *BillingSession) syncRelayInfo() {
 // ---------------------------------------------------------------------------
 
 // NewBillingSession 根据用户计费偏好创建 BillingSession，处理 subscription_first / wallet_first 的回退。
+// isOutOfPlanGroupModel reports whether the requested model cannot be served by
+// any enabled channel in the user's active subscription upgrade group(s). Such
+// "out-of-plan" models must bill from wallet rather than draining subscription
+// quota — independent of which group the request's token ran in (default/auto/
+// upgrade). Gated on the plan's allow_wallet_fallback opt-in, the SAME toggle as
+// the distributor wallet-fallback path: with it off, behaviour is unchanged.
+func isOutOfPlanGroupModel(userId int, modelName string) bool {
+	if userId <= 0 {
+		return false
+	}
+	enabled, err := model.IsWalletFallbackEnabledForUser(userId)
+	if err != nil || !enabled {
+		return false
+	}
+	groups, err := model.GetActiveUpgradeGroups(userId)
+	if err != nil || len(groups) == 0 {
+		return false
+	}
+	for _, g := range groups {
+		if model.IsModelServableInGroup(g, modelName) {
+			return false // servable in an upgrade group => in-plan => keep subscription billing
+		}
+	}
+	return true // not servable in any upgrade group => out-of-plan => bill wallet
+}
+
 func NewBillingSession(c *gin.Context, relayInfo *relaycommon.RelayInfo, preConsumedQuota int) (*BillingSession, *types.NewAPIError) {
 	if relayInfo == nil {
 		return nil, types.NewError(fmt.Errorf("relayInfo is nil"), types.ErrorCodeInvalidRequest, types.ErrOptionWithSkipRetry())
@@ -365,7 +391,21 @@ func NewBillingSession(c *gin.Context, relayInfo *relaycommon.RelayInfo, preCons
 	// user's BillingPreference and bill from wallet directly — UNLESS
 	// the user explicitly opted out of wallet via subscription_only,
 	// in which case user intent overrides admin's plan setting.
-	if common.GetContextKeyBool(c, constant.ContextKeyForceWalletBilling) {
+	forceWallet := common.GetContextKeyBool(c, constant.ContextKeyForceWalletBilling)
+
+	// Plan-group enforcement (token-group independent): even when the request
+	// ran in a non-upgrade group (e.g. a default/auto token) and a channel was
+	// found there, a subscriber should only spend subscription quota on models
+	// their plan's upgrade group can actually serve. If the model is NOT
+	// servable in any active upgrade group, bill from wallet — so "out-of-plan
+	// models bill wallet" no longer depends on which group the token uses.
+	if !forceWallet && isOutOfPlanGroupModel(relayInfo.UserId, relayInfo.OriginModelName) {
+		logger.LogInfo(c, fmt.Sprintf("[billing] user %d model %s not servable in plan upgrade group(s); forcing wallet billing (token group=%s)",
+			relayInfo.UserId, relayInfo.OriginModelName, relayInfo.TokenGroup))
+		forceWallet = true
+	}
+
+	if forceWallet {
 		if pref == "subscription_only" {
 			logger.LogWarn(c, fmt.Sprintf("[billing] user %d on subscription_only refuses wallet-fallback (model=%s)",
 				relayInfo.UserId, relayInfo.OriginModelName))

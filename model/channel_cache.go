@@ -93,6 +93,27 @@ func SyncChannelCache(frequency int) {
 	}
 }
 
+// IsModelServableInGroup reports whether at least one enabled channel in the
+// given group can serve the model. Used by subscription billing to decide
+// whether a model is "in-plan" (servable by the plan's upgrade group) WITHOUT
+// depending on which group the request's token actually used. Read-only, no
+// side effects, mirrors GetRandomSatisfiedChannel's lookup.
+func IsModelServableInGroup(group string, modelName string) bool {
+	if !common.MemoryCacheEnabled {
+		ch, err := GetChannel(group, modelName, 0)
+		return err == nil && ch != nil
+	}
+
+	channelSyncLock.RLock()
+	defer channelSyncLock.RUnlock()
+
+	if len(group2model2channels[group][modelName]) > 0 {
+		return true
+	}
+	normalizedModel := ratio_setting.FormatMatchingModelName(modelName)
+	return len(group2model2channels[group][normalizedModel]) > 0
+}
+
 func GetRandomSatisfiedChannel(group string, model string, retry int) (*Channel, error) {
 	// if memory cache is disabled, get channel directly from database
 	if !common.MemoryCacheEnabled {

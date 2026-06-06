@@ -204,9 +204,20 @@ func GetTeamUsageStats(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
+	// Per-member usage rollup (requests + quota) for the team-admin UI.
+	// Reuses the same report that backs the backstage admin usage tab; the
+	// rollup window is controlled by ?days (default 30, capped at 365 in
+	// GetTeamUsageReport). Best-effort: a query failure still returns the
+	// roster so the page renders.
+	days, _ := strconv.Atoi(c.DefaultQuery("days", "30"))
+	usage, err := model.GetTeamUsageReport(team.Id, days)
+	if err != nil {
+		usage = nil
+	}
 	common.ApiSuccess(c, gin.H{
 		"team":    team,
 		"members": members,
+		"usage":   usage,
 	})
 }
 

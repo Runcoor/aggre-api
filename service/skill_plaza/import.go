@@ -44,7 +44,12 @@ import (
 // StartImportAsync runs the import in a detached goroutine. It updates
 // the SkillImportJob row at each stage transition so the admin UI can
 // reflect progress. Returns immediately.
-func StartImportAsync(jobID int, repoURL, branch string, adminID int) {
+//
+// sourceURL / sourceContent are optional supplementary material: an admin
+// can paste an article body (sourceContent) and/or an article URL
+// (sourceURL) that we fetch. Both feed the AI as a reference doc on top of
+// the GitHub files. They never replace GitHub — GitHub stays required.
+func StartImportAsync(jobID int, repoURL, branch string, adminID int, sourceURL, sourceContent string) {
 	go func() {
 		// Use a generous timeout for the whole pipeline; GitHub + a
 		// bilingual generation can legitimately take a couple minutes
@@ -52,7 +57,7 @@ func StartImportAsync(jobID int, repoURL, branch string, adminID int) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cancel()
 
-		if err := runImport(ctx, jobID, repoURL, branch, adminID); err != nil {
+		if err := runImport(ctx, jobID, repoURL, branch, adminID, sourceURL, sourceContent); err != nil {
 			common.SysLog(fmt.Sprintf("skill_plaza import job %d failed: %v", jobID, err))
 			_ = model.UpdateSkillImportJob(jobID, map[string]any{
 				"status":        model.SkillImportStatusFailed,
@@ -63,7 +68,7 @@ func StartImportAsync(jobID int, repoURL, branch string, adminID int) {
 	}()
 }
 
-func runImport(ctx context.Context, jobID int, repoURL, branch string, adminID int) error {
+func runImport(ctx context.Context, jobID int, repoURL, branch string, adminID int, sourceURL, sourceContent string) error {
 	// Note: we don't gate on IsSkillPlazaEnabled here. The user-facing
 	// switch controls whether the Plaza is visible to non-admin users,
 	// not whether admins can prepare content. Otherwise admins can't
@@ -93,8 +98,16 @@ func runImport(ctx context.Context, jobID int, repoURL, branch string, adminID i
 		return fmt.Errorf("fetch failed: %w", err)
 	}
 
+	// ───── Build supplementary reference (optional) ─────
+	// Precedence: pasted content is the most reliable source, so it always
+	// wins. A URL is fetched additionally; if the fetch fails we log and
+	// continue (GitHub-only / pasted-only) rather than failing the import.
+	reference, refNote := buildReference(ctx, sourceURL, sourceContent)
+
 	// Persist manifest summary for audit (strip file bodies — too big).
 	summary := manifestSummary(manifest)
+	summary["source_url"] = strings.TrimSpace(sourceURL)
+	summary["reference_note"] = refNote
 	metaJSON, _ := common.Marshal(summary)
 	_ = model.UpdateSkillImportJob(jobID, map[string]any{
 		"metadata_json": string(metaJSON),
@@ -102,7 +115,7 @@ func runImport(ctx context.Context, jobID int, repoURL, branch string, adminID i
 	})
 
 	// ───── Generate bilingual articles ─────
-	results, err := GenerateBilingualArticles(ctx, manifest)
+	results, err := GenerateBilingualArticles(ctx, manifest, reference)
 	if err != nil {
 		return fmt.Errorf("generate failed: %w", err)
 	}
@@ -139,6 +152,41 @@ func runImport(ctx context.Context, jobID int, repoURL, branch string, adminID i
 		"finished_at": time.Now().Unix(),
 	})
 	return nil
+}
+
+// buildReference assembles the supplementary reference doc from a pasted
+// body and/or a fetched URL. It returns the combined text plus a short
+// human-readable note describing what was used (stored in job metadata so
+// the admin can see whether a URL fetch succeeded).
+//
+// It never returns an error: a failed fetch degrades to "use what we have"
+// (pasted content, or nothing) instead of aborting the import.
+func buildReference(ctx context.Context, sourceURL, sourceContent string) (reference, note string) {
+	var parts []string
+	var notes []string
+
+	if pasted := strings.TrimSpace(sourceContent); pasted != "" {
+		parts = append(parts, "=== 粘贴的参考内容 ===\n"+pasted)
+		notes = append(notes, "已使用粘贴内容")
+	}
+
+	if u := strings.TrimSpace(sourceURL); u != "" {
+		fetched, err := FetchReferenceArticle(ctx, u)
+		if err != nil {
+			common.SysLog("skill_plaza: reference fetch failed for " + u + " — " + err.Error())
+			notes = append(notes, "链接抓取失败:"+err.Error())
+		} else {
+			parts = append(parts, "=== 抓取自链接的参考内容("+u+")===\n"+fetched)
+			notes = append(notes, "已抓取链接内容")
+		}
+	}
+
+	if len(notes) == 0 {
+		note = "未提供补充素材"
+	} else {
+		note = strings.Join(notes, ";")
+	}
+	return strings.Join(parts, "\n\n"), note
 }
 
 // manifestSummary strips file bodies before persisting metadata, so

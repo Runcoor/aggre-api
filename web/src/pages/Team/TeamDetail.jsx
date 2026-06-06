@@ -37,6 +37,7 @@ const TeamDetail = () => {
   const [members, setMembers] = useState([]);
   const [teamTokens, setTeamTokens] = useState([]);
   const [teamSubs, setTeamSubs] = useState([]);
+  const [usage, setUsage] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Add member modal
@@ -97,11 +98,23 @@ const TeamDetail = () => {
     }
   };
 
+  // Usage stats are admin-only on the backend (TeamRoleAdmin). Members get a
+  // 403 here, so we silently keep usage null for them.
+  const loadUsage = async () => {
+    try {
+      const res = await API.get(`/api/team/${id}/usage`);
+      if (res.data?.success) setUsage(res.data.data?.usage || null);
+    } catch {
+      // non-admin or query failure: hide the usage section
+    }
+  };
+
   useEffect(() => {
     loadTeam();
     loadMembers();
     loadTeamTokens();
     loadTeamSubs();
+    loadUsage();
   }, [id]);
 
   const handleAddMember = async () => {
@@ -399,6 +412,89 @@ const TeamDetail = () => {
           style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}
         />
       </div>
+
+      {/* Member usage stats (admin only) */}
+      {isAdmin && usage && (
+        <div>
+          <h2
+            className='text-lg font-bold mb-4'
+            style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-primary)' }}
+          >
+            {t('成员用量')}
+          </h2>
+          <div className='grid grid-cols-1 sm:grid-cols-3 gap-5 mb-4'>
+            {[
+              { label: t('今日消费'), value: usage.summary?.today_quota || 0, req: usage.summary?.today_requests || 0 },
+              { label: t('本月消费'), value: usage.summary?.month_quota || 0, req: usage.summary?.month_requests || 0 },
+              { label: t('累计消费'), value: usage.summary?.total_quota || 0, req: usage.summary?.total_requests || 0 },
+            ].map((card) => (
+              <div
+                key={card.label}
+                className='rounded-[var(--radius-lg)] p-5'
+                style={{ background: 'var(--surface)', border: '1px solid var(--border-default)' }}
+              >
+                <p
+                  className='text-[10px] uppercase tracking-widest font-semibold mb-1'
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  {card.label}
+                </p>
+                <p
+                  className='text-2xl font-extrabold'
+                  style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-serif)' }}
+                >
+                  {renderQuota(card.value)}
+                </p>
+                <p className='text-xs mt-2' style={{ color: 'var(--text-muted)' }}>
+                  {card.req} {t('次请求')}
+                </p>
+              </div>
+            ))}
+          </div>
+          <Banner
+            type='info'
+            closeIcon={null}
+            description={t('按成员统计近 30 天的请求数与消费额度，数据来自团队令牌的调用记录。')}
+            style={{ borderRadius: 'var(--radius-md)', marginBottom: 12 }}
+          />
+          <Table
+            columns={[
+              {
+                title: t('成员'),
+                dataIndex: 'username',
+                render: (text, record) => (
+                  <div>
+                    <Text strong>{record.display_name || text || `User #${record.user_id}`}</Text>
+                    {text && (
+                      <Text style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block' }}>
+                        @{text}
+                      </Text>
+                    )}
+                  </div>
+                ),
+              },
+              {
+                title: t('请求数'),
+                dataIndex: 'requests',
+                width: 120,
+                render: (v) => <Text>{v || 0}</Text>,
+              },
+              {
+                title: t('消费额度'),
+                dataIndex: 'quota',
+                width: 140,
+                render: (v) => <Text strong>{renderQuota(v || 0)}</Text>,
+              },
+            ]}
+            dataSource={usage.by_member || []}
+            rowKey={(record) => record.user_id}
+            pagination={false}
+            size='small'
+            empty={t('近 30 天暂无消费记录')}
+            style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}
+          />
+        </div>
+      )}
 
       {/* Team subscriptions */}
       <div>

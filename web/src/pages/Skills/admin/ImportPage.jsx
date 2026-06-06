@@ -34,6 +34,8 @@ import {
   X,
   Github,
   RefreshCw,
+  Link2,
+  FileText,
 } from 'lucide-react';
 import { API, showError, showSuccess } from '../../../helpers';
 import { SKILL_PLAZA_STYLES } from '../styles';
@@ -51,6 +53,8 @@ const SkillsAdminImport = () => {
   const navigate = useNavigate();
   const [url, setUrl] = useState('');
   const [branch, setBranch] = useState('main');
+  const [sourceUrl, setSourceUrl] = useState('');
+  const [sourceContent, setSourceContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [job, setJob] = useState(null);
   const pollRef = useRef(null);
@@ -78,6 +82,8 @@ const SkillsAdminImport = () => {
     API.post('/api/skill-plaza/admin/imports', {
       repo_url: url.trim(),
       branch: branch.trim(),
+      source_url: sourceUrl.trim(),
+      source_content: sourceContent.trim(),
     })
       .then((res) => {
         if (res.data?.success) {
@@ -265,6 +271,93 @@ const SkillsAdminImport = () => {
               </button>
             </div>
 
+            {/* Supplementary material (optional) */}
+            <div
+              style={{
+                borderTop: '1px dashed var(--border-default)',
+                paddingTop: 14,
+                marginBottom: 12,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: 'var(--text-primary)',
+                  marginBottom: 4,
+                }}
+              >
+                <FileText
+                  size={15}
+                  style={{ verticalAlign: '-2px', marginRight: 6 }}
+                />
+                {t('补充素材(可选)')}
+              </div>
+              <p
+                style={{
+                  fontSize: 12.5,
+                  color: 'var(--text-muted)',
+                  margin: '0 0 10px 0',
+                }}
+              >
+                {t(
+                  '可粘贴一篇别人整理好的文章正文,或填写文章链接(如公众号文章)。系统会结合 GitHub 原文一起,生成更精简的教程。两者均可留空。',
+                )}
+              </p>
+              <div
+                style={{
+                  position: 'relative',
+                  marginBottom: 10,
+                }}
+              >
+                <Link2
+                  size={15}
+                  style={{
+                    position: 'absolute',
+                    left: 12,
+                    top: 14,
+                    color: 'var(--text-muted)',
+                  }}
+                />
+                <input
+                  value={sourceUrl}
+                  onChange={(e) => setSourceUrl(e.target.value)}
+                  placeholder={t('文章链接(可选),例如 https://mp.weixin.qq.com/s/...')}
+                  style={{
+                    width: '100%',
+                    height: 44,
+                    padding: '0 12px 0 34px',
+                    borderRadius: 10,
+                    border: '1px solid var(--border-default)',
+                    background: 'var(--surface)',
+                    color: 'var(--text-primary)',
+                    fontSize: 13,
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+              <textarea
+                value={sourceContent}
+                onChange={(e) => setSourceContent(e.target.value)}
+                placeholder={t('或在此粘贴文章正文(可选)。粘贴的内容优先于链接抓取。')}
+                rows={5}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  border: '1px solid var(--border-default)',
+                  background: 'var(--surface)',
+                  color: 'var(--text-primary)',
+                  fontSize: 13,
+                  lineHeight: 1.6,
+                  outline: 'none',
+                  resize: 'vertical',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
             <div className='skp-banner'>
               <ShieldCheck size={16} />
               <div>
@@ -396,6 +489,27 @@ const SkillsAdminImport = () => {
                       v={`${metadata.total_bytes || 0} B`}
                     />
                   </div>
+                  {metadata.reference_note && (
+                    <div
+                      style={{
+                        marginTop: 10,
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        background: 'var(--bg-base)',
+                        fontSize: 12.5,
+                        color: 'var(--text-secondary)',
+                      }}
+                    >
+                      <FileText
+                        size={13}
+                        style={{ verticalAlign: '-2px', marginRight: 6 }}
+                      />
+                      {t('补充素材')}:{' '}
+                      <strong style={{ color: 'var(--text-primary)' }}>
+                        {metadata.reference_note}
+                      </strong>
+                    </div>
+                  )}
                 </div>
               )}
 

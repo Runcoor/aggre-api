@@ -58,6 +58,12 @@ func currentAdminID(c *gin.Context) int {
 type adminImportRequest struct {
 	RepoURL string `json:"repo_url"`
 	Branch  string `json:"branch"`
+	// Optional supplementary material. SourceURL is an article URL we
+	// fetch (e.g. a WeChat 公众号 post); SourceContent is article text the
+	// admin pasted directly. Either or both may be set; GitHub stays
+	// required. They feed the AI as a reference doc, not a replacement.
+	SourceURL     string `json:"source_url"`
+	SourceContent string `json:"source_content"`
 }
 
 // PostSkillPlazaImport POST /api/skill-plaza/admin/imports
@@ -96,7 +102,8 @@ func PostSkillPlazaImport(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
-	skill_plaza.StartImportAsync(job.Id, job.RepoURL, branch, adminID)
+	skill_plaza.StartImportAsync(job.Id, job.RepoURL, branch, adminID,
+		strings.TrimSpace(req.SourceURL), req.SourceContent)
 	common.ApiSuccess(c, job)
 }
 

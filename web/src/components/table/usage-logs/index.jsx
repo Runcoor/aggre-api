@@ -910,6 +910,12 @@ const LogsPage = () => {
                 }
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    setSearchQuery(searchInput);
+                  }
+                }}
               />
               {searchInput && (
                 <button

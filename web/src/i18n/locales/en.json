@@ -6279,5 +6279,9 @@
   "到期": "Expires",
   "未填写": "Not provided",
   "操作不可撤销，请确认信息": "This action cannot be undone — please review carefully",
-  "该申请已结案": "This application has been closed"
+  "该申请已结案": "This application has been closed",
+  "归属": "Owner",
+  "归属成员": "Issue on behalf of",
+  "我自己（管理员）": "Myself (admin)",
+  "令牌归属到某成员后，该成员的用量与限流将单独统计；请求仍从团队订阅扣费。": "Once a token is issued on behalf of a member, that member's usage and rate limits are tracked separately; requests are still billed against the team subscription."
 }

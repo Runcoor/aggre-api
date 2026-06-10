@@ -249,6 +249,11 @@ func GetTeamSubscriptions(c *gin.Context) {
 
 type CreateTeamTokenRequest struct {
 	Name string `json:"name"`
+	// UserId is the team member this token is issued on behalf of. When >0 the
+	// token's owner (Token.UserId) becomes that member, so per-member usage
+	// stats and rate-limit buckets attribute correctly. Must be a member of the
+	// team. 0 (or omitted) defaults to the issuing admin — legacy behaviour.
+	UserId int `json:"user_id"`
 }
 
 // CreateTeamToken issues a new team-bound API key. team owner/admin only.
@@ -272,16 +277,39 @@ func CreateTeamToken(c *gin.Context) {
 		common.ApiErrorMsg(c, "令牌名称过长")
 		return
 	}
+	// Resolve the token owner. When a member is specified, the token is issued
+	// on their behalf (Token.UserId = member) so logs.user_id and the rate-limit
+	// bucket attribute to that member. The member must belong to this team.
+	ownerUserId := c.GetInt("id")
+	if req.UserId > 0 {
+		member, mErr := model.GetTeamMemberByUserAndTeam(req.UserId, team.Id)
+		if mErr != nil || member == nil {
+			common.ApiErrorMsg(c, "指定用户不是该团队成员")
+			return
+		}
+		ownerUserId = req.UserId
+	}
+
+	// Pin the token to the team owner's group so billing/pricing is consistent
+	// regardless of which member holds the key. Without this an empty group
+	// would fall back to the holder's personal group at request time, making
+	// the same team subscription bill at different ratios per member.
+	teamGroup := "default"
+	if owner, oErr := model.GetUserById(team.OwnerId, false); oErr == nil && owner != nil && owner.Group != "" {
+		teamGroup = owner.Group
+	}
+
 	key, err := common.GenerateKey()
 	if err != nil {
 		common.ApiErrorMsg(c, "生成令牌失败")
 		return
 	}
 	tok := &model.Token{
-		UserId:         c.GetInt("id"),
+		UserId:         ownerUserId,
 		TeamId:         team.Id,
 		Name:           name,
 		Key:            key,
+		Group:          teamGroup,
 		CreatedTime:    common.GetTimestamp(),
 		AccessedTime:   common.GetTimestamp(),
 		ExpiredTime:    -1,

@@ -13,6 +13,7 @@ import {
   Button,
   Input,
   Modal,
+  Select,
   Skeleton,
   Table,
   Tag,
@@ -50,6 +51,8 @@ const TeamDetail = () => {
   const [teamTokenName, setTeamTokenName] = useState('');
   const [creatingTeamToken, setCreatingTeamToken] = useState(false);
   const [createdTeamTokenKey, setCreatedTeamTokenKey] = useState('');
+  // Member the new token is issued on behalf of. 0 = the issuing admin.
+  const [teamTokenUserId, setTeamTokenUserId] = useState(0);
 
   const isOwner = myRole >= 100;
   const isAdmin = myRole >= 10;
@@ -178,11 +181,15 @@ const TeamDetail = () => {
   const handleCreateTeamToken = async () => {
     setCreatingTeamToken(true);
     try {
-      const res = await API.post(`/api/team/${id}/team-token`, { name: teamTokenName.trim() });
+      const res = await API.post(`/api/team/${id}/team-token`, {
+        name: teamTokenName.trim(),
+        user_id: teamTokenUserId || 0,
+      });
       if (res.data?.success) {
         const key = res.data.data?.key || '';
         setCreatedTeamTokenKey(key);
         setTeamTokenName('');
+        setTeamTokenUserId(0);
         loadTeamTokens();
       } else {
         showError(res.data?.message || t('创建失败'));
@@ -226,6 +233,23 @@ const TeamDetail = () => {
       </div>
     );
   }
+
+  // user_id -> display label, for showing a team token's owning member.
+  const memberNameById = {};
+  members.forEach((m) => {
+    const uid = m.member?.user_id;
+    if (uid) memberNameById[uid] = m.display_name || m.username || `User #${uid}`;
+  });
+  // Options for the "issue on behalf of" selector. 0 = the issuing admin.
+  const memberOptions = [
+    { value: 0, label: t('我自己（管理员）') },
+    ...members
+      .filter((m) => m.member?.user_id)
+      .map((m) => ({
+        value: m.member.user_id,
+        label: `${m.display_name || m.username} @${m.username}`,
+      })),
+  ];
 
   const memberColumns = [
     {
@@ -617,6 +641,7 @@ const TeamDetail = () => {
               onClick={() => {
                 setCreatedTeamTokenKey('');
                 setTeamTokenName('');
+                setTeamTokenUserId(0);
                 setTeamTokenModalVisible(true);
               }}
               style={{ borderRadius: 'var(--radius-md)' }}
@@ -661,6 +686,11 @@ const TeamDetail = () => {
                   >
                     {tk.key || '****'}
                   </Text>
+                  {memberNameById[tk.user_id] && (
+                    <Text style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block' }}>
+                      {t('归属')}：{memberNameById[tk.user_id]}
+                    </Text>
+                  )}
                 </div>
                 <Tag size='small' color={tk.status === 1 ? 'green' : 'grey'}>
                   {tk.status === 1 ? t('启用') : t('禁用')}
@@ -791,10 +821,21 @@ const TeamDetail = () => {
               style={{ borderRadius: 'var(--radius-md)' }}
               onEnterPress={handleCreateTeamToken}
             />
+            <div>
+              <Text style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>
+                {t('归属成员')}
+              </Text>
+              <Select
+                value={teamTokenUserId}
+                onChange={setTeamTokenUserId}
+                optionList={memberOptions}
+                style={{ width: '100%', borderRadius: 'var(--radius-md)' }}
+              />
+            </div>
             <Banner
               type='info'
               closeIcon={null}
-              description={t('该令牌将绑定到当前团队，API 请求会从团队订阅扣费。')}
+              description={t('令牌归属到某成员后，该成员的用量与限流将单独统计；请求仍从团队订阅扣费。')}
               style={{ borderRadius: 'var(--radius-md)' }}
             />
             <Button

@@ -1025,6 +1025,7 @@ const PlansPage = () => {
     try {
       const res = await API.post('/api/subscription/wallet/pay', {
         plan_id: plan.id,
+        team_id: purchaseTeamId,
       });
       if (res.data?.message === 'success') {
         showSuccess(t('购买成功，套餐已激活'));

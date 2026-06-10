@@ -41,11 +41,17 @@ const PaymentMethodWallet = "wallet"
 
 type SubscriptionWalletPayRequest struct {
 	PlanId int `json:"plan_id"`
+	// TeamId is optional. When >0 the order is placed on behalf of a team the
+	// caller owns; completion creates a team subscription instead of a personal
+	// one. The wallet quota is always deducted from the buyer (team owner).
+	TeamId int `json:"team_id"`
 }
 
 // SubscriptionRequestWalletPay handles POST /api/subscription/wallet/pay.
-// Personal subscriptions only — team purchases via wallet are intentionally
-// disabled in this iteration (use external gateways for team orders).
+// Supports both personal (team_id=0) and team (team_id>0) purchases; team
+// orders deduct the buying owner's wallet quota. Gated by the same
+// WalletPayEnabled switch as personal wallet pay — there is no separate
+// team-payment toggle.
 func SubscriptionRequestWalletPay(c *gin.Context) {
 	if !operation_setting.GetPaymentSetting().WalletPayEnabled {
 		common.ApiErrorMsg(c, "余额支付订阅未启用")
@@ -73,9 +79,10 @@ func SubscriptionRequestWalletPay(c *gin.Context) {
 	}
 
 	userId := c.GetInt("id")
-	// Team purchases not supported in this phase. resolveSubscriptionPurchaseScope
-	// with teamId=0 also enforces MaxPurchasePerUser for personal scope.
-	if err := resolveSubscriptionPurchaseScope(userId, 0, plan); err != nil {
+	// Validates scope: for team_id>0 the buyer must be the team owner and the
+	// team must be active; for team_id=0 enforces MaxPurchasePerUser for the
+	// personal scope.
+	if err := resolveSubscriptionPurchaseScope(userId, req.TeamId, plan); err != nil {
 		common.ApiErrorMsg(c, err.Error())
 		return
 	}
@@ -89,14 +96,21 @@ func SubscriptionRequestWalletPay(c *gin.Context) {
 		return
 	}
 
-	tradeNo := fmt.Sprintf("SUBUSR%dWALLET%s%d", userId, common.GetRandomString(6), time.Now().UnixMilli())
+	// Trade-no prefix differs by scope so order logs are self-describing; the
+	// team path also carries the team id.
+	var tradeNo string
+	if req.TeamId > 0 {
+		tradeNo = fmt.Sprintf("SUBTEAM%dWALLET%s%d", req.TeamId, common.GetRandomString(6), time.Now().UnixMilli())
+	} else {
+		tradeNo = fmt.Sprintf("SUBUSR%dWALLET%s%d", userId, common.GetRandomString(6), time.Now().UnixMilli())
+	}
 
 	LockOrder(tradeNo)
 	defer UnlockOrder(tradeNo)
 
 	order := &model.SubscriptionOrder{
 		UserId:        userId,
-		TeamId:        0,
+		TeamId:        req.TeamId,
 		PlanId:        plan.Id,
 		Money:         plan.PriceAmount,
 		TradeNo:       tradeNo,

@@ -361,7 +361,7 @@ const SubscriptionPurchaseModal = ({
   const hasCreem = enableCreemTopUp && !!plan?.creem_product_id;
   const hasEpay = enableOnlineTopUp && epayMethods.length > 0;
   // Wallet pay is personal-purchase only (server enforces the same).
-  const hasWallet = enableWalletPay && !isTeamPurchase && price > 0;
+  const hasWallet = enableWalletPay && price > 0;
   // QuotaPerUnit defaults to 500000 (1 USD = 500k quota). /api/status
   // surfaces it; cache via localStorage('status').
   const quotaPerUnit = (() => {

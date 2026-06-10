@@ -142,13 +142,52 @@ func RegenerateTeamInviteCode(teamId int) (string, error) {
 // records who made the call and team subscriptions handle aggregation).
 
 type TeamMember struct {
-	Id        int            `json:"id" gorm:"primaryKey"`
-	TeamId    int            `json:"team_id" gorm:"uniqueIndex:idx_team_user;not null"`
-	UserId    int            `json:"user_id" gorm:"uniqueIndex:idx_team_user;not null;index"`
-	Role      int            `json:"role" gorm:"type:int;default:1"`
-	Status    int            `json:"status" gorm:"type:int;default:1"`
-	JoinedAt  int64          `json:"joined_at" gorm:"bigint"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
+	Id     int `json:"id" gorm:"primaryKey"`
+	TeamId int `json:"team_id" gorm:"uniqueIndex:idx_team_user;not null"`
+	UserId int `json:"user_id" gorm:"uniqueIndex:idx_team_user;not null;index"`
+	Role   int `json:"role" gorm:"type:int;default:1"`
+	Status int `json:"status" gorm:"type:int;default:1"`
+	// QuotaLimit caps how much of the team subscription this member may consume
+	// (lifetime, no reset). 0 = unlimited. UsedQuota is the running total
+	// consumed by this member, incremented at billing settle.
+	QuotaLimit int64          `json:"quota_limit" gorm:"type:bigint;not null;default:0"`
+	UsedQuota  int64          `json:"used_quota" gorm:"type:bigint;not null;default:0"`
+	JoinedAt   int64          `json:"joined_at" gorm:"bigint"`
+	DeletedAt  gorm.DeletedAt `json:"-" gorm:"index"`
+}
+
+// GetTeamMemberQuota returns (limit, used) for a member. limit==0 means
+// unlimited. A missing membership returns an error.
+func GetTeamMemberQuota(teamId int, userId int) (int64, int64, error) {
+	var m TeamMember
+	err := DB.Select("quota_limit, used_quota").
+		Where("team_id = ? AND user_id = ?", teamId, userId).
+		First(&m).Error
+	if err != nil {
+		return 0, 0, err
+	}
+	return m.QuotaLimit, m.UsedQuota, nil
+}
+
+// IncrTeamMemberUsedQuota atomically adds delta to a member's used_quota.
+// Best-effort caller: a missing row affects 0 rows and returns nil.
+func IncrTeamMemberUsedQuota(teamId int, userId int, delta int64) error {
+	if delta == 0 {
+		return nil
+	}
+	return DB.Model(&TeamMember{}).
+		Where("team_id = ? AND user_id = ?", teamId, userId).
+		UpdateColumn("used_quota", gorm.Expr("used_quota + ?", delta)).Error
+}
+
+// SetTeamMemberQuotaLimit sets a member's lifetime quota cap (0 = unlimited).
+func SetTeamMemberQuotaLimit(teamId int, userId int, limit int64) error {
+	if limit < 0 {
+		limit = 0
+	}
+	return DB.Model(&TeamMember{}).
+		Where("team_id = ? AND user_id = ?", teamId, userId).
+		UpdateColumn("quota_limit", limit).Error
 }
 
 func AddTeamMember(member *TeamMember) error {

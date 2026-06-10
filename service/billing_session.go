@@ -43,6 +43,15 @@ func (s *BillingSession) Settle(actualQuota int) error {
 	if s.settled {
 		return nil
 	}
+	// Count this member's consumption against their team quota cap. Runs once
+	// (guarded by s.settled), uses the final actual amount so it matches the
+	// logged quota. Best-effort: a failure here must not break billing.
+	if _, ok := s.funding.(*TeamSubscriptionFunding); ok && actualQuota > 0 && !s.relayInfo.IsPlayground {
+		if err := model.IncrTeamMemberUsedQuota(s.relayInfo.TokenTeamId, s.relayInfo.UserId, int64(actualQuota)); err != nil {
+			common.SysLog(fmt.Sprintf("incr team member used quota failed (team=%d, user=%d, amount=%d): %s",
+				s.relayInfo.TokenTeamId, s.relayInfo.UserId, actualQuota, err.Error()))
+		}
+	}
 	delta := actualQuota - s.preConsumedQuota
 	if delta == 0 {
 		s.settled = true
@@ -309,6 +318,15 @@ func NewBillingSession(c *gin.Context, relayInfo *relaycommon.RelayInfo, preCons
 		if !hasSub {
 			return nil, types.NewErrorWithStatusCode(
 				fmt.Errorf("团队订阅不存在或已过期 (team_id=%d)", teamId),
+				types.ErrorCodeInsufficientUserQuota, http.StatusForbidden,
+				types.ErrOptionWithSkipRetry(), types.ErrOptionWithNoRecordErrorLog())
+		}
+		// Per-member quota cap (lifetime, no reset). limit==0 means unlimited.
+		// The member is the token holder (relayInfo.UserId). Block once the
+		// member's accumulated usage reaches their cap.
+		if limit, used, qErr := model.GetTeamMemberQuota(teamId, relayInfo.UserId); qErr == nil && limit > 0 && used >= limit {
+			return nil, types.NewErrorWithStatusCode(
+				fmt.Errorf("团队成员额度已用尽 (team_id=%d, user_id=%d)", teamId, relayInfo.UserId),
 				types.ErrorCodeInsufficientUserQuota, http.StatusForbidden,
 				types.ErrOptionWithSkipRetry(), types.ErrOptionWithNoRecordErrorLog())
 		}

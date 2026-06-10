@@ -6283,5 +6283,8 @@
   "归属": "Owner",
   "归属成员": "Issue on behalf of",
   "我自己（管理员）": "Myself (admin)",
-  "令牌归属到某成员后，该成员的用量与限流将单独统计；请求仍从团队订阅扣费。": "Once a token is issued on behalf of a member, that member's usage and rate limits are tracked separately; requests are still billed against the team subscription."
+  "令牌归属到某成员后，该成员的用量与限流将单独统计；请求仍从团队订阅扣费。": "Once a token is issued on behalf of a member, that member's usage and rate limits are tracked separately; requests are still billed against the team subscription.",
+  "设置成员额度上限": "Set member quota limit",
+  "0 表示不限制": "0 means unlimited",
+  "上限为该成员可消耗的团队订阅额度总量，累计不重置，用尽后该成员的请求将被拒绝。": "The cap is the total team-subscription quota this member may consume; it never resets, and once exhausted the member's requests are rejected."
 }

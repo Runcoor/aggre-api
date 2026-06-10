@@ -192,6 +192,44 @@ func RemoveTeamMember(c *gin.Context) {
 	common.ApiSuccess(c, nil)
 }
 
+type SetMemberQuotaRequest struct {
+	// QuotaLimit is the member's lifetime cap in quota units. 0 = unlimited.
+	QuotaLimit int64 `json:"quota_limit"`
+}
+
+// SetTeamMemberQuota sets a member's lifetime quota cap (0 = unlimited). The
+// cap throttles how much of the team subscription that member may consume;
+// usage never resets. Admin-level action.
+func SetTeamMemberQuota(c *gin.Context) {
+	team, _, ok := getTeamAndVerifyRole(c, model.TeamRoleAdmin)
+	if !ok {
+		return
+	}
+	targetUserId, _ := strconv.Atoi(c.Param("user_id"))
+	if targetUserId <= 0 {
+		common.ApiErrorMsg(c, "无效的用户ID")
+		return
+	}
+	member, err := model.GetTeamMemberByUserAndTeam(targetUserId, team.Id)
+	if err != nil || member == nil {
+		common.ApiErrorMsg(c, "该用户不是团队成员")
+		return
+	}
+	var req SetMemberQuotaRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.ApiErrorMsg(c, "参数错误")
+		return
+	}
+	if req.QuotaLimit < 0 {
+		req.QuotaLimit = 0
+	}
+	if err := model.SetTeamMemberQuotaLimit(team.Id, targetUserId, req.QuotaLimit); err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, nil)
+}
+
 // ─── Usage ───
 
 func GetTeamUsageStats(c *gin.Context) {

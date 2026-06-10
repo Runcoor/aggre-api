@@ -12,6 +12,7 @@ import {
   Banner,
   Button,
   Input,
+  InputNumber,
   Modal,
   Select,
   Skeleton,
@@ -24,6 +25,7 @@ import { ArrowLeft, Crown, Key } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { API, renderQuota, showError, showSuccess } from '../../helpers';
+import { displayAmountToQuota, quotaToDisplayAmount } from '../../helpers/quota';
 import { copy } from '../../helpers/utils';
 
 const { Text } = Typography;
@@ -53,6 +55,12 @@ const TeamDetail = () => {
   const [createdTeamTokenKey, setCreatedTeamTokenKey] = useState('');
   // Member the new token is issued on behalf of. 0 = the issuing admin.
   const [teamTokenUserId, setTeamTokenUserId] = useState(0);
+
+  // Per-member quota-limit editing
+  const [quotaModalVisible, setQuotaModalVisible] = useState(false);
+  const [quotaTarget, setQuotaTarget] = useState(null); // { userId, name }
+  const [quotaAmount, setQuotaAmount] = useState(0); // display amount (0 = unlimited)
+  const [savingQuota, setSavingQuota] = useState(false);
 
   const isOwner = myRole >= 100;
   const isAdmin = myRole >= 10;
@@ -162,6 +170,35 @@ const TeamDetail = () => {
         }
       },
     });
+  };
+
+  const openQuotaModal = (userId, name, currentLimitQuota) => {
+    setQuotaTarget({ userId, name });
+    setQuotaAmount(currentLimitQuota > 0 ? quotaToDisplayAmount(currentLimitQuota) : 0);
+    setQuotaModalVisible(true);
+  };
+
+  const handleSaveQuota = async () => {
+    if (!quotaTarget) return;
+    setSavingQuota(true);
+    try {
+      const quotaLimit = quotaAmount > 0 ? displayAmountToQuota(quotaAmount) : 0;
+      const res = await API.put(
+        `/api/team/${id}/member/${quotaTarget.userId}/quota`,
+        { quota_limit: quotaLimit },
+      );
+      if (res.data?.success) {
+        showSuccess(t('已保存'));
+        setQuotaModalVisible(false);
+        setQuotaTarget(null);
+        loadMembers();
+      } else {
+        showError(res.data?.message || t('保存失败'));
+      }
+    } catch {
+      showError(t('请求失败'));
+    }
+    setSavingQuota(false);
   };
 
   const handleRegenerateInvite = async () => {
@@ -290,6 +327,36 @@ const TeamDetail = () => {
             : '—'}
         </Text>
       ),
+    },
+    {
+      title: t('额度上限'),
+      dataIndex: 'member',
+      width: 190,
+      render: (_, record) => {
+        const m = record.member || {};
+        const limit = m.quota_limit || 0;
+        const used = m.used_quota || 0;
+        const isOwnerMember = m.role >= 100;
+        return (
+          <div className='flex items-center gap-2'>
+            <Text style={{ fontSize: 12 }}>
+              {renderQuota(used)} / {limit > 0 ? renderQuota(limit) : t('不限')}
+            </Text>
+            {isAdmin && !isOwnerMember && (
+              <Button
+                size='small'
+                theme='borderless'
+                type='tertiary'
+                onClick={() =>
+                  openQuotaModal(m.user_id, record.display_name || record.username, limit)
+                }
+              >
+                {t('设置')}
+              </Button>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
@@ -856,6 +923,58 @@ const TeamDetail = () => {
             </Button>
           </div>
         )}
+      </Modal>
+
+      {/* Set member quota limit modal */}
+      <Modal
+        title={t('设置成员额度上限')}
+        visible={quotaModalVisible}
+        onCancel={() => setQuotaModalVisible(false)}
+        footer={null}
+        centered
+        size='small'
+      >
+        <div className='space-y-4 pb-2'>
+          {quotaTarget && (
+            <Text style={{ fontSize: 13 }}>
+              {t('成员')}：<Text strong>{quotaTarget.name}</Text>
+            </Text>
+          )}
+          <div>
+            <Text style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>
+              {t('额度上限')}（{t('0 表示不限制')}）
+            </Text>
+            <InputNumber
+              value={quotaAmount}
+              onChange={setQuotaAmount}
+              min={0}
+              precision={2}
+              style={{ width: '100%' }}
+            />
+          </div>
+          <Banner
+            type='info'
+            closeIcon={null}
+            description={t('上限为该成员可消耗的团队订阅额度总量，累计不重置，用尽后该成员的请求将被拒绝。')}
+            style={{ borderRadius: 'var(--radius-md)' }}
+          />
+          <Button
+            theme='solid'
+            type='primary'
+            block
+            loading={savingQuota}
+            onClick={handleSaveQuota}
+            style={{
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--accent-gradient)',
+              border: 'none',
+              fontWeight: 600,
+              height: 40,
+            }}
+          >
+            {t('保存')}
+          </Button>
+        </div>
       </Modal>
     </div>
   );

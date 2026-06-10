@@ -161,6 +161,14 @@ const I = {
       <path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' />
     </svg>
   ),
+  Users: (p) => (
+    <svg width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' {...p}>
+      <path d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' />
+      <circle cx='9' cy='7' r='4' />
+      <path d='M23 21v-2a4 4 0 0 0-3-3.87' />
+      <path d='M16 3.13a4 4 0 0 1 0 7.75' />
+    </svg>
+  ),
 };
 
 /* ───────── Helpers ───────── */
@@ -445,6 +453,15 @@ const PAGE_STYLES = `
 }
 .aks-group-tag.muted { background: var(--aks-line-soft); color: var(--aks-ink-500); }
 
+.aks-team-tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px;
+  background: var(--aks-grad-soft); color: var(--aks-blue-1);
+  letter-spacing: 0.02em; white-space: nowrap; max-width: 140px; overflow: hidden;
+  text-overflow: ellipsis; vertical-align: middle;
+}
+.aks-team-tag svg { flex-shrink: 0; }
+
 .aks-quota-cell { display: flex; align-items: center; gap: 8px; min-width: 140px; }
 .aks-quota-bar { flex: 1; height: 4px; border-radius: 2px; background: var(--aks-line-soft); overflow: hidden; min-width: 60px; }
 .aks-quota-fill { height: 100%; background: var(--aks-grad); border-radius: 2px; transition: width .25s; }
@@ -687,6 +704,10 @@ function TokensPage() {
   const [prefillKey, setPrefillKey] = useState('');
   const [ccSwitchVisible, setCCSwitchVisible] = useState(false);
   const [ccSwitchKey, setCCSwitchKey] = useState('');
+  // team_id -> team name, for the "团队" badge on team-bound tokens. Tokens
+  // created for a team carry team_id>0 but no team name, so we resolve names
+  // from the user's team list once on mount.
+  const [teamMap, setTeamMap] = useState({});
   const searchInputRef = useRef(null);
   const latestRef = useRef({});
 
@@ -706,6 +727,7 @@ function TokensPage() {
   useEffect(() => {
     loadStats();
     loadGroups();
+    loadTeams();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -761,6 +783,22 @@ function TokensPage() {
           opts.push({ v: group, l: (info && info.desc) || group });
         });
         setGroupOptions(opts);
+      }
+    } catch (_) {}
+  };
+
+  /* Load the user's teams to resolve team_id -> name for the team badge */
+  const loadTeams = async () => {
+    try {
+      const res = await API.get('/api/team/');
+      const { success, data } = res.data || {};
+      if (success && Array.isArray(data)) {
+        const map = {};
+        data.forEach((item) => {
+          const team = item?.team;
+          if (team?.id) map[team.id] = team.name || '';
+        });
+        setTeamMap(map);
       }
     } catch (_) {}
   };
@@ -1410,7 +1448,22 @@ function TokensPage() {
                       </td>
                       <td>
                         <div className='aks-name-stack'>
-                          <div className='n'>{record.name || '—'}</div>
+                          <div className='n'>
+                            {record.name || '—'}
+                            {record.team_id > 0 && (
+                              <span
+                                className='aks-team-tag'
+                                title={
+                                  teamMap[record.team_id]
+                                    ? `${t('团队')} · ${teamMap[record.team_id]}`
+                                    : t('团队令牌')
+                                }
+                              >
+                                <I.Users />
+                                {teamMap[record.team_id] || t('团队')}
+                              </span>
+                            )}
+                          </div>
                           <div className='id'>k_{record.id}</div>
                         </div>
                       </td>

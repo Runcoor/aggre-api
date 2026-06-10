@@ -2353,7 +2353,7 @@
     "回调通知地址": "",
     "因您的违规行为导致我们或第三方产生损失（包括但不限于合规罚款、法律费用、声誉损失）的，您应承担全部赔偿责任。": "You are liable for all damages to us or third parties resulting from your violations, including but not limited to compliance fines, legal fees, and reputational loss.",
     "团队": "Team",
-    "团队令牌": "",
+    "团队令牌": "Team API key",
     "团队令牌已创建": "",
     "团队列表": "Team List",
     "团队创建成功": "Team created",

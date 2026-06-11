@@ -23,7 +23,6 @@ import {
   Dropdown,
   InputNumber,
   Modal,
-  SplitButtonGroup,
   Tooltip,
 } from '@douyinfe/semi-ui';
 import {
@@ -364,40 +363,65 @@ export const getChannelsColumns = ({
           upstreamUpdateMeta.supported &&
           upstreamUpdateMeta.enabled &&
           (pendingAddCount > 0 || pendingRemoveCount > 0);
-        const nameNode =
-          record.remark && record.remark.trim() !== '' ? (
-            <Tooltip
-              content={
-                <div className='flex flex-col gap-2 max-w-xs'>
-                  <div className='text-sm'>{record.remark}</div>
-                  <Button
-                    size='small'
-                    type='primary'
-                    theme='outline'
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigator.clipboard
-                        .writeText(record.remark)
-                        .then(() => {
-                          showSuccess(t('复制成功'));
-                        })
-                        .catch(() => {
-                          showError(t('复制失败'));
-                        });
-                    }}
-                  >
-                    {t('复制')}
-                  </Button>
-                </div>
-              }
-              trigger='hover'
-              position='topLeft'
-            >
-              <span>{text}</span>
-            </Tooltip>
-          ) : (
-            <span>{text}</span>
-          );
+        const remark =
+          record.remark && record.remark.trim() !== ''
+            ? record.remark.trim()
+            : '';
+        const nameNode = (
+          <div className='flex items-center gap-1.5 min-w-0'>
+            <span className='whitespace-nowrap'>{text}</span>
+            {remark && (
+              <Tooltip
+                content={
+                  <div className='flex flex-col gap-2 max-w-xs'>
+                    <div className='text-sm'>{remark}</div>
+                    <Button
+                      size='small'
+                      type='primary'
+                      theme='outline'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigator.clipboard
+                          .writeText(remark)
+                          .then(() => {
+                            showSuccess(t('复制成功'));
+                          })
+                          .catch(() => {
+                            showError(t('复制失败'));
+                          });
+                      }}
+                    >
+                      {t('复制')}
+                    </Button>
+                  </div>
+                }
+                trigger='hover'
+                position='topLeft'
+              >
+                <span
+                  style={{
+                    display: 'inline-block',
+                    maxWidth: '160px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    verticalAlign: 'middle',
+                    padding: '0px 6px',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: 'var(--text-muted)',
+                    background: 'var(--surface-active)',
+                    lineHeight: '18px',
+                    cursor: 'default',
+                  }}
+                >
+                  {remark}
+                </span>
+              </Tooltip>
+            )}
+          </div>
+        );
 
         if (!passThroughEnabled && !showUpstreamUpdateTag) {
           return nameNode;
@@ -493,20 +517,49 @@ export const getChannelsColumns = ({
       key: COLUMN_KEYS.GROUP,
       title: t('分组'),
       dataIndex: 'group',
-      render: (text, record, index) => (
-        <div>
-          <div className='flex flex-wrap items-center gap-0.5'>
-            {text
-              ?.split(',')
-              .sort((a, b) => {
-                if (a === 'default') return -1;
-                if (b === 'default') return 1;
-                return a.localeCompare(b);
-              })
-              .map((item, index) => renderGroup(item))}
-          </div>
-        </div>
-      ),
+      render: (text, record, index) => {
+        const groups = (text ? String(text).split(',') : [])
+          .map((g) => g.trim())
+          .filter(Boolean)
+          .sort((a, b) => {
+            if (a === 'default') return -1;
+            if (b === 'default') return 1;
+            return a.localeCompare(b);
+          });
+        if (groups.length === 0) {
+          return <span style={{ color: 'var(--text-muted)' }}>-</span>;
+        }
+        return (
+          <Tooltip
+            content={
+              <div className='flex flex-wrap items-center gap-1 max-w-xs'>
+                {groups.map((item) => renderGroup(item))}
+              </div>
+            }
+            trigger='hover'
+            position='top'
+          >
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '1px 8px',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '12px',
+                fontWeight: 500,
+                color: 'var(--text-secondary)',
+                background: 'var(--surface-active)',
+                lineHeight: '20px',
+                whiteSpace: 'nowrap',
+                cursor: 'default',
+              }}
+            >
+              {groups.length} {t('个分组')}
+            </span>
+          </Tooltip>
+        );
+      },
     },
     {
       key: COLUMN_KEYS.TYPE,
@@ -818,30 +871,53 @@ export const getChannelsColumns = ({
             });
           }
 
+          // Primary actions (编辑 / 测试 / 模型测试 / 多密钥管理) now live inside
+          // the 更多 dropdown so the row only surfaces the enable/disable toggle.
+          const primaryItems = [
+            {
+              node: 'item',
+              name: t('编辑'),
+              type: 'tertiary',
+              onClick: () => {
+                setEditingChannel(record);
+                setShowEdit(true);
+              },
+            },
+            {
+              node: 'item',
+              name: t('测试'),
+              type: 'tertiary',
+              onClick: () => testChannel(record, ''),
+            },
+            {
+              node: 'item',
+              name: t('模型测试'),
+              type: 'tertiary',
+              onClick: () => {
+                setCurrentTestChannel(record);
+                setShowModelTestModal(true);
+              },
+            },
+          ];
+          if (record.channel_info?.is_multi_key) {
+            primaryItems.push({
+              node: 'item',
+              name: t('多密钥管理'),
+              type: 'tertiary',
+              onClick: () => {
+                setCurrentMultiKeyChannel(record);
+                setShowMultiKeyManageModal(true);
+              },
+            });
+          }
+          const menuItems = [
+            ...primaryItems,
+            { node: 'divider' },
+            ...moreMenuItems,
+          ];
+
           return (
             <div className='flex flex-wrap items-center gap-1.5'>
-              <SplitButtonGroup
-                className='overflow-hidden'
-                aria-label={t('测试单个渠道操作项目组')}
-              >
-                <Button
-                  size='small'
-                  type='tertiary'
-                  onClick={() => testChannel(record, '')}
-                >
-                  {t('测试')}
-                </Button>
-                <Button
-                  size='small'
-                  type='tertiary'
-                  icon={<IconTreeTriangleDown />}
-                  onClick={() => {
-                    setCurrentTestChannel(record);
-                    setShowModelTestModal(true);
-                  }}
-                />
-              </SplitButtonGroup>
-
               {record.status === 1 ? (
                 <Button
                   type='danger'
@@ -859,56 +935,10 @@ export const getChannelsColumns = ({
                 </Button>
               )}
 
-              {record.channel_info?.is_multi_key ? (
-                <SplitButtonGroup aria-label={t('多密钥渠道操作项目组')}>
-                  <Button
-                    type='tertiary'
-                    size='small'
-                    onClick={() => {
-                      setEditingChannel(record);
-                      setShowEdit(true);
-                    }}
-                  >
-                    {t('编辑')}
-                  </Button>
-                  <Dropdown
-                    trigger='click'
-                    position='bottomRight'
-                    menu={[
-                      {
-                        node: 'item',
-                        name: t('多密钥管理'),
-                        onClick: () => {
-                          setCurrentMultiKeyChannel(record);
-                          setShowMultiKeyManageModal(true);
-                        },
-                      },
-                    ]}
-                  >
-                    <Button
-                      type='tertiary'
-                      size='small'
-                      icon={<IconTreeTriangleDown />}
-                    />
-                  </Dropdown>
-                </SplitButtonGroup>
-              ) : (
-                <Button
-                  type='tertiary'
-                  size='small'
-                  onClick={() => {
-                    setEditingChannel(record);
-                    setShowEdit(true);
-                  }}
-                >
-                  {t('编辑')}
-                </Button>
-              )}
-
               <Dropdown
                 trigger='click'
                 position='bottomRight'
-                menu={moreMenuItems}
+                menu={menuItems}
               >
                 <Button icon={<IconMore />} type='tertiary' size='small' />
               </Dropdown>

@@ -930,7 +930,10 @@ const SubscriptionsTab = ({ teamId, t }) => {
             marginBottom: 24,
           }}
         >
-          {active.map((s) => (
+          {active.map((item) => {
+            const s = item.subscription || {};
+            const planLabel = `Plan #${s.plan_id}`;
+            return (
             <div
               key={s.id}
               style={{
@@ -941,11 +944,11 @@ const SubscriptionsTab = ({ teamId, t }) => {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
-                <strong style={{ fontSize: 14 }}>{s.plan_name}</strong>
+                <strong style={{ fontSize: 14 }}>{planLabel}</strong>
                 <button
                   type='button'
                   className='td-btn td-btn-danger-ghost td-btn-sm'
-                  onClick={() => setTerminateTarget({ id: s.id, name: s.plan_name })}
+                  onClick={() => setTerminateTarget({ id: s.id, name: planLabel })}
                 >
                   {t('终止')}
                 </button>
@@ -961,7 +964,8 @@ const SubscriptionsTab = ({ teamId, t }) => {
                 {t('结束于')} {formatStableTime(s.end_time)}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -995,11 +999,13 @@ const SubscriptionsTab = ({ teamId, t }) => {
                   </td>
                 </tr>
               ) : (
-                history.map((h) => (
+                history.map((item) => {
+                  const h = item.subscription || {};
+                  return (
                   <tr key={h.id}>
                     <td className='id-cell'>#{h.id}</td>
                     <td>
-                      <strong>{h.plan_name}</strong>
+                      <strong>{`Plan #${h.plan_id}`}</strong>
                     </td>
                     <td>
                       {h.status === 'active' && (
@@ -1023,7 +1029,8 @@ const SubscriptionsTab = ({ teamId, t }) => {
                       {h.source || '—'}
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

@@ -105,6 +105,28 @@ func HasActiveTeamSubscription(teamId int) (bool, error) {
 	return count > 0, nil
 }
 
+// GetActiveTeamSubscriptionGroup returns the UpgradeGroup entitled by the
+// team's active subscription (the one expiring last, matching the ordering
+// used elsewhere). Empty string means no active subscription or a plan that
+// grants no group upgrade. This is the group a team-bound token should run
+// under so every member bills the team plan at a consistent tier/ratio,
+// independent of their personal user.group.
+func GetActiveTeamSubscriptionGroup(teamId int) string {
+	if teamId <= 0 {
+		return ""
+	}
+	now := common.GetTimestamp()
+	var sub UserSubscription
+	err := DB.Select("upgrade_group").
+		Where("team_id = ? AND status = ? AND end_time > ?", teamId, "active", now).
+		Order("end_time desc, id desc").
+		First(&sub).Error
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(sub.UpgradeGroup)
+}
+
 // HasActiveTeamSubscriptionForPlan checks whether the team holds an active
 // subscription for a specific plan. Used by checkout to enforce
 // MaxPurchasePerUser semantics at the team scope.

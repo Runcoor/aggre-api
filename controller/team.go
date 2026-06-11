@@ -328,14 +328,13 @@ func CreateTeamToken(c *gin.Context) {
 		ownerUserId = req.UserId
 	}
 
-	// Pin the token to the team owner's group so billing/pricing is consistent
-	// regardless of which member holds the key. Without this an empty group
-	// would fall back to the holder's personal group at request time, making
-	// the same team subscription bill at different ratios per member.
-	teamGroup := "default"
-	if owner, oErr := model.GetUserById(team.OwnerId, false); oErr == nil && owner != nil && owner.Group != "" {
-		teamGroup = owner.Group
-	}
+	// Pin the token to the group the team subscription entitles, so billing/
+	// pricing is consistent regardless of which member holds the key. This is
+	// the team plan's UpgradeGroup, NOT the owner's personal user.group — the
+	// member holding the key has no personal access to the owner's group, so
+	// pinning to the owner's group would 403 ("无权访问 X 分组") at request time.
+	// Empty (no active subscription yet) falls back to the holder's group.
+	teamGroup := model.GetActiveTeamSubscriptionGroup(team.Id)
 
 	key, err := common.GenerateKey()
 	if err != nil {

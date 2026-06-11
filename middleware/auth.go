@@ -345,10 +345,18 @@ func TokenAuth() func(c *gin.Context) {
 		userGroup := userCache.Group
 		tokenGroup := token.Group
 		if tokenGroup != "" {
-			// check common.UserUsableGroups[userGroup]
-			if _, ok := service.GetUserUsableGroups(userGroup)[tokenGroup]; !ok {
-				abortWithOpenAiMessage(c, http.StatusForbidden, fmt.Sprintf("无权访问 %s 分组", tokenGroup))
-				return
+			// Team-bound tokens derive their entitlement from the team
+			// subscription, not the holder's personal user.group. The member
+			// holding the key has no personal access to the team's group, so
+			// the usable-group check below would wrongly 403. Team binding +
+			// active subscription (verified in billing) is the authorization;
+			// skip the personal check for them.
+			if token.TeamId <= 0 {
+				// check common.UserUsableGroups[userGroup]
+				if _, ok := service.GetUserUsableGroups(userGroup)[tokenGroup]; !ok {
+					abortWithOpenAiMessage(c, http.StatusForbidden, fmt.Sprintf("无权访问 %s 分组", tokenGroup))
+					return
+				}
 			}
 			// check group in common.GroupRatio
 			if !ratio_setting.ContainsGroupRatio(tokenGroup) {

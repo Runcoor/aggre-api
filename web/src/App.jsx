@@ -17,7 +17,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { lazy, Suspense, useContext, useEffect, useMemo } from 'react';
+import React, { Suspense, useContext, useEffect, useMemo } from 'react';
+import lazyWithRetry from './helpers/lazyWithRetry';
 import {
   Navigate,
   Route,
@@ -53,66 +54,66 @@ import ModelPage from './pages/Model';
 import ModelDeploymentPage from './pages/ModelDeployment';
 import Playground from './pages/Playground';
 import Subscription from './pages/Subscription';
-const Finance = lazy(() => import('./pages/Finance'));
-const AiNews = lazy(() => import('./pages/AiNews'));
+const Finance = lazyWithRetry(() => import('./pages/Finance'));
+const AiNews = lazyWithRetry(() => import('./pages/AiNews'));
 import OAuth2Callback from './components/auth/OAuth2Callback';
 import PersonalSetting from './components/settings/PersonalSetting';
 import Setup from './pages/Setup';
 import SetupCheck from './components/layout/SetupCheck';
 
-const Home = lazy(() => import('./pages/Home'));
-const HomeLanding = lazy(() => import('./pages/Home/HomeLanding'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const About = lazy(() => import('./pages/About'));
-const Docs = lazy(() => import('./pages/Docs'));
-const UserAgreement = lazy(() => import('./pages/UserAgreement'));
-const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
-const TermsOfService = lazy(() => import('./pages/TermsOfService'));
-const Security = lazy(() => import('./pages/Security'));
-const Verifier = lazy(() => import('./pages/Verifier'));
-const ChangelogPage = lazy(() => import('./pages/Changelog'));
-const StatusPage = lazy(() => import('./pages/Status'));
+const Home = lazyWithRetry(() => import('./pages/Home'));
+const HomeLanding = lazyWithRetry(() => import('./pages/Home/HomeLanding'));
+const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
+const About = lazyWithRetry(() => import('./pages/About'));
+const Docs = lazyWithRetry(() => import('./pages/Docs'));
+const UserAgreement = lazyWithRetry(() => import('./pages/UserAgreement'));
+const PrivacyPolicy = lazyWithRetry(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazyWithRetry(() => import('./pages/TermsOfService'));
+const Security = lazyWithRetry(() => import('./pages/Security'));
+const Verifier = lazyWithRetry(() => import('./pages/Verifier'));
+const ChangelogPage = lazyWithRetry(() => import('./pages/Changelog'));
+const StatusPage = lazyWithRetry(() => import('./pages/Status'));
 
-const CurlGenerator = lazy(() => import('./pages/Tools/CurlGenerator'));
-const LatencyTester = lazy(() => import('./pages/Tools/LatencyTester'));
-const TokenCalculator = lazy(() => import('./pages/Tools/TokenCalculator'));
-const BalanceChecker = lazy(() => import('./pages/Tools/BalanceChecker'));
-const CacheCalculator = lazy(() => import('./pages/Tools/CacheCalculator'));
-const PlansPage = lazy(() => import('./pages/Plans'));
-const QuickStart = lazy(() => import('./pages/QuickStart'));
-const RechargePage = lazy(() => import('./pages/Recharge'));
-const TrialPackagePage = lazy(() => import('./pages/Recharge/Trial'));
-const WhyTrustPage = lazy(() => import('./pages/WhyTrust'));
-const TeamPage = lazy(() => import('./pages/Team'));
-const TeamDetail = lazy(() => import('./pages/Team/TeamDetail'));
-const AdminTeamDetail = lazy(() => import('./pages/Admin/Teams/Detail'));
-const UserDetail = lazy(() => import('./pages/User/UserDetail'));
-const JoinTeam = lazy(() => import('./pages/Team/JoinTeam'));
-const GuideIndex = lazy(() => import('./pages/Guide'));
-const GuidePrerequisites = lazy(() => import('./pages/Guide/Prerequisites'));
-const GuideNodejsSetup = lazy(() => import('./pages/Guide/NodejsSetup'));
-const GuideDetail = lazy(() => import('./pages/Guide/GuideDetail'));
-const SkillsPlaza = lazy(() => import('./pages/Skills/Plaza'));
-const SkillsDetail = lazy(() => import('./pages/Skills/Detail'));
-const SkillsAdminConsole = lazy(
+const CurlGenerator = lazyWithRetry(() => import('./pages/Tools/CurlGenerator'));
+const LatencyTester = lazyWithRetry(() => import('./pages/Tools/LatencyTester'));
+const TokenCalculator = lazyWithRetry(() => import('./pages/Tools/TokenCalculator'));
+const BalanceChecker = lazyWithRetry(() => import('./pages/Tools/BalanceChecker'));
+const CacheCalculator = lazyWithRetry(() => import('./pages/Tools/CacheCalculator'));
+const PlansPage = lazyWithRetry(() => import('./pages/Plans'));
+const QuickStart = lazyWithRetry(() => import('./pages/QuickStart'));
+const RechargePage = lazyWithRetry(() => import('./pages/Recharge'));
+const TrialPackagePage = lazyWithRetry(() => import('./pages/Recharge/Trial'));
+const WhyTrustPage = lazyWithRetry(() => import('./pages/WhyTrust'));
+const TeamPage = lazyWithRetry(() => import('./pages/Team'));
+const TeamDetail = lazyWithRetry(() => import('./pages/Team/TeamDetail'));
+const AdminTeamDetail = lazyWithRetry(() => import('./pages/Admin/Teams/Detail'));
+const UserDetail = lazyWithRetry(() => import('./pages/User/UserDetail'));
+const JoinTeam = lazyWithRetry(() => import('./pages/Team/JoinTeam'));
+const GuideIndex = lazyWithRetry(() => import('./pages/Guide'));
+const GuidePrerequisites = lazyWithRetry(() => import('./pages/Guide/Prerequisites'));
+const GuideNodejsSetup = lazyWithRetry(() => import('./pages/Guide/NodejsSetup'));
+const GuideDetail = lazyWithRetry(() => import('./pages/Guide/GuideDetail'));
+const SkillsPlaza = lazyWithRetry(() => import('./pages/Skills/Plaza'));
+const SkillsDetail = lazyWithRetry(() => import('./pages/Skills/Detail'));
+const SkillsAdminConsole = lazyWithRetry(
   () => import('./pages/Skills/admin/AdminConsole'),
 );
-const SkillsAdminImport = lazy(() => import('./pages/Skills/admin/ImportPage'));
-const SkillsAdminReview = lazy(() => import('./pages/Skills/admin/ReviewPage'));
-const SkillsAdminReports = lazy(
+const SkillsAdminImport = lazyWithRetry(() => import('./pages/Skills/admin/ImportPage'));
+const SkillsAdminReview = lazyWithRetry(() => import('./pages/Skills/admin/ReviewPage'));
+const SkillsAdminReports = lazyWithRetry(
   () => import('./pages/Skills/admin/ReportsPage'),
 );
-const SkillsAdminAuditLogs = lazy(
+const SkillsAdminAuditLogs = lazyWithRetry(
   () => import('./pages/Skills/admin/AuditLogsPage'),
 );
-const SkillsMyCenter = lazy(() => import('./pages/Skills/MyCenter'));
-const SkillsEditor = lazy(() => import('./pages/Skills/EditorPage'));
-const SkillsShowcaseNew = lazy(() => import('./pages/Skills/ShowcaseNewPage'));
-const SkillsArticleDetail = lazy(
+const SkillsMyCenter = lazyWithRetry(() => import('./pages/Skills/MyCenter'));
+const SkillsEditor = lazyWithRetry(() => import('./pages/Skills/EditorPage'));
+const SkillsShowcaseNew = lazyWithRetry(() => import('./pages/Skills/ShowcaseNewPage'));
+const SkillsArticleDetail = lazyWithRetry(
   () => import('./pages/Skills/ArticleDetailPage'),
 );
-const SkillsUserHome = lazy(() => import('./pages/Skills/UserHomePage'));
-const SkillsAdminUserArticles = lazy(
+const SkillsUserHome = lazyWithRetry(() => import('./pages/Skills/UserHomePage'));
+const SkillsAdminUserArticles = lazyWithRetry(
   () => import('./pages/Skills/admin/UserArticlesPage'),
 );
 

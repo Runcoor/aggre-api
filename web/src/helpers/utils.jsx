@@ -192,7 +192,16 @@ export function showError(error) {
   console.error(error);
   if (error.message) {
     if (error.name === 'AxiosError') {
-      switch (error.response.status) {
+      const status = error.response?.status;
+      // Cloudflare edge errors (520–530: origin unreachable / timed out / SSL).
+      // These are returned by the CDN before the request reaches our backend,
+      // so they carry no actionable info for the user and tend to fire in
+      // bursts (e.g. during a deploy/restart). Swallow the toast — keep the
+      // console log for diagnostics — instead of spamming "status code 522".
+      if (status >= 520 && status <= 530) {
+        return;
+      }
+      switch (status) {
         case 401:
           localStorage.removeItem('user');
           window.location.href = '/login?expired=true';
